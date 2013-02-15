@@ -1,0 +1,11 @@
+# name : interface
+# key : int
+# --
+@interface ${1:ClassName} : ${2:NSObject}
+{
+     $0
+}
+
+
+
+@end

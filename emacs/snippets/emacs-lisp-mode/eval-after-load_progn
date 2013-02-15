@@ -1,0 +1,10 @@
+# name : eval-after-load with progn
+# key : eal
+# --
+(eval-after-load "${1:file}"
+  (progn
+
+    ${2:contents}
+
+  ))
+$0

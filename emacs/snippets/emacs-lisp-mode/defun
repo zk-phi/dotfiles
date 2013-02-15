@@ -1,0 +1,7 @@
+# name : defun
+# key : df
+# --
+(defun ${1:name} (${2:args})
+  "${3:description}"
+  ${4:contents})
+$0

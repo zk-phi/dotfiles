@@ -1,0 +1,4 @@
+# name : stdlib.h
+# key : lib
+# --
+#include <stdlib.h>

@@ -1,0 +1,4 @@
+# name : fscanf
+# key : fscanf
+# --
+fscanf($1, "%${2:d}", &${3:n})$0

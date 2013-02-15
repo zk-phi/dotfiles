@@ -1,0 +1,8 @@
+# name : typedef struct
+# key : typedef
+# --
+typedef struct ${1:name}
+{
+     ${2:contents}
+} ${3:alias};
+$0

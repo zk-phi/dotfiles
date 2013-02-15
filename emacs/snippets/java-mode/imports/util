@@ -1,0 +1,5 @@
+# name : java.util
+# key : util
+# --
+import java.util.${1:*};
+$0

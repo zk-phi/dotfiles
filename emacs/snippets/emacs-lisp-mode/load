@@ -1,0 +1,5 @@
+# name : load
+# key : ld
+# --
+(load "${1:file}"$2)
+$0

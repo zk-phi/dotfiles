@@ -1,0 +1,4 @@
+# name : stdlib
+# key : lib
+# --
+#import <stdlib.h>

@@ -1,0 +1,5 @@
+# name : fopen
+# key : fopen
+# --
+FILE *${1:fp} = fopen("${2:filename}", "${3:r}");
+$0

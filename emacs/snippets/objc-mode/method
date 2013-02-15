@@ -1,0 +1,4 @@
+# name : method
+# key : -
+# --
+- (${1:type})$0

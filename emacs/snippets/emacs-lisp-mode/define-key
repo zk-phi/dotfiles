@@ -1,0 +1,5 @@
+# name : define-key
+# key : dk
+# --
+(define-key ${1:map} (kbd "${2:key}") ${3:'function})
+$0

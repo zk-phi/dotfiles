@@ -1,0 +1,6 @@
+# name : defvar
+# key : dv
+# --
+(defvar ${1:name} ${2:value}
+  "${3:description}")
+$0

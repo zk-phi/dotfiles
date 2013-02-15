@@ -1,0 +1,9 @@
+# name : Serializable Class
+# key : serializable
+# --
+${1:public }class ${2:Name} implements Serializable
+{
+     static final long serialVersionUID = ${3:value}L;
+
+     $0
+}

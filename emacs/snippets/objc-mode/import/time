@@ -1,0 +1,4 @@
+# name : time
+# key : time
+# --
+#import <time.h>

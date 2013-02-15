@@ -1,0 +1,4 @@
+# name : stdio
+# key : io
+# --
+#import <stdio.h>

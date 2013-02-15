@@ -1,0 +1,4 @@
+# name : time.h
+# key : time
+# --
+#include <time.h>

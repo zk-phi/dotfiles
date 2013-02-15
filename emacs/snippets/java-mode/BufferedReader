@@ -1,0 +1,4 @@
+# name : BufferedReader
+# key : br
+# --
+new BufferedReader(new InputStreamReader(${1:System.in}))$0

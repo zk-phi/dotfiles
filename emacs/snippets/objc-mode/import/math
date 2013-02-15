@@ -1,0 +1,4 @@
+# name : math
+# key : math
+# --
+#import <math.h>

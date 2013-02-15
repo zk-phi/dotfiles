@@ -1,0 +1,4 @@
+# name : string
+# key : str
+# --
+#import <string.h>

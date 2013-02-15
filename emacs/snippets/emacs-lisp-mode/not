@@ -1,0 +1,4 @@
+# name : not
+# key : not
+# --
+(not ${1:boolean})

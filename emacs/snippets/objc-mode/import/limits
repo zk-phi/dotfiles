@@ -1,0 +1,4 @@
+# name : limits
+# key : lim
+# --
+#import <limits.h>

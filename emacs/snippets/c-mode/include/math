@@ -1,0 +1,4 @@
+# name : math.h
+# key : math
+# --
+#include <math.h>

@@ -1,0 +1,5 @@
+# name : progn
+# key : pro
+# --
+(progn
+  ${1:contents})

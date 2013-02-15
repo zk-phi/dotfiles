@@ -1,0 +1,4 @@
+# name : string.h
+# key : str
+# --
+#include <string.h>

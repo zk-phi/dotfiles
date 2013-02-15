@@ -1,0 +1,5 @@
+# name : mapc
+# key : mapc
+# --
+(mapc ${1:'function} ${2:list})
+$0

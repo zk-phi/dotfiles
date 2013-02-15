@@ -1,0 +1,4 @@
+# name : buffer-local-variable
+# key : blv
+# --
+(cdr (assq ${1:'key} (buffer-local-variables)))

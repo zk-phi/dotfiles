@@ -1,0 +1,5 @@
+# name : filter
+# key : filter
+# --
+(delq nil
+      (mapcar (lambda(x) (and (${1:condition-x}) x)) ${2:list}))

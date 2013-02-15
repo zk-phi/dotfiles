@@ -1,0 +1,7 @@
+# name : defadvice
+# key : ad
+# --
+(defadvice ${1:name} (${2:after} ${3:name}${4: activate})
+  "${5:description}"
+  ${6:contents})
+$0

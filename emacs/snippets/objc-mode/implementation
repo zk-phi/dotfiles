@@ -1,0 +1,8 @@
+# name : implementation
+# key : imp
+# --
+@implementation ${1:ClassName}
+
+$0
+
+@end

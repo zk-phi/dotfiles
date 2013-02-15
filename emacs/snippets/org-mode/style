@@ -1,0 +1,47 @@
+# name : my inline css
+# key : style
+# expand-env : ((yas-indent-line 'fixed))
+# --
+#+begin_html
+  <style type="text/css">
+    h1, h2, h3, h4 {
+    border-style: none none none solid;
+    background-color: peachpuff;
+    border-color: darksalmon;
+    font-weight: bold;
+    padding: 0.6ex 0.6ex 0.6ex 0.6ex;
+    border-width: 20px;
+    }
+
+    h1 {
+    border-style: none none none none;
+    background-color: darksalmon;
+    color: cornsilk;
+    }
+
+    h4 {
+    background-color: cornsilk;
+    }
+
+    body  {
+    background-color: cornsilk;
+    color: black;
+    }
+
+    pre {
+    background-color: white;
+    font-weight: bold;
+    margin: 20pt 40pt 20pt 40pt;
+    padding: 10pt;
+    }
+
+    code, tt, pre.src {
+    font-family: monospace;
+    font-weight: bold;
+    }
+
+    div#postamble {
+    font-size: small;
+    }
+  </style>
+#+end_html

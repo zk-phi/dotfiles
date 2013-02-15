@@ -1,0 +1,4 @@
+# name : Foundation/NSObject
+# key : nso
+# --
+#import <Foundation/NSObject.h>

@@ -1,0 +1,5 @@
+# name : autoload
+# key : ald
+# --
+(autoload '${1:function} "${2:file}"${3: nil t})
+$0

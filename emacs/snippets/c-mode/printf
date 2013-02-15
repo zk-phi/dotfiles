@@ -1,0 +1,4 @@
+# name : printf
+# key : printf
+# --
+printf("${1:%d\n}", ${2:n})$0

@@ -1,0 +1,4 @@
+# name : save-excursion
+# key : se
+# --
+(save-excursion ${1:contents})

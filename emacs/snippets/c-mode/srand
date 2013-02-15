@@ -1,0 +1,5 @@
+# name : srand
+# key : srand
+# --
+srand((unsigned)time(NULL));
+$0

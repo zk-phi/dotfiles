@@ -1,0 +1,4 @@
+# name : format
+# key : fmt
+# --
+(format "${1:format}" ${2:value})

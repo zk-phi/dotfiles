@@ -1,0 +1,5 @@
+# name : while
+# key : while
+# --
+(while ${1:condition}
+  ${2:contents})
