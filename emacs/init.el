@@ -99,16 +99,17 @@
 ;; * ---- environ check ----
 
 (when (not (boundp my-home-system-p))
-  (message "--WARNING-- site-init.el does not match"))
+  (defconst my-home-system-p nil)
+  (message "!! [init] WARNING: site-start.el does not match"))
 
 (when (not my-home-system-p)
-  (message "--WARNING-- this is not my home system"))
+  (message "!! [init] WARNING: this is not my home system"))
 
 (when (not (string-match "^23\." emacs-version))
-  (message "--WARNING-- emacs version is not 23.X"))
+  (message "!! [init] WARNING: emacs version is not 23.X"))
 
 (when (not (eq 'windows-nt system-type))
-  (message "--WARNING-- system type is not windows-nt"))
+  (message "!! [init] WARNING: system type is not windows-nt"))
 
 ;; * ---- constants ----
 
@@ -2050,7 +2051,10 @@ check for the whole contents of FILE, otherwise check for the first
   '(electric-case-c-init
     electric-case-java-init
     electric-case-scala-init
-    electric-case-ahk-init) "electric-case")
+    electric-case-ahk-init) "electric-case"
+
+    (setq electric-case-convert-calls t)
+    )
 
 (defprepare "electric-case"
   (defpostload "cc-mode"
