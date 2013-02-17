@@ -23,7 +23,7 @@
 
 ;; C-M-_
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|     |     |     |
-;;    |     | Copy|EDefn|RplAl|TrsLn|YankS|BgnBf|Align|Split|BPgph|  *  |     |
+;;    |     | Copy|EDefn|RplAl|TrsLn|YankS|BgnBf|Align| Join|BPgph|  *  |     |
 ;;       |MulAl|SrchB|KilWd|FWord|Abort|BKlWd|BDefn|KlPgh|Cntr0|  -  |     |
 ;;          |     |     |     |EndBf|BWord|NPgph|RetCm|MrkAl|     |     |
 
@@ -34,9 +34,9 @@
 ;;          |     |Comnd|Cmpil|     |Buffr|Narrw|DMcro| Howm|     |     |
 
 ;; M-Shift-
-;; |     |     |     |     |     |     |     |     |Wrap)|Slurp| Undo|     |     |     |
+;; |     |     |     |     |     |     |     | Barf|Wrap)|Slurp| Undo|     |     |     |
 ;;    |     |CpSex|EvalR|Raise|TrSex| Yank|RaisB|IdntP| Open|UpSex|     |     |
-;;       |     |Split|KlSex|FwSex| Quit|KlSex| Join|KlPar|Centr|CmntP|Wrap"|
+;;       |     |SpltS|KlSex|FwSex| Quit|KlSex|JoinS|CutPe|Centr|CmntP|Wrap"|
 ;;          |     |     |     | Mark|BwSex|DnSex|Retrn|MkSex|     |     |
 
 ;; C-x C-_
@@ -442,9 +442,24 @@
 
 ;; *** popup *scratch*
 
+(defvar my-another-scratch nil)
+
+(defun my-another-scratch ()
+  (when (not (and my-another-scratch
+                  (buffer-live-p my-another-scratch)))
+    (setq my-another-scratch (get-buffer-create "*scratch2*"))
+    (set-buffer my-another-scratch)
+    (lisp-interaction-mode))
+  my-another-scratch)
+
 (defun my-scratch-pop ()
   (interactive)
-  (select-window (display-buffer "*scratch*")))
+  (select-window
+   (display-buffer
+    (if (member "*scratch*"
+                   (mapcar (lambda (w) (buffer-name (window-buffer w)))
+                           (window-list)))
+        (my-another-scratch) "*scratch*"))))
 
 ;; *** eval region or last sexp
 
@@ -1242,6 +1257,10 @@ foo;|} bar;  ->  foo; bark;}"
     (let ((window-system t))
       ad-do-it)))
 
+;; ** delsel
+
+(delete-selection-mode 1)
+
 ;; ** dired
 
 ;; show summary on startup
@@ -1505,10 +1524,9 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defun my-linum-goto-line ()
   (interactive)
-  (when (not (and (boundp 'linum-mode) linum-mode))
-    (call-interactively 'linum-mode))
-  (call-interactively 'goto-line)
-  (call-interactively 'linum-mode))
+  (unwind-protect
+      (progn (linum-mode 1) (call-interactively 'goto-line))
+    (linum-mode -1)))
 
 ;; ** lisp
 ;; *** utilities
@@ -1591,7 +1609,7 @@ check for the whole contents of FILE, otherwise check for the first
   ;; *** keymap
 
   (define-key org-mode-map (kbd "C-x '") 'my-org-insert-quote-dwim)
-  (define-key org-mode-map (kbd "C-x '") 'org-edit-special)
+  (define-key org-mode-map (kbd "C-c '") 'org-edit-special)
   (define-key org-mode-map (kbd "M-RET") 'org-insert-heading)
   (define-key org-mode-map (kbd "TAB") 'org-cycle)
   (define-key org-mode-map (kbd "C-y") 'org-yank)
@@ -1824,6 +1842,11 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defun backward-transpose-chars ()
   (interactive) (transpose-chars -1))
+
+;; *** forward join
+
+(defun my-forward-join-line ()
+  (interactive) (join-line -1))
 
 ;; *** automatically delete trailing whitespaces
 
@@ -2914,6 +2937,7 @@ check for the whole contents of FILE, otherwise check for the first
   '(paredit-splice-sexp-killing-backward
     paredit-wrap-round
     paredit-forward-slurp-sexp
+    paredit-forward-barf-sexp
     paredit-kill
     paredit-meta-doublequote
     paredit-newline
@@ -2921,6 +2945,43 @@ check for the whole contents of FILE, otherwise check for the first
     paredit-split-sexp
     paredit-join-sexps)
   "paredit")
+
+;; ** popwin
+
+(defconfig 'popwin
+
+  ;; *** popwin buffers
+
+  (setq popwin:special-display-config
+        '( ("ChangeLog")
+           ("*compilation*")
+           ("*Help*")
+           ("*Calendar*")
+           ("*howm-remember*")
+           ("*Shell Command Output*")
+           ("*Completions*" :noselect t)
+           ("*Backtrace*" :noselect t) ))
+
+  ;; *** activate popwin
+
+  (setq display-buffer-function 'popwin:display-buffer)
+
+  ;; *** pop-up scratch
+
+  (defun my-pop-scratch ()
+    (interactive)
+    (if (and popwin:popup-buffer
+             (member (buffer-name popwin:popup-buffer)
+                     '("*scratch*" "*scratch2*")))
+        (popwin:close-popup-window)
+      (popwin:popup-buffer
+       (if (member "*scratch*"
+                   (mapcar (lambda (w) (buffer-name (window-buffer w)))
+                           (window-list)))
+           (my-another-scratch) "*scratch*"))))
+
+  ;; *** (sentinel)
+  )
 
 ;; ** prolog-mode
 
@@ -2964,37 +3025,6 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** redo+
 
 (defconfig 'redo+)
-
-;; ** popwin
-
-(defconfig 'popwin
-
-  ;; *** popwin buffers
-
-  (setq popwin:special-display-config
-        '( ("ChangeLog")
-           ("*compilation*")
-           ("*Help*")
-           ("*Calendar*")
-           ("*howm-remember*")
-           ("*Shell Command Output*")
-           ("*Completions*" :noselect t)
-           ("*Backtrace*" :noselect t) ))
-
-  ;; *** activate popwin
-
-  (setq display-buffer-function 'popwin:display-buffer)
-
-  ;; *** pop-up scratch
-
-  (defun my-pop-scratch ()
-    (interactive)
-    (if (equal (buffer-name popwin:popup-buffer) "*scratch*")
-        (popwin:close-popup-window)
-      (popwin:popup-buffer "*scratch*")))
-
-  ;; *** (sentinel)
-  )
 
 ;; ** scala mode
 
@@ -3538,7 +3568,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Ctrl-Meta-
 (global-set-key (kbd "C-M-i") 'my-align-region)
-(global-set-key (kbd "C-M-o") 'split-line)
+(global-set-key (kbd "C-M-o") 'my-forward-join-line)
 (global-set-key (kbd "C-M-m") 'indent-new-comment-line)
 
 ;; Meta-Shift-
@@ -3587,6 +3617,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Overwrite
 (defprepare "paredit"
+  (global-set-key (kbd "M-*") 'paredit-forward-barf-sexp)
   (global-set-key (kbd "M-(") 'paredit-wrap-round)
   (global-set-key (kbd "M-)") 'paredit-forward-slurp-sexp)
   (global-set-key (kbd "M-R") 'paredit-raise-sexp)
