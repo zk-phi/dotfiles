@@ -1,0 +1,4 @@
+# name : filename
+# key : fn
+# --
+`(file-name-nondirectory (file-name-sans-extension (buffer-file-name)))`-

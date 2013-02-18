@@ -190,8 +190,7 @@
        (progn
          (dolist (trigger ,triggers) (autoload trigger ,file nil t))
          (eval-after-load ,file
-           '(condition-case err
-                (progn ,@sexps (message "<< [init] %s loaded" ,file))
+           '(condition-case err (progn ,@sexps)
               (error (message "XX [init] %s: %s" ,file (error-message-string err)))))
          (message "-- [init] %s: ... will be autoloaded" ,file))
      (message "XX [init] %s: not found" ,file)))
@@ -1755,6 +1754,19 @@ check for the whole contents of FILE, otherwise check for the first
   (run-with-idle-timer 20 t 'recentf-save-list)
   (setq recentf-auto-cleanup 60)
   )
+
+;; ** semantic
+
+(setq semantic-default-submodes
+      '(global-semantic-idle-scheduler-mode
+        global-semantic-idle-summary-mode))
+
+(defpostload "cc-mode"
+  (add-hook 'c-mode-hook (lambda () (semantic-mode 1)))
+  (add-hook 'java-mode-hook (lambda () (semantic-mode 1))))
+
+(defpostload "auto-complete"
+  (setq ac-sources (cons 'ac-source-semantic ac-sources)))
 
 ;; ** scroll-bar
 
