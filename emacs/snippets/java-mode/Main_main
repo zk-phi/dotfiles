@@ -1,13 +1,8 @@
 # name : main in Main
 # key : main
 # --
-class Main
-{
-
-     public static void main(String args[])
-     {
+class Main{
+     public static void main(String args[]){
           $0
-
-          return 0;
      }
 }

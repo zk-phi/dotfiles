@@ -23,9 +23,9 @@
 
 ;; C-M-_
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|     |     |     |
-;;    |     | Copy|EDefn|RplAl|TrsLn|YankS|BgnBf|Align| Join|BPgph|  *  |     |
-;;       |MulAl|SrchB|KilWd|FWord|Abort|BKlWd|BDefn|KlPgh|Cntr0|  -  |     |
-;;          |     |     |     |EndBf|BWord|NPgph|RetCm|MrkAl|     |     |
+;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf|Align|Split|BPgph|  *  |     |
+;;       |MulAl|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|KlPgh|Cntr0|  -  |     |
+;;          |     |     |     |EdBuf|BWord|NPgph|RetCm|MrkAl|     |     |
 
 ;; M-_
 ;; |AlWnd|VrWnd|HrWnd|Blnce|Follw|     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
@@ -190,7 +190,8 @@
        (progn
          (dolist (trigger ,triggers) (autoload trigger ,file nil t))
          (eval-after-load ,file
-           '(condition-case err (progn ,@sexps)
+           '(condition-case err
+                (progn ,@sexps (message "<< [init] %s: loaded" ,file))
               (error (message "XX [init] %s: %s" ,file (error-message-string err)))))
          (message "-- [init] %s: ... will be autoloaded" ,file))
      (message "XX [init] %s: not found" ,file)))
@@ -451,14 +452,31 @@
     (lisp-interaction-mode))
   my-another-scratch)
 
-(defun my-scratch-pop ()
+(if (my-library-exists "popwin")
+
+    ;; popwin version
+    (defun my-scratch-pop ()
+      (interactive)
+      (if (and popwin:popup-buffer
+               (member (buffer-name popwin:popup-buffer)
+                       '("*scratch*" "*scratch2*")))
+          (popwin:close-popup-window)
+      (popwin:popup-buffer
+       (if (member "*scratch*"
+                   (mapcar (lambda (w) (buffer-name (window-buffer w)))
+                           (window-list)))
+           (my-another-scratch) "*scratch*"))))
+
+  ;; display-buffer version
+  (defun my-scratch-pop ()
   (interactive)
   (select-window
    (display-buffer
     (if (member "*scratch*"
-                   (mapcar (lambda (w) (buffer-name (window-buffer w)))
-                           (window-list)))
+                (mapcar (lambda (w) (buffer-name (window-buffer w)))
+                        (window-list)))
         (my-another-scratch) "*scratch*"))))
+  )
 
 ;; *** eval region or last sexp
 
@@ -478,11 +496,61 @@
   (kill-sexp -1)
   (insert (format "%S" value)))
 
+;; *** smooth-paging
+
+(defconst my-page-scroll-speeds
+  ;; 6*5 + 3*2 + 2*2 + 1*1 = 40 lines
+  '((6 . 5) (3 . 2) (2 . 2) (1 . 1)))
+
+(if (my-library-exists "pager")
+
+    ;; pager version
+    (progn
+      (defun my-page-up ()
+        (interactive)
+        (let (n)
+          (dolist (spd my-page-scroll-speeds)
+            (dotimes (n (cdr spd))
+              (pager-scroll-screen (car spd))
+              (sit-for 0)))))
+
+      (defun my-page-down ()
+        (interactive)
+        (let (n)
+          (dolist (spd my-page-scroll-speeds)
+            (dotimes (n (cdr spd))
+              (pager-scroll-screen (- (car spd)))
+              (sit-for 0))))))
+
+  ;; scroll version
+  (defun my-page-up ()
+    (interactive)
+    (let (n)
+      (dolist (spd my-page-scroll-speeds)
+        (dotimes (n (cdr spd))
+          (scroll-up (car spd))
+          (sit-for 0)))))
+
+  (defun my-page-down ()
+    (interactive)
+    (let (n)
+      (dolist (spd my-page-scroll-speeds)
+        (dotimes (n (cdr spd))
+          (scroll-down (car spd))
+          (sit-for 0)))))
+  )
+
 ;; ** other utilities
 
-(defun eol-point (point)
+(defun eol-point (&optional point)
   "Returns the end-of-line point that contains the POINT"
-  (save-excursion (goto-char point) (end-of-line) (point)))
+  (save-excursion
+    (when point (goto-char point)) (end-of-line) (point)))
+
+(defun bol-point (&optional point)
+  "Returns the end-of-line point that contains the POINT"
+  (save-excursion
+    (when point (goto-char point)) (beginning-of-line) (point)))
 
 (defun get-first-line-string (from to)
   "Returns string of the first line of region (FROM TO)"
@@ -717,64 +785,7 @@
 
 (defpostload "cc-mode"
 
-  ;; *** slurp command
-
-  (defun my-c-end-of-statement-p ()
-    (= (point)
-       (save-excursion
-         (call-interactively 'c-beginning-of-statement)
-         (c-end-of-statement)
-         (point))))
-
-  (defun my-c-slurp ()
-    "slurp command for c-language
-foo|; bar;}  ->  foo, bar;|}
-foo;|} bar;  ->  foo; bark;}"
-    (interactive)
-    (save-excursion
-      (c-end-of-statement)
-      (cond
-       ;; slurp semi
-       ((equal (char-before) ?\;)
-        (backward-char)
-        (let ((beg (point)))
-          (c-end-of-statement 2)
-          (if (equal (char-before) ?\})
-              (error "no more statements in this block")
-            (call-interactively 'c-beginning-of-statement)
-            (kill-region beg (point))
-            (insert ", "))))
-       ;; slurp brace
-       ((equal (char-before) ?\})
-        (delete-backward-char 1)
-        (let* ((beg (point))
-               (req-nl
-                (= beg (save-excursion (back-to-indentation) (point)))))
-          (when req-nl (kill-whole-line))
-          (c-end-of-statement)
-          (when req-nl (insert "\n"))
-          (insert "}")
-          (c-indent-region beg (point)))))))
-
-  (defprepare "paredit"
-    (deflazyconfig '(paredit-forward-up) "paredit")
-
-    (defun my-c-slurp-or-paren-slurp ()
-      (interactive)
-      (if (< (save-excursion (paredit-forward-up) (point))
-             (save-excursion (c-end-of-statement) (point)))
-          (paredit-forward-slurp-sexp)
-        (my-c-slurp)))
-    )
-
-  ;; *** settings
-
-  (add-hook 'c-mode-common-hook
-            (lambda()
-              (setq c-auto-newline t)
-              (c-set-style "phi")))
-
-  ;; *** coding style
+  ;; *** coding style for C
 
   ;; reference | http://www.cozmixng.org/webdav/kensuke/site-lisp/mode/my-c.el
 
@@ -823,7 +834,7 @@ foo;|} bar;  ->  foo; bark;}"
           ;;     ...
           ;; }    <- DEFUN-CLOSE
 
-          (defun-open before after) (defun-close after)
+          (defun-open before after) (defun-close before after)
 
           ;; ***** class related symbols
 
@@ -836,8 +847,8 @@ foo;|} bar;  ->  foo; bark;}"
           ;;     }    <- INLINE-CLOSE
           ;; }    <- CLASS-CLOSE
 
-          (class-open before after) (class-close after)
-          (inline-open before after) (inline-close after)
+          (class-open before after) (class-close before after)
+          (inline-open before after) (inline-close before after)
 
           ;; ***** conditional construct symbols
 
@@ -851,7 +862,7 @@ foo;|} bar;  ->  foo; bark;}"
           ;; }    <- BLOCK-CLOSE
 
           (substatement-open before after)
-          (block-open before after) (block-close after)
+          (block-open before after) (block-close before after)
 
           ;; ***** switch statement symbols
 
@@ -889,7 +900,7 @@ foo;|} bar;  ->  foo; bark;}"
           ;;     ...
           ;; }    <- EXTERN-LANG-CLOSE
 
-          (extern-lang-open before after) (extern-lang-close after)
+          (extern-lang-open before after) (extern-lang-close before after)
           (namespace-open) (namespace-close)     ; disable
           (module-open) (module-close)           ; disable
           (composition-open) (composition-close) ; disable
@@ -907,7 +918,7 @@ foo;|} bar;  ->  foo; bark;}"
           ;;     o.addObserver(obs);
           ;; }
 
-          (inexpr-class-open before after) (inexpr-class-close after)
+          (inexpr-class-open before after) (inexpr-class-close before after)
 
           ;; ***** (sentinel)
           ))
@@ -1095,7 +1106,7 @@ foo;|} bar;  ->  foo; bark;}"
           ;;     }    <- BLOCK-CLOSE
           ;; }
 
-          (func-decl-cont . /)
+          (func-decl-cont . *)
           (string . c-lineup-dont-change) (label . *)
           (block-open . 0) (block-close . 0)
 
@@ -1213,6 +1224,85 @@ foo;|} bar;  ->  foo; bark;}"
 
   (c-add-style "phi" my-c-style)
 
+  ;; *** coding style diff for java
+
+  (defun my-java-style-init ()
+    (setq c-hanging-braces-alist
+          '(
+            (defun-open after) (defun-close before after)
+            (class-open after) (class-close before after)
+            (inline-open after) (inline-close before after)
+            (substatement-open after)
+            (block-open before after) (block-close before after)
+            (statement-case-open after)
+            (brace-list-open)
+            (brace-entry-open)
+            (brace-list-close after)
+            (extern-lang-open after) (extern-lang-close before after)
+            (namespace-open) (namespace-close)
+            (module-open) (module-close)
+            (composition-open) (composition-close)
+            (inexpr-class-open after) (inexpr-class-close before after))))
+
+  ;; *** settings
+
+  (add-hook 'c-mode-common-hook
+            (lambda ()
+              (setq c-auto-newline t)
+              (c-set-style "phi")))
+
+  (add-hook 'java-mode-hook 'my-java-style-init)
+
+  ;; *** slurp command
+
+  (defun my-c-end-of-statement-p ()
+    (= (point)
+       (save-excursion
+         (call-interactively 'c-beginning-of-statement)
+         (c-end-of-statement)
+         (point))))
+
+  (defun my-c-slurp ()
+    "slurp command for c-language
+foo|; bar;}  ->  foo, bar;|}
+foo;|} bar;  ->  foo; bark;}"
+    (interactive)
+    (save-excursion
+      (c-end-of-statement)
+      (cond
+       ;; slurp semi
+       ((equal (char-before) ?\;)
+        (backward-char)
+        (let ((beg (point)))
+          (c-end-of-statement 2)
+          (if (equal (char-before) ?\})
+              (error "no more statements in this block")
+            (call-interactively 'c-beginning-of-statement)
+            (kill-region beg (point))
+            (insert ", "))))
+       ;; slurp brace
+       ((equal (char-before) ?\})
+        (delete-backward-char 1)
+        (let* ((beg (point))
+               (req-nl
+                (= beg (save-excursion (back-to-indentation) (point)))))
+          (when req-nl (kill-whole-line))
+          (c-end-of-statement)
+          (when req-nl (insert "\n"))
+          (insert "}")
+          (c-indent-region beg (point)))))))
+
+  (defprepare "paredit"
+    (deflazyconfig '(paredit-forward-up) "paredit")
+
+    (defun my-c-slurp-or-paren-slurp ()
+      (interactive)
+      (if (< (save-excursion (paredit-forward-up) (point))
+             (save-excursion (c-end-of-statement) (point)))
+          (paredit-forward-slurp-sexp)
+        (my-c-slurp)))
+    )
+
   ;; *** keybinds
 
   (define-key c-mode-map (kbd ",") nil)
@@ -1316,13 +1406,14 @@ foo;|} bar;  ->  foo; bark;}"
 ;; backup directory
 
 (setq backup-directory-alist
-      (cons (cons "\\.*$" (expand-file-name my:backup-directory))
-            backup-directory-alist))
+      `( ("\\.*$" . ,(expand-file-name my:backup-directory))) )
 
 ;; version control
 ;; reference | http://aikotobaha.blogspot.jp/2010/07/emacs.html
 
 (setq version-control t)
+
+;; make backups even if VC is enabled
 (setq vc-make-backup-files t)
 
 (setq kept-new-versions 10)
@@ -1755,19 +1846,6 @@ check for the whole contents of FILE, otherwise check for the first
   (setq recentf-auto-cleanup 60)
   )
 
-;; ** semantic
-
-(setq semantic-default-submodes
-      '(global-semantic-idle-scheduler-mode
-        global-semantic-idle-summary-mode))
-
-(defpostload "cc-mode"
-  (add-hook 'c-mode-hook (lambda () (semantic-mode 1)))
-  (add-hook 'java-mode-hook (lambda () (semantic-mode 1))))
-
-(defpostload "auto-complete"
-  (setq ac-sources (cons 'ac-source-semantic ac-sources)))
-
 ;; ** scroll-bar
 
 (scroll-bar-mode -1)
@@ -1855,11 +1933,6 @@ check for the whole contents of FILE, otherwise check for the first
 (defun backward-transpose-chars ()
   (interactive) (transpose-chars -1))
 
-;; *** forward join
-
-(defun my-forward-join-line ()
-  (interactive) (join-line -1))
-
 ;; *** automatically delete trailing whitespaces
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
@@ -1904,45 +1977,38 @@ check for the whole contents of FILE, otherwise check for the first
 
   (defun my-vi-forward-char ()
     (interactive)
-    (unless (or (= (point)
-                   (1- (save-excursion (end-of-line) (point))))
-                (= (save-excursion (end-of-line) (point))
-                   (save-excursion (beginning-of-line) (point))))
+    (unless (or (= (point) (1- (eol-point)))
+                (= (eol-point) (bol-point)))
       (forward-char 1)))
 
   (defun my-vi-backward-char ()
     (interactive)
-    (unless (= (point)
-               (save-excursion (beginning-of-line) (point)))
+    (unless (= (point) (bol-point))
       (backward-char 1)))
 
   (defun my-vi-previous-line ()
     (interactive)
     (previous-line 1)
-    (when (and (= (point)
-                  (save-excursion (end-of-line) (point)))
-               (not (= (point)
-                       (save-excursion (beginning-of-line) (point)))))
+    (when (and (= (point) (eol-point))
+               (not (= (point) (bol-point))))
       (backward-char 1)))
 
   (defun my-vi-next-line ()
     (interactive)
     (next-line 1)
-    (when (and (= (point)
-                  (save-excursion (end-of-line) (point)))
-               (not (= (point)
-                       (save-excursion (beginning-of-line) (point)))))
+    (when (and (= (point) (eol-point))
+               (not (= (point) (bol-point))))
       (backward-char 1)))
 
   (defun my-vi-end-of-line ()
     (interactive)
     (end-of-line)
-    (unless (= (point) (save-excursion (beginning-of-line) (point)))
+    (unless (= (point) (bol-point))
       (backward-char 1)))
 
   (defadvice vi-mode (after backward-char-on-vi-startup activate)
-    (when (and (= (point) (save-excursion (end-of-line) (point)))
-               (not (= (point) (save-excursion (beginning-of-line) (point)))))
+    (when (and (= (point) (eol-point))
+               (not (= (point) (bol-point))))
       (backward-char 1)))
 
   (define-key vi-com-map "h" 'my-vi-backward-char)
@@ -2941,7 +3007,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; ** pager
 
-(deflazyconfig '(pager-page-up pager-page-down) "pager")
+(deflazyconfig '(pager-scroll-screen) "pager")
 
 ;; ** paredit
 
@@ -2977,20 +3043,6 @@ check for the whole contents of FILE, otherwise check for the first
   ;; *** activate popwin
 
   (setq display-buffer-function 'popwin:display-buffer)
-
-  ;; *** pop-up scratch
-
-  (defun my-pop-scratch ()
-    (interactive)
-    (if (and popwin:popup-buffer
-             (member (buffer-name popwin:popup-buffer)
-                     '("*scratch*" "*scratch2*")))
-        (popwin:close-popup-window)
-      (popwin:popup-buffer
-       (if (member "*scratch*"
-                   (mapcar (lambda (w) (buffer-name (window-buffer w)))
-                           (window-list)))
-           (my-another-scratch) "*scratch*"))))
 
   ;; *** (sentinel)
   )
@@ -3474,8 +3526,8 @@ check for the whole contents of FILE, otherwise check for the first
 ;; **** scroll
 
 ;; Ctrl-
-(global-set-key (kbd "C-u") 'scroll-down)
-(global-set-key (kbd "C-v") 'scroll-up)
+(global-set-key (kbd "C-u") 'my-page-down)
+(global-set-key (kbd "C-v") 'my-page-up)
 (global-set-key (kbd "C-l") 'recenter)
 
 ;; Ctrl-Meta-
@@ -3485,11 +3537,6 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Meta-Shift-
 (global-set-key (kbd "M-L") 'recenter)
-
-;; Overwrite
-(defprepare "pager"
-  (global-set-key (kbd "C-u") 'pager-page-up)
-  (global-set-key (kbd "C-v") 'pager-page-down))
 
 ;; *** edit
 ;; **** undo, redo
@@ -3580,7 +3627,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Ctrl-Meta-
 (global-set-key (kbd "C-M-i") 'my-align-region)
-(global-set-key (kbd "C-M-o") 'my-forward-join-line)
+(global-set-key (kbd "C-M-o") 'split-line)
 (global-set-key (kbd "C-M-m") 'indent-new-comment-line)
 
 ;; Meta-Shift-
@@ -3707,8 +3754,6 @@ check for the whole contents of FILE, otherwise check for the first
 
 (global-set-key (kbd "M-q") 'my-scratch-pop)
 
-(defprepare "popwin"
-  (global-set-key (kbd "M-q") 'my-pop-scratch))
 (defprepare "scratch-palette"
   (global-set-key (kbd "M-w") 'scratch-palette-popup))
 
@@ -4002,5 +4047,18 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** keybind
 
 ;; (global-set-key (kbd "C-x C-c") 'clear-and-iconify-emacs)
+
+;; * *COMMENT* semantic
+
+;; (setq semantic-default-submodes
+;;       '(global-semantic-idle-scheduler-mode
+;;         global-semantic-idle-summary-mode))
+
+;; (defpostload "cc-mode"
+;;   (add-hook 'c-mode-hook (lambda () (semantic-mode 1)))
+;;   (add-hook 'java-mode-hook (lambda () (semantic-mode 1))))
+
+;; (defpostload "auto-complete"
+;;   (setq ac-sources (cons 'ac-source-semantic ac-sources)))
 
 ;; * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
