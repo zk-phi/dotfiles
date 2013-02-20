@@ -98,7 +98,7 @@
 
 ;; * ---- environ check ----
 
-(when (not (boundp my-home-system-p))
+(when (not (boundp 'my-home-system-p))
   (defconst my-home-system-p nil)
   (message "!! [init] WARNING: site-start.el does not match"))
 
@@ -372,7 +372,6 @@
 (defun upcase-previous-word ()
   (interactive) (upcase-word -1))
 
-
 (defun downcase-previous-word ()
   (interactive) (downcase-word -1))
 
@@ -495,50 +494,6 @@
   (interactive (list (eval-last-sexp nil)))
   (kill-sexp -1)
   (insert (format "%S" value)))
-
-;; *** smooth-paging
-
-(defconst my-page-scroll-speeds
-  ;; 6*5 + 3*2 + 2*2 + 1*1 = 40 lines
-  '((6 . 5) (3 . 2) (2 . 2) (1 . 1)))
-
-(if (my-library-exists "pager")
-
-    ;; pager version
-    (progn
-      (defun my-page-up ()
-        (interactive)
-        (let (n)
-          (dolist (spd my-page-scroll-speeds)
-            (dotimes (n (cdr spd))
-              (pager-scroll-screen (car spd))
-              (sit-for 0)))))
-
-      (defun my-page-down ()
-        (interactive)
-        (let (n)
-          (dolist (spd my-page-scroll-speeds)
-            (dotimes (n (cdr spd))
-              (pager-scroll-screen (- (car spd)))
-              (sit-for 0))))))
-
-  ;; scroll version
-  (defun my-page-up ()
-    (interactive)
-    (let (n)
-      (dolist (spd my-page-scroll-speeds)
-        (dotimes (n (cdr spd))
-          (scroll-up (car spd))
-          (sit-for 0)))))
-
-  (defun my-page-down ()
-    (interactive)
-    (let (n)
-      (dolist (spd my-page-scroll-speeds)
-        (dotimes (n (cdr spd))
-          (scroll-down (car spd))
-          (sit-for 0)))))
-  )
 
 ;; ** other utilities
 
@@ -2131,6 +2086,10 @@ check for the whole contents of FILE, otherwise check for the first
    ))
 
 ;; * original libraries
+;; ** nurumacs
+
+(defconfig 'nurumacs)
+
 ;; ** outlined-elisp-mode
 
 (defprepare "outlined-elisp-mode"
@@ -3007,7 +2966,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; ** pager
 
-(deflazyconfig '(pager-scroll-screen) "pager")
+(deflazyconfig '(pager-page-down pager-page-up) "pager")
 
 ;; ** paredit
 
@@ -3526,8 +3485,8 @@ check for the whole contents of FILE, otherwise check for the first
 ;; **** scroll
 
 ;; Ctrl-
-(global-set-key (kbd "C-u") 'my-page-down)
-(global-set-key (kbd "C-v") 'my-page-up)
+(global-set-key (kbd "C-u") 'scroll-down)
+(global-set-key (kbd "C-v") 'scroll-up)
 (global-set-key (kbd "C-l") 'recenter)
 
 ;; Ctrl-Meta-
@@ -3537,6 +3496,11 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Meta-Shift-
 (global-set-key (kbd "M-L") 'recenter)
+
+;; Overwrite
+(defprepare "pager"
+  (global-set-key (kbd "C-v") 'pager-page-down)
+  (global-set-key (kbd "C-u") 'pager-page-up))
 
 ;; *** edit
 ;; **** undo, redo
