@@ -439,44 +439,6 @@
       (backward-delete-char)
     (insert ", ")))
 
-;; *** popup *scratch*
-
-(defvar my-another-scratch nil)
-
-(defun my-another-scratch ()
-  (when (not (and my-another-scratch
-                  (buffer-live-p my-another-scratch)))
-    (setq my-another-scratch (get-buffer-create "*scratch2*"))
-    (set-buffer my-another-scratch)
-    (lisp-interaction-mode))
-  my-another-scratch)
-
-(if (my-library-exists "popwin")
-
-    ;; popwin version
-    (defun my-scratch-pop ()
-      (interactive)
-      (if (and popwin:popup-buffer
-               (member (buffer-name popwin:popup-buffer)
-                       '("*scratch*" "*scratch2*")))
-          (popwin:close-popup-window)
-      (popwin:popup-buffer
-       (if (member "*scratch*"
-                   (mapcar (lambda (w) (buffer-name (window-buffer w)))
-                           (window-list)))
-           (my-another-scratch) "*scratch*"))))
-
-  ;; display-buffer version
-  (defun my-scratch-pop ()
-  (interactive)
-  (select-window
-   (display-buffer
-    (if (member "*scratch*"
-                (mapcar (lambda (w) (buffer-name (window-buffer w)))
-                        (window-list)))
-        (my-another-scratch) "*scratch*"))))
-  )
-
 ;; *** eval region or last sexp
 
 (defun my-eval-sexp-dwim ()
@@ -685,6 +647,7 @@
 ;; ** auto-revert
 
 (global-auto-revert-mode)
+(setq global-auto-revert-non-file-buffers t)
 
 ;; ** bookmark
 
@@ -2104,6 +2067,10 @@ check for the whole contents of FILE, otherwise check for the first
 (deflazyconfig '(scratch-palette-popup) "scratch-palette"
   (define-key scratch-palette-minor-mode-map
     (kbd "M-w") 'scratch-palette-kill))
+
+;; ** scratch-pop
+
+(deflazyconfig '(scratch-pop) "scratch-pop")
 
 ;; ** electric-case
 
@@ -3716,14 +3683,14 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; scratch notes
 
-(global-set-key (kbd "M-q") 'my-scratch-pop)
-
 (defprepare "scratch-palette"
   (global-set-key (kbd "M-w") 'scratch-palette-popup))
+(defprepare "scratch-pop"
+  (global-set-key (kbd "M-q") 'scratch-pop))
 
 ;; minor-modes
 
-(global-set-key (kbd "ESC ESC") 'vi-mode)
+(global-set-key (kbd "<escape>") 'vi-mode)
 (global-set-key (kbd "M-t") 'orgtbl-mode)
 (global-set-key (kbd "M-a") 'artist-mode)
 
