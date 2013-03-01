@@ -1,4 +1,4 @@
-﻿;; |---------------------------------
+;; |---------------------------------
 ;; |                                |
 ;; |  init.el (for emacs v23.3)     |
 ;; |                                |
@@ -31,7 +31,7 @@
 ;; |AlWnd|VrWnd|HrWnd|Blnce|Follw|     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
 ;;    |Scrtc|Palet| Eval|Slice|Table|YankP|Untab|ShCmd|Opcty|EvalP|     |     |
 ;;       |Artst|Sarch| Dir | File| Grep|Headr|BMJmp|KlWnd| Goto|     |     |
-;;          |     |Comnd|Cmpil|     |Buffr|Narrw|DMcro| Howm|     |     |
+;;          |     |Comnd|Cmpil|ViReg|Buffr|Narrw|DMcro| Howm|     |     |
 
 ;; M-Shift-
 ;; |     |     |     |     |     |     |     | Barf|Wrap)|Slurp| Undo|     |     |     |
@@ -41,8 +41,8 @@
 
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     |     |     |     |
-;;    |     |Write|Encod|Revrt|Trnct|     |     |Shell|     |RdOly|     |     |
-;;       |     | Save|Dired|     |     |     |BMSet|KilBf|CgLog|     |     |
+;;    |     |Write|Encod|Revrt|Trnct|     |     |Shell|BMSet|RdOly|     |     |
+;;       |     | Save|Dired|     |     |     |     |KilBf|CgLog|     |     |
 ;;          |     |     |Close|     |     |     |ExMcr|     |     |     |
 
 ;; nonconvert
@@ -70,11 +70,11 @@
 
 ;; key-chord
 ;;
-;; -  j : transpose-chars / ac-complete
-;; -  i : expand snippet
-;; -  n : downcase word
-;; -  p : upcase word
-;; -  m : capitalize word
+;; - fj : transpose-chars / ac-complete
+;; - gh : expand snippet
+;; - fn : downcase word
+;; - fp : upcase word
+;; - fm : capitalize word
 
 ;; ** orgtbl-mode override
 
@@ -135,7 +135,6 @@
 (defconst my:ditaa-jar-file (concat my:dat-directory "ditaa.jar"))
 
 (defconst my:recentf-file (concat my:dat-directory "recentf_" system-name ".dat"))
-(defconst my:bm-repository-file (concat my:dat-directory "bm_" system-name ".dat"))
 (defconst my:bookmark-file (concat my:dat-directory "bookmark_" system-name ".dat"))
 
 ;; dropbox association
@@ -342,6 +341,9 @@
 ;; use bar cursor
 (setq-default cursor-type 'bar)
 
+;; visible end-of-buffer
+(setq-default indicate-empty-lines t)
+
 ;; ** my commands
 ;; *** swap windows
 
@@ -456,6 +458,93 @@
   (interactive (list (eval-last-sexp nil)))
   (kill-sexp -1)
   (insert (format "%S" value)))
+
+;; *** move-region
+
+;; reference | http://www.pitecan.com/tmp/move-region.el
+
+(defun my-move-region (sexp)
+  (if (and transient-mark-mode mark-active)
+      (let (m)
+        (kill-region (mark) (point))
+        (eval sexp)
+        (setq m (point))
+        (yank)
+        (set-mark m)
+        (setq deactivate-mark nil))
+    (eval sexp)))
+
+(defun my-move-region-up ()
+  (interactive)
+  (my-move-region '(forward-line -1)))
+
+(defun my-move-region-down ()
+  (interactive)
+  (my-move-region '(forward-line 1)))
+
+(defun my-move-region-left ()
+  (interactive)
+  (my-move-region '(forward-char -1)))
+
+(defun my-move-region-right ()
+  (interactive)
+  (my-move-region '(forward-char 1)))
+
+;; *** visible-register
+
+(defvar my-visible-register nil)
+(defvar my-visible-register-face 'cursor)
+
+(defun my-visible-register ()
+  (interactive)
+  (if my-visible-register
+      (progn (goto-char (overlay-start my-visible-register))
+             (delete-overlay my-visible-register)
+             (setq my-visible-register nil))
+    (progn
+      (setq my-visible-register
+            (make-overlay (point) (1+ (point))))
+      (overlay-put my-visible-register
+                   'face my-visible-register-face))))
+
+;; *** exchange-region
+
+(defvar exchange-pending-overlay nil)
+(defvar exchange-pending-face 'cursor)
+
+(defadvice keyboard-quit (after exchange-complete activate)
+  (delete-overlay exchange-pending-overlay)
+  (setq exchange-pending-overlay nil))
+
+;; if you do not use cua, change this to "yank"
+(defadvice cua-paste (around exchange-start activate)
+  (if (and (interactive-p)
+           (eq last-command 'kill-region))
+      (progn
+        (setq exchange-pending-overlay
+              (make-overlay (point) (1+ (point))))
+        (overlay-put exchange-pending-overlay
+                     'face exchange-pending-face))
+    (progn
+      (when exchange-pending-overlay
+        (delete-overlay exchange-pending-overlay)
+        (setq exchange-pending-overlay nil))
+      ad-do-it)))
+
+;; if you do not use cua, change this to "kill-region"
+(defadvice cua-cut-region (around exchange-exec activate)
+  (if (not (and (interactive-p) transient-mark-mode mark-active
+                exchange-pending-overlay))
+      ad-do-it
+    (let* ((str (buffer-substring (region-beginning) (region-end)))
+           (point (+ (region-beginning) (length str))))
+      (delete-region (region-beginning) (region-end))
+      (goto-char (overlay-start exchange-pending-overlay))
+      (delete-overlay exchange-pending-overlay)
+      (setq exchange-pending-overlay nil)
+      (insert str)
+      (goto-char point)
+      (setq this-command 'kill-region))))
 
 ;; ** other utilities
 
@@ -1171,56 +1260,6 @@
 
   (add-hook 'java-mode-hook 'my-java-style-init)
 
-  ;; *** slurp command
-
-  (defun my-c-end-of-statement-p ()
-    (= (point)
-       (save-excursion
-         (call-interactively 'c-beginning-of-statement)
-         (c-end-of-statement)
-         (point))))
-
-  (defun my-c-slurp ()
-    "slurp command for c-language
-foo|; bar;}  ->  foo, bar;|}
-foo;|} bar;  ->  foo; bark;}"
-    (interactive)
-    (save-excursion
-      (c-end-of-statement)
-      (cond
-       ;; slurp semi
-       ((equal (char-before) ?\;)
-        (backward-char)
-        (let ((beg (point)))
-          (c-end-of-statement 2)
-          (if (equal (char-before) ?\})
-              (error "no more statements in this block")
-            (call-interactively 'c-beginning-of-statement)
-            (kill-region beg (point))
-            (insert ", "))))
-       ;; slurp brace
-       ((equal (char-before) ?\})
-        (delete-backward-char 1)
-        (let* ((beg (point))
-               (req-nl
-                (= beg (save-excursion (back-to-indentation) (point)))))
-          (when req-nl (kill-whole-line))
-          (c-end-of-statement)
-          (when req-nl (insert "\n"))
-          (insert "}")
-          (c-indent-region beg (point)))))))
-
-  (defprepare "paredit"
-    (deflazyconfig '(paredit-forward-up) "paredit")
-
-    (defun my-c-slurp-or-paren-slurp ()
-      (interactive)
-      (if (< (save-excursion (paredit-forward-up) (point))
-             (save-excursion (c-end-of-statement) (point)))
-          (paredit-forward-slurp-sexp)
-        (my-c-slurp)))
-    )
-
   ;; *** keybinds
 
   (define-key c-mode-map (kbd ",") nil)
@@ -1231,10 +1270,14 @@ foo;|} bar;  ->  foo; bark;}"
   (define-key c-mode-map (kbd "M-j") nil)
   (define-key c-mode-map (kbd "C-M-h") nil)
   (define-key c-mode-map (kbd "C-M-j") nil)
-  (define-key c-mode-map (kbd "M-)") 'my-c-slurp)
 
   (defprepare "paredit"
-    (define-key c-mode-map (kbd "M-)") 'my-c-slurp-or-paren-slurp))
+    (defprepare "cedit"
+      (define-key c-mode-map (kbd "M-)") 'cedit-or-paredit-slurp)
+      (define-key c-mode-map (kbd "M-(") 'cedit-or-paredit-wrap)
+      (define-key c-mode-map (kbd "M-*") 'cedit-or-paredit-barf)
+      (define-key c-mode-map (kbd "M-U") 'cedit-or-paredit-splice-killing-backward)
+      (define-key c-mode-map (kbd "M-R") 'cedit-or-paredit-raise)))
 
   (define-key java-mode-map (kbd ",") nil)
   (define-key java-mode-map (kbd "C-d") nil)
@@ -1244,10 +1287,14 @@ foo;|} bar;  ->  foo; bark;}"
   (define-key java-mode-map (kbd "M-j") nil)
   (define-key java-mode-map (kbd "C-M-h") nil)
   (define-key java-mode-map (kbd "C-M-j") nil)
-  (define-key java-mode-map (kbd "M-)") 'my-c-slurp)
 
   (defprepare "paredit"
-    (define-key java-mode-map (kbd "M-)") 'my-c-slurp-or-paren-slurp))
+    (defprepare "cedit"
+      (define-key java-mode-map (kbd "M-)") 'cedit-or-paredit-slurp)
+      (define-key java-mode-map (kbd "M-(") 'cedit-or-paredit-wrap)
+      (define-key java-mode-map (kbd "M-*") 'cedit-or-paredit-barf)
+      (define-key java-mode-map (kbd "M-U") 'cedit-or-paredit-splice-killing-backward)
+      (define-key java-mode-map (kbd "M-R") 'cedit-or-paredit-raise)))
 
   ;; *** (sentinel)
   )
@@ -1565,7 +1612,7 @@ check for the whole contents of FILE, otherwise check for the first
     (my-mark-sexp) (call-interactively 'kill-ring-save)))
 
 (defun my-transpose-sexps ()
-  (interactive) (transpose-sexps -1))
+  (interactive) (transpose-sexps -1) (forward-sexp))
 
 (defun my-down-list ()
   (interactive)
@@ -1605,14 +1652,14 @@ check for the whole contents of FILE, otherwise check for the first
 
   (defun my-org-insert-quote-dwim ()
     (interactive)
-    (let ((flg (and (interactive-p) transient-mark-mode mark-active))
-          (mode-name (read-from-minibuffer "mode ? ")))
-      (when flg (kill-region (region-beginning) (region-end)))
-      (insert "#+begin_src " mode-name "\n\n#+end_src")
-      (unless flg (insert "\n"))
-      (previous-line 2)
-      (org-edit-special)
-      (when flg (yank) (org-edit-src-exit))))
+    (let* ((flg (and (interactive-p) transient-mark-mode mark-active))
+           (str (if flg (buffer-substring (region-beginning) (region-end))))
+           (mode-name (read-from-minibuffer "mode ? ")))
+      (when flg (delete-region (region-beginning) (region-end)))
+      (insert "#+begin_src " mode-name "\n")
+      (save-excursion (insert "\n#+end_src" (if flg "" "\n")))
+      (org-edit-src-code)
+      (when flg (insert str) (org-edit-src-exit))))
 
   ;; *** keymap
 
@@ -1839,21 +1886,28 @@ check for the whole contents of FILE, otherwise check for the first
 (setq eval-expression-print-length nil)
 (setq eval-expression-print-level 5)
 
+;; **** delete-trailing-whitespace
+
+;; run delete-trailing-whitespace on save
+
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+(defadvice delete-trailing-whitespace (around echo-trailing-ws activate)
+  (when (not (string= (buffer-string)
+                      (progn ad-do-it (buffer-string))))
+    (message "trailing whitespace deleted")))
+
 ;; *** backward transpose
 
 (defun backward-transpose-words ()
-  (interactive) (transpose-words -1))
+  (interactive) (transpose-words -1) (forward-word))
 
 (defun backward-transpose-lines ()
   (interactive) (transpose-lines 1)
-  (forward-line -2) (end-of-line))
+  (forward-line -1) (end-of-line))
 
 (defun backward-transpose-chars ()
-  (interactive) (transpose-chars -1))
-
-;; *** automatically delete trailing whitespaces
-
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+  (interactive) (transpose-chars -1) (forward-char))
 
 ;; *** show region size on modeline
 
@@ -2051,7 +2105,23 @@ check for the whole contents of FILE, otherwise check for the first
 ;; * original libraries
 ;; ** nurumacs
 
-(defconfig 'nurumacs)
+(defconfig 'nurumacs
+
+  ;; (setq nurumacs-map nil)
+
+  (add-to-list 'nurumacs-map-kill-commands
+               'smart-split-window-vertically)
+
+  (add-to-list 'nurumacs-map-kill-commands
+               'smart-split-window-horizontally)
+
+  (defpostload "scratch-pop"
+    (add-to-list 'nurumacs-map-kill-commands
+                 'scratch-pop))
+
+  (defpostload "scratch-palette"
+    (add-to-list 'nurumacs-map-kill-commands
+                 'scratch-palette)))
 
 ;; ** outlined-elisp-mode
 
@@ -2091,6 +2161,20 @@ check for the whole contents of FILE, otherwise check for the first
     (add-hook 'scala-mode-hook 'electric-case-scala-init))
   (defpostload "ahk-mode"
     (add-hook 'ahk-mode-hook 'electric-case-ahk-init)))
+
+;; ** cedit
+
+(deflazyconfig
+  '(cedit-or-paredit-slurp
+    cedit-or-paredit-wrap
+    cedit-or-paredit-barf
+    cedit-or-paredit-splice-killing-backward
+    cedit-or-paredit-raise)"cedit")
+
+;; ** simple-demo
+
+(deflazyconfig '(simple-demo-set-up) "simple-demo"
+  (setq simple-demo-highlight-face 'compilation-warning))
 
 ;; * external libraries (abcdef)
 ;; ** ace-jump-mode
@@ -2330,16 +2414,12 @@ check for the whole contents of FILE, otherwise check for the first
 
     ;; ***** anything inside buffer
 
-    (defprepare "bm"
-      (deflazyconfig '(anything-c-bm-init) "bm"))
-
     (defun my-anything-jump()
       "My 'anything'."
       (interactive)
       (anything (list
                  (ifbound anything-source-highlight-changes-mode)
                  anything-c-source-bookmarks
-                 anything-c-source-bm
                  (ifbound anything-c-source-flymake)
                  anything-c-source-imenu)
                 (thing-at-point 'symbol)
@@ -2403,7 +2483,7 @@ check for the whole contents of FILE, otherwise check for the first
   ;; *** additional bindings
 
   (defpostload "key-chord"
-    (key-chord-define ac-completing-map " j" 'ac-expand))
+    (key-chord-define ac-completing-map "fj" 'ac-expand))
 
   ;; *** (sentinel)
   )
@@ -2412,38 +2492,6 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defconfig 'autopair
   (autopair-global-mode t))
-
-;; ** bm
-
-(deflazyconfig '(bm-toggle) "bm"
-
-  ;; *** bm-repogitory
-
-  (setq bm-repository-file my:bm-repository-file)
-
-  ;; *** change style
-
-  (setq bm-highlight-style 'bm-highlight-only-fringe)
-
-  ;; *** automatically save bookmarks
-
-  (setq-default bm-buffer-persistence t)
-
-  (add-hook 'kill-buffer-hook 'bm-buffer-save)
-
-  (add-hook 'kill-emacs-hook
-            (lambda () (bm-buffer-save-all) (bm-repository-save)))
-
-  ;; *** automatically restore bookmarks
-
-  (setq bm-restore-repository-on-load t)
-  (add-hook 'after-init-hook 'bm-repository-load)
-
-  (add-hook 'find-file-hook 'bm-buffer-restore)
-  (add-hook 'after-revert-hook 'bm-buffer-restore)
-
-  ;; *** (sentinel)
-  )
 
 ;; ** color-theme
 
@@ -2772,7 +2820,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defconfig 'key-chord
   (key-chord-mode 1)
-  (setq key-chord-two-keys-delay 0.06))
+  (setq key-chord-two-keys-delay 0.08))
 
 ;; ** key-combo
 
@@ -2821,6 +2869,15 @@ check for the whole contents of FILE, otherwise check for the first
 
   ;; **** main
 
+  (defun my-mc/mark-next-dwim ()
+    (interactive)
+    (if (and (interactive-p) transient-mark-mode mark-active
+             (string-match "\n" (buffer-substring (region-beginning)
+                                                  (region-end))))
+        (call-interactively 'mc/edit-lines)
+      ;; otherwise call "mark-next-like-this"
+      (call-interactively 'mc/mark-next-like-this)))
+
   (defun my-mc/mark-all-dwim ()
     (interactive)
     (cond
@@ -2846,7 +2903,8 @@ check for the whole contents of FILE, otherwise check for the first
 ;; *** settings
 
 (deflazyconfig
-  '(mc/mark-all-like-this
+  '(mc/edit-lines
+    mc/mark-all-like-this
     mc/mark-next-like-this
     mc/mark-all-words-like-this
     mc/mark-all-symbols-like-this) "multiple-cursors"
@@ -3085,7 +3143,7 @@ check for the whole contents of FILE, otherwise check for the first
 
     (defpostload "ace-jump-mode"
       (set-face-foreground 'ace-jump-face-foreground "#ff6666")
-      (set-face-foreground 'ace-jump-face-background "#224444"))
+      (set-face-foreground 'ace-jump-face-background "#335555"))
 
     ;; *** font-lock
 
@@ -3286,7 +3344,7 @@ check for the whole contents of FILE, otherwise check for the first
 
     (define-key yas-keymap (kbd "TAB") nil) ; auto-complete
     (define-key yas-keymap (kbd "<tab>") nil) ; auto-complete
-    (key-chord-define yas-keymap " i" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "gh" 'yas-next-field-or-maybe-expand)
 
     ;; **** (sentinel)
     )
@@ -3383,7 +3441,6 @@ check for the whole contents of FILE, otherwise check for the first
 (global-set-key (kbd "C-x C-k") 'kill-buffer)
 (global-set-key (kbd "C-x C-e") 'set-buffer-file-coding-system)
 (global-set-key (kbd "C-x C-r") 'revert-buffer-with-coding-system)
-(global-set-key (kbd "C-x C-p") 'toggle-read-only)
 
 ;; Overwrite
 (defprepare "anything-config"
@@ -3438,6 +3495,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Meta-
 (global-set-key (kbd "M-l") 'my-linum-goto-line)
+(global-set-key (kbd "M-v") 'my-visible-register)
 
 ;; Overwrite
 (defprepare "iy-go-to-char"
@@ -3499,6 +3557,10 @@ check for the whole contents of FILE, otherwise check for the first
 (global-set-key (kbd "M-V") 'set-mark-command)
 
 ;; Others
+(global-set-key (kbd "<left>") 'my-move-region-left)
+(global-set-key (kbd "<right>") 'my-move-region-right)
+(global-set-key (kbd "<up>") 'my-move-region-up)
+(global-set-key (kbd "<down>") 'my-move-region-down)
 (global-set-key (kbd "C-SPC") 'set-mark-command)
 (global-set-key (kbd "C-M-SPC") 'exchange-point-and-mark)
 (global-set-key (kbd "C-<return>") 'cua-set-rectangle-mark)
@@ -3507,7 +3569,7 @@ check for the whole contents of FILE, otherwise check for the first
 (defprepare "expand-region"
   (global-set-key (kbd "<S-oem-pa1>") 'my-change-command))
 (defprepare "multiple-cursors"
-  (global-set-key (kbd "C-a") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-a") 'my-mc/mark-next-dwim)
   (global-set-key (kbd "C-M-a") 'my-mc/mark-all-dwim))
 (defprepare "expand-region"
   (global-set-key (kbd "C-,") 'er/expand-region))
@@ -3655,8 +3717,6 @@ check for the whole contents of FILE, otherwise check for the first
 ;; Overwrite
 (defprepare "anything-config"
   (global-set-key (kbd "M-j") 'my-anything-jump))
-(defprepare "bm"
-  (global-set-key (kbd "C-x C-j") 'bm-toggle))
 
 ;; *** help
 
@@ -3698,6 +3758,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 (global-set-key (kbd "C-x C-l") 'add-change-log-entry)
 (global-set-key (kbd "C-x C-t") 'toggle-truncate-lines)
+(global-set-key (kbd "C-x C-p") 'toggle-read-only)
 (global-set-key (kbd "M-n") 'my-narrow-to-region-or-widen)
 
 (defprepare "fold-dwim"
@@ -3713,14 +3774,14 @@ check for the whole contents of FILE, otherwise check for the first
 (defpostload "key-chord"
 
   ;; Default
-  (key-chord-define-global " j" 'backward-transpose-chars)
-  (key-chord-define-global " n" 'downcase-previous-word)
-  (key-chord-define-global " p" 'upcase-previous-word)
-  (key-chord-define-global " m" 'capitalize-word)
+  (key-chord-define-global "fj" 'backward-transpose-chars)
+  (key-chord-define-global "fn" 'downcase-previous-word)
+  (key-chord-define-global "fp" 'upcase-previous-word)
+  (key-chord-define-global "fm" 'capitalize-word)
 
   ;; Overwrite
   (defprepare "yasnippet"
-    (key-chord-define-global " i" 'yas-expand))
+    (key-chord-define-global "gh" 'yas-expand))
 
   )
 
@@ -3991,5 +4052,37 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; (defpostload "auto-complete"
 ;;   (setq ac-sources (cons 'ac-source-semantic ac-sources)))
+
+;; * *COMMENT* bm
+
+(deflazyconfig '(bm-toggle) "bm"
+
+  ;; ** bm-repogitory
+
+  (setq bm-repository-file my:bm-repository-file)
+
+  ;; ** change style
+
+  (setq bm-highlight-style 'bm-highlight-only-fringe)
+
+  ;; ** automatically save bookmarks
+
+  (setq-default bm-buffer-persistence t)
+
+  (add-hook 'kill-buffer-hook 'bm-buffer-save)
+
+  (add-hook 'kill-emacs-hook
+            (lambda () (bm-buffer-save-all) (bm-repository-save)))
+
+  ;; ** automatically restore bookmarks
+
+  (setq bm-restore-repository-on-load t)
+  (add-hook 'after-init-hook 'bm-repository-load)
+
+  (add-hook 'find-file-hook 'bm-buffer-restore)
+  (add-hook 'after-revert-hook 'bm-buffer-restore)
+
+  ;; ** (sentinel)
+  )
 
 ;; * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
