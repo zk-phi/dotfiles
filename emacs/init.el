@@ -2253,10 +2253,18 @@ check for the whole contents of FILE, otherwise check for the first
 
 (deflazyconfig
   '(cedit-slurp
-    cedit-wrap
+    cedit-wrap-brace
     cedit-barf
     cedit-splice-killing-backward
-    cedit-raise)"cedit")
+    cedit-raise) "cedit")
+
+(defprepare "paredit"
+  (deflazyconfig
+    '(cedit-or-paredit-slurp
+      cedit-or-paredit-wrap
+      cedit-or-paredit-barf
+      cedit-or-paredit-splice-killing-backward
+      cedit-or-paredit-raise) "cedit"))
 
 ;; ** simple-demo
 
