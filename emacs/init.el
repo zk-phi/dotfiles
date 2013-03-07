@@ -25,22 +25,22 @@
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|     |     |     |
 ;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf|Align|Split|BPgph|  *  |     |
 ;;       |MulAl|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|KlPgh|Cntr0|  -  |     |
-;;          |     |     |     |EdBuf|BWord|NPgph|RetCm|MrkAl|     |     |
+;;          |HidAl|     |     |EdBuf|BWord|NPgph|RetCm|MrkAl|     |     |
 
 ;; M-_
 ;; |AlWnd|VrWnd|HrWnd|Blnce|Follw|     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
 ;;    |Scrtc|Palet| Eval|Slice|Table|YankP|Untab|ShCmd|Opcty|EvalP|     |     |
 ;;       |Artst|Sarch| Dir | File| Grep|Headr|BMJmp|KlWnd| Goto|     |     |
-;;          |     |Comnd|Cmpil|ViReg|Buffr|Narrw|DMcro| Howm|     |     |
+;;          |     |Comnd|Cmpil| VReg|Buffr|Narrw|DMcro| Howm|     |     |
 
 ;; M-Shift-
 ;; |     |     |     |     |     |     |     | Barf|Wrap)|Slurp| Undo|     |     |     |
 ;;    |     |CpSex|EvalR|Raise|TrSex| Yank|RaisB|IdntP| Open|UpSex|     |     |
 ;;       |     |SpltS|KlSex|FwSex| Quit|KlSex|JoinS|CutPe|Centr|CmntP|Wrap"|
-;;          |     |     |     | Mark|BwSex|DnSex|Retrn|MkSex|     |     |
+;;          |     |     |     | Mark|BwSex|DnSex|Retrn|MkSex|     | Help|
 
 ;; C-x C-_
-;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     |     |     |     |
+;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     |Scale|     |     |
 ;;    |     |Write|Encod|Revrt|Trnct|     |     |Shell|     |RdOly|     |     |
 ;;       |     | Save|Dired|     |     |     |BMSet|KilBf|CgLog|     |     |
 ;;          |     |     |Close|     |     |     |ExMcr|     |     |     |
@@ -52,6 +52,10 @@
 ;; SPC
 ;; -   C-SPC : set-mark-command
 ;; - C-M-SPC : exchange-point-and-mark
+
+;; Function
+;; -    <f1> : help prefix
+;; -  M-<f4> : kill-emacs
 
 ;; others
 ;; -   C-RET : cua-set-rectangle-mark
@@ -155,15 +159,19 @@
 (defvar my-not-found-libraries nil)
 
 (defun my-library-exists (lib)
-  (cond ((member lib my-found-libraries) t)
-        ((member lib my-not-found-libraries) nil)
-        ((locate-library lib) (add-to-list 'my-found-libraries lib))
-        (t (add-to-list 'my-not-found-libraries lib) nil)))
+  (if my-home-system-p
+      ;; do not check on home-system
+      t
+    (cond ((member lib my-found-libraries) t)
+          ((member lib my-not-found-libraries) nil)
+          ((locate-library lib) (add-to-list 'my-found-libraries lib))
+          (t (add-to-list 'my-not-found-libraries lib) nil))))
 
 (defadvice load (after add-to-found-list activate)
-  (if (null ad-return-value)
-      (add-to-list 'my-not-found-libraries (ad-get-arg 0))
-    (add-to-list 'my-found-libraries (ad-get-arg 0))))
+  (unless my-home-system-p
+    (if (null ad-return-value)
+        (add-to-list 'my-not-found-libraries (ad-get-arg 0))
+      (add-to-list 'my-found-libraries (ad-get-arg 0)))))
 
 ;; ** safe-load macros
 
@@ -175,12 +183,11 @@
   "require feature, and if succeeded, eval configures"
     `(let ((beg-time (current-time)))
        (if (require ,ft nil t)
-           (progn
-             (condition-case err
-                 (eval '(progn ,@sexps
-                               (message ">> [init] %s: succeeded in %d msec" ,ft
-                                        (my-init-ellapsed-time beg-time))))
-               (error (message "XX [init] %s: %s" ,ft (error-message-string err)))))
+           (condition-case err
+               (eval '(progn ,@sexps
+                             (message ">> [init] %s: succeeded in %d msec" ,ft
+                                      (my-init-ellapsed-time beg-time))))
+             (error (message "XX [init] %s: %s" ,ft (error-message-string err))))
          (message "XX [init] %s: not found" ,ft))))
 
 (defmacro deflazyconfig (triggers file &rest sexps)
@@ -440,18 +447,18 @@
 
 (add-hook 'after-save-hook 'delete-file-if-no-contents)
 
-;; *** retop
-
-(defun retop ()
-  (interactive) (recenter 0))
-
 ;; *** smartchr-like commands
 
 (defun my-smart-comma ()
   (interactive)
-  (if (equal last-command this-command)
-      (backward-delete-char)
+  (if (equal last-command 'my-smart-comma)
+      (delete-char -1)
     (insert ", ")))
+
+;; *** retop
+
+(defun retop ()
+  (interactive) (recenter 0))
 
 ;; *** eval region or last sexp
 
@@ -505,6 +512,8 @@
 ;; *** visible-register
 
 (defvar my-visible-register nil)
+(make-variable-buffer-local 'my-visible-register)
+
 (defvar my-visible-register-face 'cursor)
 
 (defun my-visible-register ()
@@ -577,10 +586,10 @@
 
 ;; ** align
 
-(defun my-align-region ()
-  (interactive)
+(defun my-align-region (beg end)
+  (interactive "r")
   (when (and (interactive-p) transient-mark-mode mark-active)
-    (align-entire (region-beginning) (region-end))))
+    (align-entire beg end)))
 
 ;; ** artist
 
@@ -1228,46 +1237,65 @@
 
   (add-hook 'c-mode-common-hook
             (lambda ()
+              ;; settings
               (setq c-auto-newline t)
-              (c-set-style "phi")))
+              (c-set-style "phi")
+              ;; keybindings
+              (local-set-key (kbd ",") nil)
+              (local-set-key (kbd "C-d") nil)
+              (local-set-key (kbd "C-M-a") nil)
+              (local-set-key (kbd "C-M-e") nil)
+              (local-set-key (kbd "M-e") nil)
+              (local-set-key (kbd "M-j") nil)
+              (local-set-key (kbd "C-M-h") nil)
+              (local-set-key (kbd "C-M-j") nil)
+              (defprepare "cedit"
+                (local-set-key (kbd "M-)") 'cedit-slurp)
+                (local-set-key (kbd "M-{") 'cedit-wrap-brace)
+                (local-set-key (kbd "M-*") 'cedit-barf)
+                (local-set-key (kbd "M-U") 'cedit-splice-killing-backward)
+                (local-set-key (kbd "M-R") 'cedit-raise)
+                (defprepare "paredit"
+                  (local-set-key (kbd "M-)") 'cedit-or-paredit-slurp)
+                  (local-set-key (kbd "M-*") 'cedit-or-paredit-barf)
+                  (local-set-key (kbd "M-U") 'cedit-or-paredit-splice-killing-backward)
+                  (local-set-key (kbd "M-R") 'cedit-or-paredit-raise)))
+              (defprepare "key-combo"
+                ;; add / sub / mul / div
+                (key-combo-define-local (kbd "+") '(" + " "++"))
+                (key-combo-define-local (kbd "+=") " += ")
+                (key-combo-define-local (kbd "-") '(" - " "--" "-")) ; maybe unary
+                (key-combo-define-local (kbd "-=") " -= ")
+                (key-combo-define-local (kbd "*") '(" * " "*")) ; maybe unary
+                (key-combo-define-local (kbd "*=") " *= ")
+                (key-combo-define-local (kbd "/") " / ")
+                (key-combo-define-local (kbd "/=") " /= ")
+                (key-combo-define-local (kbd "%") " % ")
+                (key-combo-define-local (kbd "%=") " %= ")
+                ;; compare
+                (key-combo-define-local (kbd ">") '(" > " " >> "))
+                (key-combo-define-local (kbd ">=") " >= ")
+                (key-combo-define-local (kbd "<") '(" < " " << "))
+                (key-combo-define-local (kbd "<=") " <= ")
+                (key-combo-define-local (kbd "=") '(" = " " == "))
+                (key-combo-define-local (kbd "!=") " != ")
+                ;; logical / bitwise
+                (key-combo-define-local (kbd "&") '(" & " " && " "&")) ; maybe unary
+                (key-combo-define-local (kbd "&=") " &= ")
+                (key-combo-define-local (kbd "&&=") " &&= ")
+                (key-combo-define-local (kbd "|") '(" | " " || "))
+                (key-combo-define-local (kbd "|=") " |= ")
+                (key-combo-define-local (kbd "||=") " ||= ")
+                (key-combo-define-local (kbd "^") " ^ ")
+                (key-combo-define-local (kbd "^=") " ^= ")
+                ;; others
+                (key-combo-define-local (kbd "?") " ? ")
+                (key-combo-define-local (kbd ":") " : ")
+                (key-combo-define-local (kbd "->") "->")
+                (key-combo-define-local (kbd "/*") "/* `!!' */"))
+              ))
 
   (add-hook 'java-mode-hook 'my-java-style-init)
-
-  ;; *** keybinds
-
-  (define-key c-mode-map (kbd ",") nil)
-  (define-key c-mode-map (kbd "C-d") nil)
-  (define-key c-mode-map (kbd "C-M-a") nil)
-  (define-key c-mode-map (kbd "C-M-e") nil)
-  (define-key c-mode-map (kbd "M-e") nil)
-  (define-key c-mode-map (kbd "M-j") nil)
-  (define-key c-mode-map (kbd "C-M-h") nil)
-  (define-key c-mode-map (kbd "C-M-j") nil)
-
-  (defprepare "paredit"
-    (defprepare "cedit"
-      (define-key c-mode-map (kbd "M-)") 'cedit-or-paredit-slurp)
-      (define-key c-mode-map (kbd "M-(") 'cedit-or-paredit-wrap)
-      (define-key c-mode-map (kbd "M-*") 'cedit-or-paredit-barf)
-      (define-key c-mode-map (kbd "M-U") 'cedit-or-paredit-splice-killing-backward)
-      (define-key c-mode-map (kbd "M-R") 'cedit-or-paredit-raise)))
-
-  (define-key java-mode-map (kbd ",") nil)
-  (define-key java-mode-map (kbd "C-d") nil)
-  (define-key java-mode-map (kbd "C-M-a") nil)
-  (define-key java-mode-map (kbd "C-M-e") nil)
-  (define-key java-mode-map (kbd "M-e") nil)
-  (define-key java-mode-map (kbd "M-j") nil)
-  (define-key java-mode-map (kbd "C-M-h") nil)
-  (define-key java-mode-map (kbd "C-M-j") nil)
-
-  (defprepare "paredit"
-    (defprepare "cedit"
-      (define-key java-mode-map (kbd "M-)") 'cedit-or-paredit-slurp)
-      (define-key java-mode-map (kbd "M-(") 'cedit-or-paredit-wrap)
-      (define-key java-mode-map (kbd "M-*") 'cedit-or-paredit-barf)
-      (define-key java-mode-map (kbd "M-U") 'cedit-or-paredit-splice-killing-backward)
-      (define-key java-mode-map (kbd "M-R") 'cedit-or-paredit-raise)))
 
   ;; *** (sentinel)
   )
@@ -1287,6 +1315,8 @@
 ;; *** exchange-region
 
 (defvar exchange-pending-overlay nil)
+(make-variable-buffer-local 'exchange-pending-overlay)
+
 (defvar exchange-pending-face 'cursor)
 
 (defadvice keyboard-quit (after exchange-complete activate)
@@ -1539,19 +1569,6 @@ check for the whole contents of FILE, otherwise check for the first
       (hexl-find-file file)
     ad-do-it))
 
-;; ** hi-lock
-
-(defun hi-lock-rehighlight ()
-  (interactive)
-  (when (and (boundp 'hi-lock-interactive-patterns)
-             hi-lock-interactive-patterns)
-    (unhighlight-regexp (car (car hi-lock-interactive-patterns))))
-    (call-interactively 'highlight-regexp))
-
-;; ** hl-line
-
-(global-hl-line-mode)
-
 ;; ** hideshow
 
 (defpostload "hideshow"
@@ -1567,6 +1584,30 @@ check for the whole contents of FILE, otherwise check for the first
 
   (setq hs-set-up-overlay 'my-hs-display)
   )
+
+;; ** hi-lock
+
+(defun hi-lock-rehighlight ()
+  (interactive)
+  (when (and (boundp 'hi-lock-interactive-patterns)
+             hi-lock-interactive-patterns)
+    (unhighlight-regexp (car (car hi-lock-interactive-patterns))))
+    (call-interactively 'highlight-regexp))
+
+;; ** hl-line
+
+(global-hl-line-mode)
+
+;; ** html-mode
+
+(add-hook 'html-mode-hook
+          (lambda ()
+            (defprepare "key-combo"
+              (key-combo-define-local (kbd "<") '("<`!!'>" "<" "&lt;"))
+              (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
+              (key-combo-define-local (kbd ">") '(key-combo-execute-orignal "&gt;"))
+              (key-combo-define-local (kbd "&") '("&amp;" "&"))
+              )))
 
 ;; ** imenu
 
@@ -1649,8 +1690,30 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defpostload "lisp-mode"
 
-  (define-key emacs-lisp-mode-map (kbd "M-TAB") nil) ; align-entire
-  (define-key lisp-interaction-mode-map (kbd "C-j") nil) ; beginning-of-line
+  ;; *** lisp-mode common hook
+
+  (defconst my-lisp-mode-common-hook nil)
+
+  (dolist (hk '(lisp-mode-hook
+                emacs-lisp-mode-hook
+                lisp-interaction-mode-hook
+                inferior-gauche-mode-hook
+                scheme-mode-hook))
+    (add-hook hk (lambda () (run-hooks 'my-lisp-mode-common-hook))))
+
+  ;; *** settings
+
+  (add-hook my-lisp-mode-common-hook
+            (lambda ()
+              (local-set-key (kbd "M-TAB") nil)
+              (local-set-key (kbd "C-j") nil)
+              (defprepare "key-combo"
+                (key-combo-define-local (kbd ".") " . ")
+                (key-combo-define-local (kbd ";") ";; ")
+                (key-combo-define-local (kbd "=") '("=" "equal" "eq")))
+              ))
+
+  ;; *** (sentinel)
   )
 
 ;; * built-in libraries (mnopqrs)
@@ -1865,7 +1928,7 @@ check for the whole contents of FILE, otherwise check for the first
 ;; indent after open-line
 
 (defadvice open-line (after open-line-and-indent activate)
-  (save-excursion (forward-line) (beginning-of-line) (indent-according-to-mode)))
+  (save-excursion (forward-line) (indent-according-to-mode)))
 
 ;; **** kill-region / kill-ring-save
 
@@ -2130,7 +2193,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defconfig 'nurumacs
 
-  ;; (setq nurumacs-map nil)
+  (setq nurumacs-map nil)
 
   (add-to-list 'nurumacs-map-kill-commands
                'smart-split-window-vertically)
@@ -2144,7 +2207,8 @@ check for the whole contents of FILE, otherwise check for the first
 
   (defpostload "scratch-palette"
     (add-to-list 'nurumacs-map-kill-commands
-                 'scratch-palette)))
+                 'scratch-palette))
+  )
 
 ;; ** outlined-elisp-mode
 
@@ -2188,11 +2252,11 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** cedit
 
 (deflazyconfig
-  '(cedit-or-paredit-slurp
-    cedit-or-paredit-wrap
-    cedit-or-paredit-barf
-    cedit-or-paredit-splice-killing-backward
-    cedit-or-paredit-raise)"cedit")
+  '(cedit-slurp
+    cedit-wrap
+    cedit-barf
+    cedit-splice-killing-backward
+    cedit-raise)"cedit")
 
 ;; ** simple-demo
 
@@ -2241,8 +2305,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 (deflazyconfig '(ahk-mode) "ahk-mode"
   (define-key ahk-mode-map (kbd "C-j") nil)
-  (define-key ahk-mode-map (kbd "C-h") nil)
-  )
+  (define-key ahk-mode-map (kbd "C-h") nil))
 
 ;; ** anything
 ;; *** load hilit-chg for anything-changes
@@ -2282,7 +2345,10 @@ check for the whole contents of FILE, otherwise check for the first
                 (hilit-chg-set-face-on-change yas-snippet-beg yas-snippet-end 0)))
 
     ;; ***** (sentinel)
-    ))
+    )
+
+  ;; **** (sentinel)
+  )
 
 ;; *** anything
 
@@ -2509,7 +2575,7 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** autopair
 
 (defconfig 'autopair
-  (autopair-global-mode t))
+  (autopair-global-mode))
 
 ;; ** color-theme
 
@@ -2526,6 +2592,7 @@ check for the whole contents of FILE, otherwise check for the first
   (defpostload "highlight-parentheses" (diminish 'highlight-parentheses-mode "Hp"))
   (defpostload "outlined-elisp-mode" (diminish 'outlined-elisp-mode "Oe"))
   (defpostload "hilit-chg" (diminish 'highlight-changes-mode "Cg"))
+  (defpostload "page-break-lines" (diminish 'page-break-lines-mode "Pl"))
   )
 
 ;; ** dmacro
@@ -2653,8 +2720,59 @@ check for the whole contents of FILE, otherwise check for the first
 (deflazyconfig
   '(haskell-mode
     literate-haskell-mode) "haskell-mode"
-    (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-    (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode))
+
+    (add-hook 'haskell-mode-hook
+              (lambda ()
+                (turn-on-haskell-indentation)
+                (turn-on-haskell-doc-mode)
+                (defprepare "key-combo"
+                  ;; types
+                  (key-combo-define-local (kbd ":") '(":" " :: "))
+                  (key-combo-define-local (kbd "<-") " <- ")
+                  (key-combo-define-local (kbd "->") " -> ")
+                  (key-combo-define-local (kbd "=>") " => ")
+                  ;; boolean
+                  (key-combo-define-local (kbd "|") '(" | " " || " " ||| "))
+                  (key-combo-define-local (kbd "&&") '(" & " " && " " &&& "))
+                  ;; compare
+                  (key-combo-define-local (kbd "=") '(" = " " == "))
+                  (key-combo-define-local (kbd "/=") " /= ")
+                  (key-combo-define-local (kbd "<") '(" < " " << " " <<< "))
+                  (key-combo-define-local (kbd "<=") " <= ")
+                  (key-combo-define-local (kbd ">=") " >= ")
+                  ;; operation
+                  (key-combo-define-local (kbd "+") '(" + " " ++ " " +++ "))
+                  (key-combo-define-local (kbd "-") '(" - " "-")) ; maybe unary
+                  (key-combo-define-local (kbd "*") '(" * " " ** "))
+                  (key-combo-define-local (kbd "/") '(" / " " // "))
+                  (key-combo-define-local (kbd "%") " % ")
+                  (key-combo-define-local (kbd "^") '(" ^ " " ^^ "))
+                  ;; bits
+                  (key-combo-define-local (kbd ".|.") " .|. ")
+                  (key-combo-define-local (kbd ".&.") " .&. ")
+                  ;; list
+                  (key-combo-define-local (kbd ".") '(" . " ".."))
+                  (key-combo-define-local (kbd "!") '("!" " !! "))
+                  (key-combo-define-local (kbd "\\\\") " \\\\ ")
+                  ;; monad
+                  (key-combo-define-local (kbd ">>=") " >>= ")
+                  (key-combo-define-local (kbd "=<<") " =<< ")
+                  ;; arrow
+                  (key-combo-define-local (kbd "^>>") " ^>> ")
+                  (key-combo-define-local (kbd ">>^") " >>^ ")
+                  (key-combo-define-local (kbd "<<^") " <<^ ")
+                  (key-combo-define-local (kbd "^<<") " ^<< ")
+                  ;; sequence
+                  (key-combo-define-local (kbd "><") " >< ")
+                  (key-combo-define-local (kbd ":>") " :> ")
+                  (key-combo-define-local (kbd ":<") " :< ")
+                  ;; others
+                  (key-combo-define-local (kbd "?") " ? ")
+                  (key-combo-define-local (kbd "@") " @ ")
+                  (key-combo-define-local (kbd "~") " ~ ")
+                  (key-combo-define-local (kbd "$") " $ ")
+                  (key-combo-define-local (kbd "$!") " $! "))
+                )))
 
 ;; ** howm
 
@@ -2749,14 +2867,15 @@ check for the whole contents of FILE, otherwise check for the first
           ;; - reflesh menu
           (howm-menu)))))
 
-  ;; **** export schedule to dropbox
+  ;; **** export schedule to dropbox and kill howm
 
   (defvar howm-schedule-file-on-dropbox my:howm-export-file)
 
   (defun howm-schedule-export-to-file (filename)
     (with-temp-file filename
       (set-buffer-file-coding-system 'utf-8)
-      (insert (format "* Howm Schedule ~%s *\n"
+      (insert (format "* Howm Schedule %s ~ %s *\n"
+                      (howm-reminder-today)
                       (howm-reminder-today howm-menu-schedule-days)))
       (insert (howm-menu-reminder))
       (message "successfully exported")))
@@ -3007,6 +3126,11 @@ check for the whole contents of FILE, otherwise check for the first
       (setq this-command 'outline-cycle-toc)))
   )
 
+;; ** page-break-lines
+
+(defconfig 'page-break-lines
+  (global-page-break-lines-mode))
+
 ;; ** pager
 
 (deflazyconfig '(pager-page-down pager-page-up) "pager")
@@ -3014,16 +3138,17 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** paredit
 
 (deflazyconfig
-  '(paredit-splice-sexp-killing-backward
+  '(paredit-kill
+    paredit-newline
+    paredit-forward-barf-sexp
     paredit-wrap-round
     paredit-forward-slurp-sexp
-    paredit-forward-barf-sexp
-    paredit-kill
-    paredit-meta-doublequote
-    paredit-newline
     paredit-raise-sexp
+    paredit-splice-sexp-killing-backward
     paredit-split-sexp
-    paredit-join-sexps)
+    paredit-join-sexps
+    paredit-comment-dwim
+    paredit-meta-doublequote)
   "paredit")
 
 ;; ** popwin
@@ -3092,7 +3217,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defconfig 'redo+)
 
-;; ** scala mode
+;; ** scala-mode
 
 (defprepare "scala-mode"
   (setq auto-mode-alist
@@ -3435,6 +3560,7 @@ check for the whole contents of FILE, otherwise check for the first
 (global-set-key (kbd "M-p") 'eval-print-last-sexp)
 (global-set-key (kbd "M-x") 'execute-extended-command)
 (global-set-key (kbd "M-m") 'call-last-kbd-macro)
+(global-set-key (kbd "M-<f4>") 'save-buffers-kill-emacs)
 
 ;; Ctrl-x
 (global-set-key (kbd "C-x C-c") 'save-buffers-kill-emacs)
@@ -3741,12 +3867,14 @@ check for the whole contents of FILE, otherwise check for the first
 (define-prefix-command 'help-map)
 
 (global-set-key (kbd "<f1>") 'help-map)
-(global-set-key (kbd "<f1> b") 'describe-bindings)
-(global-set-key (kbd "<f1> k") 'describe-key)
-(global-set-key (kbd "<f1> m") 'describe-mode)
-(global-set-key (kbd "<f1> f") 'describe-function)
-(global-set-key (kbd "<f1> v") 'describe-variable)
-(global-set-key (kbd "<f1> a") 'describe-face)
+(global-set-key (kbd "M-?") 'help-map)
+
+(define-key 'help-map (kbd "b") 'describe-bindings)
+(define-key 'help-map (kbd "k") 'describe-key)
+(define-key 'help-map (kbd "m") 'describe-mode)
+(define-key 'help-map (kbd "f") 'describe-function)
+(define-key 'help-map (kbd "v") 'describe-variable)
+(define-key 'help-map (kbd "a") 'describe-face)
 
 ;; *** others
 
@@ -3778,6 +3906,7 @@ check for the whole contents of FILE, otherwise check for the first
 (global-set-key (kbd "C-x C-t") 'toggle-truncate-lines)
 (global-set-key (kbd "C-x C-p") 'toggle-read-only)
 (global-set-key (kbd "M-n") 'my-narrow-to-region-or-widen)
+(global-set-key (kbd "C-x C-=") 'text-scale-adjust)
 
 (defprepare "fold-dwim"
   (global-set-key (kbd "C-z") 'fold-dwim-toggle)
@@ -3800,15 +3929,11 @@ check for the whole contents of FILE, otherwise check for the first
   ;; Overwrite
   (defprepare "yasnippet"
     (key-chord-define-global "fj" 'yas-expand))
-
   )
 
 ;; ** keycombo
 
 (defpostload "key-combo"
-
-  (key-combo-define-global (kbd ",")
-                           '(", " ","))
 
   (key-combo-define-global (kbd "C-j")
                            '(back-to-indentation beginning-of-line))
@@ -3816,7 +3941,6 @@ check for the whole contents of FILE, otherwise check for the first
   (defprepare "yasnippet"
     (key-combo-define-global (kbd "C-M-w")
                              '(kill-ring-save yas-register-oneshot-snippet)))
-
   )
 
 ;; * vvvvvvv not currently used vvvvvvv
@@ -4103,4 +4227,5 @@ check for the whole contents of FILE, otherwise check for the first
 ;;   ;; ** (sentinel)
 ;;   )
 
+;; * *COMMENT* zencoding
 ;; * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
