@@ -41,8 +41,8 @@
 
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     |     |     |     |
-;;    |     |Write|Encod|Revrt|Trnct|     |     |Shell|BMSet|RdOly|     |     |
-;;       |     | Save|Dired|     |     |     |     |KilBf|CgLog|     |     |
+;;    |     |Write|Encod|Revrt|Trnct|     |     |Shell|     |RdOly|     |     |
+;;       |     | Save|Dired|     |     |     |BMSet|KilBf|CgLog|     |     |
 ;;          |     |     |Close|     |     |     |ExMcr|     |     |     |
 
 ;; nonconvert
@@ -70,8 +70,8 @@
 
 ;; key-chord
 ;;
-;; - fj : transpose-chars / ac-complete
-;; - gh : expand snippet
+;; - gh : transpose-chars
+;; - fj : expand snippet
 ;; - fn : downcase word
 ;; - fp : upcase word
 ;; - fm : capitalize word
@@ -371,11 +371,23 @@
 
 ;; *** downcase / upcase previous word
 
-(defun upcase-previous-word ()
-  (interactive) (upcase-word -1))
+(defvar my-up/downcase-count nil)
 
-(defun downcase-previous-word ()
-  (interactive) (downcase-word -1))
+(defun my-upcase-previous-word ()
+  (interactive)
+  (setq my-up/downcase-count
+        (if (equal last-command this-command)
+            (1- my-up/downcase-count)
+          -1))
+  (upcase-word my-up/downcase-count))
+
+(defun my-downcase-previous-word ()
+  (interactive)
+  (setq my-up/downcase-count
+        (if (equal last-command this-command)
+            (1- my-up/downcase-count)
+          -1))
+  (downcase-word my-up/downcase-count))
 
 ;; *** clear or create *scratch*
 
@@ -506,45 +518,6 @@
             (make-overlay (point) (1+ (point))))
       (overlay-put my-visible-register
                    'face my-visible-register-face))))
-
-;; *** exchange-region
-
-(defvar exchange-pending-overlay nil)
-(defvar exchange-pending-face 'cursor)
-
-(defadvice keyboard-quit (after exchange-complete activate)
-  (delete-overlay exchange-pending-overlay)
-  (setq exchange-pending-overlay nil))
-
-;; if you do not use cua, change this to "yank"
-(defadvice cua-paste (around exchange-start activate)
-  (if (and (interactive-p)
-           (eq last-command 'kill-region))
-      (progn
-        (setq exchange-pending-overlay
-              (make-overlay (point) (1+ (point))))
-        (overlay-put exchange-pending-overlay
-                     'face exchange-pending-face))
-    (progn
-      (when exchange-pending-overlay
-        (delete-overlay exchange-pending-overlay)
-        (setq exchange-pending-overlay nil))
-      ad-do-it)))
-
-;; if you do not use cua, change this to "kill-region"
-(defadvice cua-cut-region (around exchange-exec activate)
-  (if (not (and (interactive-p) transient-mark-mode mark-active
-                exchange-pending-overlay))
-      ad-do-it
-    (let* ((str (buffer-substring (region-beginning) (region-end)))
-           (point (+ (region-beginning) (length str))))
-      (delete-region (region-beginning) (region-end))
-      (goto-char (overlay-start exchange-pending-overlay))
-      (delete-overlay exchange-pending-overlay)
-      (setq exchange-pending-overlay nil)
-      (insert str)
-      (goto-char point)
-      (setq this-command 'kill-region))))
 
 ;; ** other utilities
 
@@ -1304,12 +1277,62 @@
 (setq cua-enable-cua-keys nil)
 (cua-mode 1)
 
-;; a hack to disable shift-region
+;; *** disable shift-region
 
 (defadvice cua--pre-command-handler-1 (around cua-disable-shift-region activate)
   (flet ((this-single-command-raw-keys () nil))
     (let ((window-system t))
       ad-do-it)))
+
+;; *** exchange-region
+
+(defvar exchange-pending-overlay nil)
+(defvar exchange-pending-face 'cursor)
+
+(defadvice keyboard-quit (after exchange-complete activate)
+  (delete-overlay exchange-pending-overlay)
+  (setq exchange-pending-overlay nil))
+
+;; if you do not use cua, advice "yank" instead
+(defadvice cua-paste (around exchange-start activate)
+  (if (and (interactive-p)
+           (eq last-command 'kill-region))
+      (progn
+        (setq exchange-pending-overlay
+              (make-overlay (point) (1+ (point))))
+        (overlay-put exchange-pending-overlay
+                     'face exchange-pending-face))
+    (progn
+      (when exchange-pending-overlay
+        (delete-overlay exchange-pending-overlay)
+        (setq exchange-pending-overlay nil))
+      ad-do-it)))
+
+;; if you do not use cua, advice "kill-region" instead
+(defadvice cua-cut-region (around exchange-exec activate)
+  (if (not (and (interactive-p) transient-mark-mode mark-active
+                exchange-pending-overlay))
+      ad-do-it
+    (let* ((str (buffer-substring (region-beginning) (region-end)))
+           (pending-pos (overlay-start exchange-pending-overlay))
+           (pos (+ (region-beginning)
+                   (if (< pending-pos (point)) (length str) 0))))
+      (delete-region (region-beginning) (region-end))
+      (goto-char (overlay-start exchange-pending-overlay))
+      (delete-overlay exchange-pending-overlay)
+      (setq exchange-pending-overlay nil)
+      (insert str)
+      (goto-char pos)
+      (setq this-command 'kill-region))))
+
+;; *** exchange-point-and-mark
+
+;; if do not use cua, advice "set-mark-command" instead
+(defadvice cua-set-mark (around exchange-on-secont-set-mark activate)
+  (if (not (and (interactive-p) transient-mark-mode mark-active))
+      ad-do-it
+    (setq this-command 'exchange-point-and-mark)
+    (call-interactively 'exchange-point-and-mark)))
 
 ;; ** delsel
 
@@ -2480,11 +2503,6 @@ check for the whole contents of FILE, otherwise check for the first
   (setq ac-auto-show-menu 0.8)
   (setq ac-disable-faces nil)
 
-  ;; *** additional bindings
-
-  (defpostload "key-chord"
-    (key-chord-define ac-completing-map "fj" 'ac-expand))
-
   ;; *** (sentinel)
   )
 
@@ -3344,7 +3362,7 @@ check for the whole contents of FILE, otherwise check for the first
 
     (define-key yas-keymap (kbd "TAB") nil) ; auto-complete
     (define-key yas-keymap (kbd "<tab>") nil) ; auto-complete
-    (key-chord-define yas-keymap "gh" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "fj" 'yas-next-field-or-maybe-expand)
 
     ;; **** (sentinel)
     )
@@ -3353,7 +3371,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defconfig 'zlc)
 
-;; * keybinds
+;; * global keybindings
 ;; ** keyboard translations
 
 ;; by default ...
@@ -3774,14 +3792,14 @@ check for the whole contents of FILE, otherwise check for the first
 (defpostload "key-chord"
 
   ;; Default
-  (key-chord-define-global "fj" 'backward-transpose-chars)
-  (key-chord-define-global "fn" 'downcase-previous-word)
-  (key-chord-define-global "fp" 'upcase-previous-word)
+  (key-chord-define-global "gh" 'backward-transpose-chars)
+  (key-chord-define-global "fn" 'my-downcase-previous-word)
+  (key-chord-define-global "fp" 'my-upcase-previous-word)
   (key-chord-define-global "fm" 'capitalize-word)
 
   ;; Overwrite
   (defprepare "yasnippet"
-    (key-chord-define-global "gh" 'yas-expand))
+    (key-chord-define-global "fj" 'yas-expand))
 
   )
 
@@ -4055,34 +4073,34 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; * *COMMENT* bm
 
-(deflazyconfig '(bm-toggle) "bm"
+;; (deflazyconfig '(bm-toggle) "bm"
 
-  ;; ** bm-repogitory
+;;   ;; ** bm-repogitory
 
-  (setq bm-repository-file my:bm-repository-file)
+;;   (setq bm-repository-file my:bm-repository-file)
 
-  ;; ** change style
+;;   ;; ** change style
 
-  (setq bm-highlight-style 'bm-highlight-only-fringe)
+;;   (setq bm-highlight-style 'bm-highlight-only-fringe)
 
-  ;; ** automatically save bookmarks
+;;   ;; ** automatically save bookmarks
 
-  (setq-default bm-buffer-persistence t)
+;;   (setq-default bm-buffer-persistence t)
 
-  (add-hook 'kill-buffer-hook 'bm-buffer-save)
+;;   (add-hook 'kill-buffer-hook 'bm-buffer-save)
 
-  (add-hook 'kill-emacs-hook
-            (lambda () (bm-buffer-save-all) (bm-repository-save)))
+;;   (add-hook 'kill-emacs-hook
+;;             (lambda () (bm-buffer-save-all) (bm-repository-save)))
 
-  ;; ** automatically restore bookmarks
+;;   ;; ** automatically restore bookmarks
 
-  (setq bm-restore-repository-on-load t)
-  (add-hook 'after-init-hook 'bm-repository-load)
+;;   (setq bm-restore-repository-on-load t)
+;;   (add-hook 'after-init-hook 'bm-repository-load)
 
-  (add-hook 'find-file-hook 'bm-buffer-restore)
-  (add-hook 'after-revert-hook 'bm-buffer-restore)
+;;   (add-hook 'find-file-hook 'bm-buffer-restore)
+;;   (add-hook 'after-revert-hook 'bm-buffer-restore)
 
-  ;; ** (sentinel)
-  )
+;;   ;; ** (sentinel)
+;;   )
 
 ;; * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
