@@ -1260,7 +1260,7 @@
                   (local-set-key (kbd "M-*") 'cedit-or-paredit-barf)
                   (local-set-key (kbd "M-U") 'cedit-or-paredit-splice-killing-backward)
                   (local-set-key (kbd "M-R") 'cedit-or-paredit-raise)))
-              (defprepare "key-combo"
+              (defpostload "key-combo"
                 ;; add / sub / mul / div
                 (key-combo-define-local (kbd "+") '(" + " "++"))
                 (key-combo-define-local (kbd "+=") " += ")
@@ -1289,8 +1289,7 @@
                 (key-combo-define-local (kbd "^") " ^ ")
                 (key-combo-define-local (kbd "^=") " ^= ")
                 ;; others
-                (key-combo-define-local (kbd "?") " ? ")
-                (key-combo-define-local (kbd ":") " : ")
+                (key-combo-define-local (kbd "?") " ? `!!' : ")
                 (key-combo-define-local (kbd "->") "->")
                 (key-combo-define-local (kbd "/*") "/* `!!' */"))
               ))
@@ -1602,7 +1601,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 (add-hook 'html-mode-hook
           (lambda ()
-            (defprepare "key-combo"
+            (defpostload "key-combo"
               (key-combo-define-local (kbd "<") '("<`!!'>" "<" "&lt;"))
               (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
               (key-combo-define-local (kbd ">") '(key-combo-execute-orignal "&gt;"))
@@ -1651,18 +1650,26 @@ check for the whole contents of FILE, otherwise check for the first
 ;; *** utilities
 
 (defun my-beginning-of-sexp-p ()
-  (= (point)
-     (save-excursion
-       (if (condition-case err (forward-sexp) (error t))
-           -1
-         (backward-sexp) (point)))))
+  (let ((quick-syntax-info (syntax-ppss)))
+    (and
+     (not (nth 3 quick-syntax-info))    ; outside string literal
+     (not (nth 4 quick-syntax-info))    ; outside comment
+     (= (point)
+        (save-excursion
+          (if (condition-case err (forward-sexp) (error t))
+              -1
+            (backward-sexp) (point)))))))
 
 (defun my-end-of-sexp-p ()
-  (= (point)
-     (save-excursion
-       (if (condition-case err (backward-sexp) (error t))
-           -1
-         (forward-sexp) (point)))))
+  (let ((quick-syntax-info (syntax-ppss)))
+    (and
+     (not (nth 3 quick-syntax-info))    ; outside string literal
+     (not (nth 4 quick-syntax-info))    ; outside comment
+     (= (point)
+        (save-excursion
+          (if (condition-case err (backward-sexp) (error t))
+              -1
+            (forward-sexp) (point)))))))
 
 ;; *** commands
 
@@ -1690,24 +1697,25 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defpostload "lisp-mode"
 
-  ;; *** lisp-mode common hook
+  ;; *** lisp mode common variables
 
-  (defconst my-lisp-mode-common-hook nil)
+  (defconst my-lisp-modes
+    '(lisp-mode emacs-lisp-mode lisp-interaction-mode
+                inferior-gauche-mode scheme-mode))
 
-  (dolist (hk '(lisp-mode-hook
-                emacs-lisp-mode-hook
-                lisp-interaction-mode-hook
-                inferior-gauche-mode-hook
-                scheme-mode-hook))
+  (defvar my-lisp-mode-common-hook nil)
+
+  (dolist (hk (mapcar (lambda (s) (intern (concat (symbol-name s) "-hook")))
+                      my-lisp-modes))
     (add-hook hk (lambda () (run-hooks 'my-lisp-mode-common-hook))))
 
   ;; *** settings
 
-  (add-hook my-lisp-mode-common-hook
+  (add-hook 'my-lisp-mode-common-hook
             (lambda ()
               (local-set-key (kbd "M-TAB") nil)
               (local-set-key (kbd "C-j") nil)
-              (defprepare "key-combo"
+              (defpostload "key-combo"
                 (key-combo-define-local (kbd ".") " . ")
                 (key-combo-define-local (kbd ";") ";; ")
                 (key-combo-define-local (kbd "=") '("=" "equal" "eq")))
@@ -2276,6 +2284,17 @@ check for the whole contents of FILE, otherwise check for the first
 
 (deflazyconfig '(ace-jump-word-mode) "ace-jump-mode")
 
+;; ** ahk-mode
+
+(defprepare "ahk-mode"
+  (setq auto-mode-alist
+        (append auto-mode-alist
+                '( ("\\.ahk$" . ahk-mode) ))))
+
+(deflazyconfig '(ahk-mode) "ahk-mode"
+  (define-key ahk-mode-map (kbd "C-j") nil)
+  (define-key ahk-mode-map (kbd "C-h") nil))
+
 ;; ** all
 
 (defprepare "all"
@@ -2303,17 +2322,6 @@ check for the whole contents of FILE, otherwise check for the first
       (interactive) (forward-line -1)
       (save-selected-window (all-mode-goto))))
   )
-
-;; ** ahk-mode
-
-(defprepare "ahk-mode"
-  (setq auto-mode-alist
-        (append auto-mode-alist
-                '( ("\\.ahk$" . ahk-mode) ))))
-
-(deflazyconfig '(ahk-mode) "ahk-mode"
-  (define-key ahk-mode-map (kbd "C-j") nil)
-  (define-key ahk-mode-map (kbd "C-h") nil))
 
 ;; ** anything
 ;; *** load hilit-chg for anything-changes
@@ -2583,7 +2591,26 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** autopair
 
 (defconfig 'autopair
-  (autopair-global-mode))
+
+  (autopair-global-mode 1)
+
+  ;; fix for c-like languages
+  (defpostload "cc-mode"
+    (add-hook 'c-mode-common-hook
+              (lambda ()
+                (push '(?? . ?:)
+                      (getf autopair-extra-pairs :code)))))
+
+  ;; automatically insert " " for lisp-like languages
+  (defadvice autopair-insert-opening (after autopair-autospace-for-lisp activate)
+    ;; closing paren is inserted in "post-command-hook"
+    ;; (so it is not inserted now)
+    (cond ((member major-mode my-lisp-modes)
+           (when (save-excursion (backward-char) (my-end-of-sexp-p))
+             (save-excursion (backward-char) (insert " ")))
+           (when (my-beginning-of-sexp-p)
+             (save-excursion (insert " "))))))
+  )
 
 ;; ** color-theme
 
@@ -2733,7 +2760,7 @@ check for the whole contents of FILE, otherwise check for the first
               (lambda ()
                 (turn-on-haskell-indentation)
                 (turn-on-haskell-doc-mode)
-                (defprepare "key-combo"
+                (defpostload "key-combo"
                   ;; types
                   (key-combo-define-local (kbd ":") '(":" " :: "))
                   (key-combo-define-local (kbd "<-") " <- ")
