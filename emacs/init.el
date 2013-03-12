@@ -30,7 +30,7 @@
 ;; M-_
 ;; |AlWnd|VrWnd|HrWnd|Blnce|Follw|     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
 ;;    |Scrtc|Palet| Eval|Slice|Table|YankP|Untab|ShCmd|Opcty|EvalP|     |     |
-;;       |Artst|Sarch| Dir | File| Grep|Headr|BMJmp|KlWnd| Goto|     |     |
+;;       |Artst|Sarch| Dir | File| Grep|Shrnk|BMJmp|KlWnd| Goto|     |     |
 ;;          |     |Comnd|Cmpil| VReg|Buffr|Narrw|DMcro| Howm|     |     |
 
 ;; M-Shift-
@@ -42,7 +42,7 @@
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     |Scale|     |     |
 ;;    |     |Write|Encod|Revrt|Trnct|     |     |Shell|     |RdOly|     |     |
-;;       |     | Save|Dired|     |     |     |BMSet|KilBf|CgLog|     |     |
+;;       |     | Save|Dired|     |     |Headr|BMSet|KilBf|CgLog|     |     |
 ;;          |     |     |Close|     |     |     |ExMcr|     |     |     |
 
 ;; nonconvert
@@ -451,9 +451,12 @@
 
 (defun my-smart-comma ()
   (interactive)
-  (if (equal last-command 'my-smart-comma)
-      (delete-char -1)
-    (insert ", ")))
+  (cond ((not (eq last-command 'my-smart-comma))
+         (insert ", "))
+        ((= (char-before) ?\s)
+         (delete-char -1))
+        (t
+         (insert " "))))
 
 ;; *** retop
 
@@ -527,6 +530,52 @@
             (make-overlay (point) (1+ (point))))
       (overlay-put my-visible-register
                    'face my-visible-register-face))))
+
+;; *** shrink-spaces
+
+(defun my-shrink-whitespaces ()
+  (interactive)
+  (cond
+   ;; shrink newlines
+   ((= (save-excursion (beginning-of-line) (point))
+       (save-excursion (end-of-line) (point)))
+    (skip-chars-backward "\s\t\n")
+    (delete-region (point)
+                   (progn (skip-chars-forward "\s\t\n") (point)))
+    (insert "\n")
+    (when (char-after) (save-excursion (insert "\n"))))
+   ;; shrink spaces
+   (t
+    (skip-chars-backward "\s\t")
+    (delete-region (point)
+                   (progn (skip-chars-forward "\s\t") (point)))
+    (insert " "))))
+
+;; *** url-encode
+
+(defun my-url-encode-string (str &optional sys)
+  (let ((sys (or sys 'utf-8)))
+    (url-hexify-string (encode-coding-string str sys))))
+
+(defun my-url-decode-string (str &optional sys)
+  (let ((sys (or sys 'utf-8)))
+    (decode-coding-string (url-unhex-string str) sys)))
+
+(defun my-url-decode-region (beg end)
+  (interactive "r")
+  (let ((pos beg)
+        (str (buffer-substring beg end)))
+    (goto-char beg)
+    (delete-region beg end)
+    (insert (my-url-decode-string str 'utf-8))))
+
+(defun my-url-encode-region (beg end)
+  (interactive "r")
+  (let ((pos beg)
+        (str (buffer-substring beg end)))
+    (goto-char beg)
+    (delete-region beg end)
+    (insert (my-url-encode-string str 'utf-8))))
 
 ;; ** other utilities
 
@@ -1248,51 +1297,7 @@
               (local-set-key (kbd "M-e") nil)
               (local-set-key (kbd "M-j") nil)
               (local-set-key (kbd "C-M-h") nil)
-              (local-set-key (kbd "C-M-j") nil)
-              (defprepare "cedit"
-                (local-set-key (kbd "M-)") 'cedit-slurp)
-                (local-set-key (kbd "M-{") 'cedit-wrap-brace)
-                (local-set-key (kbd "M-*") 'cedit-barf)
-                (local-set-key (kbd "M-U") 'cedit-splice-killing-backward)
-                (local-set-key (kbd "M-R") 'cedit-raise)
-                (defprepare "paredit"
-                  (local-set-key (kbd "M-)") 'cedit-or-paredit-slurp)
-                  (local-set-key (kbd "M-*") 'cedit-or-paredit-barf)
-                  (local-set-key (kbd "M-U") 'cedit-or-paredit-splice-killing-backward)
-                  (local-set-key (kbd "M-R") 'cedit-or-paredit-raise)))
-              (defpostload "key-combo"
-                ;; add / sub / mul / div
-                (key-combo-define-local (kbd "+") '(" + " "++"))
-                (key-combo-define-local (kbd "+=") " += ")
-                (key-combo-define-local (kbd "-") '(" - " "--" "-")) ; maybe unary
-                (key-combo-define-local (kbd "-=") " -= ")
-                (key-combo-define-local (kbd "*") '(" * " "*")) ; maybe unary
-                (key-combo-define-local (kbd "*=") " *= ")
-                (key-combo-define-local (kbd "/") " / ")
-                (key-combo-define-local (kbd "/=") " /= ")
-                (key-combo-define-local (kbd "%") " % ")
-                (key-combo-define-local (kbd "%=") " %= ")
-                ;; compare
-                (key-combo-define-local (kbd ">") '(" > " " >> "))
-                (key-combo-define-local (kbd ">=") " >= ")
-                (key-combo-define-local (kbd "<") '(" < " " << "))
-                (key-combo-define-local (kbd "<=") " <= ")
-                (key-combo-define-local (kbd "=") '(" = " " == "))
-                (key-combo-define-local (kbd "!=") " != ")
-                ;; logical / bitwise
-                (key-combo-define-local (kbd "&") '(" & " " && " "&")) ; maybe unary
-                (key-combo-define-local (kbd "&=") " &= ")
-                (key-combo-define-local (kbd "&&=") " &&= ")
-                (key-combo-define-local (kbd "|") '(" | " " || "))
-                (key-combo-define-local (kbd "|=") " |= ")
-                (key-combo-define-local (kbd "||=") " ||= ")
-                (key-combo-define-local (kbd "^") " ^ ")
-                (key-combo-define-local (kbd "^=") " ^= ")
-                ;; others
-                (key-combo-define-local (kbd "?") " ? `!!' : ")
-                (key-combo-define-local (kbd "->") "->")
-                (key-combo-define-local (kbd "/*") "/* `!!' */"))
-              ))
+              (local-set-key (kbd "C-M-j") nil)))
 
   (add-hook 'java-mode-hook 'my-java-style-init)
 
@@ -1311,18 +1316,20 @@
     (let ((window-system t))
       ad-do-it)))
 
-;; *** exchange-region
+;; *** advices for cua commands
 
-(defvar exchange-pending-overlay nil)
-(make-variable-buffer-local 'exchange-pending-overlay)
+;; see also -> simple.el settings
 
-(defvar exchange-pending-face 'cursor)
+;; auto-indent on yank
 
-(defadvice keyboard-quit (after exchange-complete activate)
-  (delete-overlay exchange-pending-overlay)
-  (setq exchange-pending-overlay nil))
+(defadvice cua-paste (around auto-indent-on-yank activate)
+  (if (member major-mode my-auto-indent-inhibit-modes)
+      ad-do-it
+    (indent-region (point)
+                   (progn ad-do-it (point)))))
 
-;; if you do not use cua, advice "yank" instead
+;; exchange-region triggers
+
 (defadvice cua-paste (around exchange-start activate)
   (if (and (interactive-p)
            (eq last-command 'kill-region))
@@ -1337,7 +1344,6 @@
         (setq exchange-pending-overlay nil))
       ad-do-it)))
 
-;; if you do not use cua, advice "kill-region" instead
 (defadvice cua-cut-region (around exchange-exec activate)
   (if (not (and (interactive-p) transient-mark-mode mark-active
                 exchange-pending-overlay))
@@ -1354,10 +1360,9 @@
       (goto-char pos)
       (setq this-command 'kill-region))))
 
-;; *** exchange-point-and-mark
+;; exchange-point-and-mark on set-mark-command
 
-;; if do not use cua, advice "set-mark-command" instead
-(defadvice cua-set-mark (around exchange-on-secont-set-mark activate)
+(defadvice cua-set-mark (around auto-exchange-mark-and-point activate)
   (if (not (and (interactive-p) transient-mark-mode mark-active))
       ad-do-it
     (setq this-command 'exchange-point-and-mark)
@@ -1597,17 +1602,6 @@ check for the whole contents of FILE, otherwise check for the first
 
 (global-hl-line-mode)
 
-;; ** html-mode
-
-(add-hook 'html-mode-hook
-          (lambda ()
-            (defpostload "key-combo"
-              (key-combo-define-local (kbd "<") '("<`!!'>" "<" "&lt;"))
-              (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
-              (key-combo-define-local (kbd ">") '(key-combo-execute-orignal "&gt;"))
-              (key-combo-define-local (kbd "&") '("&amp;" "&"))
-              )))
-
 ;; ** imenu
 
 (setq imenu-auto-rescan t)
@@ -1714,12 +1708,7 @@ check for the whole contents of FILE, otherwise check for the first
   (add-hook 'my-lisp-mode-common-hook
             (lambda ()
               (local-set-key (kbd "M-TAB") nil)
-              (local-set-key (kbd "C-j") nil)
-              (defpostload "key-combo"
-                (key-combo-define-local (kbd ".") " . ")
-                (key-combo-define-local (kbd ";") ";; ")
-                (key-combo-define-local (kbd "=") '("=" "equal" "eq")))
-              ))
+              (local-set-key (kbd "C-j") nil)))
 
   ;; *** (sentinel)
   )
@@ -1991,6 +1980,81 @@ check for the whole contents of FILE, otherwise check for the first
                       (progn ad-do-it (buffer-string))))
     (message "trailing whitespace deleted")))
 
+;; **** yank
+
+;; auto-indent on yank
+;; see also -> cua.el settings
+
+(defvar my-auto-indent-inhibit-modes
+  '(fundamental-mode org-mode text-mode))
+
+(defadvice yank (around auto-indent-on-yank activate)
+  (if (member major-mode my-auto-indent-inhibit-modes)
+      ad-do-it
+    (indent-region (point)
+                   (progn ad-do-it (point)))))
+
+;; **** set-mark-command
+
+;; exchange-point-and-mark with set-mark-command
+;; see also -> cua.el settings
+
+(defadvice set-mark-command (around auto-exchange-mark-and-point activate)
+  (if (not (and (interactive-p) transient-mark-mode mark-active))
+      ad-do-it
+    (setq this-command 'exchange-point-and-mark)
+    (call-interactively 'exchange-point-and-mark)))
+
+;; **** kill-line
+
+;; shrink spacess on kill-line
+;; reference | http://www.emacswiki.org/emacs/AutoIndentation
+
+(defadvice kill-line (before kill-line-and-indentation activate)
+  (when (and (eolp) (not (bolp)))
+    (forward-char 1)
+    (just-one-space 0)
+    (backward-char 1)))
+
+;; *** exchange-region
+
+;; see also -> cua.el settings
+
+(defvar exchange-pending-overlay nil)
+(make-variable-buffer-local 'exchange-pending-overlay)
+
+(defvar exchange-pending-face 'cursor)
+
+(defadvice yank (around exchange-start activate)
+  (if (and (interactive-p)
+           (eq last-command 'kill-region))
+      (progn
+        (setq exchange-pending-overlay
+              (make-overlay (point) (1+ (point))))
+        (overlay-put exchange-pending-overlay
+                     'face exchange-pending-face))
+    (progn
+      (when exchange-pending-overlay
+        (delete-overlay exchange-pending-overlay)
+        (setq exchange-pending-overlay nil))
+      ad-do-it)))
+
+(defadvice kill-region (around exchange-exec activate)
+  (if (not (and (interactive-p) transient-mark-mode mark-active
+                exchange-pending-overlay))
+      ad-do-it
+    (let* ((str (buffer-substring (region-beginning) (region-end)))
+           (pending-pos (overlay-start exchange-pending-overlay))
+           (pos (+ (region-beginning)
+                   (if (< pending-pos (point)) (length str) 0))))
+      (delete-region (region-beginning) (region-end))
+      (goto-char (overlay-start exchange-pending-overlay))
+      (delete-overlay exchange-pending-overlay)
+      (setq exchange-pending-overlay nil)
+      (insert str)
+      (goto-char pos)
+      (setq this-command 'kill-region))))
+
 ;; *** backward transpose
 
 (defun backward-transpose-words ()
@@ -2201,8 +2265,6 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defconfig 'nurumacs
 
-  (setq nurumacs-map nil)
-
   (add-to-list 'nurumacs-map-kill-commands
                'smart-split-window-vertically)
 
@@ -2249,30 +2311,38 @@ check for the whole contents of FILE, otherwise check for the first
     )
 
 (defprepare "electric-case"
+
   (defpostload "cc-mode"
     (add-hook 'c-mode-hook 'electric-case-c-init)
     (add-hook 'java-mode-hook 'electric-case-java-init))
+
   (defpostload "scala-mode"
     (add-hook 'scala-mode-hook 'electric-case-scala-init))
+
   (defpostload "ahk-mode"
-    (add-hook 'ahk-mode-hook 'electric-case-ahk-init)))
+    (add-hook 'ahk-mode-hook 'electric-case-ahk-init))
+  )
 
 ;; ** cedit
 
-(deflazyconfig
-  '(cedit-slurp
-    cedit-wrap-brace
-    cedit-barf
-    cedit-splice-killing-backward
-    cedit-raise) "cedit")
-
 (defprepare "paredit"
+
+  (defprepare "cedit"
+    (add-hook 'c-mode-common-hook
+              (lambda ()
+                (local-set-key (kbd "M-)") 'cedit-or-paredit-slurp)
+                (local-set-key (kbd "M-{") 'cedit-wrap-brace)
+                (local-set-key (kbd "M-*") 'cedit-or-paredit-barf)
+                (local-set-key (kbd "M-U") 'cedit-or-paredit-splice-killing-backward)
+                (local-set-key (kbd "M-R") 'cedit-or-paredit-raise))))
+
   (deflazyconfig
     '(cedit-or-paredit-slurp
       cedit-or-paredit-wrap
       cedit-or-paredit-barf
       cedit-or-paredit-splice-killing-backward
-      cedit-or-paredit-raise) "cedit"))
+      cedit-or-paredit-raise) "cedit")
+  )
 
 ;; ** simple-demo
 
@@ -2594,14 +2664,7 @@ check for the whole contents of FILE, otherwise check for the first
 
   (autopair-global-mode 1)
 
-  ;; fix for c-like languages
-  (defpostload "cc-mode"
-    (add-hook 'c-mode-common-hook
-              (lambda ()
-                (push '(?? . ?:)
-                      (getf autopair-extra-pairs :code)))))
-
-  ;; automatically insert " " for lisp-like languages
+  ;; automatically insert " " around sexps
   (defadvice autopair-insert-opening (after autopair-autospace-for-lisp activate)
     ;; closing paren is inserted in "post-command-hook"
     ;; (so it is not inserted now)
@@ -2759,55 +2822,7 @@ check for the whole contents of FILE, otherwise check for the first
     (add-hook 'haskell-mode-hook
               (lambda ()
                 (turn-on-haskell-indentation)
-                (turn-on-haskell-doc-mode)
-                (defpostload "key-combo"
-                  ;; types
-                  (key-combo-define-local (kbd ":") '(":" " :: "))
-                  (key-combo-define-local (kbd "<-") " <- ")
-                  (key-combo-define-local (kbd "->") " -> ")
-                  (key-combo-define-local (kbd "=>") " => ")
-                  ;; boolean
-                  (key-combo-define-local (kbd "|") '(" | " " || " " ||| "))
-                  (key-combo-define-local (kbd "&&") '(" & " " && " " &&& "))
-                  ;; compare
-                  (key-combo-define-local (kbd "=") '(" = " " == "))
-                  (key-combo-define-local (kbd "/=") " /= ")
-                  (key-combo-define-local (kbd "<") '(" < " " << " " <<< "))
-                  (key-combo-define-local (kbd "<=") " <= ")
-                  (key-combo-define-local (kbd ">=") " >= ")
-                  ;; operation
-                  (key-combo-define-local (kbd "+") '(" + " " ++ " " +++ "))
-                  (key-combo-define-local (kbd "-") '(" - " "-")) ; maybe unary
-                  (key-combo-define-local (kbd "*") '(" * " " ** "))
-                  (key-combo-define-local (kbd "/") '(" / " " // "))
-                  (key-combo-define-local (kbd "%") " % ")
-                  (key-combo-define-local (kbd "^") '(" ^ " " ^^ "))
-                  ;; bits
-                  (key-combo-define-local (kbd ".|.") " .|. ")
-                  (key-combo-define-local (kbd ".&.") " .&. ")
-                  ;; list
-                  (key-combo-define-local (kbd ".") '(" . " ".."))
-                  (key-combo-define-local (kbd "!") '("!" " !! "))
-                  (key-combo-define-local (kbd "\\\\") " \\\\ ")
-                  ;; monad
-                  (key-combo-define-local (kbd ">>=") " >>= ")
-                  (key-combo-define-local (kbd "=<<") " =<< ")
-                  ;; arrow
-                  (key-combo-define-local (kbd "^>>") " ^>> ")
-                  (key-combo-define-local (kbd ">>^") " >>^ ")
-                  (key-combo-define-local (kbd "<<^") " <<^ ")
-                  (key-combo-define-local (kbd "^<<") " ^<< ")
-                  ;; sequence
-                  (key-combo-define-local (kbd "><") " >< ")
-                  (key-combo-define-local (kbd ":>") " :> ")
-                  (key-combo-define-local (kbd ":<") " :< ")
-                  ;; others
-                  (key-combo-define-local (kbd "?") " ? ")
-                  (key-combo-define-local (kbd "@") " @ ")
-                  (key-combo-define-local (kbd "~") " ~ ")
-                  (key-combo-define-local (kbd "$") " $ ")
-                  (key-combo-define-local (kbd "$!") " $! "))
-                )))
+                (turn-on-haskell-doc-mode))))
 
 ;; ** howm
 
@@ -2997,7 +3012,135 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** key-combo
 
 (defconfig 'key-combo
-  (key-combo-mode 1))
+
+  (key-combo-mode 1)
+
+  ;; *** smartchr for c-like languages
+
+  (defpostload "cc-mode"
+    (add-hook 'c-mode-common-hook
+              (lambda ()
+                ;; add / sub / mul / div
+                (key-combo-define-local (kbd "+") '(" + " "++"))
+                (key-combo-define-local (kbd "+=") " += ")
+                ;; vv conflict with electric-case vv
+                ;; (key-combo-define-local (kbd "-") '(" - " "--" "-"))
+                (key-combo-define-local (kbd "-=") " -= ")
+                (key-combo-define-local (kbd "*") " * ")
+                (key-combo-define-local (kbd "*=") " *= ")
+                (key-combo-define-local (kbd "/") " / ")
+                (key-combo-define-local (kbd "/=") " /= ")
+                (key-combo-define-local (kbd "%") " % ")
+                (key-combo-define-local (kbd "%=") " %= ")
+                ;; compare
+                (key-combo-define-local (kbd ">") '(" > " " >> "))
+                (key-combo-define-local (kbd ">=") " >= ")
+                (key-combo-define-local (kbd "<") '(" < " " << "))
+                (key-combo-define-local (kbd "<=") " <= ")
+                (key-combo-define-local (kbd "=") '(" = " " == "))
+                (key-combo-define-local (kbd "!=") " != ")
+                ;; logical / bitwise
+                (key-combo-define-local (kbd "&") '(" & " " && "))
+                (key-combo-define-local (kbd "&=") " &= ")
+                (key-combo-define-local (kbd "&&=") " &&= ")
+                (key-combo-define-local (kbd "|") '(" | " " || "))
+                (key-combo-define-local (kbd "|=") " |= ")
+                (key-combo-define-local (kbd "||=") " ||= ")
+                (key-combo-define-local (kbd "^") " ^ ")
+                (key-combo-define-local (kbd "^=") " ^= ")
+                ;; others
+                (key-combo-define-local (kbd "?") '( " ? `!!' : " "?"))
+                (key-combo-define-local (kbd "/*") "/* `!!' */")))
+    (add-hook 'c-mode-hook
+              (lambda ()
+                ;; pointers
+                (key-combo-define-local (kbd "&") '(" & " " && " "&"))
+                (key-combo-define-local (kbd "*") '(" * " "*"))
+                (key-combo-define-local (kbd "->") "->")
+                ;; include
+                (key-combo-define-local (kbd "<") '(" < " " << " "<"))
+                (key-combo-define-local (kbd ">") '(" > " " >> " ">"))))
+    (add-hook 'java-mode-hook
+              (lambda ()
+                ;; javadoc comment
+                (key-combo-define-local (kbd "/**") "/**\n`!!'\n*/")
+                ;; one-liner comment
+                (key-combo-define-local (kbd "/") '(" / " "//"))
+                ;; ad-hoc polymorphism
+                (key-combo-define-local (kbd "<") '(" < " "<" " << "))
+                (key-combo-define-local (kbd ">") '(" > " ">" " >> ")))))
+
+  ;; *** smartchr for lisp-like languages
+
+  (add-hook 'my-lisp-mode-common-hook
+            (lambda ()
+              (key-combo-define-local (kbd ".") " . ")
+              (key-combo-define-local (kbd ";") ";; ")
+              (key-combo-define-local (kbd "=") '("=" "equal" "eq"))))
+
+  ;; *** smartchr for html
+
+  (add-hook 'html-mode-hook
+            (lambda ()
+              (key-combo-define-local (kbd "<") '("<`!!'>" "<" "&lt;"))
+              (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
+              (key-combo-define-local (kbd ">") '(key-combo-execute-orignal "&gt;"))
+              (key-combo-define-local (kbd "&") '("&amp;" "&"))))
+
+  ;; *** smartchr for haskell
+
+  (defpostload "haskell-mode"
+    (add-hook 'haskell-mode-hook
+              (lambda ()
+                ;; types
+                (key-combo-define-local (kbd ":") '(":" " :: "))
+                (key-combo-define-local (kbd "<-") " <- ")
+                (key-combo-define-local (kbd "->") " -> ")
+                (key-combo-define-local (kbd "=>") " => ")
+                ;; boolean
+                (key-combo-define-local (kbd "|") '(" | " " || " " ||| "))
+                (key-combo-define-local (kbd "&&") '(" & " " && " " &&& "))
+                ;; compare
+                (key-combo-define-local (kbd "=") '(" = " " == "))
+                (key-combo-define-local (kbd "/=") " /= ")
+                (key-combo-define-local (kbd "<") '(" < " " << " " <<< "))
+                (key-combo-define-local (kbd "<=") " <= ")
+                (key-combo-define-local (kbd ">=") " >= ")
+                ;; operation
+                (key-combo-define-local (kbd "+") '(" + " " ++ " " +++ "))
+                (key-combo-define-local (kbd "-") '(" - " "-")) ; maybe unary
+                (key-combo-define-local (kbd "*") '(" * " " ** "))
+                (key-combo-define-local (kbd "/") '(" / " " // "))
+                (key-combo-define-local (kbd "%") " % ")
+                (key-combo-define-local (kbd "^") '(" ^ " " ^^ "))
+                ;; bits
+                (key-combo-define-local (kbd ".|.") " .|. ")
+                (key-combo-define-local (kbd ".&.") " .&. ")
+                ;; list
+                (key-combo-define-local (kbd ".") '(" . " ".."))
+                (key-combo-define-local (kbd "!") '("!" " !! "))
+                (key-combo-define-local (kbd "\\\\") " \\\\ ")
+                ;; monad
+                (key-combo-define-local (kbd ">>=") " >>= ")
+                (key-combo-define-local (kbd "=<<") " =<< ")
+                ;; arrow
+                (key-combo-define-local (kbd "^>>") " ^>> ")
+                (key-combo-define-local (kbd ">>^") " >>^ ")
+                (key-combo-define-local (kbd "<<^") " <<^ ")
+                (key-combo-define-local (kbd "^<<") " ^<< ")
+                ;; sequence
+                (key-combo-define-local (kbd "><") " >< ")
+                (key-combo-define-local (kbd ":>") " :> ")
+                (key-combo-define-local (kbd ":<") " :< ")
+                ;; others
+                (key-combo-define-local (kbd "?") " ? ")
+                (key-combo-define-local (kbd "@") " @ ")
+                (key-combo-define-local (kbd "~") " ~ ")
+                (key-combo-define-local (kbd "$") " $ ")
+                (key-combo-define-local (kbd "$!") " $! "))))
+
+  ;; *** (sentinel)
+  )
 
 ;; * external libraries (mnopqrs)
 ;; ** maxframe
@@ -3183,8 +3326,27 @@ check for the whole contents of FILE, otherwise check for the first
     paredit-split-sexp
     paredit-join-sexps
     paredit-comment-dwim
-    paredit-meta-doublequote)
-  "paredit")
+    paredit-meta-doublequote) "paredit"
+
+    (defadvice paredit-wrap-round (around paredit-auto-insert-spc activate)
+      (if (not (member major-mode my-lisp-modes))
+          ;; NOT lisp modes
+          ;; => automatically delete SPC just after ")"
+          (let ((spc-req (save-excursion
+                           (ignore-errors
+                             (forward-sexp)
+                             (= (char-after) ?\s)))))
+            ad-do-it
+            (when (not spc-req)
+              (save-excursion (backward-up-list)
+                              (forward-sexp)
+                              (when (= (char-after) ?\s) (delete-char 1)))))
+        ;; lisp modes
+        ;; => automatically insert SPC just after "("
+        ad-do-it
+        (when (my-beginning-of-sexp-p)
+          (save-excursion (just-one-space)))))
+    )
 
 ;; ** popwin
 
@@ -3604,7 +3766,7 @@ check for the whole contents of FILE, otherwise check for the first
 (global-set-key (kbd "C-x RET") 'kmacro-end-and-call-macro) ; C-x C-m
 
 ;; Overwrite
-(defprepare "anything-config"
+(defpostload "anything-config"   ; dont use anything if its not loaded
   (global-set-key (kbd "M-x") 'my-anything-commands))
 (defprepare "dmacro"
   (global-set-key (kbd "M-m") 'dmacro-exec))
@@ -3842,6 +4004,9 @@ check for the whole contents of FILE, otherwise check for the first
 ;; Ctrl-Meta-
 (global-set-key (kbd "C-M-t") 'backward-transpose-lines)
 
+;; Meta-
+(global-set-key (kbd "M-h") 'my-shrink-whitespaces)
+
 ;; Meta-Shift-
 (global-set-key (kbd "M-T") 'my-transpose-sexps)
 (global-set-key (kbd "M-:") 'comment-dwim)
@@ -3864,10 +4029,10 @@ check for the whole contents of FILE, otherwise check for the first
 ;; Meta-
 (global-set-key (kbd "M-d") 'dired)
 (global-set-key (kbd "M-f") 'find-file)
-(global-set-key (kbd "M-h") 'ff-find-other-file)
 (global-set-key (kbd "M-g") 'rgrep)     ; require "grep"
 
 ;; Ctrl-x
+(global-set-key (kbd "C-x C-h") 'ff-find-other-file)
 (global-set-key (kbd "C-x C-d") 'dired)
 
 ;; Overwrite
