@@ -75,10 +75,10 @@
 ;; key-chord
 ;;
 ;; - fj : yasnippet or zencoding
-;; - gh : transpose-chars
-;; - gn : downcase word
-;; - gp : upcase word
-;; - gm : capitalize word
+;; - fh : transpose-chars
+;; - fn : downcase word
+;; - fp : upcase word
+;; - fm : capitalize word
 
 ;; ** orgtbl-mode override
 
@@ -471,6 +471,37 @@
 
                 ;; **** (sentinel)
                 ))
+
+;; ** settings for reading
+
+(defun my-install-reading-config ()
+
+  (setq line-spacing 0.3)
+  (setq cursor-type 'hbar)
+
+  ;; keybinds
+  (defprepare "pager"
+    (local-set-key (kbd "C-n") 'pager-row-down)
+    (local-set-key (kbd "j") 'pager-row-down)
+    (local-set-key (kbd "C-p") 'pager-row-up)
+    (local-set-key (kbd "k") 'pager-row-up))
+
+  ;; buffer-face-mode
+  (setq buffer-face-mode-face
+        '(:family "Times New Roman"
+                  :height 130 :width semi-condensed))
+  (buffer-face-mode 1)
+
+  ;; global-hl-line-mode must be made buffer-local
+  (setq global-hl-line-mode nil)
+
+  ;; show-paren-mode mustb be made buffer-local
+  (setq show-paren-mode nil)
+
+  ;; hl-paren
+  (defprepare "highlight-parentheses"
+    (setq highlight-parentheses-mode nil))
+  )
 
 ;; ** minor adjustments
 
@@ -1703,6 +1734,10 @@
     (set-frame-parameter nil 'alpha 100) ))
 
 ;; * built-in libraries (ghijkl)
+;; ** help
+
+(add-hook 'help-mode-hook 'my-install-reading-config)
+
 ;; ** hexl
 
 ;; open binary file with hexl-find-file
@@ -1753,7 +1788,10 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; ** hl-line
 
-(global-hl-line-mode)
+;; reference | http://stackoverflow.com/questions/9990370/how-to-disable-hl-line-feature-in-specified-mode
+
+(global-hl-line-mode 1)
+(make-variable-buffer-local 'global-hl-line-mode)
 
 ;; ** imenu
 
@@ -1805,7 +1843,8 @@ check for the whole contents of FILE, otherwise check for the first
         (save-excursion
           (if (condition-case err (forward-sexp) (error t))
               -1
-            (backward-sexp) (point)))))))
+            (or (ignore-errors (backward-sexp) (point))
+                -1)))))))
 
 (defun my-end-of-sexp-p ()
   (let ((quick-syntax-info (syntax-ppss)))
@@ -1816,7 +1855,8 @@ check for the whole contents of FILE, otherwise check for the first
         (save-excursion
           (if (condition-case err (backward-sexp) (error t))
               -1
-            (forward-sexp) (point)))))))
+            (or (ignore-errors (forward-sexp) (point))
+                -1)))))))
 
 ;; *** commands
 
@@ -2064,6 +2104,8 @@ check for the whole contents of FILE, otherwise check for the first
 
 (show-paren-mode)
 (setq show-paren-delay 0)
+
+(make-variable-buffer-local 'show-paren-mode)
 
 ;; ** recentf
 
@@ -2505,7 +2547,7 @@ check for the whole contents of FILE, otherwise check for the first
 
   (deflazyconfig
     '(cedit-or-paredit-slurp
-      cedit-or-paredit-wrap
+      cedit-wrap-brace
       cedit-or-paredit-barf
       cedit-or-paredit-splice-killing-backward
       cedit-or-paredit-raise) "cedit")
@@ -3218,7 +3260,7 @@ check for the whole contents of FILE, otherwise check for the first
     (add-hook 'c-mode-hook
               (lambda ()
                 ;; pointers
-                (key-combo-define-local (kbd "&") '(" & " " && " "&"))
+                (key-combo-define-local (kbd "&") '("&" " && " " & "))
                 (key-combo-define-local (kbd "*") '(" * " "*"))
                 (key-combo-define-local (kbd "->") "->")
                 ;; include
@@ -3238,13 +3280,20 @@ check for the whole contents of FILE, otherwise check for the first
 
   (add-hook 'my-lisp-mode-common-hook
             (lambda ()
-              (key-combo-define-local (kbd ".") " . ")
+              (key-combo-define-local (kbd ".") '(" . " ".")) ; . may be floating point
               (key-combo-define-local (kbd ";") ";; ")
               (key-combo-define-local (kbd "=") '("=" "equal" "eq"))))
 
-  ;; *** smartchr for html
+  ;; *** smartchr for html / web
 
   (add-hook 'html-mode-hook
+            (lambda ()
+              (key-combo-define-local (kbd "<") '("<`!!'>" "<" "&lt;"))
+              (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
+              (key-combo-define-local (kbd ">") '(key-combo-execute-orignal "&gt;"))
+              (key-combo-define-local (kbd "&") '("&amp;" "&"))))
+
+  (add-hook 'web-mode-hook
             (lambda ()
               (key-combo-define-local (kbd "<") '("<`!!'>" "<" "&lt;"))
               (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
@@ -3475,7 +3524,11 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; ** pager
 
-(deflazyconfig '(pager-page-down pager-page-up) "pager")
+(deflazyconfig
+  '(pager-row-up
+    pager-row-down
+    pager-page-up
+    pager-page-down) "pager")
 
 ;; ** paredit
 
@@ -4345,7 +4398,7 @@ check for the whole contents of FILE, otherwise check for the first
 (defpostload "key-chord"
 
   ;; Default
-  (key-chord-define-global "gh" 'backward-transpose-chars)
+  (key-chord-define-global "fh" 'backward-transpose-chars)
   (key-chord-define-global "fn" 'my-downcase-previous-word)
   (key-chord-define-global "fp" 'my-upcase-previous-word)
   (key-chord-define-global "fm" 'capitalize-word)
@@ -4618,42 +4671,5 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; (defpostload "auto-complete"
 ;;   (setq ac-sources (cons 'ac-source-semantic ac-sources)))
-
-;; * *COMMENT* bm
-
-;; (deflazyconfig '(bm-toggle) "bm"
-
-;;   ;; ** bm-repogitory
-
-;;   (setq bm-repository-file my:bm-repository-file)
-
-;;   ;; ** change style
-
-;;   (setq bm-highlight-style 'bm-highlight-only-fringe)
-
-;;   ;; ** automatically save bookmarks
-
-;;   (setq-default bm-buffer-persistence t)
-
-;;   (add-hook 'kill-buffer-hook 'bm-buffer-save)
-
-;;   (add-hook 'kill-emacs-hook
-;;             (lambda () (bm-buffer-save-all) (bm-repository-save)))
-
-;;   ;; ** automatically restore bookmarks
-
-;;   (setq bm-restore-repository-on-load t)
-;;   (add-hook 'after-init-hook 'bm-repository-load)
-
-;;   (add-hook 'find-file-hook 'bm-buffer-restore)
-;;   (add-hook 'after-revert-hook 'bm-buffer-restore)
-
-;;   ;; ** (sentinel)
-;;   )
-
-;; * *COMMENT* sml-modeline
-
-;; (defconfig 'sml-modeline
-;;   (sml-modeline-mode))
 
 ;; * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
