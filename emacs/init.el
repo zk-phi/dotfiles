@@ -480,6 +480,8 @@
   (setq cursor-type 'hbar)
 
   ;; keybinds
+  (local-set-key (kbd "h") 'backward-char)
+  (local-set-key (kbd "l") 'forward-char)
   (defprepare "pager"
     (local-set-key (kbd "C-n") 'pager-row-down)
     (local-set-key (kbd "j") 'pager-row-down)
@@ -487,10 +489,10 @@
     (local-set-key (kbd "k") 'pager-row-up))
 
   ;; buffer-face-mode
-  (setq buffer-face-mode-face
-        '(:family "Times New Roman"
-                  :height 130 :width semi-condensed))
-  (buffer-face-mode 1)
+  (let ((buffer-face-mode-face
+         '(:family "Times New Roman"
+                   :height 125 :width semi-condensed)))
+    (buffer-face-mode 1))
 
   ;; global-hl-line-mode must be made buffer-local
   (setq global-hl-line-mode nil)
@@ -3362,19 +3364,19 @@ check for the whole contents of FILE, otherwise check for the first
   (add-hook 'window-setup-hook 'maximize-frame))
 
 ;; ** multiple-cursors
-;; *** mark-all dwim
+;; *** dwim commands
 
 (defprepare "multiple-cursors"
 
   ;; **** utilities
 
-  (defun my-mark-whole-sexp ()
+  (defun my-mc/mark-whole-sexp ()
     (interactive)
     (if (my-end-of-sexp-p) (mark-sexp -1)
       (when (not (my-beginning-of-sexp-p)) (backward-sexp))
       (mark-sexp 1)))
 
-  (defun my-marking-whole-sexp-p ()
+  (defun my-mc/marking-whole-sexp-p ()
     (and transient-mark-mode
          mark-active
          (save-excursion (goto-char (region-beginning))
@@ -3382,7 +3384,7 @@ check for the whole contents of FILE, otherwise check for the first
          (save-excursion (goto-char (region-end))
                          (my-end-of-sexp-p))))
 
-  (defun my-marking-whole-word-p ()
+  (defun my-mc/marking-words-p ()
     (and transient-mark-mode
          mark-active
          (= (region-end)
@@ -3393,7 +3395,10 @@ check for the whole contents of FILE, otherwise check for the first
                 (error -1))))
          (= (region-beginning)
             (save-excursion
-              (progn (goto-char (region-end)) (backward-word) (point))))))
+              (condition-case err
+                  (progn (goto-char (region-beginning))
+                         (forward-word) (backward-word) (point))
+                (error -1))))))
 
   ;; **** main
 
@@ -3403,23 +3408,26 @@ check for the whole contents of FILE, otherwise check for the first
              (string-match "\n" (buffer-substring (region-beginning)
                                                   (region-end))))
         (call-interactively 'mc/edit-lines)
-      ;; otherwise call "mark-next-like-this"
+      ;; otherwise call "mark-more-like-this-extended"
       (call-interactively 'mc/mark-next-like-this)))
 
-  (defun my-mc/mark-all-dwim ()
+  (defun my-mc/mark-all-dwim-or-skip-this ()
     (interactive)
     (cond
+     ;; already in multiple-cursors-mode, skip this symbol and mark next
+     ((and (boundp 'multiple-cursors-mode) multiple-cursors-mode)
+      (mc/mark-next-like-this 0))
      ;; mark is not active -> mark *symbols* under cursor
      ((not (and (interactive-p) transient-mark-mode mark-active))
-      (my-mark-whole-sexp)
+      (my-mc/mark-whole-sexp)
       (call-interactively 'mc/mark-all-symbols-like-this))
-     ;; marked item is sexp -> mark all symbols or words
-     ((my-marking-whole-sexp-p)
+     ;; marked item is symbol -> mark all symbols or words
+     ((my-mc/marking-whole-sexp-p)
       (if (y-or-n-p "restrict to symbols ? ")
           (call-interactively 'mc/mark-all-symbols-like-this)
         (call-interactively 'mc/mark-all-words-like-this)))
      ;; marked item is word -> mark all words
-     ((my-marking-whole-word-p)
+     ((my-mc/marking-words-p)
       (call-interactively 'mc/mark-all-words-like-this))
      ;; marked item is not a word -> mark all
      (t
@@ -4188,7 +4196,7 @@ check for the whole contents of FILE, otherwise check for the first
   (global-set-key (kbd "<S-oem-pa1>") 'my-change-command))
 (defprepare "multiple-cursors"
   (global-set-key (kbd "C-a") 'my-mc/mark-next-dwim)
-  (global-set-key (kbd "C-M-a") 'my-mc/mark-all-dwim))
+  (global-set-key (kbd "C-M-a") 'my-mc/mark-all-dwim-or-skip-this))
 (defprepare "expand-region"
   (global-set-key (kbd "C-,") 'er/expand-region))
 
@@ -4398,7 +4406,7 @@ check for the whole contents of FILE, otherwise check for the first
 (defpostload "key-chord"
 
   ;; Default
-  (key-chord-define-global "fh" 'backward-transpose-chars)
+  (key-chord-define-global "gh" 'backward-transpose-chars)
   (key-chord-define-global "fn" 'my-downcase-previous-word)
   (key-chord-define-global "fp" 'my-upcase-previous-word)
   (key-chord-define-global "fm" 'capitalize-word)
