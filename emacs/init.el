@@ -42,11 +42,11 @@
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     |Scale|     |     |
 ;;    |     |Write|Encod|Revrt|Trnct|     |     |Shell|     |RdOly|     |     |
-;;       |     | Save|Dired|     |     |Headr|BMSet|KilBf|CgLog|     |     |
+;;       |     | Save|Dired|FHead|     |     |BMSet|KilBf|CgLog|     |     |
 ;;          |     |     |Close|     |     |     |ExMcr|     |     |     |
 
 ;; nonconvert
-;; -   NConv : iy-go-to-char
+;; -   NConv : mc-jump-char
 ;; - C-NConv : ace-jump-mode
 
 ;; SPC
@@ -60,7 +60,7 @@
 ;; others
 ;; -   C-RET : cua-set-rectangle-mark
 ;; -     TAB : ac-trigger
-;; - ESC ESC : vi-mode
+;; -     ESC : vi-mode
 
 ;; ** special bindings
 
@@ -74,11 +74,11 @@
 
 ;; key-chord
 ;;
+;; - fj : yasnippet or zencoding
 ;; - gh : transpose-chars
-;; - fj : expand snippet
-;; - fn : downcase word
-;; - fp : upcase word
-;; - fm : capitalize word
+;; - gn : downcase word
+;; - gp : upcase word
+;; - gm : capitalize word
 
 ;; ** orgtbl-mode override
 
@@ -322,6 +322,156 @@
 
 (add-to-list 'word-separating-categories (cons ?L ?U))
 
+;; ** mode-line settings
+
+;; reference | http://amitp.blogspot.jp/2011/08/emacs-custom-mode-line.html
+
+;; *** make faces
+
+(make-face 'mode-line-bright-face)
+(set-face-attribute 'mode-line-bright-face nil
+                    :inherit 'mode-line-face)
+
+(make-face 'mode-line-dark-face)
+(set-face-attribute 'mode-line-dark-face nil
+                    :inherit 'mode-line-face)
+
+(make-face 'mode-line-highlight-face)
+(set-face-attribute 'mode-line-highlight-face nil
+                    :inherit 'mode-line-face)
+
+(make-face 'mode-line-warning-face)
+(set-face-attribute 'mode-line-warning-face nil
+                    :inherit 'mode-line-face)
+
+(make-face 'mode-line-modified-face)
+(set-face-attribute 'mode-line-modified-face nil
+                    :inherit 'mode-line-face)
+
+(make-face 'mode-line-read-only-face)
+(set-face-attribute 'mode-line-read-only-face nil
+                    :inherit 'mode-line-face)
+
+(make-face 'mode-line-narrowed-face)
+(set-face-attribute 'mode-line-narrowed-face nil
+                    :inherit 'mode-line-face)
+
+(make-face 'mode-line-mc-face)
+(set-face-attribute 'mode-line-mc-face nil
+                    :inherit 'mode-line-face)
+
+;; *** utilities
+
+(defun my-shorten-directory (max-length)
+  (let* ((file (buffer-file-name))
+         (dir (if file (file-name-directory file) "")))
+    (if (null dir) ""
+      (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
+            (output ""))
+        (when (and path (equal "" (car path)))
+          (setq path (cdr path)))
+        (while (and path (< (length output) (- max-length 4)))
+          (setq output (concat (car path) "/" output))
+          (setq path (cdr path)))
+        (when path
+          (setq output (concat ".../" output)))
+        output))))
+
+;; *** mode-line-format
+
+(setq-default mode-line-format
+              '(
+                ;; **** window-position / region-size
+
+                " "
+
+                (:eval
+                 (if mark-active
+                     ;; region size
+                     (propertize (format "%d"
+                                         (let ((rows
+                                                (count-lines (region-beginning) (region-end)))
+                                               (chars
+                                                (- (region-end) (region-beginning))))
+                                           (if (= rows 1) chars rows)))
+                                 'face 'mode-line-warning-face)
+                   ;; window-position
+                   (propertize (format "%d%%%%"
+                                       (/ (* 100 (point)) (point-max)))
+                               'face 'mode-line-bright-face)))
+
+                ;; **** linum / colnum
+
+                " "
+
+                (:propertize "%l " face mode-line-bright-face)
+
+                (:eval
+                 (propertize "%c" 'face
+                             (if (>= (current-column) 80)
+                                 'mode-line-warning-face
+                               'mode-line-bright-face)))
+
+                ;; **** indicators
+
+                " "
+
+                (:eval
+                 (if (buffer-modified-p)
+                     (propertize "*" 'face 'mode-line-modified-face)
+                   (propertize "*" 'face 'mode-line-dark-face)))
+
+                (:eval
+                 (if buffer-read-only
+                     (propertize "%%" 'face 'mode-line-read-only-face)
+                   (propertize "%%" 'face 'mode-line-dark-face)))
+
+                (:eval
+                 (if (or (/= (point-min) 1) (/= (point-max) (1+ (buffer-size))))
+                     (propertize "n" 'face 'mode-line-narrowed-face)
+                   (propertize "n" 'face 'mode-line-dark-face)))
+
+                (:eval
+                 (if (and (boundp 'multiple-cursors-mode)
+                          multiple-cursors-mode)
+                     (propertize (format "%02d" (mc/num-cursors))
+                                 'face 'mode-line-mc-face)
+                   (propertize "00" 'face 'mode-line-dark-face)))
+
+                ;; **** directory / file name
+
+                "  "
+
+                (:eval
+                 (propertize (my-shorten-directory 10)
+                             'face 'mode-line-dark-face))
+
+                (:propertize "%b" face mode-line-highlight-face)
+
+                ;; **** major-mode / coding system
+
+                "  "
+
+                (:propertize "%[" face mode-line-dark-face)
+
+                (:propertize mode-name face mode-line-bright-face)
+
+                (:propertize mode-line-process face mode-line-highlight-face)
+
+                (:eval
+                 (propertize
+                  (format " (%s)%%]" (symbol-name buffer-file-coding-system))
+                  'face 'mode-line-dark-face))
+
+                ;; **** others
+
+                "  "
+
+                (global-mode-string global-mode-string)
+
+                ;; **** (sentinel)
+                ))
+
 ;; ** minor adjustments
 
 ;; use y-or-n instead of yes-or-no
@@ -449,6 +599,8 @@
 
 ;; *** smartchr-like commands
 
+;; i want use smartchr for ", " even in comments, and strings
+
 (defun my-smart-comma ()
   (interactive)
   (cond ((not (eq last-command 'my-smart-comma))
@@ -459,6 +611,8 @@
          (insert " "))))
 
 ;; *** retop
+
+;; give a name for (recenter 0)
 
 (defun retop ()
   (interactive) (recenter 0))
@@ -537,8 +691,7 @@
   (interactive)
   (cond
    ;; shrink newlines
-   ((= (save-excursion (beginning-of-line) (point))
-       (save-excursion (end-of-line) (point)))
+   ((= (bol-point) (eol-point))
     (skip-chars-backward "\s\t\n")
     (delete-region (point)
                    (progn (skip-chars-forward "\s\t\n") (point)))
@@ -590,7 +743,7 @@
     (when point (goto-char point)) (beginning-of-line) (point)))
 
 (defun get-first-line-string (from to)
-  "Returns string of the first line of region (FROM TO)"
+  "Returns substring of the first line (FROM TO)"
   (let ((eol (eol-point from)) (str ""))
     (progn
       ;; while string is blank, try to get next-line
@@ -1683,6 +1836,38 @@ check for the whole contents of FILE, otherwise check for the first
   (interactive)
   (if (my-end-of-sexp-p) (down-list -1) (down-list 1)))
 
+(defun my-up-list ()
+  "up-list that works even in string constants. for interactive use."
+  (interactive)
+  (let* ((str-p (and (member 'font-lock-string-face
+                             (text-properties-at (point)))
+                     (member 'font-lock-string-face
+                             (text-properties-at (1- (point))))))
+         (back-pos (save-excursion
+                     (if str-p
+                         (progn (skip-chars-backward "^\"")
+                                (backward-char)
+                                (point))
+                       (condition-case err
+                           (progn (backward-up-list) (point))
+                         (error nil)))))
+         (back-dist (abs (- (point) back-pos)))
+         (for-pos (save-excursion
+                    (if str-p
+                        (progn (skip-chars-forward "^\"")
+                               (forward-char)
+                               (point))
+                      (condition-case err
+                          (progn (up-list) (point))
+                        (error nil)))))
+         (for-dist (abs (- (point) for-pos))))
+    (when (not (or back-pos for-pos))
+      (error "cannot go up"))
+    (goto-char (cond ((null back-pos) for-pos)
+                     ((null for-pos) back-pos)
+                     ((< for-dist back-dist) for-pos)
+                     (t back-pos)))))
+
 (defun my-reindent-sexp ()
   (interactive)
   (save-excursion (my-mark-sexp) (indent-for-tab-command)))
@@ -1951,30 +2136,26 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; **** shift-select
 
-;; disable shift-select
-
 (setq shift-select-mode nil)
 
 ;; **** line-number / column-number
 
-;; show line/col-number on modeline
+;; now these settings are no use.
+;; because colnum and linum are directly added to mode-line-format.
 
 (line-number-mode t)
 (column-number-mode t)
 
 ;; **** eval-last-sexp
 
-;; print more on eval-last-sexp
-
 (setq eval-expression-print-length nil)
 (setq eval-expression-print-level 5)
 
 ;; **** delete-trailing-whitespace
 
-;; run delete-trailing-whitespace on save
-
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+;; report that trailing whitespaces are deleted
 (defadvice delete-trailing-whitespace (around echo-trailing-ws activate)
   (when (not (string= (buffer-string)
                       (progn ad-do-it (buffer-string))))
@@ -2066,20 +2247,6 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defun backward-transpose-chars ()
   (interactive) (transpose-chars -1) (forward-char))
-
-;; *** show region size on modeline
-
-;; reference | http://d.hatena.ne.jp/sonota88/20110224/1298557375
-
-(defun count-lines-and-chars()
-  (if mark-active
-      (format "[%3d:%4d]"
-              (count-lines (region-beginning)(region-end))
-              (- (region-end) (region-beginning)))
-    ""))
-
-(add-to-list 'default-mode-line-format
-             '(:eval (count-lines-and-chars)))
 
 ;; ** startup
 
@@ -2348,6 +2515,10 @@ check for the whole contents of FILE, otherwise check for the first
 
 (deflazyconfig '(simple-demo-set-up) "simple-demo"
   (setq simple-demo-highlight-face 'compilation-warning))
+
+;; ** mc-jump
+
+(deflazyconfig '(mc-jump-char) "mc-jump")
 
 ;; * external libraries (abcdef)
 ;; ** ace-jump-mode
@@ -2803,10 +2974,6 @@ check for the whole contents of FILE, otherwise check for the first
   )
 
 ;; * external libraries (ghijkl)
-;; ** goto-chg
-
-(deflazyconfig '(goto-last-change) "goto-chg")
-
 ;; ** haskell-mode
 
 (defprepare "haskell-mode"
@@ -2886,9 +3053,10 @@ check for the whole contents of FILE, otherwise check for the first
     (when dir
       (mapc (lambda (filename)
               (let ((abs-path (concat dir filename)))
-                (when (y-or-n-p (format "import %s ? " filename))
-                  (howm-remember)
-                  (insert (file-string abs-path))
+                (howm-remember)
+                (insert (file-string abs-path))
+                (if (not (y-or-n-p (format "import %s ? " filename)))
+                    (howm-remember-discard)
                   (let ((howm-template
                          (concat "* メモ " filename "\n\n%cursor")))
                     (howm-remember-submit))
@@ -2998,10 +3166,6 @@ check for the whole contents of FILE, otherwise check for the first
 ;; minibuffer is active. So use backward-delete-char-untabify instead.
 
 (setq backward-delete-char-untabify-method 'hungry)
-
-;; ** iy-go-to-char
-
-(deflazyconfig '(iy-go-to-char) "iy-go-to-char")
 
 ;; ** key-chord
 
@@ -3348,6 +3512,10 @@ check for the whole contents of FILE, otherwise check for the first
           (save-excursion (just-one-space)))))
     )
 
+;; ** point-undo
+
+(defconfig 'point-undo)
+
 ;; ** popwin
 
 (defconfig 'popwin
@@ -3462,11 +3630,6 @@ check for the whole contents of FILE, otherwise check for the first
 
 (deflazyconfig '(sml-mode) "sml-mode")
 
-;; ** sml-modeline
-
-(defconfig 'sml-modeline
-  (sml-modeline-mode))
-
 ;; ** smooth-scrolling
 
 (defconfig 'smooth-scrolling
@@ -3559,6 +3722,44 @@ check for the whole contents of FILE, otherwise check for the first
                           :background 'unspecified)
       )
 
+    ;; *** modeilne
+
+    (set-face-attribute 'mode-line nil
+                        :foreground "#93a1a1" :background "#194854"
+                        :inverse-video nil
+                        :box '(:line-width 2 :color "#194854"))
+
+    (set-face-attribute 'mode-line-inactive nil
+                        :foreground "#6f758d" :background "#073642"
+                        :inverse-video nil
+                        :box '(:line-width 2 :color "#073642"))
+
+    (set-face-attribute 'mode-line-dark-face nil
+                        :foreground "#6f758d")
+
+    (set-face-attribute 'mode-line-highlight-face nil
+                        :foreground "#b58900"
+                        :weight 'bold)
+
+    (set-face-attribute 'mode-line-warning-face nil
+                        :foreground "#002b36" :background "#b58900")
+
+    (set-face-attribute 'mode-line-modified-face nil
+                        :foreground "#d33682"
+                        :box '(:line-width 2 :color "#d33682"))
+
+    (set-face-attribute 'mode-line-read-only-face nil
+                        :foreground "#268bd2"
+                        :box '(:line-width 2 :color "#268bd2"))
+
+    (set-face-attribute 'mode-line-narrowed-face nil
+                        :foreground "#2aa198"
+                        :box '(:line-width 2 :color "#2aa198"))
+
+    (set-face-attribute 'mode-line-mc-face nil
+                        :foreground "#93a1a1"
+                        :box '(:line-width 2 :color "#93a1a1"))
+
     ;; *** (sentinel)
     ))
 
@@ -3583,6 +3784,15 @@ check for the whole contents of FILE, otherwise check for the first
 (defconfig 'uniquify
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
   (setq uniquify-ignore-buffers-re "*[^*]+*"))
+
+;; ** web-mode
+
+(defprepare "web-mode"
+  (setq auto-mode-alist
+        (cons '("\\.s?html?\\(\\.[a-zA-Z_]+\\)?\\'" . web-mode)
+              auto-mode-alist)))
+
+(deflazyconfig '(web-mode) "web-mode")
 
 ;; ** whitespace
 
@@ -3688,6 +3898,20 @@ check for the whole contents of FILE, otherwise check for the first
 
     ;; **** (sentinel)
     )
+
+;; ** zencoding
+
+(deflazyconfig '(zencoding-mode) "zencoding"
+  (define-key zencoding-mode-keymap (kbd "C-j") nil)
+  (define-key zencoding-mode-keymap (kbd "<C-return>") nil)
+  (defpostload "key-chord"
+    (key-chord-define zencoding-mode-keymap "fj" 'zencoding-expand-line)))
+
+(defprepare "zencoding"
+  (defpostload "sgml-mode"
+    (add-hook 'sgml-mode-hook 'zencoding-mode))
+  (defpostload "web-mode"
+    (add-hook 'web-mode-hook 'zencoding-mode)))
 
 ;; ** zlc
 
@@ -3820,7 +4044,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Meta-Shift-
 (global-set-key (kbd "M-B") 'backward-sexp)
-(global-set-key (kbd "M-P") 'backward-up-list)
+(global-set-key (kbd "M-P") 'my-up-list)
 (global-set-key (kbd "M-N") 'my-down-list)
 (global-set-key (kbd "M-F") 'forward-sexp)
 
@@ -3839,14 +4063,14 @@ check for the whole contents of FILE, otherwise check for the first
 (global-set-key (kbd "M-v") 'my-visible-register)
 
 ;; Overwrite
-(defprepare "iy-go-to-char"
-  (global-set-key (kbd "<oem-pa1>") 'iy-go-to-char)  ; US
-  (global-set-key (kbd "<nonconvert>") 'iy-go-to-char)) ; JP
+(defprepare "mc-jump"
+  (global-set-key (kbd "<oem-pa1>") 'mc-jump-char)  ; US
+  (global-set-key (kbd "<nonconvert>") 'mc-jump-char)) ; JP
 (defprepare "ace-jump-mode"
   (global-set-key (kbd "<C-oem-pa1>") 'ace-jump-word-mode) ; US
   (global-set-key (kbd "<C-non-convert>") 'ace-jump-word-mode)) ; JP
-(defprepare "goto-chg"
-  (global-set-key (kbd "M--") 'goto-last-change))
+(defprepare "point-undo"
+  (global-set-key (kbd "M--") 'point-undo))
 
 ;; **** scroll
 
@@ -4032,7 +4256,7 @@ check for the whole contents of FILE, otherwise check for the first
 (global-set-key (kbd "M-g") 'rgrep)     ; require "grep"
 
 ;; Ctrl-x
-(global-set-key (kbd "C-x C-h") 'ff-find-other-file)
+(global-set-key (kbd "C-x C-f") 'ff-find-other-file)
 (global-set-key (kbd "C-x C-d") 'dired)
 
 ;; Overwrite
@@ -4427,5 +4651,9 @@ check for the whole contents of FILE, otherwise check for the first
 ;;   ;; ** (sentinel)
 ;;   )
 
-;; * *COMMENT* zencoding
+;; * *COMMENT* sml-modeline
+
+;; (defconfig 'sml-modeline
+;;   (sml-modeline-mode))
+
 ;; * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
