@@ -181,14 +181,14 @@
 
 (defmacro defconfig (ft &rest sexps)
   "require feature, and if succeeded, eval configures"
-    `(let ((beg-time (current-time)))
-       (if (require ,ft nil t)
-           (condition-case err
-               (eval '(progn ,@sexps
-                             (message ">> [init] %s: succeeded in %d msec" ,ft
-                                      (my-init-ellapsed-time beg-time))))
-             (error (message "XX [init] %s: %s" ,ft (error-message-string err))))
-         (message "XX [init] %s: not found" ,ft))))
+  `(let ((beg-time (current-time)))
+     (if (require ,ft nil t)
+         (condition-case err
+             (eval '(progn ,@sexps
+                           (message ">> [init] %s: succeeded in %d msec" ,ft
+                                    (my-init-ellapsed-time beg-time))))
+           (error (message "XX [init] %s: %s" ,ft (error-message-string err))))
+       (message "XX [init] %s: not found" ,ft))))
 
 (defmacro deflazyconfig (triggers file &rest sexps)
   "load library later, and when loaded, eval configures"
@@ -1768,13 +1768,13 @@ check for the whole contents of FILE, otherwise check for the first
 (defpostload "hideshow"
 
   (defun my-hs-display (ov)
-          (when (eq 'code (overlay-get ov 'hs))
-            (overlay-put ov 'display
-                         (propertize
-                          (format " -- %d line(s) --"
-                                  (- (count-lines (overlay-start ov)
-                                                  (overlay-end ov)) 1))
-                          'face 'bold))))
+    (when (eq 'code (overlay-get ov 'hs))
+      (overlay-put ov 'display
+                   (propertize
+                    (format " -- %d line(s) --"
+                            (- (count-lines (overlay-start ov)
+                                            (overlay-end ov)) 1))
+                    'face 'bold))))
 
   (setq hs-set-up-overlay 'my-hs-display)
   )
@@ -1786,7 +1786,7 @@ check for the whole contents of FILE, otherwise check for the first
   (when (and (boundp 'hi-lock-interactive-patterns)
              hi-lock-interactive-patterns)
     (unhighlight-regexp (car (car hi-lock-interactive-patterns))))
-    (call-interactively 'highlight-regexp))
+  (call-interactively 'highlight-regexp))
 
 ;; ** hl-line
 
@@ -2847,7 +2847,7 @@ check for the whole contents of FILE, otherwise check for the first
 
   (append ac-modes
           '(ahk-mode haskell-mode literate-haskell-mode
-            prolog-mode scala-mode sml-mode))
+                     prolog-mode scala-mode sml-mode))
 
   ;; *** auto-complete dictionary
 
@@ -3368,37 +3368,36 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defprepare "multiple-cursors"
 
+  (deflazyconfig
+    '(mc--no-region-and-in-sgmlish-mode) "mc-mark-more"
+
+    ;; (mc--in-defun) sometimes seems not work
+    ;; so make him return always non-nil
+
+    (defadvice mc/mark-all-like-this-in-defun (around fix-restriction activate)
+      (flet ((mc--in-defun () t))
+        ad-do-it))
+
+    (defadvice mc/mark-all-symbols-like-this-in-defun (around fix-restriction activate)
+      (flet ((mc--in-defun () t))
+        ad-do-it))
+
+    (defadvice mc/mark-all-words-like-this-in-defun (around fix-restriction activate)
+      (flet ((mc--in-defun () t))
+        ad-do-it))
+    )
+
   ;; **** utilities
 
-  (defun my-mc/mark-whole-sexp ()
-    (interactive)
-    (if (my-end-of-sexp-p) (mark-sexp -1)
-      (when (not (my-beginning-of-sexp-p)) (backward-sexp))
-      (mark-sexp 1)))
-
-  (defun my-mc/marking-whole-sexp-p ()
-    (and transient-mark-mode
-         mark-active
-         (save-excursion (goto-char (region-beginning))
-                         (my-beginning-of-sexp-p))
-         (save-excursion (goto-char (region-end))
-                         (my-end-of-sexp-p))))
-
   (defun my-mc/marking-words-p ()
-    (and transient-mark-mode
-         mark-active
-         (= (region-end)
-            (save-excursion
-              (condition-case err
-                  (progn (goto-char (region-end))
-                         (backward-word) (forward-word) (point))
-                (error -1))))
-         (= (region-beginning)
-            (save-excursion
-              (condition-case err
-                  (progn (goto-char (region-beginning))
-                         (forward-word) (backward-word) (point))
-                (error -1))))))
+    (ignore-errors
+      (and (use-region-p)
+           (save-excursion
+             (= (goto-char (region-end))
+                (progn (backward-word) (forward-word) (point))))
+           (save-excursion
+             (= (goto-char (region-beginning))
+                (progn (forward-word) (backward-word) (point)))))))
 
   ;; **** main
 
@@ -3408,30 +3407,55 @@ check for the whole contents of FILE, otherwise check for the first
              (string-match "\n" (buffer-substring (region-beginning)
                                                   (region-end))))
         (call-interactively 'mc/edit-lines)
-      ;; otherwise call "mark-more-like-this-extended"
-      (call-interactively 'mc/mark-next-like-this)))
+      (setq this-command 'mc/mark-next-like-this)
+      (mc/mark-next-like-this 1)))
 
-  (defun my-mc/mark-all-dwim-or-skip-this ()
-    (interactive)
-    (cond
-     ;; already in multiple-cursors-mode, skip this symbol and mark next
-     ((and (boundp 'multiple-cursors-mode) multiple-cursors-mode)
-      (mc/mark-next-like-this 0))
-     ;; mark is not active -> mark *symbols* under cursor
-     ((not (and (interactive-p) transient-mark-mode mark-active))
-      (my-mc/mark-whole-sexp)
-      (call-interactively 'mc/mark-all-symbols-like-this))
-     ;; marked item is symbol -> mark all symbols or words
-     ((my-mc/marking-whole-sexp-p)
-      (if (y-or-n-p "restrict to symbols ? ")
-          (call-interactively 'mc/mark-all-symbols-like-this)
-        (call-interactively 'mc/mark-all-words-like-this)))
-     ;; marked item is word -> mark all words
-     ((my-mc/marking-words-p)
-      (call-interactively 'mc/mark-all-words-like-this))
-     ;; marked item is not a word -> mark all
-     (t
-      (call-interactively 'mc/mark-all-like-this))))
+  (defvar my-mc/mark-all-last-executed nil)
+
+  (defun my-mc/mark-all-dwim-or-skip-this (arg)
+    (interactive "P")
+    (if arg (mc/mark-all-like-this)
+      (if (eq last-command this-command)
+          (case my-mc/mark-all-last-executed
+            ('skip
+             (mc/mark-next-like-this 0))
+            ('restricted-defun
+             (setq my-mc/mark-all-last-executed 'restricted)
+             (mc/mark-all-symbols-like-this)
+             (message "SYMBOLS defun -> [SYMBOLS]"))
+            ('words-defun
+             (setq my-mc/mark-all-last-executed 'words)
+             (mc/mark-all-words-like-this)
+             (message "WORDS defun -> [WORDS] -> ALL"))
+            ('words
+             (setq my-mc/mark-all-last-executed 'all)
+             (mc/mark-all-like-this)
+             (message "WORDS defun -> WORDS -> [ALL]"))
+            ('all-defun
+             (setq my-mc/mark-all-last-executed 'all)
+             (mc/mark-all-like-this)
+             (message "ALL defun -> [ALL]"))
+            (t
+             (message "no items more to mark")))
+        (cond ((eq last-command 'mc/mark-next-like-this)
+               (setq my-mc/mark-all-last-executed 'skip)
+               (mc/mark-next-like-this 0))
+              ((and (mc--no-region-and-in-sgmlish-mode) (mc--on-tag-name-p))
+               (mc/mark-sgml-tag-pair)
+               (message "TAG PAIR"))
+              ((not (use-region-p))
+               (mc--mark-symbol-at-point)
+               (setq my-mc/mark-all-last-executed 'restricted-defun)
+               (mc/mark-all-symbols-like-this-in-defun)
+               (message "[SYMBOLS defun] -> SYMBOLS"))
+              ((my-mc/marking-words-p)
+               (setq my-mc/mark-all-last-executed 'words-defun)
+               (mc/mark-all-words-like-this-in-defun)
+               (message "[WORDS defun] -> WORDS -> ALL"))
+              (t
+               (setq my-mc/mark-all-last-executed 'all-defun)
+               (mc/mark-all-like-this-in-defun)
+               (message "[ALL defun] -> ALL"))))))
 
   ;; **** (sentinel)
   )
