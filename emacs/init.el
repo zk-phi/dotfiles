@@ -472,6 +472,19 @@
                 ;; **** (sentinel)
                 ))
 
+;; *** change color while recording
+
+(defvar my-mode-line-background '("#194854" . "#594854"))
+
+(defun my-update-mode-line-background ()
+  (set-face-background
+   'mode-line
+   (if defining-kbd-macro
+       (cdr my-mode-line-background)
+     (car my-mode-line-background))))
+
+(add-hook 'post-command-hook 'my-update-mode-line-background)
+
 ;; ** settings for reading
 
 (defun my-install-reading-config ()
@@ -2283,11 +2296,11 @@ check for the whole contents of FILE, otherwise check for the first
 ;; *** backward transpose
 
 (defun backward-transpose-words ()
-  (interactive) (transpose-words -1) (forward-word))
+  (interactive) (transpose-words -1))
 
 (defun backward-transpose-lines ()
   (interactive) (transpose-lines 1)
-  (forward-line -1) (end-of-line))
+  (forward-line -2) (end-of-line))
 
 (defun backward-transpose-chars ()
   (interactive) (transpose-chars -1) (forward-char))
@@ -3368,26 +3381,39 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defprepare "multiple-cursors"
 
+  ;; **** load and fix mc-mark-more
+
   (deflazyconfig
-    '(mc--no-region-and-in-sgmlish-mode) "mc-mark-more"
+    '(mc--on-tag-name-p
+      mc/mark-sgml-tag-pair
+      mc--mark-symbol-at-point
+      mc/mark-all-like-this-in-defun
+      mc--no-region-and-in-sgmlish-mode
+      mc/mark-all-symbols-like-this-in-defun
+      mc/mark-all-words-like-this-in-defun) "mc-mark-more"
 
-    ;; (mc--in-defun) sometimes seems not work
-    ;; so make him return always non-nil
+      ;; (mc--in-defun) sometimes seems not work (why?)
+      ;; so make him return always non-nil
+      (dolist (fun '(mc/mark-all-like-this-in-defun
+                     mc/mark-all-words-like-this-in-defun
+                     mc/mark-all-symbols-like-this-in-defun))
+        (eval
+         `(defadvice ,fun (around fix-restriction activate)
+            (flet ((mc--in-defun () t)) ad-do-it))))
+      )
 
-    (defadvice mc/mark-all-like-this-in-defun (around fix-restriction activate)
-      (flet ((mc--in-defun () t))
-        ad-do-it))
+  ;; **** mc/mark-next-dwim
 
-    (defadvice mc/mark-all-symbols-like-this-in-defun (around fix-restriction activate)
-      (flet ((mc--in-defun () t))
-        ad-do-it))
+  (defun my-mc/mark-next-dwim ()
+    (interactive)
+    (if (and (interactive-p) transient-mark-mode mark-active
+             (string-match "\n" (buffer-substring (region-beginning)
+                                                  (region-end))))
+        (call-interactively 'mc/edit-lines)
+      (setq this-command 'mc/mark-next-like-this)
+      (mc/mark-next-like-this 1)))
 
-    (defadvice mc/mark-all-words-like-this-in-defun (around fix-restriction activate)
-      (flet ((mc--in-defun () t))
-        ad-do-it))
-    )
-
-  ;; **** utilities
+  ;; **** main
 
   (defun my-mc/marking-words-p ()
     (ignore-errors
@@ -3399,7 +3425,7 @@ check for the whole contents of FILE, otherwise check for the first
              (= (goto-char (region-beginning))
                 (progn (forward-word) (backward-word) (point)))))))
 
-  ;; **** main
+  ;; **** mc/mark-all-dwim
 
   (defun my-mc/mark-next-dwim ()
     (interactive)
@@ -3479,14 +3505,15 @@ check for the whole contents of FILE, otherwise check for the first
                 (concat "\\_<" ad-return-value "\\_>")
               ad-return-value)))
 
-    (defadvice mc/mark-all-like-this (after my-mark-all-echo activate)
-      (message "ALL"))
-
-    (defadvice mc/mark-all-words-like-this (after my-mark-all-echo activate)
-      (message "WORDS"))
-
-    (defadvice mc/mark-all-symbols-like-this (after my-mark-all-echo activate)
-      (message "SYMBOLS"))
+    ;; add not only "killed-rectangle" but "cua--last-killed-rectangle"
+    (deflazyconfig '(cua--insert-rectangle) "cua-rect")
+    (defadvice mc--maybe-set-killed-rectangle
+      (around mc--maybe-set-cua--killed-rectangle activate)
+      (let ((entries (mc--kill-ring-entries)))
+        (unless (mc--all-equal entries)
+          (setq killed-rectangle entries
+                cua--last-killed-rectangle
+                (cons (and kill-ring (car kill-ring)) entries)))))
     )
 
 ;; ** nav
@@ -3808,6 +3835,8 @@ check for the whole contents of FILE, otherwise check for the first
       )
 
     ;; *** modeilne
+
+    (setq my-mode-line-background '("#194854" . "#594854"))
 
     (set-face-attribute 'mode-line nil
                         :foreground "#93a1a1" :background "#194854"
