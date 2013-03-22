@@ -2140,6 +2140,58 @@ check for the whole contents of FILE, otherwise check for the first
 
 (scroll-bar-mode -1)
 
+;; ** *COMMENT* server
+
+;; (require 'server)
+
+;; on Windows 7, change
+;;  "server" directory
+;;   -> property
+;;    -> security
+;;     -> details
+;;      -> owner
+;;       -> edit
+;;        -> (login-user)
+
+;; *** automatically run server
+
+;; (add-hook 'after-init-hook
+;;           (lambda()
+;;             (unless (server-running-p)
+;;               (server-start))))
+
+;; *** quit emacs with [M-x exit]
+
+;; reference | http://qiita.com/items/48ac0af1e31eb9f69525
+
+;; (defun kill-all-file-buffers ()
+;;   "Kill all file editting buffers file,
+;; and returns number of not-killed buffers"
+;;   (interactive)
+;;   (let ((errcount 0))
+;;     (progn
+;;       (mapc (lambda(b)
+;;               (when (buffer-file-name b)
+;;                 (unless (kill-buffer b) (setq errcount (1+ errcount)))))
+;;             (buffer-list))
+;;       errcount)))
+
+;; (defun clear-and-iconify-emacs ()
+;;   "Kill all file editting buffers, abort all recursive edit,
+;; clear *scratch*, delete all splitted windows, and then iconify"
+;;   (interactive)
+;;   (when (= 0 (kill-all-file-buffers))
+;;     (iconify-frame)
+;;     (delete-other-windows)
+;;     (switch-to-buffer "*scratch*")
+;;     (my-make-scratch 0)
+;;     (top-level)
+;;     (server-edit)))
+
+;; (global-set-key (kbd "C-x C-c") 'clear-and-iconify-emacs)
+
+;; (defalias 'exit 'save-buffers-kill-emacs)
+
 ;; ** simple
 ;; *** settings
 ;; **** auto-fill
@@ -2485,6 +2537,55 @@ check for the whole contents of FILE, otherwise check for the first
    ))
 
 ;; * original libraries
+;; ** cedit
+
+(defprepare "paredit"
+
+  (defprepare "cedit"
+    (add-hook 'c-mode-common-hook
+              (lambda ()
+                (local-set-key (kbd "M-)") 'cedit-or-paredit-slurp)
+                (local-set-key (kbd "M-{") 'cedit-wrap-brace)
+                (local-set-key (kbd "M-*") 'cedit-or-paredit-barf)
+                (local-set-key (kbd "M-U") 'cedit-or-paredit-splice-killing-backward)
+                (local-set-key (kbd "M-R") 'cedit-or-paredit-raise))))
+
+  (deflazyconfig
+    '(cedit-or-paredit-slurp
+      cedit-wrap-brace
+      cedit-or-paredit-barf
+      cedit-or-paredit-splice-killing-backward
+      cedit-or-paredit-raise) "cedit")
+  )
+
+;; ** electric-case
+
+(deflazyconfig
+  '(electric-case-c-init
+    electric-case-java-init
+    electric-case-scala-init
+    electric-case-ahk-init) "electric-case"
+
+    (setq electric-case-convert-calls t)
+    )
+
+(defprepare "electric-case"
+
+  (defpostload "cc-mode"
+    (add-hook 'c-mode-hook 'electric-case-c-init)
+    (add-hook 'java-mode-hook 'electric-case-java-init))
+
+  (defpostload "scala-mode"
+    (add-hook 'scala-mode-hook 'electric-case-scala-init))
+
+  (defpostload "ahk-mode"
+    (add-hook 'ahk-mode-hook 'electric-case-ahk-init))
+  )
+
+;; ** mc-jump
+
+(deflazyconfig '(mc-jump-char) "mc-jump")
+
 ;; ** nurumacs
 
 (defconfig 'nurumacs
@@ -2523,59 +2624,10 @@ check for the whole contents of FILE, otherwise check for the first
 
 (deflazyconfig '(scratch-pop) "scratch-pop")
 
-;; ** electric-case
-
-(deflazyconfig
-  '(electric-case-c-init
-    electric-case-java-init
-    electric-case-scala-init
-    electric-case-ahk-init) "electric-case"
-
-    (setq electric-case-convert-calls t)
-    )
-
-(defprepare "electric-case"
-
-  (defpostload "cc-mode"
-    (add-hook 'c-mode-hook 'electric-case-c-init)
-    (add-hook 'java-mode-hook 'electric-case-java-init))
-
-  (defpostload "scala-mode"
-    (add-hook 'scala-mode-hook 'electric-case-scala-init))
-
-  (defpostload "ahk-mode"
-    (add-hook 'ahk-mode-hook 'electric-case-ahk-init))
-  )
-
-;; ** cedit
-
-(defprepare "paredit"
-
-  (defprepare "cedit"
-    (add-hook 'c-mode-common-hook
-              (lambda ()
-                (local-set-key (kbd "M-)") 'cedit-or-paredit-slurp)
-                (local-set-key (kbd "M-{") 'cedit-wrap-brace)
-                (local-set-key (kbd "M-*") 'cedit-or-paredit-barf)
-                (local-set-key (kbd "M-U") 'cedit-or-paredit-splice-killing-backward)
-                (local-set-key (kbd "M-R") 'cedit-or-paredit-raise))))
-
-  (deflazyconfig
-    '(cedit-or-paredit-slurp
-      cedit-wrap-brace
-      cedit-or-paredit-barf
-      cedit-or-paredit-splice-killing-backward
-      cedit-or-paredit-raise) "cedit")
-  )
-
 ;; ** simple-demo
 
 (deflazyconfig '(simple-demo-set-up) "simple-demo"
   (setq simple-demo-highlight-face 'compilation-warning))
-
-;; ** mc-jump
-
-(deflazyconfig '(mc-jump-char) "mc-jump")
 
 ;; * external libraries (abcdef)
 ;; ** ace-jump-mode
@@ -2886,40 +2938,9 @@ check for the whole contents of FILE, otherwise check for the first
   ;; *** (sentinel)
   )
 
-;; ** autopair
-
-(defconfig 'autopair
-
-  (autopair-global-mode 1)
-
-  ;; automatically insert " " around sexps
-  (defadvice autopair-insert-opening (after autopair-autospace-for-lisp activate)
-    ;; closing paren is inserted in "post-command-hook"
-    ;; (so it is not inserted now)
-    (cond ((member major-mode my-lisp-modes)
-           (when (save-excursion (backward-char) (my-end-of-sexp-p))
-             (save-excursion (backward-char) (insert " ")))
-           (when (my-beginning-of-sexp-p)
-             (save-excursion (insert " "))))))
-  )
-
 ;; ** color-theme
 
 (defconfig 'color-theme)
-
-;; ** diminish
-
-(defconfig 'diminish
-
-  (defpostload "outline" (diminish 'outline-minor-mode "Ol"))
-  (defpostload "autopair" (diminish 'autopair-mode "AP"))
-  (defpostload "yasnippet" (diminish 'yas-minor-mode "Ya"))
-  (defpostload "rainbow-mode" (diminish 'rainbow-mode "Rb"))
-  (defpostload "highlight-parentheses" (diminish 'highlight-parentheses-mode "Hp"))
-  (defpostload "outlined-elisp-mode" (diminish 'outlined-elisp-mode "Oe"))
-  (defpostload "hilit-chg" (diminish 'highlight-changes-mode "Cg"))
-  (defpostload "page-break-lines" (diminish 'page-break-lines-mode "Pl"))
-  )
 
 ;; ** dmacro
 
@@ -3238,6 +3259,23 @@ check for the whole contents of FILE, otherwise check for the first
 
   ;; *** smartchr for c-like languages
 
+  ;; if region is active,  wrap region with {}.
+  ;; else insert "{`\!\!'}"
+  (defun my-c-sp-or-smart-braces ()
+    (interactive)
+    (if (and transient-mark-mode mark-active)
+        (let ((beg (region-beginning))
+              (end (region-end)))
+          (deactivate-mark)
+          (goto-char beg)
+          (insert "{\n")
+          (goto-char (+ 2 end))
+          (insert "\n}")
+          (indent-region beg (point)))
+      (insert "\n{\n\n}")
+      (forward-line -1)
+      (indent-according-to-mode)))
+
   (defpostload "cc-mode"
     (add-hook 'c-mode-common-hook
               (lambda ()
@@ -3271,7 +3309,8 @@ check for the whole contents of FILE, otherwise check for the first
                 (key-combo-define-local (kbd "^=") " ^= ")
                 ;; others
                 (key-combo-define-local (kbd "?") '( " ? `!!' : " "?"))
-                (key-combo-define-local (kbd "/*") "/* `!!' */")))
+                (key-combo-define-local (kbd "/*") "/* `!!' */")
+                (key-combo-define-local (kbd "{") '(my-c-sp-or-smart-braces "{ `!!'}"))))
     (add-hook 'c-mode-hook
               (lambda ()
                 ;; pointers
@@ -3301,18 +3340,28 @@ check for the whole contents of FILE, otherwise check for the first
 
   ;; *** smartchr for html / web
 
+  ;; if region is active, and "smartparens" is available,
+  ;; wrap region with tag. else insert "<`\!\!'>"
+  (defun my-html-sp-or-smart-lt ()
+    (interactive)
+    (if (and (boundp 'smartparens-mode) smartparens-mode
+             transient-mark-mode mark-active)
+        (call-interactively 'sp--self-insert-command)
+      (insert "<>")
+      (backward-char)))
+
   (add-hook 'html-mode-hook
             (lambda ()
-              (key-combo-define-local (kbd "<") '("<`!!'>" "<" "&lt;"))
+              (key-combo-define-local (kbd "<") '(my-html-sp-or-smart-lt "&lt;" "<"))
               (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
-              (key-combo-define-local (kbd ">") '(key-combo-execute-orignal "&gt;"))
+              (key-combo-define-local (kbd ">") '("&gt;" ">"))
               (key-combo-define-local (kbd "&") '("&amp;" "&"))))
 
   (add-hook 'web-mode-hook
             (lambda ()
-              (key-combo-define-local (kbd "<") '("<`!!'>" "<" "&lt;"))
+              (key-combo-define-local (kbd "<") '(my-html-sp-or-smart-lt "&lt;" "<"))
               (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
-              (key-combo-define-local (kbd ">") '(key-combo-execute-orignal "&gt;"))
+              (key-combo-define-local (kbd ">") '("&gt;" ">"))
               (key-combo-define-local (kbd "&") '("&amp;" "&"))))
 
   ;; *** smartchr for haskell
@@ -3381,27 +3430,6 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defprepare "multiple-cursors"
 
-  ;; **** load and fix mc-mark-more
-
-  (deflazyconfig
-    '(mc--on-tag-name-p
-      mc/mark-sgml-tag-pair
-      mc--mark-symbol-at-point
-      mc/mark-all-like-this-in-defun
-      mc--no-region-and-in-sgmlish-mode
-      mc/mark-all-symbols-like-this-in-defun
-      mc/mark-all-words-like-this-in-defun) "mc-mark-more"
-
-      ;; (mc--in-defun) sometimes seems not work (why?)
-      ;; so make him return always non-nil
-      (dolist (fun '(mc/mark-all-like-this-in-defun
-                     mc/mark-all-words-like-this-in-defun
-                     mc/mark-all-symbols-like-this-in-defun))
-        (eval
-         `(defadvice ,fun (around fix-restriction activate)
-            (flet ((mc--in-defun () t)) ad-do-it))))
-      )
-
   ;; **** mc/mark-next-dwim
 
   (defun my-mc/mark-next-dwim ()
@@ -3426,15 +3454,6 @@ check for the whole contents of FILE, otherwise check for the first
                 (progn (forward-word) (backward-word) (point)))))))
 
   ;; **** mc/mark-all-dwim
-
-  (defun my-mc/mark-next-dwim ()
-    (interactive)
-    (if (and (interactive-p) transient-mark-mode mark-active
-             (string-match "\n" (buffer-substring (region-beginning)
-                                                  (region-end))))
-        (call-interactively 'mc/edit-lines)
-      (setq this-command 'mc/mark-next-like-this)
-      (mc/mark-next-like-this 1)))
 
   (defvar my-mc/mark-all-last-executed nil)
 
@@ -3495,8 +3514,33 @@ check for the whole contents of FILE, otherwise check for the first
     mc/mark-all-words-like-this
     mc/mark-all-symbols-like-this) "multiple-cursors"
 
+    ;; **** mc-list file
+
     (setq mc/list-file my:mc-list-file)
     (load my:mc-list-file)
+
+    ;; **** load and fix mc-mark-more
+
+    (deflazyconfig
+      '(mc--on-tag-name-p
+        mc/mark-sgml-tag-pair
+        mc--mark-symbol-at-point
+        mc/mark-all-like-this-in-defun
+        mc--no-region-and-in-sgmlish-mode
+        mc/mark-all-symbols-like-this-in-defun
+        mc/mark-all-words-like-this-in-defun) "mc-mark-more"
+
+        ;; (mc--in-defun) sometimes seems not work (why?)
+        ;; so make him return always non-nil
+        (dolist (fun '(mc/mark-all-like-this-in-defun
+                       mc/mark-all-words-like-this-in-defun
+                       mc/mark-all-symbols-like-this-in-defun))
+          (eval
+           `(defadvice ,fun (around fix-restriction activate)
+              (flet ((mc--in-defun () t)) ad-do-it))))
+        )
+
+    ;; **** minor hacks
 
     ;; a fix for emacs 23
     (defadvice regexp-opt (after fix-regexp-opt-symbols activate)
@@ -3514,6 +3558,21 @@ check for the whole contents of FILE, otherwise check for the first
           (setq killed-rectangle entries
                 cua--last-killed-rectangle
                 (cons (and kill-ring (car kill-ring)) entries)))))
+
+    ;; pop "cua--last-killed-rectangle" if non-nil
+    (defadvice cua-paste
+      (before mc--maybe-set-cua--killed-rectangle activate)
+      (when (and multiple-cursors-mode
+                 cua--last-killed-rectangle)
+        (let* ((n 1))
+          (mc/for-each-cursor-ordered
+           (let ((kill-ring (overlay-get cursor 'kill-ring))
+                 (kill-ring-yank-pointer (overlay-get cursor 'kill-ring-yank-pointer)))
+             (kill-new (or (nth n cua--last-killed-rectangle) ""))
+             (overlay-put cursor 'kill-ring kill-ring)
+             (overlay-put cursor 'kill-ring-yank-pointer kill-ring-yank-pointer)
+             (setq n (1+ n)))))
+        (setq cua--last-killed-rectangle nil)))
     )
 
 ;; ** nav
@@ -3598,6 +3657,7 @@ check for the whole contents of FILE, otherwise check for the first
     paredit-wrap-round
     paredit-forward-slurp-sexp
     paredit-raise-sexp
+    paredit-convolute-sexp
     paredit-splice-sexp-killing-backward
     paredit-split-sexp
     paredit-join-sexps
@@ -3733,6 +3793,33 @@ check for the whole contents of FILE, otherwise check for the first
            (java-mode        . "javac -Xlint:all -encoding UTF-8 %f")
            (haskell-mode     . "ghc -Wall -fwarn-missing-import-lists %f") )))
 
+;; ** smartparens
+
+(defconfig 'smartparens-config
+
+  (setq sp-autoinsert-if-followed-by-same 0
+        sp-autoinsert-if-followed-by-word t
+        sp-autoescape-string-quote nil
+        sp-highlight-pair-overlay nil)
+
+  ;; enable "<>" for web-mode
+  (sp-local-tag 'web-mode "<" "<_>" "</_>"
+                :transform 'sp-match-sgml-tags)
+
+  (smartparens-global-mode)
+
+  ;; automatically insert " " between sexps
+  (defadvice sp-insert-pair
+    (after sp-autospace-for-lisp activate)
+    (when (and (member major-mode my-lisp-modes)
+               (= (char-before) ?\()
+               (= (char-after) ?\)))
+      (when (save-excursion (backward-char) (my-end-of-sexp-p))
+        (save-excursion (backward-char) (insert " ")))
+      (when (save-excursion (forward-char) (my-beginning-of-sexp-p))
+        (save-excursion (forward-char) (insert " ")))))
+  )
+
 ;; ** sml-mode
 
 (defprepare "sml-mode"
@@ -3752,13 +3839,27 @@ check for the whole contents of FILE, otherwise check for the first
 (defpostload "color-theme"
   (defconfig 'color-theme-solarized
 
+    ;; add some colors to palette
+    (add-to-list 'solarized-colors '(modeline-active "#194854"))
+    (add-to-list 'solarized-colors '(modeline-record "#594854"))
+
+    ;; function to a search color from palette
+    (defun my-solarized-color (name)
+      (cadr (assq name solarized-colors)))
+
+    ;; load solarized
     (color-theme-solarized-dark)
 
     ;; *** ace-jump-mode
 
     (defpostload "ace-jump-mode"
-      (set-face-foreground 'ace-jump-face-foreground "#ff6666")
-      (set-face-foreground 'ace-jump-face-background "#335555"))
+
+      (set-face-foreground 'ace-jump-face-foreground
+                           (my-solarized-color 'magenta))
+
+      (set-face-foreground 'ace-jump-face-background
+                           (my-solarized-color 'base01))
+      )
 
     ;; *** font-lock
 
@@ -3767,58 +3868,54 @@ check for the whole contents of FILE, otherwise check for the first
       ;; highlight regexp symbols
       ;; reference | http://pastelwill.jp/wiki/doku.php?id=emacs:init.el
 
-      (set-face-foreground 'font-lock-regexp-grouping-backslash "#9955CC")
-      (set-face-foreground 'font-lock-regexp-grouping-construct "#9955CC")
+      (set-face-foreground 'font-lock-regexp-grouping-backslash
+                           (my-solarized-color 'orange))
+
+      (set-face-foreground 'font-lock-regexp-grouping-construct
+                           (my-solarized-color 'orange))
       )
 
     ;; *** highlight-parentheses
 
+    ;; the last color is ignored
+    ;; because of a bug in highlight-parentheses
+
     (defpostload "highlight-parentheses"
+
       (hl-paren-set 'hl-paren-colors nil)
-      (hl-paren-set 'hl-paren-background-colors '("#35506b" "#000000")))
 
-    ;; *** hl-line
-
-    (defpostload "hl-line"
-      (custom-set-faces '(hl-line-face ((t (:background "#0b3641"))))))
+      (hl-paren-set 'hl-paren-background-colors
+                    (list (my-solarized-color 'base01) "#000000"))
+      )
 
     ;; *** paren
 
     (defpostload "paren"
+
+      ;; color is set by color-theme-solarized
 
       (set-face-attribute 'show-paren-match-face nil
                           :underline t
                           :bold t)
 
       (set-face-attribute 'show-paren-mismatch-face nil
-                          :background "#cf2820"
+                          :underline t
                           :bold t)
-      )
-
-    ;; *** sml-modeline
-
-    (defpostload "sml-modeline"
-
-      (set-face-attribute 'sml-modeline-end-face nil
-                          :background "#bbd6e1"
-                          :foreground "#4b6671")
-
-      (set-face-attribute 'sml-modeline-vis-face nil
-                          :background "#0b3641"
-                          :foreground "#6b96a1")
       )
 
     ;; *** flymake
 
     (defpostload "flymake"
 
-      (set-face-foreground 'flymake-errline nil)
-      (set-face-inverse-video-p 'flymake-errline nil)
-      (set-face-background 'flymake-errline "#4e2a2a")
+      (set-face-attribute 'flymake-errline nil
+                          :foreground 'unspecified
+                          :inverse-video 'unspecified
+                          :background (my-solarized-color 'orange))
 
-      (set-face-foreground 'flymake-warnline nil)
-      (set-face-inverse-video-p 'flymake-warnline nil)
-      (set-face-background 'flymake-warnline "#4e2a2a")
+      (set-face-attribute 'flymake-warnline nil
+                          :foreground 'unspecified
+                          :inverse-video 'unspecified
+                          :background (my-solarized-color 'orange))
       )
 
     ;; *** whitespace
@@ -3826,53 +3923,63 @@ check for the whole contents of FILE, otherwise check for the first
     (defpostload "whitespace"
 
       (set-face-attribute 'whitespace-space nil
-                          :foreground "#9f5850"
+                          :foreground (my-solarized-color 'yellow)
                           :background 'unspecified)
 
       (set-face-attribute 'whitespace-tab nil
-                          :foreground "#9f5850"
+                          :foreground (my-solarized-color 'yellow)
                           :background 'unspecified)
       )
 
     ;; *** modeilne
 
-    (setq my-mode-line-background '("#194854" . "#594854"))
+    (setq my-mode-line-background (cons (my-solarized-color 'modeline-active)
+                                        (my-solarized-color 'modeline-record)))
 
     (set-face-attribute 'mode-line nil
-                        :foreground "#93a1a1" :background "#194854"
+                        :foreground (my-solarized-color 'base1)
+                        :background (my-solarized-color 'modeline-active)
                         :inverse-video nil
-                        :box '(:line-width 2 :color "#194854"))
+                        :box (append '(:line-width 2)
+                                     `(:color ,(my-solarized-color 'modeline-active))))
 
     (set-face-attribute 'mode-line-inactive nil
-                        :foreground "#6f758d" :background "#073642"
+                        :foreground (my-solarized-color 'base01)
+                        :background (my-solarized-color 'base02)
                         :inverse-video nil
-                        :box '(:line-width 2 :color "#073642"))
+                        :box (append '(:line-width 2)
+                                     `(:color ,(my-solarized-color 'base02))))
 
     (set-face-attribute 'mode-line-dark-face nil
-                        :foreground "#6f758d")
+                        :foreground (my-solarized-color 'base01))
 
     (set-face-attribute 'mode-line-highlight-face nil
-                        :foreground "#b58900"
+                        :foreground (my-solarized-color 'yellow)
                         :weight 'bold)
 
     (set-face-attribute 'mode-line-warning-face nil
-                        :foreground "#002b36" :background "#b58900")
+                        :foreground (my-solarized-color 'base03)
+                        :background (my-solarized-color 'yellow))
 
     (set-face-attribute 'mode-line-modified-face nil
-                        :foreground "#d33682"
-                        :box '(:line-width 2 :color "#d33682"))
+                        :foreground (my-solarized-color 'magenta)
+                        :box (append '(:line-width 2)
+                                     `(:color ,(my-solarized-color 'magenta))))
 
     (set-face-attribute 'mode-line-read-only-face nil
-                        :foreground "#268bd2"
-                        :box '(:line-width 2 :color "#268bd2"))
+                        :foreground (my-solarized-color 'blue)
+                        :box (append '(:line-width 2)
+                                     `(:color ,(my-solarized-color 'blue))))
 
     (set-face-attribute 'mode-line-narrowed-face nil
-                        :foreground "#2aa198"
-                        :box '(:line-width 2 :color "#2aa198"))
+                        :foreground (my-solarized-color 'cyan)
+                        :box (append '(:line-width 2)
+                                     `(:color ,(my-solarized-color 'cyan))))
 
     (set-face-attribute 'mode-line-mc-face nil
-                        :foreground "#93a1a1"
-                        :box '(:line-width 2 :color "#93a1a1"))
+                        :foreground (my-solarized-color 'base1)
+                        :box (append '(:line-width 2)
+                                     `(:color ,(my-solarized-color 'base1))))
 
     ;; *** (sentinel)
     ))
@@ -4016,8 +4123,10 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** zencoding
 
 (deflazyconfig '(zencoding-mode) "zencoding"
+  (setq zencoding-indent 2)
   (define-key zencoding-mode-keymap (kbd "C-j") nil)
   (define-key zencoding-mode-keymap (kbd "<C-return>") nil)
+  ;; override yasnippet
   (defpostload "key-chord"
     (key-chord-define zencoding-mode-keymap "fj" 'zencoding-expand-line)))
 
@@ -4358,6 +4467,7 @@ check for the whole contents of FILE, otherwise check for the first
   (global-set-key (kbd "M-U") 'paredit-splice-sexp-killing-backward)
   (global-set-key (kbd "M-S") 'paredit-split-sexp)
   (global-set-key (kbd "M-J") 'paredit-join-sexps)
+  (global-set-key (kbd "M-C") 'paredit-convolute-sexp)
   (global-set-key (kbd "M-:") 'paredit-comment-dwim)
   (global-set-key (kbd "M-\"") 'paredit-meta-doublequote))
 
@@ -4481,256 +4591,3 @@ check for the whole contents of FILE, otherwise check for the first
                              '(kill-ring-save yas-register-oneshot-snippet)))
   )
 
-;; * vvvvvvv not currently used vvvvvvv
-;; * *COMMENT* minimap (Dustin's fork)
-
-;; - this setting script is obsolete -
-
-;; CONFLICTS WITH ORG ?
-;; (require 'minimap)
-
-;; (global-set-key (kbd "M-4") 'minimap-toggle) ; override
-
-;; ** settings
-
-;; (setq minimap-width-fraction 0.16)
-;; (setq minimap-update-delay 0.1)
-
-;; ** toggle minimap
-
-;; (defun minimap-toggle ()
-;;   (interactive)
-;;   (if (and minimap-window
-;;            (window-live-p minimap-window))
-;;       (minimap-kill)
-;;     (minimap-create)))
-
-;; ** smart minimap
-;; *** smart-minimap
-
-;; (defvar smart-minimap nil)
-
-;; (defun smart-minimap()
-;;   (interactive)
-;;   (if (setq smart-minimap (not smart-minimap))
-;;       (progn
-;;         (ad-activate-regexp "smart-minimap-ad")
-;;         (smart-minimap-create-or-not))
-;;     (progn
-;;       (ad-deactivate-regexp  "smart-minimap-ad")
-;;       (smart-minimap-kill-or-not))))
-
-;; ;; *** utility functions
-
-;; (defun smart-minimap-kill-or-not()
-;;   (if (and minimap-window
-;;            (window-live-p minimap-window))
-;;       (minimap-kill)))
-
-;; (defun smart-minimap-create-or-not()
-;;   (if (and (or (not minimap-window)
-;;                (not (window-live-p minimap-window)))
-;;            (one-window-p))
-;;       (if (not (= 1 (1+ (buffer-size)))
-;;           (minimap-create)
-;;         (kill-minimap-and-wait-for-contents))))
-
-;; *** content monitor
-
-;; (defvar smart-minimap-timer-object nil)
-
-;; (defun kill-minimap-and-wait-for-contents()
-;;   (ad-deactivate-regexp "smart-minimap-ad")
-;;   (smart-minimap-kill-or-not)
-;;   (setq smart-minimap-timer-object
-;;         (run-with-idle-timer minimap-update-delay t
-;;                              'smart-minimap-buffer-monitor)))
-
-;; (defun smart-minimap-buffer-monitor()
-;;   (if (not (= 1 (1+ buffer-size)))
-;;         (smart-minimap-create-or-not)
-;;         (cancel-timer smart-minimap-timer-object)
-;;         (setq smart-minimap-timer-object nil)
-;;         (ad-activate-regexp "smart-minimap-ad")))
-
-;; *** automatically create minimap window
-
-;; (defadvice delete-other-windows (after smart-minimap-ad)
-;;   (smart-minimap-create-or-not))
-
-;; (defadvice delete-window (after smart-minimap-ad)
-;;   (smart-minimap-create-or-not))
-
-;; (defadvice kill-buffer (after smart-minimap-ad)
-;;   (smart-minimap-create-or-not))
-
-;; *** automatically kill minimap window
-
-;; (defadvice split-window-vertically (before smart-minimap-ad)
-;;   (progn
-;;     (ad-deactivate-regexp "smart-minimap-ad")
-;;     (smart-minimap-kill-or-not)
-;;     (ad-activate-regexp "smart-minimap-ad")))
-
-;; (defadvice split-window-horizontally (before smart-minimap-ad)
-;;   (progn
-;;     (ad-deactivate-regexp "smart-minimap-ad")
-;;     (smart-minimap-kill-or-not)
-;;     (ad-activate-regexp "smart-minimap-ad")))
-
-;; (defadvice minimap-update (around smart-minimap-ad)
-;;   (if (= 1 (1+ (buffer-size)))
-;;       (kill-minimap-and-wait-for-contents)
-;;     ad-do-it))
-
-;; *** skip minimap window
-
-;; (defadvice previous-multiframe-window (after smart-minimap-ad)
-;;   (when minimap-mode (previous-multiframe-window)))
-
-;; (defadvice next-multiframe-window (after smart-minimap-ad)
-;;   (when minimap-mode (next-multiframe-window)))
-
-;; *** simple fix
-
-;; (defadvice kill-region (around smart-minimap-ad)
-;;   ;; minimap sometimes causes fatal error when a large region is killed
-;;   ;; this code make minimap looks worse, but seems to be necessary for safe
-;;   (ad-deactivate-regexp "smart-minimap-ad")
-;;   (smart-minimap-kill-or-not)
-;;   ad-do-it
-;;   (smart-minimap-create-or-not)
-;;   (ad-activate-regexp "smart-minimap-ad"))
-
-;; *** nav fix
-
-;; (defadvice nav-toggle-and-show-summary (before smart-minimap-ad)
-;;   ;; nav sometimes conflicts with minimap
-;;   (ad-deactivate-regexp "smart-minimap-ad")
-;;   (smart-minimap-kill-or-not)
-;;   (ad-activate-regexp "smart-minimap-nav-return"))
-
-;; (defadvice nav-unsplit-window-horizontally (after smart-minimap-nav-return)
-;;   (ad-deactivate-regexp "smart-minimap-nav-return")
-;;   (smart-minimap-create-or-not)
-;;   (ad-activate-regexp "smart-minimap-ad"))
-
-;; *** howm fix
-
-;; (defadvice howm-menu (before smart-minimap-ad)
-;;   ;; howm sometimes conflicts with minimap
-;;    (ad-deactivate-regexp "smart-minimap-ad")
-;;    (smart-minimap-kill-or-not)
-;;    (ad-activate-regexp "smart-minimap-howm-return"))
-
-;; (defadvice bury-buffer (after smart-minimap-howm-return)
-;;   (unless (cdr (assq 'howm-mode (buffer-local-variables)))
-;;     (progn
-;;       (ad-deactivate-regexp "smart-minimap-howm-return")
-;;       (smart-minimap-create-or-not)
-;;       (kill-buffer "*howmM:%menu%*")
-;;       (ad-activate-regexp "smart-minimap-ad"))))
-
-;; *** orgtbl-mode fix
-
-;; (defadvice orgtbl-mode (after smart-minimap-ad)
-;;   ;; eval-function in orgtbl-mode sometimes conflicts with minimap
-;;   (if orgtbl-mode
-;;         (ad-deactivate-regexp "smart-minimap-ad")
-;;         (smart-minimap-kill-or-not)
-;;         (ad-activate-regexp "smart-minimap-orgtbl-return")))
-
-;; (defadvice orgtbl-mode (after smart-minimap-orgtbl-return)
-;;   (unless orgtbl-mode
-;;     (progn
-;;       (ad-deactivate-regexp "smart-minimap-orgtbl-return")
-;;       (smart-minimap-create-or-not)
-;;       (ad-activate-regexp "smart-minimap-ad"))))
-
-;; *** popwin fix
-
-;; (defadvice popwin:display-buffer (around smart-minimap-ad)
-;;   (ad-deactivate-regexp "smart-minimap-ad")
-;;   ad-do-it
-;;   (ad-activate-regexp "smart-MINIMAP-AD"))
-
-;; *** auto-run
-
-;; (add-hook 'after-init-hook
-;;           (lambda()(run-with-idle-timer 0.5 nil 'smart-minimap)))
-
-;; * *COMMENT* server
-
-;; - this setting script is obsolete -
-
-;; (require 'server)
-
-;; ;; on Windows 7, change
-;; ;;  "server" directory
-;; ;;   -> property
-;; ;;    -> security
-;; ;;     -> details
-;; ;;      -> owner
-;; ;;       -> edit
-;; ;;        -> (login-user)
-
-;; ** automatically run server
-
-;; (add-hook 'after-init-hook
-;;           (lambda()
-;;             (unless (server-running-p)
-;;               (server-start)
-;;               ;; (iconify-frame)
-;;               )))
-
-;; ** clear emacs and iconify
-
-;; (defun kill-all-file-buffers ()
-;;   "Kill all file editting buffers file,
-;; and returns number of not-killed buffers"
-;;   (interactive)
-;;   (let ((errcount 0))
-;;     (progn
-;;       (mapc (lambda(b)
-;;               (when (buffer-file-name b)
-;;                 (unless (kill-buffer b) (setq errcount (1+ errcount)))))
-;;             (buffer-list))
-;;       errcount)))
-
-;; (defun clear-and-iconify-emacs ()
-;;   "Kill all file editting buffers, abort all recursive edit,
-;; clear *scratch*, delete all splitted windows, and then iconify"
-;;   (interactive)
-;;   (when (= 0 (kill-all-file-buffers))
-;;     (iconify-frame)
-;;     (delete-other-windows)
-;;     (switch-to-buffer "*scratch*")
-;;     (my-make-scratch 0)
-;;     (top-level)
-;;     (server-edit)
-;;     ))
-
-;; ** quit emacs with [M-x exit]
-
-;; ;; reference | http://qiita.com/items/48ac0af1e31eb9f69525
-
-;; (defalias 'exit 'save-buffers-kill-emacs)
-
-;; ** keybind
-
-;; (global-set-key (kbd "C-x C-c") 'clear-and-iconify-emacs)
-
-;; * *COMMENT* semantic
-
-;; (setq semantic-default-submodes
-;;       '(global-semantic-idle-scheduler-mode
-;;         global-semantic-idle-summary-mode))
-
-;; (defpostload "cc-mode"
-;;   (add-hook 'c-mode-hook (lambda () (semantic-mode 1)))
-;;   (add-hook 'java-mode-hook (lambda () (semantic-mode 1))))
-
-;; (defpostload "auto-complete"
-;;   (setq ac-sources (cons 'ac-source-semantic ac-sources)))
-
-;; * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
