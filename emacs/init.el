@@ -3422,121 +3422,102 @@ check for the whole contents of FILE, otherwise check for the first
   (add-hook 'window-setup-hook 'maximize-frame))
 
 ;; ** multiple-cursors
-;; *** dwim commands
-
-(defprepare "multiple-cursors"
-
-  ;; **** load and fix mc-mark-more
-
-  (deflazyconfig
-    '(mc--on-tag-name-p
-      mc/mark-sgml-tag-pair
-      mc--mark-symbol-at-point
-      mc/mark-all-like-this-in-defun
-      mc--no-region-and-in-sgmlish-mode
-      mc/mark-all-symbols-like-this-in-defun
-      mc/mark-all-words-like-this-in-defun) "mc-mark-more"
-
-      ;; (mc--in-defun) sometimes seems not work (why?)
-      ;; so make him return always non-nil
-      (dolist (fun '(mc/mark-all-like-this-in-defun
-                     mc/mark-all-words-like-this-in-defun
-                     mc/mark-all-symbols-like-this-in-defun))
-        (eval
-         `(defadvice ,fun (around fix-restriction activate)
-            (flet ((mc--in-defun () t)) ad-do-it))))
-      )
-
-  ;; **** mc/mark-next-dwim
-
-  (defun my-mc/mark-next-dwim ()
-    (interactive)
-    (if (and (interactive-p) transient-mark-mode mark-active
-             (string-match "\n" (buffer-substring (region-beginning)
-                                                  (region-end))))
-        (call-interactively 'mc/edit-lines)
-      (setq this-command 'mc/mark-next-like-this)
-      (mc/mark-next-like-this 1)))
-
-  ;; **** main
-
-  (defun my-mc/marking-words-p ()
-    (ignore-errors
-      (and (use-region-p)
-           (save-excursion
-             (= (goto-char (region-end))
-                (progn (backward-word) (forward-word) (point))))
-           (save-excursion
-             (= (goto-char (region-beginning))
-                (progn (forward-word) (backward-word) (point)))))))
-
-  ;; **** mc/mark-all-dwim
-
-  (defvar my-mc/mark-all-last-executed nil)
-
-  (defun my-mc/mark-all-dwim-or-skip-this (arg)
-    (interactive "P")
-    (if arg (mc/mark-all-like-this)
-      (if (eq last-command this-command)
-          (case my-mc/mark-all-last-executed
-            ('skip
-             (mc/mark-next-like-this 0))
-            ('restricted-defun
-             (setq my-mc/mark-all-last-executed 'restricted)
-             (mc/mark-all-symbols-like-this)
-             (message "SYMBOLS defun -> [SYMBOLS]"))
-            ('words-defun
-             (setq my-mc/mark-all-last-executed 'words)
-             (mc/mark-all-words-like-this)
-             (message "WORDS defun -> [WORDS] -> ALL"))
-            ('words
-             (setq my-mc/mark-all-last-executed 'all)
-             (mc/mark-all-like-this)
-             (message "WORDS defun -> WORDS -> [ALL]"))
-            ('all-defun
-             (setq my-mc/mark-all-last-executed 'all)
-             (mc/mark-all-like-this)
-             (message "ALL defun -> [ALL]"))
-            (t
-             (message "no items more to mark")))
-        (cond ((eq last-command 'mc/mark-next-like-this)
-               (setq my-mc/mark-all-last-executed 'skip)
-               (mc/mark-next-like-this 0))
-              ((and (mc--no-region-and-in-sgmlish-mode) (mc--on-tag-name-p))
-               (mc/mark-sgml-tag-pair)
-               (message "TAG PAIR"))
-              ((not (use-region-p))
-               (mc--mark-symbol-at-point)
-               (setq my-mc/mark-all-last-executed 'restricted-defun)
-               (mc/mark-all-symbols-like-this-in-defun)
-               (message "[SYMBOLS defun] -> SYMBOLS"))
-              ((my-mc/marking-words-p)
-               (setq my-mc/mark-all-last-executed 'words-defun)
-               (mc/mark-all-words-like-this-in-defun)
-               (message "[WORDS defun] -> WORDS -> ALL"))
-              (t
-               (setq my-mc/mark-all-last-executed 'all-defun)
-               (mc/mark-all-like-this-in-defun)
-               (message "[ALL defun] -> ALL"))))))
-
-  ;; **** (sentinel)
-  )
-
-;; *** settings
 
 (deflazyconfig
-  '(mc/edit-lines
-    mc/mark-all-like-this
-    mc/mark-next-like-this
-    mc/mark-all-words-like-this
-    mc/mark-all-symbols-like-this) "multiple-cursors"
+  '(my-mc/mark-next-dwim
+    my-mc/mark-all-dwim-or-skip-this) "multiple-cursors"
 
-    ;; **** mc-list file
+    ;; ** mc-list file
 
     (setq mc/list-file my:mc-list-file)
-    (load my:mc-list-file)
+    (load mc/list-file)
 
-    ;; **** minor hacks
+    ;; ** dwim commands
+    ;; *** load and fix mc-mark-more
+
+    (require 'mc-mark-more)
+
+    ;; (mc--in-defun) sometimes seems not work (why?)
+    ;; so make him return always non-nil
+    (dolist (fun '(mc/mark-all-like-this-in-defun
+                   mc/mark-all-words-like-this-in-defun
+                   mc/mark-all-symbols-like-this-in-defun))
+      (eval
+       `(defadvice ,fun (around fix-restriction activate)
+          (flet ((mc--in-defun () t)) ad-do-it))))
+
+    ;; *** utilities
+
+    (defun my-mc/marking-words-p ()
+      (ignore-errors
+        (and (use-region-p)
+             (save-excursion
+               (= (goto-char (region-end))
+                  (progn (backward-word) (forward-word) (point))))
+             (save-excursion
+               (= (goto-char (region-beginning))
+                  (progn (forward-word) (backward-word) (point)))))))
+
+    ;; *** mc/mark-next-dwim
+
+    (defun my-mc/mark-next-dwim ()
+      (interactive)
+      (if (and (interactive-p) transient-mark-mode mark-active
+               (string-match "\n" (buffer-substring (region-beginning)
+                                                    (region-end))))
+          (call-interactively 'mc/edit-lines)
+        (setq this-command 'mc/mark-next-like-this)
+        (mc/mark-next-like-this 1)))
+
+    ;; *** mc/mark-all-dwim
+
+    (defvar my-mc/mark-all-last-executed nil)
+
+    (defun my-mc/mark-all-dwim-or-skip-this (arg)
+      (interactive "P")
+      (if arg (mc/mark-all-like-this)
+        (if (eq last-command this-command)
+            (case my-mc/mark-all-last-executed
+              ('skip
+               (mc/mark-next-like-this 0))
+              ('restricted-defun
+               (setq my-mc/mark-all-last-executed 'restricted)
+               (mc/mark-all-symbols-like-this)
+               (message "SYMBOLS defun -> [SYMBOLS]"))
+              ('words-defun
+               (setq my-mc/mark-all-last-executed 'words)
+               (mc/mark-all-words-like-this)
+               (message "WORDS defun -> [WORDS] -> ALL"))
+              ('words
+               (setq my-mc/mark-all-last-executed 'all)
+               (mc/mark-all-like-this)
+               (message "WORDS defun -> WORDS -> [ALL]"))
+              ('all-defun
+               (setq my-mc/mark-all-last-executed 'all)
+               (mc/mark-all-like-this)
+               (message "ALL defun -> [ALL]"))
+              (t
+               (message "no items more to mark")))
+          (cond ((eq last-command 'mc/mark-next-like-this)
+                 (setq my-mc/mark-all-last-executed 'skip)
+                 (mc/mark-next-like-this 0))
+                ((and (mc--no-region-and-in-sgmlish-mode) (mc--on-tag-name-p))
+                 (mc/mark-sgml-tag-pair)
+                 (message "TAG PAIR"))
+                ((not (use-region-p))
+                 (mc--mark-symbol-at-point)
+                 (setq my-mc/mark-all-last-executed 'restricted-defun)
+                 (mc/mark-all-symbols-like-this-in-defun)
+                 (message "[SYMBOLS defun] -> SYMBOLS"))
+                ((my-mc/marking-words-p)
+                 (setq my-mc/mark-all-last-executed 'words-defun)
+                 (mc/mark-all-words-like-this-in-defun)
+                 (message "[WORDS defun] -> WORDS -> ALL"))
+                (t
+                 (setq my-mc/mark-all-last-executed 'all-defun)
+                 (mc/mark-all-like-this-in-defun)
+                 (message "[ALL defun] -> ALL"))))))
+    ;; ** minor hacks
 
     ;; a fix for emacs 23
     (defadvice regexp-opt (after fix-regexp-opt-symbols activate)
@@ -3569,6 +3550,8 @@ check for the whole contents of FILE, otherwise check for the first
              (overlay-put cursor 'kill-ring-yank-pointer kill-ring-yank-pointer)
              (setq n (1+ n)))))
         (setq cua--last-killed-rectangle nil)))
+
+    ;; ** (sentinel)
     )
 
 ;; ** nav
