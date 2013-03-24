@@ -1954,12 +1954,12 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defpostload "org"
 
-  (add-hook 'org-mode-hook 'auto-fill-mode)
+  (add-hook 'org-mode-hook 'refill-mode)
   (setq org-ditaa-jar-path (expand-file-name my:ditaa-jar-file))
 
   ;; *** startup
 
-  (setq org-startup-folded nil)
+  (setq org-startup-folded t)
   (setq org-startup-indented t)
   (setq org-startup-with-inline-images t)
 
@@ -2186,21 +2186,9 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; ** simple
 ;; *** settings
-;; **** auto-fill
-
-;; auto re-fill on delete-char
-
-(defadvice delete-char (after auto-re-fill activate)
-  (when auto-fill-function
-    (call-interactively 'fill-paragraph)))
-
-;; activate auto-fill on fundamental-mode
-
-(add-hook 'fundamental-mode-hook 'auto-fill-mode)
-
 ;; **** truncate lines
 
-(set-default 'truncate-lines t)
+(setq-default truncate-lines t)
 
 ;; **** line-move-visual
 
