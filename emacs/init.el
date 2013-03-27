@@ -6,7 +6,8 @@
 ;; |                                |
 ;; ---------------------------------|
 
-;; * ------- CHEAT SHEET -------
+;; * ------------------------------
+;; * CHEAT SHEET
 ;; ** global
 
 ;; Format
@@ -23,13 +24,13 @@
 
 ;; C-M-_
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|     |     |     |
-;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf|Align|Split|BPgph|  *  |     |
+;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf| Fill|Split|BPgph|  *  |     |
 ;;       |MulAl|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|KlPgh|Cntr0|  -  |     |
 ;;          |HidAl|     |     |EdBuf|BWord|NPgph|RetCm|MrkAl|     |     |
 
 ;; M-_
 ;; |AlWnd|VrWnd|HrWnd|Blnce|Follw|     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
-;;    |Scrtc|Palet| Eval|Slice|Table|YankP|Untab|ShCmd|Opcty|EvalP|     |     |
+;;    |Scrtc|Palet| Eval|Slice|Table|YankP|Untab|Shell|Opcty|EvalP|     |     |
 ;;       |Artst|Sarch| Dir | File| Grep|Shrnk|BMJmp|KlWnd| Goto|     |     |
 ;;          |     |Comnd|Cmpil| VReg|Buffr|Narrw|DMcro| Howm|     |     |
 
@@ -41,12 +42,12 @@
 
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     |Scale|     |     |
-;;    |     |Write|Encod|Revrt|Trnct|     |     |Shell|     |RdOly|     |     |
+;;    |     |Write|Encod|Revrt|Trnct|     |     |     |     |RdOly|     |     |
 ;;       |     | Save|Dired|FHead|     |     |BMSet|KilBf|CgLog|     |     |
 ;;          |     |     |Close|     |     |     |ExMcr|     |     |     |
 
 ;; nonconvert
-;; -   NConv : mc-jump-char
+;; -   NConv : iy-go-to-char
 ;; - C-NConv : ace-jump-mode
 
 ;; SPC
@@ -74,8 +75,9 @@
 
 ;; key-chord
 ;;
-;; - fj : yasnippet or zencoding
-;; - fh : transpose-chars
+;; - df : yasnippet or dabbrev (in HTML modes, zencoding)
+;; - jk :                     "
+;; - fj : transpose-chars
 ;; - fn : downcase word
 ;; - fp : upcase word
 ;; - fm : capitalize word
@@ -100,7 +102,8 @@
 ;;       |     |     |     |     |     |     |     |     |     |     |     |
 ;;          |     |     |     |     |     |     |     |     |     |     |
 
-;; * ------ environ check ------
+;; * META INIT
+;; ** environ check
 
 (when (not (boundp 'my-home-system-p))
   (defconst my-home-system-p nil)
@@ -115,9 +118,9 @@
 (when (not (eq 'windows-nt system-type))
   (message "!! [init] WARNING: system type is not windows-nt"))
 
-;; * -------- constants --------
+;; ** constants
 
-;; parent directories
+;; directories
 
 (defconst my:init-directory "~/.emacs.d/")
 (defconst my:backup-directory "~/.emacs.bak/")
@@ -152,8 +155,10 @@
 (defconst my:howm-export-file
   (if my-home-system-p (concat my:dropbox-directory "howm_schedule.txt")))
 
-;; * -------- meta init --------
-;; ** check if the library exists
+;; ** macros / utilities
+;; *** check if the library exists
+
+;; check if the library exists
 
 (defvar my-found-libraries nil)
 (defvar my-not-found-libraries nil)
@@ -173,9 +178,30 @@
         (add-to-list 'my-not-found-libraries (ad-get-arg 0))
       (add-to-list 'my-found-libraries (ad-get-arg 0)))))
 
-;; ** safe-load macros
+;; *** benchmark for init file
 
-;; load and eval functions that never fail
+;; reference | http://d.hatena.ne.jp/sugyan/20120105/1325756767
+
+(defun my-init-ellapsed-time (beg-time)
+  "ellapsed time from beg-time"
+  (let* ((now (current-time))
+         (min (- (car now) (car beg-time)))
+         (sec (- (cadr now) (cadr beg-time)))
+         (msec (/ (- (car (cddr  now)) (car (cddr beg-time))) 1000)))
+    (+ (* 60000 min) (* 1000 sec) msec)))
+
+;; benchmark for whole init
+
+(defvar my-benchmark-start (current-time))
+
+(add-hook 'after-init-hook
+          (lambda()
+            (interactive)
+            (message ">> [init] TOTAL: %d msec"
+                     (my-init-ellapsed-time my-benchmark-start))))
+
+;; *** safe-load macros
+
 ;; reference | http://d.hatena.ne.jp/jimo1001/20090921/1253525484
 ;;           | http://d.hatena.ne.jp/ozawanay/20101120
 
@@ -214,54 +240,38 @@
      (condition-case err (progn ,@sexps)
        (error (message "XX [init] %s: %s" ,file (error-message-string err))))))
 
-;; evaluate symbol value only if bound
 ;; reference | http://www.sodan.org/~knagano/emacs/dotemacs.html
 
 (defmacro ifbound (symbol)
   "if the symbol exists, the symbol value. otherwise nil."
-  `(if (boundp ',symbol) ,symbol))
+  `(and (boundp ',symbol) ,symbol))
 
-;; ** benchmark for init file
+;; *** delayed load on idle time
 
-;; calc ellapsed time
-;; reference | http://d.hatena.ne.jp/sugyan/20120105/1325756767
-
-(defun my-init-ellapsed-time (beg-time)
-  (let* ((now (current-time))
-         (min (- (car now) (car beg-time)))
-         (sec (- (cadr now) (cadr beg-time)))
-         (msec (/ (- (car (cddr  now)) (car (cddr beg-time))) 1000)))
-    (+ (* 60000 min) (* 1000 sec) msec)))
-
-(defvar my-benchmark-start (current-time))
-
-(add-hook 'after-init-hook
-          (lambda()
-            (interactive)
-            (message ">> [init] TOTAL: %d msec"
-                     (my-init-ellapsed-time my-benchmark-start))))
-
-;; ** delayed load on idle time
+;; when emacs is idle more than 15 seconds, load libraries
 
 (defvar my-idle-require-delay 15)
 (defvar my-idle-require-list nil)
-
-(defmacro delayed-require (ft)
-  `(add-to-list 'my-idle-require-list ,ft))
 
 (run-with-idle-timer my-idle-require-delay nil
                      (lambda ()
                        (dolist (feat my-idle-require-list)
                          (require feat))))
 
-;; ** key-override checker
+(defmacro delayed-require (ft)
+  `(add-to-list 'my-idle-require-list ,ft))
 
-;; (defvar my-defined-keys nil)
+;; *** key-override checker
 
-;; ;; get this file name
+;; ;; get the name of "this" file
 ;; ;; reference | http://hazimarino.blogspot.jp/2010/11/emacs.html
+
 ;; (defmacro this-file-name ()
 ;;   '(or (buffer-file-name) load-file-name))
+
+;; ;; check if any of MY keybindings is shadowed
+
+;; (defvar my-defined-keys nil)
 
 ;; (defadvice global-set-key (after add-defined-keys activate)
 ;;   (when (string-match "init.elc$" (this-file-name))
@@ -277,6 +287,7 @@
 ;;         (message "%s is overriden by %s"
 ;;                  (key-description (car mybinding)) keybinding)))))
 
+;; * ------------------------------
 ;; * settings
 ;; ** font
 
@@ -303,7 +314,7 @@
 
 (prefer-coding-system 'utf-8)
 
-;; on windows, use Shift-JIS as system font
+;; use Shift-JIS for file names in Windows
 ;; reference | http://sakito.jp/emacs/emacsshell.html
 
 (when (string= window-system "w32")
@@ -432,8 +443,7 @@
                    (propertize "n" 'face 'mode-line-dark-face)))
 
                 (:eval
-                 (if (and (boundp 'multiple-cursors-mode)
-                          multiple-cursors-mode)
+                 (if (ifbound multiple-cursors-mode)
                      (propertize (format "%02d" (mc/num-cursors))
                                  'face 'mode-line-mc-face)
                    (propertize "00" 'face 'mode-line-dark-face)))
@@ -487,6 +497,8 @@
 
 ;; ** settings for reading
 
+;; reference | http://d.hatena.ne.jp/nitro_idiot/20130215/1360931962
+
 (defun my-install-reading-config ()
 
   (setq line-spacing 0.3)
@@ -521,31 +533,44 @@
 ;; ** minor adjustments
 
 ;; use y-or-n instead of yes-or-no
+
 (fset 'yes-or-no-p 'y-or-n-p)
 
-;; suppress beep
+;; inhibit noisy beep
+
 (set-message-beep 'silent)
 
-;; title format
+;; title bar string
+
 (setq frame-title-format
       (concat "%b - emacs @ " system-name))
 
-;; enable disabled commands
+;; do not ask to narrow
+
 (put 'narrow-to-region 'disabled nil)
 
-;; completion
+;; completion ignore case
+
 (setq completion-ignore-case t)
 (setq read-file-name-completion-ignore-case t)
 
-;; TABs
-(setq-default indent-tabs-mode nil)
-(setq-default tab-width 5)
+;; use spaces not tabs
 
-;; use bar cursor
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4)
+
+;; cursor type
+
 (setq-default cursor-type 'bar)
 
 ;; visible end-of-buffer
+
 (setq-default indicate-empty-lines t)
+
+;; do not pause redisplay
+;; reference | http://masteringemacs.org/articles/2011/10/02/improving-performance-emacs-display-engine/
+
+(setq redisplay-dont-pause t)
 
 ;; ** my commands
 ;; *** swap windows
@@ -592,9 +617,13 @@
           -1))
   (downcase-word my-up/downcase-count))
 
-;; *** clear or create *scratch*
+;; *** make *scratch* always available
 
 ;; reference | http://www.bookshelf.jp/soft/meadow_29.html#SEC392
+
+;; **** create new scratch
+
+;; a command to create new scratch, or clear existing scratch
 
 (defun my-make-scratch (&optional arg)
   ;; create new *scratch*
@@ -610,10 +639,9 @@
     (cond ((= arg 0) (message "*scratch* is cleared up."))
           ((= arg 1) (message "another *scratch* is created")))))
 
-(defun my-buffer-name-list ()
-  (mapcar (function buffer-name) (buffer-list)))
+;; **** clear scratch instead of killing it
 
-;; clear *scratch* instead of killing it
+;; when scratch is going to be killed, clear scratch instead
 
 (add-hook 'kill-buffer-query-functions
           (function (lambda ()
@@ -621,7 +649,12 @@
                           (progn (my-make-scratch 0) nil)
                         t))))
 
-;; when *scratch* is saved, create another *scratch*
+;; **** create scratch when saved
+
+;; when scratch is saved to file, create new scratch
+
+(defun my-buffer-name-list ()
+  (mapcar (function buffer-name) (buffer-list)))
 
 (add-hook 'after-save-hook
           (function (lambda ()
@@ -645,7 +678,7 @@
 
 ;; *** smartchr-like commands
 
-;; i want use smartchr for ", " even in comments, and strings
+;; key-combo does not work inside string, comments
 
 (defun my-smart-comma ()
   (interactive)
@@ -658,12 +691,15 @@
 
 ;; *** retop
 
-;; give a name for (recenter 0)
+;; name (recenter 0)
 
 (defun retop ()
   (interactive) (recenter 0))
 
 ;; *** eval region or last sexp
+
+;; if region is active, eval all sexps in the region.
+;; otherwise eval previous sexp
 
 (defun my-eval-sexp-dwim ()
   (interactive)
@@ -673,6 +709,7 @@
 
 ;; *** eval and replace sexp
 
+;; eval sexp and replace it with the value
 ;; reference | http://irreal.org/blog/?p=297
 
 (defun my-eval-and-replace-sexp (value)
@@ -685,6 +722,10 @@
 
 ;; reference | http://www.pitecan.com/tmp/move-region.el
 
+;; **** utility
+
+;; take a cursor-move function as an arg, and move region with it
+
 (defun my-move-region (sexp)
   (if (and transient-mark-mode mark-active)
       (let (m)
@@ -695,6 +736,8 @@
         (set-mark m)
         (setq deactivate-mark nil))
     (eval sexp)))
+
+;; **** commands
 
 (defun my-move-region-up ()
   (interactive)
@@ -714,6 +757,9 @@
 
 ;; *** visible-register
 
+;; store current position to a visible register.
+;; when called again, pop it.
+
 (defvar my-visible-register nil)
 (make-variable-buffer-local 'my-visible-register)
 
@@ -732,6 +778,8 @@
                    'face my-visible-register-face))))
 
 ;; *** shrink-spaces
+
+;; shrink spaces or newlines
 
 (defun my-shrink-whitespaces ()
   (interactive)
@@ -778,6 +826,9 @@
 
 ;; ** other utilities
 
+;; "point-at-eol" never fails, and returns line-number.
+;; "eol-point" may fail, and returns position.
+
 (defun eol-point (&optional point)
   "Returns the end-of-line point that contains the POINT"
   (save-excursion
@@ -787,6 +838,8 @@
   "Returns the end-of-line point that contains the POINT"
   (save-excursion
     (when point (goto-char point)) (beginning-of-line) (point)))
+
+;; get first line substring of the region
 
 (defun get-first-line-string (from to)
   "Returns substring of the first line (FROM TO)"
@@ -800,6 +853,8 @@
           (setq eol (eol-point from))))
       ;; kill whitespaces
       (replace-regexp-in-string "^\\s-+\\|\\s-+$" "" str))))
+
+;; and some more utilities ...
 
 (defun filter (condp lst)
   (delq nil
@@ -831,13 +886,6 @@
 
   (define-key change-log-mode-map (kbd "C-x C-s") 'my-change-log-save-and-kill)
   )
-
-;; ** align
-
-(defun my-align-region (beg end)
-  (interactive "r")
-  (when (and (interactive-p) transient-mark-mode mark-active)
-    (align-entire beg end)))
 
 ;; ** artist
 
@@ -1656,7 +1704,7 @@
 ;; ** flymake
 
 (defprepare "flymake"
-  (add-hook 'c-mode-hook 'flymake-find-file-hook))
+  (add-hook 'find-file-hook 'flymake-find-file-hook))
 
 (deflazyconfig '(flymake-find-file-hook) "flymake"
 
@@ -1799,8 +1847,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defun hi-lock-rehighlight ()
   (interactive)
-  (when (and (boundp 'hi-lock-interactive-patterns)
-             hi-lock-interactive-patterns)
+  (when (ifbound hi-lock-interactive-patterns)
     (unhighlight-regexp (car (car hi-lock-interactive-patterns))))
   (call-interactively 'highlight-regexp))
 
@@ -1816,6 +1863,18 @@ check for the whole contents of FILE, otherwise check for the first
 (setq imenu-auto-rescan t)
 
 ;; ** isearch
+
+;; isearch with japanese
+
+(when (string= window-system "w32")
+
+ (defun w32-isearch-update ()
+   (interactive)
+   (isearch-update))
+
+ (define-key isearch-mode-map [compend] 'w32-isearch-update)
+ (define-key isearch-mode-map [kanji] 'isearch-toggle-input-method)
+ )
 
 ;; when region is active, isearch with the string
 
@@ -1909,7 +1968,6 @@ check for the whole contents of FILE, otherwise check for the first
                        (condition-case err
                            (progn (backward-up-list) (point))
                          (error nil)))))
-         (back-dist (abs (- (point) back-pos)))
          (for-pos (save-excursion
                     (if str-p
                         (progn (skip-chars-forward "^\"")
@@ -1917,13 +1975,13 @@ check for the whole contents of FILE, otherwise check for the first
                                (point))
                       (condition-case err
                           (progn (up-list) (point))
-                        (error nil)))))
-         (for-dist (abs (- (point) for-pos))))
+                        (error nil))))))
     (when (not (or back-pos for-pos))
       (error "cannot go up"))
     (goto-char (cond ((null back-pos) for-pos)
                      ((null for-pos) back-pos)
-                     ((< for-dist back-dist) for-pos)
+                     ((< (abs (- (point) for-pos))
+                         (abs (- (point) back-pos))) for-pos)
                      (t back-pos)))))
 
 (defun my-reindent-sexp ()
@@ -1954,7 +2012,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defpostload "org"
 
-  (add-hook 'org-mode-hook 'refill-mode)
+  (add-hook 'org-mode-hook 'auto-fill-mode)
   (setq org-ditaa-jar-path (expand-file-name my:ditaa-jar-file))
 
   ;; *** startup
@@ -2563,10 +2621,6 @@ check for the whole contents of FILE, otherwise check for the first
     (add-hook 'ahk-mode-hook 'electric-case-ahk-init))
   )
 
-;; ** mc-jump
-
-(deflazyconfig '(mc-jump-char) "mc-jump")
-
 ;; ** nurumacs
 
 (defconfig 'nurumacs
@@ -2594,6 +2648,18 @@ check for the whole contents of FILE, otherwise check for the first
 (deflazyconfig
   '(outlined-elisp-find-file-hook
     outlined-elisp-mode) "outlined-elisp-mode")
+
+;; ** phi-search
+
+(deflazyconfig
+  '(phi-search) "phi-search"
+
+  (setq phi-search-keybindings
+        `((,(kbd "C-s") . phi-search-again-or-next)
+          (,(kbd "C-M-s") . phi-search-again-or-previous)
+          (,(kbd "C-g") . phi-search-abort)
+          (,(kbd "RET") . phi-search-complete)))
+  )
 
 ;; ** scratch-palette
 
@@ -3226,6 +3292,10 @@ check for the whole contents of FILE, otherwise check for the first
 
 (setq backward-delete-char-untabify-method 'hungry)
 
+;; ** iy-go-to-char
+
+(deflazyconfig '(iy-go-to-char) "iy-go-to-char")
+
 ;; ** key-chord
 
 (defconfig 'key-chord
@@ -3340,7 +3410,7 @@ check for the whole contents of FILE, otherwise check for the first
   ;; wrap region with tag. else insert "<`\!\!'>"
   (defun my-html-sp-or-smart-lt ()
     (interactive)
-    (if (and (boundp 'smartparens-mode) smartparens-mode
+    (if (and (ifbound smartparens-mode)
              transient-mark-mode mark-active)
         (call-interactively 'sp--self-insert-command)
       (insert "<>")
@@ -3714,7 +3784,8 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; ** rainbow-delimiters
 
-(deflazyconfig '(rainbow-delimiters-mode) "rainbow-delimiters")
+(deflazyconfig
+  '(rainbow-delimiters-mode) "rainbow-delimiters")
 
 (defprepare "rainbow-delimiters"
   (defpostload "lisp-mode"
@@ -4067,9 +4138,9 @@ check for the whole contents of FILE, otherwise check for the first
 
     (setq yas-triggers-in-field t)
 
-    ;; **** disable fallback
+    ;; **** use dabbrev as fallback
 
-    (setq yas-fallback-behavior 'return-nil)
+    (setq yas-fallback-behavior '(apply dabbrev-expand . nil))
 
     ;; **** anything prompt for yasnippet
 
@@ -4104,7 +4175,8 @@ check for the whole contents of FILE, otherwise check for the first
 
     (define-key yas-keymap (kbd "TAB") nil) ; auto-complete
     (define-key yas-keymap (kbd "<tab>") nil) ; auto-complete
-    (key-chord-define yas-keymap "fj" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "df" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "jk" 'yas-next-field-or-maybe-expand)
 
     ;; **** (sentinel)
     )
@@ -4117,7 +4189,8 @@ check for the whole contents of FILE, otherwise check for the first
   (define-key zencoding-mode-keymap (kbd "<C-return>") nil)
   ;; override yasnippet
   (defpostload "key-chord"
-    (key-chord-define zencoding-mode-keymap "fj" 'zencoding-expand-line)))
+    (key-chord-define zencoding-mode-keymap "df" 'zencoding-expand-line)
+    (key-chord-define zencoding-mode-keymap "jk" 'zencoding-expand-line)))
 
 (defprepare "zencoding"
   (defpostload "sgml-mode"
@@ -4275,9 +4348,9 @@ check for the whole contents of FILE, otherwise check for the first
 (global-set-key (kbd "M-v") 'my-visible-register)
 
 ;; Overwrite
-(defprepare "mc-jump"
-  (global-set-key (kbd "<oem-pa1>") 'mc-jump-char)  ; US
-  (global-set-key (kbd "<nonconvert>") 'mc-jump-char)) ; JP
+(defprepare "iy-go-to-char"
+  (global-set-key (kbd "<oem-pa1>") 'iy-go-to-char)  ; US
+  (global-set-key (kbd "<nonconvert>") 'iy-go-to-char)) ; JP
 (defprepare "ace-jump-mode"
   (global-set-key (kbd "<C-oem-pa1>") 'ace-jump-word-mode) ; US
   (global-set-key (kbd "<C-non-convert>") 'ace-jump-word-mode)) ; JP
@@ -4396,7 +4469,7 @@ check for the whole contents of FILE, otherwise check for the first
 (global-set-key (kbd "RET") 'newline-and-indent) ; C-m
 
 ;; Ctrl-Meta-
-(global-set-key (kbd "C-M-i") 'my-align-region)
+(global-set-key (kbd "C-M-i") 'fill-paragraph)
 (global-set-key (kbd "C-M-o") 'split-line)
 (global-set-key (kbd "C-M-m") 'indent-new-comment-line)
 
@@ -4416,16 +4489,19 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Ctrl-
 (global-set-key (kbd "C-r") 'query-replace-regexp)
-(global-set-key (kbd "C-s") 'my-isearch-forward)
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
 
 ;; Ctrl-Meta-
 (global-set-key (kbd "C-M-r") 'replace-regexp)
-(global-set-key (kbd "C-M-s") 'my-isearch-backward)
+(global-set-key (kbd "C-M-s") 'isearch-backward-regexp)
 
 ;; Meta-
 (global-set-key (kbd "M-r") 'hi-lock-rehighlight)
 
 ;; Overwrite
+(defprepare "phi-search"
+  (global-set-key (kbd "C-s") 'phi-search)
+  (global-set-key (kbd "C-M-s") 'phi-search))
 (defprepare "anything-config"
   (global-set-key (kbd "M-s") 'my-anything-search))
 (defprepare "all"
@@ -4485,7 +4561,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Overwrite
 (defprepare "shell-pop"
-  (global-set-key (kbd "C-x C-i") 'shell-pop))
+  (global-set-key (kbd "M-i") 'shell-pop))
 
 ;; **** bookmark
 
@@ -4558,14 +4634,15 @@ check for the whole contents of FILE, otherwise check for the first
 (defpostload "key-chord"
 
   ;; Default
-  (key-chord-define-global "gh" 'backward-transpose-chars)
+  (key-chord-define-global "fj" 'backward-transpose-chars)
   (key-chord-define-global "fn" 'my-downcase-previous-word)
   (key-chord-define-global "fp" 'my-upcase-previous-word)
   (key-chord-define-global "fm" 'capitalize-word)
 
   ;; Overwrite
   (defprepare "yasnippet"
-    (key-chord-define-global "fj" 'yas-expand))
+    (key-chord-define-global "df" 'yas-expand)
+    (key-chord-define-global "jk" 'yas-expand))
   )
 
 ;; ** keycombo
@@ -4580,4 +4657,4 @@ check for the whole contents of FILE, otherwise check for the first
                              '(kill-ring-save yas-register-oneshot-snippet)))
   )
 
-;; * ----------------------------
+;; * ------------------------------
