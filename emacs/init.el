@@ -2654,11 +2654,8 @@ check for the whole contents of FILE, otherwise check for the first
 (deflazyconfig
   '(phi-search) "phi-search"
 
-  (setq phi-search-keybindings
-        `((,(kbd "C-s") . phi-search-again-or-next)
-          (,(kbd "C-M-s") . phi-search-again-or-previous)
-          (,(kbd "C-g") . phi-search-abort)
-          (,(kbd "RET") . phi-search-complete)))
+  (add-to-list 'phi-search-keybindings
+               `(,(kbd "C-M-s") . phi-search-previous))
   )
 
 ;; ** scratch-palette
