@@ -49,7 +49,6 @@
 ;; nonconvert
 ;; -   NConv : iy-go-to-char
 ;; - C-NConv : iy-go-to-char-backward
-;; - S-NConv : ace-jump-mode
 
 ;; SPC
 ;; -   C-SPC : set-mark-command
@@ -76,8 +75,8 @@
 
 ;; key-chord
 ;;
-;; - sd : yasnippet or dabbrev (in HTML modes, zencoding)
-;; - kl :                     "
+;; - df : yasnippet or dabbrev (in HTML modes, zencoding)
+;; - jk :                     "
 ;; - fj : transpose-chars
 ;; - fn : downcase word
 ;; - fp : upcase word
@@ -168,7 +167,6 @@
 (defvar my-not-found-libraries nil)
 
 (defun my-library-exists (lib)
-  ;; disabled features are treated as if they dont exist
   (if my-home-system-p
       ;; do not check on home-system
       t
@@ -266,7 +264,7 @@
 (defmacro delayed-require (ft)
   `(add-to-list 'my-idle-require-list ,ft))
 
-;; *** key-override checker
+;; *** *COMMENT* key-override checker
 
 ;; ;; get the name of "this" file
 ;; ;; reference | http://hazimarino.blogspot.jp/2010/11/emacs.html
@@ -1968,21 +1966,35 @@ check for the whole contents of FILE, otherwise check for the first
 
 (defconfig 'ido
 
+  (setq ido-save-directory-list-file my:ido-save-file)
+
   (ido-mode t)
   (ido-everywhere)
   (setq ido-enable-regexp t)
 
-  (setq ido-save-directory-list-file my:ido-save-file)
+  ;; ** dwim complete command
 
-  ;; modify ido-completion-map
+  (defun my-ido-spc-or-next ()
+    (interactive)
+    (call-interactively
+     (cond ((= (length ido-matches) 1) 'ido-exit-minibuffer)
+           ((= (length ido-text) 0) 'ido-next-match)
+           (t 'ido-restrict-to-matches))))
+
+  ;; ** keymap
+
   ;; reference | http://github.com/milkypostman/dotemacs/blob/master/init.el
+
   (defun my-ido-hook ()
     (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
     (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)
-    (define-key ido-completion-map (kbd "TAB") 'ido-next-match)
+    (define-key ido-completion-map (kbd "TAB") 'my-ido-spc-or-next)
+    (define-key ido-completion-map (kbd "<S-tab>") 'ido-prev-match)
     (define-key ido-completion-map (kbd "SPC") 'ido-restrict-to-matches))
 
-  (add-hook 'ido-setup-hook 'my-ido-hook)
+  (add-hook 'ido-minibuffer-setup-hook 'my-ido-hook)
+
+  ;; ** (sentinel)
   )
 
 ;; ** isearch
@@ -2802,7 +2814,7 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** phi-search / phi-replace
 
 (deflazyconfig
-  '(phi-search) "phi-search"
+  '(phi-search phi-search-backward) "phi-search"
   (define-key phi-search-mode-map (kbd "C-M-s") 'phi-search-again-or-previous))
 
 (deflazyconfig
@@ -2831,6 +2843,19 @@ check for the whole contents of FILE, otherwise check for the first
   (require 'sublimity-scroll)
   ;; (require 'sublimity-map)
   )
+
+;; ** uedalab
+
+(deflazyconfig '(lmntal-mode) "lmntal-mode")
+(deflazyconfig '(hydla-mode) "hydla-mode")
+
+(defprepare "lmntal-mode"
+  (add-to-list 'auto-mode-alist
+               '("\\.lmn$" . lmntal-mode)))
+
+(defprepare "hydla-mode"
+  (add-to-list 'auto-mode-alist
+               '("\\.hydla$" . hydla-mode)))
 
 ;; * external libraries (abcdef)
 ;; ** ace-jump-mode
@@ -2877,6 +2902,35 @@ check for the whole contents of FILE, otherwise check for the first
   )
 
 ;; ** anything
+;; *** prepare highlight-changes-mode
+
+(add-hook 'find-file-hook 'highlight-changes-mode)
+
+(deflazyconfig
+  '(highlight-changes-mode) "hilit-chg"
+
+  ;; start with invisible mode
+  (setq highlight-changes-visibility-initial-state nil)
+
+  ;; clear highlights after save
+  (add-hook 'after-save-hook
+            (lambda()
+              (when highlight-changes-mode
+                (highlight-changes-remove-highlight 1 (1+ (buffer-size))))))
+
+  ;; fix for yasnippet
+  (defpostload "yasnippet"
+    (add-hook 'yas-before-expand-snippet-hook
+              (lambda()
+                (when highlight-changes-mode
+                  (highlight-changes-mode -1))))
+    (add-hook 'yas-after-exit-snippet-hook
+              (lambda()
+                (highlight-changes-mode 1)
+                (hilit-chg-set-face-on-change yas-snippet-beg yas-snippet-end 0))))
+  )
+
+;; *** anything-jump
 
 (deflazyconfig
   '(my-anything-jump) "anything"
@@ -2906,34 +2960,6 @@ check for the whole contents of FILE, otherwise check for the first
                             "Changes not saved" "Flymake"))
                   (anything-execute-persistent-action))))
 
-  ;; ** hilit-chg settings
-
-  (add-hook 'find-file-hook 'highlight-changes-mode)
-
-  (deflazyconfig
-    '(highlight-changes-mode) "hilit-chg"
-
-    ;; start with invisible mode
-    (setq highlight-changes-visibility-initial-state nil)
-
-    ;; clear highlights after save
-    (add-hook 'after-save-hook
-              (lambda()
-                (when highlight-changes-mode
-                  (highlight-changes-remove-highlight 1 (1+ (buffer-size))))))
-
-    ;; fix for yasnippet
-    (defpostload "yasnippet"
-      (add-hook 'yas-before-expand-snippet-hook
-                (lambda()
-                  (when highlight-changes-mode
-                    (highlight-changes-mode -1))))
-      (add-hook 'yas-after-exit-snippet-hook
-                (lambda()
-                  (highlight-changes-mode 1)
-                  (hilit-chg-set-face-on-change yas-snippet-beg yas-snippet-end 0))))
-    )
-
   ;; ** anything source for hilit-chg
 
   (defpostload "hilit-chg"
@@ -2961,17 +2987,17 @@ check for the whole contents of FILE, otherwise check for the first
 
     ;; *** get candidates
 
-    (defvar change-candidates nil)
+    (defvar change-candidates-temporary nil)
 
     (defun change-candidates ()
-      (setq change-candidates '())
+      (setq change-candidates-temporary '())
       ;; search will start from the first letter
       (let ((start 1) (tmp nil))
         ;; while another change is there
         (while (setq tmp (search-next-change start))
           (progn
             ;; add candidate
-            (add-to-list 'change-candidates
+            (add-to-list 'change-candidates-temporary
                          (cons (format "%5d:: %s"
                                        (line-number-at-pos (car tmp))
                                        (get-first-line-string (car tmp) (cdr tmp)))
@@ -2984,8 +3010,8 @@ check for the whole contents of FILE, otherwise check for the first
 
     (defvar anything-source-highlight-changes-mode
       '((name . "Changes not saved")
-        (candidates . change-candidates)
         (init . change-candidates)
+        (candidates . change-candidates-temporary)
         (action . (lambda (num)
                     (interactive)
                     (goto-char num)))))
@@ -3076,7 +3102,7 @@ check for the whole contents of FILE, otherwise check for the first
 
   ;; ** anything-jump
 
-  (defun my-anything-jump()
+  (defun my-anything-jump ()
     "My 'anything'."
     (interactive)
     (anything (list
@@ -3147,6 +3173,8 @@ check for the whole contents of FILE, otherwise check for the first
   (when (string= window-system "w32")
     (setq c-eldoc-includes "-I./ -I../ -I\"C:/MinGW/include\"")
     (setq c-eldoc-cpp-command "C:/MinGW/bin/cpp"))
+
+  (setq c-eldoc-buffer-regenerate-time 15)
 
   (defpostload "cc-mode"
    (add-hook 'c++-mode-hook 'c-turn-on-eldoc-mode)
@@ -4629,9 +4657,6 @@ check for the whole contents of FILE, otherwise check for the first
   (global-set-key (kbd "C-<oem-pa1>") 'iy-go-to-char-backward)
   (global-set-key (kbd "<nonconvert>") 'iy-go-to-char) ; JP
   (global-set-key (kbd "C-<nonconvert>") 'iy-go-to-char-backward))
-(defprepare "ace-jump-mode"
-  (global-set-key (kbd "S-<oem-pa1>") 'ace-jump-word-mode) ; US
-  (global-set-key (kbd "S-<nonconvert>") 'ace-jump-word-mode)) ; JP
 (defprepare "point-undo"
   (global-set-key (kbd "M--") 'point-undo))
 (defprepare "anything"
@@ -4712,14 +4737,13 @@ check for the whole contents of FILE, otherwise check for the first
 ;; Ctrl-
 (global-set-key (kbd "C-w") 'kill-region)
 (global-set-key (kbd "C-k") 'kill-line)
-(global-set-key (kbd "C-M-k") 'my-kill-line-backward)
 (global-set-key (kbd "C-d") 'delete-char)
 ;; (global-set-key (kbd "DEL") 'backward-delete-char-untabify) ; C-h
 (global-set-key (kbd "C-y") 'yank)
 
 ;; Ctrl-Meta-
 (global-set-key (kbd "C-M-w") 'kill-ring-save)
-(global-set-key (kbd "C-M-k") 'kill-paragraph)
+(global-set-key (kbd "C-M-k") 'my-kill-line-backward)
 (global-set-key (kbd "C-M-d") 'kill-word)
 (global-set-key (kbd "C-M-h") 'backward-kill-word)
 
@@ -4915,6 +4939,8 @@ check for the whole contents of FILE, otherwise check for the first
   (defprepare "yasnippet"
     (key-chord-define-global "df" 'yas-expand)
     (key-chord-define-global "jk" 'yas-expand))
+  (defprepare "ace-jump-mode"
+    (key-chord-define-global ",." 'ace-jump-word-mode))
   )
 
 ;; ** keycombo
