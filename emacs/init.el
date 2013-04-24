@@ -1,9 +1,6 @@
 ;; |---------------------------------
-;; |                                |
 ;; |  init.el (for emacs v23.3)     |
-;; |                                |
 ;; |                        zk_phi  |
-;; |                                |
 ;; ---------------------------------|
 
 ;; * ------------------------------
@@ -121,6 +118,8 @@
 
 ;; ** constants
 
+(defconst my:skip-checking-libraries my-home-system-p)
+
 ;; directories
 
 (defconst my:init-directory "~/.emacs.d/")
@@ -167,7 +166,7 @@
 (defvar my-not-found-libraries nil)
 
 (defun my-library-exists (lib)
-  (if my-home-system-p
+  (if my:skip-checking-libraries
       ;; do not check on home-system
       t
     (cond ((member lib my-found-libraries) t)
@@ -176,7 +175,7 @@
           (t (add-to-list 'my-not-found-libraries lib) nil))))
 
 (defadvice load (after add-to-found-list activate)
-  (unless my-home-system-p
+  (unless my:skip-checking-libraries
     (if (null ad-return-value)
         (add-to-list 'my-not-found-libraries (ad-get-arg 0))
       (add-to-list 'my-found-libraries (ad-get-arg 0)))))
@@ -548,12 +547,6 @@
 ;; use y-or-n instead of yes-or-no
 
 (fset 'yes-or-no-p 'y-or-n-p)
-
-;; inhibit noisy beep
-;; ... doesn't work on linux systems ?
-
-(ignore-errors
-  (set-message-beep 'silent))
 
 ;; title bar string
 
@@ -2132,22 +2125,16 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; ** lisp-mode
 
+(defprepare "lisp-mode"
+  (add-to-list 'auto-mode-alist
+               '("\\.cl$" . common-lisp-mode)))
+
 (defpostload "lisp-mode"
-
-  ;; *** auto-mode
-
-  (add-to-list 'auto-mode-alist '("\\.cl$" . common-lisp-mode))
-
-  ;; *** settings
-
   (dolist (map (list lisp-mode-map
                      emacs-lisp-mode-map
                      lisp-interaction-mode-map))
     (define-key map (kbd "M-TAB") nil)
-    (define-key map (kbd "C-j") nil))
-
-  ;; *** (sentinel)
-  )
+    (define-key map (kbd "C-j") nil)))
 
 ;; * built-in libraries (mnopqrs)
 ;; ** menu-bar
@@ -2865,9 +2852,8 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** ahk-mode
 
 (defprepare "ahk-mode"
-  (setq auto-mode-alist
-        (append auto-mode-alist
-                '( ("\\.ahk$" . ahk-mode) ))))
+  (add-to-list 'auto-mode-alist
+               '("\\.ahk$" . ahk-mode)))
 
 (deflazyconfig '(ahk-mode) "ahk-mode"
   (define-key ahk-mode-map (kbd "C-j") nil)
@@ -3165,9 +3151,7 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** c-eldoc
 
 (deflazyconfig
-  '(c-turn-on-eldoc-mode) "c-eldoc")
-
-(defprepare "c-eldoc"
+  '(c-turn-on-eldoc-mode) "c-eldoc"
 
   ;; try MinGW on Windows
   (when (string= window-system "w32")
@@ -3175,11 +3159,12 @@ check for the whole contents of FILE, otherwise check for the first
     (setq c-eldoc-cpp-command "C:/MinGW/bin/cpp"))
 
   (setq c-eldoc-buffer-regenerate-time 15)
-
-  (defpostload "cc-mode"
-   (add-hook 'c++-mode-hook 'c-turn-on-eldoc-mode)
-   (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
   )
+
+(defprepare "c-eldoc"
+  (defpostload "cc-mode"
+    (add-hook 'c++-mode-hook 'c-turn-on-eldoc-mode)
+    (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)))
 
 ;; ** color-theme
 
@@ -3298,10 +3283,10 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** haskell-mode
 
 (defprepare "haskell-mode"
-  (setq auto-mode-alist
-        (append auto-mode-alist
-                '( ("\\.hs$"     . haskell-mode)
-                   ("\\.lhs$"    . literate-haskell-mode)))))
+  (add-to-list 'auto-mode-alist
+               '("\\.hs$" . haskell-mode))
+  (add-to-list 'auto-mode-alist
+               '("\\.lhs$" . literate-haskell-mode)))
 
 (deflazyconfig
   '(haskell-mode
@@ -3495,7 +3480,8 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; ** iy-go-to-char
 
-(deflazyconfig '(iy-go-to-char) "iy-go-to-char")
+(deflazyconfig
+  '(iy-go-to-char iy-go-to-char-backward) "iy-go-to-char")
 
 ;; ** key-chord
 
@@ -3576,6 +3562,20 @@ check for the whole contents of FILE, otherwise check for the first
     (key-combo-define-local (kbd "/*") "/* `!!' */")
     (key-combo-define-local (kbd "{") '(my-c-smart-braces "{ `!!' }")))
 
+  (defun my-install-promela-smartchr ()
+    ;; electric semi
+    (key-combo-define-local (kbd ";") ";\n")
+    ;; operators
+    (key-combo-define-local (kbd "-") '(" - " "--" "-"))
+    ;; channels
+    (key-combo-define-local (kbd "?") " ? ")
+    (key-combo-define-local (kbd "!") '(" ! " "!"))
+    ;; guards
+    (key-combo-define-local (kbd "->") " -> ")
+    (key-combo-define-local (kbd "::") ":: ")
+    (key-combo-define-local (kbd "dod") "do\n`!!'\nod")
+    (key-combo-define-local (kbd "ifi") "if\n`!!'\nfi"))
+
   (defun my-install-c-smartchr ()
     ;; pointers
     (key-combo-define-local (kbd "&") '("&" " && " " & "))
@@ -3598,6 +3598,10 @@ check for the whole contents of FILE, otherwise check for the first
     (add-hook 'c-mode-common-hook 'my-install-c-common-smartchr)
     (add-hook 'c-mode-hook 'my-install-c-smartchr)
     (add-hook 'java-mode-hook 'my-install-java-smartchr))
+
+  (defpostload "promela-mode"
+    (add-hook 'promela-mode-hook 'my-install-c-common-smartchr)
+    (add-hook 'promela-mode-hook 'my-install-promela-smartchr))
 
   ;; *** smartchr for lisp-like languages
 
@@ -3698,8 +3702,9 @@ check for the whole contents of FILE, otherwise check for the first
 ;; * external libraries (mnopqrs)
 ;; ** maxframe
 
-(defconfig 'maxframe
-  (add-hook 'window-setup-hook 'maximize-frame))
+(when (string= window-system "w32")
+ (defconfig 'maxframe
+   (add-hook 'window-setup-hook 'maximize-frame)))
 
 ;; ** multiple-cursors
 
@@ -3710,7 +3715,7 @@ check for the whole contents of FILE, otherwise check for the first
     ;; ** mc-list file
 
     (setq mc/list-file my:mc-list-file)
-    (load mc/list-file)
+    (ignore-errors (load mc/list-file))
 
     ;; ** dwim commands
     ;; *** load and fix mc-mark-more
@@ -3950,11 +3955,14 @@ check for the whole contents of FILE, otherwise check for the first
 
     (defun my-paredit-kill ()
       (interactive)
-      (while (ignore-errors
-               (forward-sexp 1)
-               (backward-sexp 1)
-               (paredit-kill)
-               t)))
+      (if (member 'font-lock-string-face
+                  (text-properties-at (point)))
+          (kill-region (point)
+                       (progn (skip-chars-forward "^\"")
+                              (point)))
+        (kill-region (point)
+                     (progn (while (ignore-errors (forward-sexp 1) t))
+                            (point)))))
 
     (defun my-looking-at-closing ()
       (and (not (looking-back "\\\\"))
@@ -4058,9 +4066,8 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** prolog-mode
 
 (defprepare "prolog"
-  (setq auto-mode-alist
-        (append auto-mode-alist
-                '( ("\\.swi$" . prolog-mode) ))))
+  (add-to-list 'auto-mode-alist
+               '("\\.swi$" . prolog-mode)))
 
 (deflazyconfig '(prolog-mode) "prolog"
   (define-key prolog-mode-map (kbd "M-a") nil)
@@ -4071,6 +4078,14 @@ check for the whole contents of FILE, otherwise check for the first
   (define-key prolog-mode-map (kbd "C-M-n") nil)
   (define-key prolog-mode-map (kbd "C-M-p") nil)
   (define-key prolog-mode-map (kbd "M-e") nil))
+
+;; ** promela-mode
+
+(deflazyconfig '(promela-mode) "promela-mode")
+
+(defprepare "promela-mode"
+ (add-to-list 'auto-mode-alist
+              '("\\.pml$" . promela-mode)))
 
 ;; ** rainbow-delimiters
 
@@ -4108,9 +4123,8 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** scala-mode
 
 (defprepare "scala-mode"
-  (setq auto-mode-alist
-        (append auto-mode-alist
-                '( ("\\.scala$" . scala-mode) ))))
+  (add-to-list 'auto-mode-alist
+               '("\\.scala$" . scala-mode)))
 
 (deflazyconfig '(scala-mode) "scala-mode")
 
@@ -4137,8 +4151,8 @@ check for the whole contents of FILE, otherwise check for the first
   (defadvice shell-pop-up (around cd-when-shell-pop activate)
     (let ((cwd default-directory))
       ad-do-it
-      (insert cwd)
       (unless (string= default-directory cwd)
+        (insert cwd)
         ;; (eshell-send-input)
         )))
   )
@@ -4393,9 +4407,8 @@ check for the whole contents of FILE, otherwise check for the first
 ;; ** web-mode
 
 (defprepare "web-mode"
-  (setq auto-mode-alist
-        (cons '("\\.s?html?\\(\\.[a-zA-Z_]+\\)?\\'" . web-mode)
-              auto-mode-alist)))
+  (add-to-list 'auto-mode-alist
+               '("\\.s?html?\\(\\.[a-zA-Z_]+\\)?\\'" . web-mode)))
 
 (deflazyconfig '(web-mode) "web-mode")
 
