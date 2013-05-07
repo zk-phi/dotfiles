@@ -1,9 +1,5 @@
-;; |---------------------------------
-;; |  init.el (for emacs v23.3)     |
-;; |                        zk_phi  |
-;; ---------------------------------|
+;; init.el (for e23.3) | 2013 zk_phi
 
-;; * ------------------------------
 ;; * CHEAT SHEET
 ;; ** global
 
@@ -26,9 +22,9 @@
 ;;          |HidAl|     |     |EdBuf|BWord|NPgph|RetCm|MrkAl|     |     |
 
 ;; M-_
-;; |AlWnd|VrWnd|HrWnd|Blnce|Follw|     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
+;; |AlWnd|SpWnd|Blnce|Follw|     |     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
 ;;    |Scrtc|Palet| Eval|Recnt|Table|YankP|Untab|Shell|Opcty|EvalP|     |     |
-;;       |Artst| All | Dir | File| Grep|Shrnk|BMJmp|KlWnd| Goto|     |     |
+;;       |Artst| All | Dir | File| Grep|Shrnk| Jump|KlWnd| Goto|     |     |
 ;;          |     |Comnd|Cmpil| VReg|Buffr|Narrw|DMcro| Howm|     |     |
 
 ;; M-Shift-
@@ -40,7 +36,7 @@
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     |Scale|     |     |
 ;;    |     |Write|Encod|Revrt|Trnct|     |     |     |     |RdOly|     |     |
-;;       |     | Save|Dired|     |     |FHead|BMSet|KilBf|CgLog|     |     |
+;;       |     | Save|Dired|     |     |FHead|     |KilBf|CgLog|     |     |
 ;;          |     |     |Close|     |     |     |ExMcr|     |     |     |
 
 ;; nonconvert
@@ -78,7 +74,7 @@
 ;; - fn : downcase word
 ;; - fp : upcase word
 ;; - fm : capitalize word
-;; - ,. : ace-jump-word
+;; - dk : ace-jump-word
 
 ;; ** orgtbl-mode override
 
@@ -142,6 +138,7 @@
 (defconst my:ditaa-jar-file (concat my:dat-directory "ditaa.jar"))
 (defconst my:smex-save-file (concat my:dat-directory "smex.dat"))
 (defconst my:ido-save-file (concat my:dat-directory "ido.dat"))
+(defconst my:scratch-file (concat my:dat-directory "scratch.dat"))
 
 (defconst my:recentf-file (concat my:dat-directory "recentf_" system-name ".dat"))
 (defconst my:bookmark-file (concat my:dat-directory "bookmark_" system-name ".dat"))
@@ -398,33 +395,30 @@
 
 (setq-default mode-line-format
               '(
-                ;; **** window-position / region-size
+                ;; **** position / region-size
 
                 " "
-
                 (:eval
                  (if mark-active
                      ;; region size
-                     (propertize (format "%d"
-                                         (let ((rows
-                                                (count-lines (region-beginning) (region-end)))
-                                               (chars
-                                                (- (region-end) (region-beginning))))
-                                           (if (= rows 1) chars rows)))
-                                 'face 'mode-line-warning-face)
+                     (let ((rows (count-lines (region-beginning) (region-end))))
+                       (propertize (if (not (= rows 1))
+                                       (format "%3d" rows)
+                                     (format "%2dc" (- (region-end) (region-beginning))))
+                                   'face 'mode-line-warning-face))
                    ;; window-position
-                   (propertize (format "%d%%%%"
-                                       (/ (* 100 (point)) (point-max)))
-                               'face 'mode-line-bright-face)))
+                   (propertize
+                    (let ((perc (/ (* 100 (point)) (point-max))))
+                      (if (= perc 100) "EOF" (format "%2d%%%%" perc)))
+                    'face 'mode-line-bright-face)))
 
                 ;; **** linum / colnum
 
-                " "
-
-                (:propertize "%l " face mode-line-bright-face)
-
+                (:propertize ":" face mode-line-dark-face)
+                (:propertize "%4l" face mode-line-bright-face)
+                (:propertize ":" face mode-line-dark-face)
                 (:eval
-                 (propertize "%c" 'face
+                 (propertize "%2c" 'face
                              (if (>= (current-column) 80)
                                  'mode-line-warning-face
                                'mode-line-bright-face)))
@@ -432,44 +426,39 @@
                 ;; **** indicators
 
                 " "
-
-                (:eval
-                 (if (buffer-modified-p)
-                     (propertize "*" 'face 'mode-line-modified-face)
-                   (propertize "*" 'face 'mode-line-dark-face)))
-
-                (:eval
-                 (if buffer-read-only
-                     (propertize "%%" 'face 'mode-line-read-only-face)
-                   (propertize "%%" 'face 'mode-line-dark-face)))
-
                 (:eval
                  (if (or (/= (point-min) 1) (/= (point-max) (1+ (buffer-size))))
                      (propertize "n" 'face 'mode-line-narrowed-face)
                    (propertize "n" 'face 'mode-line-dark-face)))
-
+                (:eval
+                 (if buffer-read-only
+                     (propertize "%%" 'face 'mode-line-read-only-face)
+                   (propertize "%%" 'face 'mode-line-dark-face)))
+                (:eval
+                 (if (buffer-modified-p)
+                     (propertize "*" 'face 'mode-line-modified-face)
+                   (propertize "*" 'face 'mode-line-dark-face)))
                 (:eval
                  (if (ifbound multiple-cursors-mode)
                      (propertize (format "%02d" (mc/num-cursors))
                                  'face 'mode-line-mc-face)
                    (propertize "00" 'face 'mode-line-dark-face)))
+                " "
+
 
                 ;; **** directory / file name
 
                 "  "
-
+                (:propertize "%[" face mode-line-dark-face)
                 (:eval
                  (propertize (my-shorten-directory 10)
                              'face 'mode-line-dark-face))
-
                 (:propertize "%b" face mode-line-highlight-face)
+                (:propertize "%]" face mode-line-dark-face)
 
                 ;; **** major-mode / coding system
 
                 "  "
-
-                (:propertize "%[" face mode-line-dark-face)
-
                 (:eval (cond
                         ((and (boundp 'artist-mode) artist-mode)
                          (propertize "*Artist*" 'face 'mode-line-special-mode-face))
@@ -477,19 +466,17 @@
                          (propertize "*OrgTbl*" 'face 'mode-line-special-mode-face))
                         (t
                          (propertize mode-name 'face 'mode-line-bright-face))))
-
                 (:propertize mode-line-process face mode-line-highlight-face)
-
                 (:eval
                  (propertize
-                  (format " (%s)%%]" (symbol-name buffer-file-coding-system))
+                  (format " %s" (symbol-name buffer-file-coding-system))
                   'face 'mode-line-dark-face))
 
                 ;; **** others
 
                 "  "
-
                 (global-mode-string global-mode-string)
+                " %-"
 
                 ;; **** (sentinel)
                 ))
@@ -542,6 +529,64 @@
     (setq highlight-parentheses-mode nil))
   )
 
+;; ** *scratch* utilities
+;; *** make *scratch* always available
+
+;; reference | http://www.bookshelf.jp/soft/meadow_29.html#SEC392
+
+;; **** create new scratch
+
+;; a command to create new scratch, or clear existing scratch
+
+(defun my-make-scratch (&optional arg)
+  ;; create new *scratch*
+  (interactive)
+  (progn
+    (set-buffer (get-buffer-create "*scratch*"))
+    (funcall initial-major-mode)
+    (erase-buffer)
+    (when (and initial-scratch-message (not inhibit-startup-message))
+      (insert initial-scratch-message))
+    (or arg (progn (setq arg 0)
+                   (switch-to-buffer "*scratch*")))
+    (cond ((= arg 0) (message "*scratch* is cleared up."))
+          ((= arg 1) (message "another *scratch* is created")))))
+
+;; **** clear scratch instead of killing it
+
+;; when scratch is going to be killed, clear scratch instead
+
+(add-hook 'kill-buffer-query-functions
+          (function (lambda ()
+                      (if (string= "*scratch*" (buffer-name))
+                          (progn (my-make-scratch 0) nil)
+                        t))))
+
+;; **** create scratch when saved
+
+;; when scratch is saved to file, create new scratch
+
+(defun my-buffer-name-list ()
+  (mapcar (function buffer-name) (buffer-list)))
+
+(add-hook 'after-save-hook
+          (lambda ()
+            (unless (member "*scratch*" (my-buffer-name-list))
+              (my-make-scratch 1))))
+
+;; *** parsistent *scratch*
+
+(defun my-scratch-save ()
+  (with-current-buffer "*scratch*"
+    (write-region 1 (1+ (buffer-size)) my:scratch-file)))
+
+(defun my-scratch-restore ()
+  (with-current-buffer "*scratch*"
+    (insert-file-contents my:scratch-file)))
+
+(add-hook 'kill-emacs-hook 'my-scratch-save)
+(add-hook 'after-init-hook 'my-scratch-restore)
+
 ;; ** minor adjustments
 
 ;; use y-or-n instead of yes-or-no
@@ -579,6 +624,11 @@
 ;; reference | http://masteringemacs.org/articles/2011/10/02/improving-performance-emacs-display-engine/
 
 (setq redisplay-dont-pause t)
+
+;; make beep silent
+
+(when (string= window-system "w32")
+  (set-message-beep 'silent))
 
 ;; ** my commands
 ;; *** swap windows
@@ -624,50 +674,6 @@
             (1- my-up/downcase-count)
           -1))
   (downcase-word my-up/downcase-count))
-
-;; *** make *scratch* always available
-
-;; reference | http://www.bookshelf.jp/soft/meadow_29.html#SEC392
-
-;; **** create new scratch
-
-;; a command to create new scratch, or clear existing scratch
-
-(defun my-make-scratch (&optional arg)
-  ;; create new *scratch*
-  (interactive)
-  (progn
-    (set-buffer (get-buffer-create "*scratch*"))
-    (funcall initial-major-mode)
-    (erase-buffer)
-    (when (and initial-scratch-message (not inhibit-startup-message))
-      (insert initial-scratch-message))
-    (or arg (progn (setq arg 0)
-                   (switch-to-buffer "*scratch*")))
-    (cond ((= arg 0) (message "*scratch* is cleared up."))
-          ((= arg 1) (message "another *scratch* is created")))))
-
-;; **** clear scratch instead of killing it
-
-;; when scratch is going to be killed, clear scratch instead
-
-(add-hook 'kill-buffer-query-functions
-          (function (lambda ()
-                      (if (string= "*scratch*" (buffer-name))
-                          (progn (my-make-scratch 0) nil)
-                        t))))
-
-;; **** create scratch when saved
-
-;; when scratch is saved to file, create new scratch
-
-(defun my-buffer-name-list ()
-  (mapcar (function buffer-name) (buffer-list)))
-
-(add-hook 'after-save-hook
-          (function (lambda ()
-                      (unless (member "*scratch*" (my-buffer-name-list))
-                        (my-make-scratch 1)))))
 
 ;; *** delete file with no content
 
@@ -1804,42 +1810,41 @@
   ;; *** (sentinel)
   )
 
-;; ** flyspell
+;; ** *COMMENT* flyspell
 
-;; flyspell requires aspell.Axe
+;; NOTE : flyspell requires aspell.exe
 
-(deflazyconfig
-  '(flyspell-mode
-    flyspell-prog-mode) "flyspell")
+;; (deflazyconfig
+;;   '(flyspell-mode
+;;     flyspell-prog-mode) "flyspell")
 
-(defpostload "flyspell"
+;; (defpostload "flyspell"
 
-  ;; ispell settings
-  (defpostload "ispell"
-    (setq ispell-program-name "aspell")
-    (add-to-list 'ispell-skip-region-alist '("[^\000-\377]"))
-    (setq ispell-extra-args '("--sug-mode=ultra")))
+;;   ;; ispell.el settings
+;;   (defpostload "ispell"
+;;     (setq ispell-program-name "aspell")
+;;     (add-to-list 'ispell-skip-region-alist '("[^\000-\377]"))
+;;     (setq ispell-extra-args '("--sug-mode=ultra")))
 
-  ;; auto-complete compatibility
-  (defpostload "auto-complete" (ac-flyspell-workaround))
+;;   ;; auto-complete compatibility
+;;   (defpostload "auto-complete" (ac-flyspell-workaround))
 
-  ;; inhibit welcome message
-  (setq flyspell-issue-welcome-flag nil)
+;;   ;; inhibit welcome message
+;;   (setq flyspell-issue-welcome-flag nil)
 
-  ;; keybindings
-  (define-key flyspell-mode-map (kbd "C-,") nil)
-  (define-key flyspell-mode-map (kbd "C-;") nil)
-  (define-key flyspell-mode-map (kbd "M-t") nil)
-  (define-key flyspell-mode-map (kbd "C-M-i") nil)
-  (define-key flyspell-mode-map (kbd "C-.") 'flyspell-auto-correct-word)
-  )
+;;   ;; keybindings
+;;   (define-key flyspell-mode-map (kbd "C-,") nil)
+;;   (define-key flyspell-mode-map (kbd "C-;") nil)
+;;   (define-key flyspell-mode-map (kbd "M-t") nil)
+;;   (define-key flyspell-mode-map (kbd "C-M-i") nil)
+;;   (define-key flyspell-mode-map (kbd "C-.") 'flyspell-auto-correct-word)
+;;   )
 
-;; flyspell-mode triggers
-(add-hook 'fundamental-mode-hook 'flyspell-mode)
-(defpostload "text-mode"
-  (add-hook 'text-mode-hook 'flyspell-mode))
-(defpostload "org"
-  (add-hook 'org-mode-hook 'flyspell-mode))
+;; (add-hook 'fundamental-mode-hook 'flyspell-mode)
+;; (defpostload "text-mode"
+;;   (add-hook 'text-mode-hook 'flyspell-mode))
+;; (defpostload "org"
+;;   (add-hook 'org-mode-hook 'flyspell-mode))
 ;; (defpostload "sgml-mode"
 ;;   (add-hook 'html-mode-hook 'flyspell-mode))
 ;; (defpostload "nxhtml-mode"
@@ -1848,10 +1853,9 @@
 ;;   (add-hook 'web-mode-hook 'flyspell-mode))
 ;; (defpostload "tex-mode"
 ;;   (add-hook 'latex-mode-hook 'flyspell-mode))
-(defpostload "add-log"
-  (add-hook 'change-log-mode-hook 'flyspell-mode))
+;; (defpostload "add-log"
+;;   (add-hook 'change-log-mode-hook 'flyspell-mode))
 
-;; flyspell-prog-mode triggers
 ;; (defpostload "lisp-mode"
 ;;   (add-hook 'lisp-mode-hook 'flyspell-prog-mode)
 ;;   (add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode)
@@ -2141,6 +2145,16 @@ check for the whole contents of FILE, otherwise check for the first
 
 (menu-bar-mode -1)
 
+;; ** newcomment
+
+;; create new comment only if the point is at EOL
+(defun my-comment-dwim ()
+  (interactive)
+  (unless (or (use-region-p) (eolp))
+    (set-mark (point-at-bol))
+    (end-of-line))
+  (call-interactively 'comment-dwim))
+
 ;; ** org
 
 (defpostload "org"
@@ -2334,6 +2348,15 @@ check for the whole contents of FILE, otherwise check for the first
         (message "Opening file...")
       (message "Aborting")))
   )
+
+;; ** regexp-opt
+
+;; (possible) fix for emacs 23
+(defadvice regexp-opt (after fix-regexp-opt-symbols activate)
+  (setq ad-return-value
+        (if (eq (ad-get-arg 1) 'symbols)
+            (concat "\\_<" ad-return-value "\\_>")
+          ad-return-value)))
 
 ;; ** scroll-bar
 
@@ -2699,44 +2722,44 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; **** commands
 
-(defun smart-split-window-horizontally ()
+(defun my-split-window ()
   (interactive)
-  (cond
-   ( (eq last-command 'smart-split-window-horizontally-4)
+  (case last-command
+    (my-split-window-horizontally-4
      (delete-window-n 3)
-     (setq this-command 'smart-split-window-horizontally-5) )
-   ( (eq last-command 'smart-split-window-horizontally-3)
+     (setq this-command 'my-split-window-horizontally-0))
+    (my-split-window-horizontally-3
      (delete-window-n 2)
      (split-window-horizontally-n 4)
-     (setq this-command 'smart-split-window-horizontally-4) )
-   ( (eq last-command 'smart-split-window-horizontally-2)
+     (setq this-command 'my-split-window-horizontally-4))
+    (my-split-window-horizontally-2
      (delete-window-n 2)
      (split-window-horizontally-n 2)
      (split-window-horizontally-n 2)
-     (setq this-command 'smart-split-window-horizontally-3) )
-   ( (eq last-command 'smart-split-window-horizontally-1)
+     (setq this-command 'my-split-window-horizontally-3))
+    (my-split-window-horizontally-1
      (delete-window-n 1)
      (split-window-horizontally-n 3)
-     (setq this-command 'smart-split-window-horizontally-2) )
-   ( t
+     (setq this-command 'my-split-window-horizontally-2))
+    (my-split-window-horizontally-0
      (split-window-horizontally-n 2)
-     (setq this-command 'smart-split-window-horizontally-1) )
-   ))
-
-(defun smart-split-window-vertically ()
-  (interactive)
-  (cond
-   ( (eq last-command 'smart-split-window-vertically-2)
+     (setq this-command 'my-split-window-horizontally-1))
+    (my-split-window-vertically-2
      (delete-window-n 2)
-     (setq this-command 'smart-split-window-vertically-3) )
-   ( (eq last-command 'smart-split-window-vertically-1)
+     (setq this-command 'my-split-window-vertically-0))
+    (my-split-window-vertically-1
      (delete-window-n 1)
      (split-window-vertically-n 3)
-     (setq this-command 'smart-split-window-vertically-2) )
-   ( t
+     (setq this-command 'my-split-window-vertically-2))
+    (my-split-window-vertically-0
      (split-window-vertically-n 2)
-     (setq this-command 'smart-split-window-vertically-1) )
-   ))
+     (setq this-command 'my-split-window-vertically-1))
+    (t
+     (if (> (window-width) (* 2 (window-height)))
+         (progn (split-window-horizontally-n 2)
+                (setq this-command 'my-split-window-horizontally-1))
+       (progn (split-window-vertically-n 2)
+              (setq this-command 'my-split-window-vertically-1))))))
 
 ;; * original libraries
 ;; ** cedit
@@ -3111,7 +3134,9 @@ check for the whole contents of FILE, otherwise check for the first
 
   (append ac-modes
           '(ahk-mode haskell-mode literate-haskell-mode
-                     prolog-mode scala-mode))
+                     prolog-mode scala-mode dos-mode
+                     promela-mode web-mode hydla-mode
+                     lmntal-mode))
 
   ;; *** auto-complete dictionary
 
@@ -3179,6 +3204,14 @@ check for the whole contents of FILE, otherwise check for the first
       (load "dmacro")
       ;; dmacro-exec is overriden here
       (call-interactively 'dmacro-exec))))
+
+;; ** dos-mode
+
+(defprepare "dos-mode"
+  (add-to-list  'auto-mode-alist
+                '("\\.bat$" . dos-mode)))
+
+(deflazyconfig '(dos-mode) "dos-mode")
 
 ;; ** expand-region
 ;; *** load
@@ -3469,7 +3502,6 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; hungry-backspace in hungry-delete.el, eats current-buffer even when
 ;; minibuffer is active. So use backward-delete-char-untabify instead.
-
 (setq backward-delete-char-untabify-method 'hungry)
 
 ;; ** ido-ubiquitous
@@ -3572,9 +3604,7 @@ check for the whole contents of FILE, otherwise check for the first
     (key-combo-define-local (kbd "!") '(" ! " "!"))
     ;; guards
     (key-combo-define-local (kbd "->") " -> ")
-    (key-combo-define-local (kbd "::") ":: ")
-    (key-combo-define-local (kbd "dod") "do\n`!!'\nod")
-    (key-combo-define-local (kbd "ifi") "if\n`!!'\nfi"))
+    (key-combo-define-local (kbd "::") ":: "))
 
   (defun my-install-c-smartchr ()
     ;; pointers
@@ -3610,9 +3640,13 @@ check for the whole contents of FILE, otherwise check for the first
     (key-combo-define-local (kbd ";") ";; ")
     (key-combo-define-local (kbd "=") '("=" "equal" "eq")))
 
+  (defun my-install-elisp-smartchr ()
+    (key-combo-define-local (kbd "#") '("#" ";;;###autoload")))
+
   (defpostload "lisp-mode"
     (add-hook 'lisp-mode-hook 'my-install-lisp-common-smartchr)
     (add-hook 'emacs-lisp-mode-hook 'my-install-lisp-common-smartchr)
+    (add-hook 'emacs-lisp-mode-hook 'my-install-elisp-smartchr)
     (add-hook 'lisp-interaction-mode-hook 'my-install-lisp-common-smartchr))
 
   (defpostload "scheme"
@@ -3702,9 +3736,17 @@ check for the whole contents of FILE, otherwise check for the first
 ;; * external libraries (mnopqrs)
 ;; ** maxframe
 
-(when (string= window-system "w32")
- (defconfig 'maxframe
-   (add-hook 'window-setup-hook 'maximize-frame)))
+(defconfig 'maxframe
+
+  ;; send X messages
+  (when (string= window-system "x")
+    (defadvice maximize-frame (after x-maximize-frame activate)
+      (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+                             '(2 "_NET_WM_STATE_MAXIMIZED_VERT" 0))
+      (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+                             '(2 "_NET_WM_STATE_MAXIMIZED_HORZ" 0))))
+
+  (add-hook 'window-setup-hook 'maximize-frame))
 
 ;; ** multiple-cursors
 
@@ -3802,14 +3844,8 @@ check for the whole contents of FILE, otherwise check for the first
                  (setq my-mc/mark-all-last-executed 'all-defun)
                  (mc/mark-all-like-this-in-defun)
                  (message "[ALL defun] -> ALL"))))))
-    ;; ** minor hacks
 
-    ;; a fix for emacs 23
-    (defadvice regexp-opt (after fix-regexp-opt-symbols activate)
-      (setq ad-return-value
-            (if (eq (ad-get-arg 1) 'symbols)
-                (concat "\\_<" ad-return-value "\\_>")
-              ad-return-value)))
+    ;; ** minor hacks
 
     ;; add not only "killed-rectangle" but "cua--last-killed-rectangle"
     (deflazyconfig '(cua--insert-rectangle) "cua-rect")
@@ -4178,13 +4214,22 @@ check for the whole contents of FILE, otherwise check for the first
         sp-autoinsert-if-followed-by-word t
         sp-autoescape-string-quote nil
         sp-highlight-pair-overlay nil
-        sp-autodelete-pair nil          ; => see "paredit" settings
-        sp-autodelete-wrap nil          ; => see "paredit" settings
+        sp-autodelete-pair nil          ; => see "my-paredit-delete-xxx"
+        sp-autodelete-wrap nil          ; => see "my-paredit-delete-xxx"
         )
 
-  ;; enable "<>" for web-mode
+  ;; enable "<>" on web-mode
   (sp-local-tag 'web-mode "<" "<_>" "</_>"
                 :transform 'sp-match-sgml-tags)
+
+  ;; for japanese articles
+  (sp-pair "（" "）")
+  (sp-pair "「" "」")
+  (sp-pair "｛" "｝")
+  (sp-pair "［" "］")
+  (sp-pair "【" "】")
+  (sp-pair "『" "』")
+  (sp-pair "〔" "〕")
 
   (smartparens-global-mode)
 
@@ -4218,12 +4263,42 @@ check for the whole contents of FILE, otherwise check for the first
 (defpostload "color-theme"
   (defconfig 'color-theme-solarized
 
-    ;; add some colors to palette
-    (add-to-list 'solarized-colors '(modeline-active "#194854"))
-    (add-to-list 'solarized-colors '(modeline-record "#594854"))
-    (add-to-list 'solarized-colors '(flymake-err "#402b36"))
+    ;; *** palettes
+    ;; **** normal palette
 
-    ;; function to a search color from palette
+    (setq solarized-colors
+          (append '((flymake-err "#402b36")
+                    (modeline-active "#194854")
+                    (modeline-record "#594854"))
+                  solarized-colors))
+
+    ;; **** "asmanian_blood" based
+
+    ;; (setq solarized-colors
+    ;;       '((base03          "#080404") ; background
+    ;;         (flymake-err     "#380404") ; flymake highlight
+    ;;         (base02          "#181414") ; hl-line, inactive modeline
+    ;;         (modeline-active "#282424") ; active modeline
+    ;;         (modeline-record "#382424") ; recording modeline
+    ;;         (base01          "#686460") ; region, comment
+    ;;         (base00          "#657b83") ;
+    ;;         (base0           "#b4b0b0") ; foreground, cursor
+    ;;         (base1           "#a4b0b0") ;
+    ;;         (base2           "#f4f0f0") ;
+    ;;         (base3           "#ffffff") ;
+    ;;         (yellow          "#705850") ; types, highlight
+    ;;         (orange          "#607080") ; preprocessor, regexp group
+    ;;         (red             "#a06050") ; warning, mismatch
+    ;;         (magenta         "#806080") ; visited links
+    ;;         (violet          "#a090a0") ; link
+    ;;         (blue            "#c0b060") ; function, variable name
+    ;;         (cyan            "#a06050") ; string, showparen, minibuffer
+    ;;         (green           "#60d060") ; keyword, builtin, constant
+    ;;         ))
+
+    ;; *** load
+
+    ;; lookup a color from palette
     (defun my-solarized-color (name)
       (cadr (assq name solarized-colors)))
 
@@ -4337,13 +4412,13 @@ check for the whole contents of FILE, otherwise check for the first
                         :foreground (my-solarized-color 'yellow)
                         :weight 'bold)
 
-    (set-face-attribute 'mode-line-special-mode-face nil
-                        :foreground (my-solarized-color 'cyan)
-                        :weight 'bold)
-
     (set-face-attribute 'mode-line-warning-face nil
                         :foreground (my-solarized-color 'base03)
                         :background (my-solarized-color 'yellow))
+
+    (set-face-attribute 'mode-line-special-mode-face nil
+                        :foreground (my-solarized-color 'cyan)
+                        :weight 'bold)
 
     (set-face-attribute 'mode-line-modified-face nil
                         :foreground (my-solarized-color 'magenta)
@@ -4614,16 +4689,13 @@ check for the whole contents of FILE, otherwise check for the first
 ;; Meta-
 (global-set-key (kbd "M-0") 'next-multiframe-window)
 (global-set-key (kbd "M-1") 'delete-other-windows)
-(global-set-key (kbd "M-2") 'smart-split-window-vertically)
-(global-set-key (kbd "M-3") 'smart-split-window-horizontally)
-(global-set-key (kbd "M-4") 'balance-windows)
+(global-set-key (kbd "M-2") 'my-split-window)
+(global-set-key (kbd "M-3") 'balance-windows)
+(global-set-key (kbd "M-4") 'follow-delete-other-windows-and-split)
 (global-set-key (kbd "M-8") 'my-swap-screen)
 (global-set-key (kbd "M-9") 'previous-multiframe-window)
 (global-set-key (kbd "M-o") 'toggle-opacity)
 (global-set-key (kbd "M-k") 'delete-window)
-
-;; Ctrl-x
-(global-set-key (kbd "M-5") 'follow-delete-other-windows-and-split)
 
 ;; *** motion
 ;; **** cursor
@@ -4660,9 +4732,6 @@ check for the whole contents of FILE, otherwise check for the first
 (global-set-key (kbd "M-l") 'my-linum-goto-line)
 (global-set-key (kbd "M-v") 'my-visible-register)
 (global-set-key (kbd "M-j") 'list-bookmarks)
-
-;; Ctrl-x
-(global-set-key (kbd "C-x C-j") 'bookmark-set)
 
 ;; Overwrite
 (defprepare "iy-go-to-char"
@@ -4831,7 +4900,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Ctrl-
 (global-set-key (kbd "C-t") 'backward-transpose-words)
-(global-set-key (kbd "C-;") 'comment-dwim)
+(global-set-key (kbd "C-;") 'my-comment-dwim)
 
 ;; Ctrl-Meta-
 (global-set-key (kbd "C-M-t") 'backward-transpose-lines)
@@ -4841,7 +4910,7 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; Meta-Shift-
 (global-set-key (kbd "M-T") 'my-transpose-sexps)
-(global-set-key (kbd "M-:") 'comment-dwim)
+(global-set-key (kbd "M-:") 'my-comment-dwim)
 
 ;; Overwrite
 (defprepare "paredit"
@@ -4889,7 +4958,6 @@ check for the whole contents of FILE, otherwise check for the first
 (define-prefix-command 'help-map)
 
 (global-set-key (kbd "<f1>") 'help-map)
-(global-set-key (kbd "M-?") 'help-map)
 
 (define-key 'help-map (kbd "b") 'describe-bindings)
 (define-key 'help-map (kbd "k") 'describe-key)
@@ -4953,7 +5021,7 @@ check for the whole contents of FILE, otherwise check for the first
     (key-chord-define-global "df" 'yas-expand)
     (key-chord-define-global "jk" 'yas-expand))
   (defprepare "ace-jump-mode"
-    (key-chord-define-global ",." 'ace-jump-word-mode))
+    (key-chord-define-global "dk" 'ace-jump-word-mode))
   )
 
 ;; ** keycombo
