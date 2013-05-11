@@ -1,0 +1,4 @@
+# name : ctype.h
+# key : ctype
+# --
+#include <ctype.h>

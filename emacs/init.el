@@ -12,14 +12,14 @@
 ;; C-_
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Undo|     |     |     |
 ;;    | Quot| Cut | End |Rplce|TrsWd| Yank| PgUp| Tab | Open| U p |  *  |     |
-;;       |MulCs|Serch|Delte|Right| Quit| B S | Home|CutLn|Centr|Comnt|     |
+;;       |MCNxt|Serch|Delte|Right| Quit| B S | Home|CutLn|Centr|Comnt|     |
 ;;          | Fold|  *  |  *  | PgDn| Left| Down|Retrn|MrkPg|     |     |
 
 ;; C-M-_
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|     |     |     |
 ;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf| Fill|Split|BPgph|  *  |     |
-;;       |MulAl|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|KlPgh|Cntr0|  -  |     |
-;;          |HidAl|     |     |EdBuf|BWord|NPgph|RetCm|MrkAl|     |     |
+;;       |MCAll|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|KlPgh|Cntr0|  -  |     |
+;;          |HidAl|     |     |EdBuf|BWord|NPgph|NLCom|MrkAl|     |     |
 
 ;; M-_
 ;; |AlWnd|SpWnd|Blnce|Follw|     |     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
@@ -28,15 +28,15 @@
 ;;          |     |Comnd|Cmpil| VReg|Buffr|Narrw|DMcro| Howm|     |     |
 
 ;; M-Shift-
-;; |     |     |     |     |     |     |     | Barf|Wrap)|Slurp| Undo|     |     |     |
-;;    |     |CpSex|EvalR|Raise|TrSex| Yank|RaisB|IdntP| Open|UpSex|     |     |
-;;       |     |SpltS|KlSex|FwSex| Quit|KlSex|JoinS|CutPe|Centr|CmntP|Wrap"|
-;;          |     |     |     | Mark|BwSex|DnSex|Retrn|MkSex|     | Help|
+;; |     |     |     |     |     |     |     | Barf|Wrap(|Slurp| Undo|     |     |     |
+;;    |     |CpSex|EvalR|Raise|TrsSx| Yank|RaisB|IdntX| Open|UpSex|     |     |
+;;       |     |SpltS|KlSex|FwSex| Quit|KlSex|JoinS|KillX|Centr|CmntX|Wrap"|
+;;          |     |     |     | Mark|BwSex|DnSex|Retrn|MkSex|     |     |
 
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     |Scale|     |     |
 ;;    |     |Write|Encod|Revrt|Trnct|     |     |     |     |RdOly|     |     |
-;;       |     | Save|Dired|     |     |FHead|     |KilBf|CgLog|     |     |
+;;       |     | Save|Dired|FindF|     |FHead|     |KilBf|CgLog|     |     |
 ;;          |     |     |Close|     |     |     |ExMcr|     |     |     |
 
 ;; nonconvert
@@ -627,7 +627,7 @@
 
 ;; make beep silent
 
-(when (string= window-system "w32")
+(when (fboundp 'set-message-beep)
   (set-message-beep 'silent))
 
 ;; ** my commands
@@ -837,6 +837,13 @@
     (goto-char beg)
     (delete-region beg end)
     (insert (my-url-encode-string str 'utf-8))))
+
+;; *** new-next-line
+
+(defun my-new-next-line ()
+  (interactive)
+  (end-of-line)
+  (newline-and-indent))
 
 ;; ** other utilities
 
@@ -2722,6 +2729,9 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; **** commands
 
+;; split window smartly
+;; reference | http://dev.ariel-networks.com/wp/documents/aritcles/emacs/part16
+
 (defun my-split-window ()
   (interactive)
   (case last-command
@@ -2784,29 +2794,29 @@ check for the whole contents of FILE, otherwise check for the first
       cedit-or-paredit-raise) "cedit")
   )
 
-;; ** electric-case
+;; ** *COMMENT* electric-case
 
-(deflazyconfig
-  '(electric-case-c-init
-    electric-case-java-init
-    electric-case-scala-init
-    electric-case-ahk-init) "electric-case"
+;; (deflazyconfig
+;;   '(electric-case-c-init
+;;     electric-case-java-init
+;;     electric-case-scala-init
+;;     electric-case-ahk-init) "electric-case"
 
-    (setq electric-case-convert-calls t)
-    )
+;;     (setq electric-case-convert-calls t)
+;;     )
 
-(defprepare "electric-case"
+;; (defprepare "electric-case"
 
-  (defpostload "cc-mode"
-    (add-hook 'c-mode-hook 'electric-case-c-init)
-    (add-hook 'java-mode-hook 'electric-case-java-init))
+;;   (defpostload "cc-mode"
+;;     (add-hook 'c-mode-hook 'electric-case-c-init)
+;;     (add-hook 'java-mode-hook 'electric-case-java-init))
 
-  (defpostload "scala-mode"
-    (add-hook 'scala-mode-hook 'electric-case-scala-init))
+;;   (defpostload "scala-mode"
+;;     (add-hook 'scala-mode-hook 'electric-case-scala-init))
 
-  (defpostload "ahk-mode"
-    (add-hook 'ahk-mode-hook 'electric-case-ahk-init))
-  )
+;;   (defpostload "ahk-mode"
+;;     (add-hook 'ahk-mode-hook 'electric-case-ahk-init))
+;;   )
 
 ;; ** indent-guide
 
@@ -3565,7 +3575,8 @@ check for the whole contents of FILE, otherwise check for the first
     (key-combo-define-local (kbd "+") '(" + " "++"))
     (key-combo-define-local (kbd "+=") " += ")
     ;; vv conflict with electric-case vv
-    ;; (key-combo-define-local (kbd "-") '(" - " "--" "-"))
+    (key-combo-define-local (kbd "-") '(" - " "--" "-"))
+    ;; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     (key-combo-define-local (kbd "-=") " -= ")
     (key-combo-define-local (kbd "*") " * ")
     (key-combo-define-local (kbd "*=") " *= ")
@@ -3590,13 +3601,10 @@ check for the whole contents of FILE, otherwise check for the first
     (key-combo-define-local (kbd "^") " ^ ")
     (key-combo-define-local (kbd "^=") " ^= ")
     ;; others
-    (key-combo-define-local (kbd "?") '( " ? `!!' : " "?"))
     (key-combo-define-local (kbd "/*") "/* `!!' */")
     (key-combo-define-local (kbd "{") '(my-c-smart-braces "{ `!!' }")))
 
   (defun my-install-promela-smartchr ()
-    ;; electric semi
-    (key-combo-define-local (kbd ";") ";\n")
     ;; operators
     (key-combo-define-local (kbd "-") '(" - " "--" "-"))
     ;; channels
@@ -3613,7 +3621,9 @@ check for the whole contents of FILE, otherwise check for the first
     (key-combo-define-local (kbd "->") "->")
     ;; include
     (key-combo-define-local (kbd "<") '(" < " " << " "<"))
-    (key-combo-define-local (kbd ">") '(" > " " >> " ">")))
+    (key-combo-define-local (kbd ">") '(" > " " >> " ">"))
+    ;; triary operation
+    (key-combo-define-local (kbd "?") '( " ? `!!' : " "?")))
 
   (defun my-install-java-smartchr ()
     ;; javadoc comment
@@ -4117,7 +4127,19 @@ check for the whole contents of FILE, otherwise check for the first
 
 ;; ** promela-mode
 
-(deflazyconfig '(promela-mode) "promela-mode")
+(deflazyconfig '(promela-mode) "promela-mode"
+
+  (setq promela-selection-indent 0
+        promela-block-indent 4)
+
+  (defun my-promela-electric-semi ()
+    (interactive)
+    (insert ";")
+    (promela-indent-newline-indent))
+
+  (define-key promela-mode-map (kbd ";") 'my-promela-electric-semi)
+  (define-key promela-mode-map (kbd "C-m") 'promela-indent-newline-indent)
+  )
 
 (defprepare "promela-mode"
  (add-to-list 'auto-mode-alist
@@ -4738,7 +4760,9 @@ check for the whole contents of FILE, otherwise check for the first
   (global-set-key (kbd "<oem-pa1>") 'iy-go-to-char) ; US
   (global-set-key (kbd "C-<oem-pa1>") 'iy-go-to-char-backward)
   (global-set-key (kbd "<nonconvert>") 'iy-go-to-char) ; JP
-  (global-set-key (kbd "C-<nonconvert>") 'iy-go-to-char-backward))
+  (global-set-key (kbd "C-<nonconvert>") 'iy-go-to-char-backward)
+  (global-set-key (kbd "<muhenkan>") 'iy-go-to-char) ; JP
+  (global-set-key (kbd "C-<muhenkan>") 'iy-go-to-char-backward))
 (defprepare "point-undo"
   (global-set-key (kbd "M--") 'point-undo))
 (defprepare "anything"
@@ -4854,17 +4878,17 @@ check for the whole contents of FILE, otherwise check for the first
 ;; Ctrl-
 (global-set-key (kbd "TAB") 'indent-for-tab-command) ; C-i
 (global-set-key (kbd "C-o") 'open-line)
-(global-set-key (kbd "RET") 'newline-and-indent) ; C-m
+(global-set-key (kbd "RET") 'reindent-then-newline-and-indent) ; C-m
 
 ;; Ctrl-Meta-
 (global-set-key (kbd "C-M-i") 'fill-paragraph)
-(global-set-key (kbd "C-M-o") 'split-line)
+(global-set-key (kbd "C-M-o") 'my-new-next-line)
 (global-set-key (kbd "C-M-m") 'indent-new-comment-line)
 
 ;; Meta-Shift-
 (global-set-key (kbd "M-I") 'my-reindent-sexp)
 (global-set-key (kbd "M-O") 'open-line)
-(global-set-key (kbd "M-M") 'newline-and-indent)
+(global-set-key (kbd "M-M") 'reindent-then-newline-and-indent)
 
 ;; Meta-
 (global-set-key (kbd "M-u") 'untabify)
@@ -4937,6 +4961,7 @@ check for the whole contents of FILE, otherwise check for the first
 ;; Ctrl-x
 (global-set-key (kbd "C-x DEL") 'ff-find-other-file) ; C-x C-h
 (global-set-key (kbd "C-x C-d") 'dired)
+(global-set-key (kbd "C-x C-f") 'find-file)
 
 ;; Overwrite
 (defprepare "nav"

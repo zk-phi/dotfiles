@@ -2,4 +2,3 @@
 # key : io
 # --
 import java.io.${1:*};
-$0

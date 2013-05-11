@@ -1,5 +1,4 @@
 # name : java.lang.Math
 # key : math
 # --
-import static java.lang.Math.${1:*};
-$0
+import java.math.${1:*};
