@@ -806,7 +806,8 @@
 
 ;;    +--- (automargin.el) enable automargin
 
-(defconfig 'automargin)
+(defconfig 'automargin
+  (automargin-mode 1))
 
 ;;    +--- (popwin.el) enable popwin
 
@@ -1649,7 +1650,9 @@
 
 ;;    +--- [whitespace.el] visible whitespaces
 
-(deflazyconfig '(whitespace-mode) "whitespace"
+(defconfig 'whitespace
+
+  (global-whitespace-mode)
 
   (setq whitespace-space-regexp "\\(\x3000+\\)")
 
@@ -1660,9 +1663,6 @@
         '((space-mark ?\x3000 [?□])
           (tab-mark ?\t [?\xBB ?\t])))
   )
-
-(defprepare "whitespace"
-  (add-hook 'find-file-hook 'whitespace-mode))
 
 ;;    +--- (hungry-delete.el) delete all adjacent spaces
 
@@ -1859,11 +1859,14 @@
 
 ;;    +--- (hl-paren.el) enable highlight-parentheses
 
-(deflazyconfig
-  '(highlight-parentheses-mode) "highlight-parentheses")
+(defconfig 'highlight-parentheses
 
-(defprepare "highlight-parentheses"
-  (add-hook 'find-file-hook 'highlight-parentheses-mode))
+  (define-globalized-minor-mode global-highlight-parentheses-mode
+    highlight-parentheses-mode
+    (lambda () (highlight-parentheses-mode 1)))
+
+  (global-highlight-parentheses-mode)
+  )
 
 ;;    +--+ (paredit.el) paredit settings
 ;;       +--- utilities
@@ -3665,8 +3668,7 @@
 ;;    +--- (indent-guide.el) enable indent-guide
 
 (defconfig 'indent-guide
-  (setq-default indent-guide-mode t)
-  ;; disable in some modes
+  (indent-guide-global-mode)
   (add-hook 'org-mode-hook 'indent-guide-mode)
   (add-hook 'fundamental-mode-hook 'indent-guide-mode)
   (add-hook 'help-mode-hook 'indent-guide-mode)
@@ -4514,11 +4516,8 @@
 
 ;;    +--- (page-break-lines.el) enable page-break-lines
 
-(defprepare "page-break-lines"
-  (add-hook 'find-file-hook 'page-break-lines-mode))
-
-(deflazyconfig
-  '(page-break-lines-mode) "page-break-lines")
+(defconfig 'page-break-lines
+  (global-page-break-lines-mode))
 
 ;;    +--- (color-theme.el) load color-theme
 
@@ -4711,6 +4710,7 @@
 ;;    +--- (sublimity.el) load sublimity-scroll
 
 (defconfig 'sublimity
+  (sublimity-global-mode)
   (defconfig 'sublimity-scroll)
   ;; (defconfig 'sublimity-map)
   )
