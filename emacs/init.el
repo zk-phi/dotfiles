@@ -1,21 +1,21 @@
 ;; init.el (for e23.3) | 2013 zk_phi
 
+;; DO NOT update following plug-ins !!
+;; - smartparens ... recent version is very slow at paren insertion (why?)
+;; - solarized ... setting for modeline colors conflicts
+
 (eval-when-compile (require 'cl))
 
 ;; + docs
 ;; +--+ notes, todos
 
-;; - sexpwise navigation and show-smartparens-mode in smartparens is
-;;   super smart but noticalably slow (so is currently not used).
+;; - sexpwise navigation and show-smartparens-mode in smartparens is super smart
+;;   but noticeably slow and sometimes causes errors(?) (so is currently not used).
 
 ;; - multiple-cursors conflicts with key-combo, threfore key-combo is
-;;   temporally disabled while multiple-cursors-mode is on
-
-;; - indent-guide-mode seems to be buggy, so is disabled currently
+;;   disabled while multiple-cursors-mode is on
 
 ;; - key-combo conflicts with auto-complete in some conditions (reported)
-
-;; - hilit-chg does not work ?
 
 ;; +--+ cheat sheet
 ;;    +--+ global
@@ -327,6 +327,11 @@
 (when (fboundp 'set-message-beep)
   (set-message-beep 'silent))
 
+;;    +--- [mule-cmds.el] use "japanese" input-method
+
+(defpostload "mule-cmds"
+  (setq default-input-method "japanese"))
+
 ;;    +--- [bytecomp.el] automatically byte-compile init.el
 
 ;; reference | http://www.bookshelf.jp/soft/meadow_18.html#SEC170
@@ -425,24 +430,20 @@
 
   (key-chord-mode 1)
 
-  ;; make key-chord able to disable buffer-locally
-  (make-variable-buffer-local 'key-chord-mode)
-  (make-variable-buffer-local 'input-method-function)
-
   ;; disable in vi-mode
   (defpostload "vi"
     (defadvice vi-mode (after disable-key-chord activate)
-      (setq key-chord-mode        nil
-            input-method-function nil))
+      (set (make-local-variable 'key-chord-mode) nil)
+      (set (make-local-variable 'input-method-function) nil))
     (defadvice vi-goto-insert-state (after disable-key-chord activate)
-      (setq key-chord-mode        t
-            input-method-function 'key-chord-input-method)))
+      (kill-local-variable 'key-chord-mode)
+      (kill-local-variable 'input-method-function)))
 
   ;; disable in view-mode
   (defpostload "view"
     (defadvice view-mode (after disable-key-chord activate)
-      (setq key-chord-mode        nil
-            input-method-function nil)))
+      (set (make-local-variable 'key-chord-mode) nil)
+      (set (make-local-variable 'input-method-function) nil)))
   )
 
 ;;    +--+ (key-combo.el) key-combo settings
@@ -692,7 +693,8 @@
 
 (defun my-scratch-restore ()
   (with-current-buffer "*scratch*"
-    (insert-file-contents my:scratch-file)))
+    (when (file-exists-p my:scratch-file)
+      (insert-file-contents my:scratch-file))))
 
 (add-hook 'kill-emacs-hook 'my-scratch-save)
 (add-hook 'after-init-hook 'my-scratch-restore)
@@ -1399,25 +1401,40 @@
 (defun my-shrink-whitespaces ()
   "shrink adjacent whitespaces or newlines in dwim way"
   (interactive)
-  (let ((bol (save-excursion (back-to-indentation) (point)))
+  (let ((bol (save-excursion (back-to-indentation)
+                             (point)))
         (eol (point-at-eol)))
     (cond ((= bol eol)
            (skip-chars-backward "\s\t\n")
            (delete-region (point)
-                          (progn (skip-chars-forward "\s\t\n") (point)))
+                          (progn (skip-chars-forward "\s\t\n")
+                                 (beginning-of-line)
+                                 (point)))
            (insert "\n")
            (when (char-after)
              (save-excursion (insert "\n"))))
-          ((= (point) bol)
-           (delete-region (point)
-                          (progn (skip-chars-backward "\s\t\n") (point))))
+          ((<= (point) bol)
+           (when (= (point)
+                    (progn (funcall indent-line-function)
+                           (point)))
+             (delete-region (point)
+                            (progn (skip-chars-backward "\s\t\n")
+                                   (point)))
+             (insert " ")))
           ((= (point) eol)
-           (delete-region (point)
-                          (progn (skip-chars-forward "\s\t\n") (point))))
+           (if (member (char-before) '(?\s ?\t))
+               (delete-region (point)
+                              (progn (skip-chars-backward "\s\t")
+                                     (point)))
+             (delete-region (point)
+                            (progn (skip-chars-forward "\s\t\n")
+                                   (point)))
+             (insert " ")))
           (t
            (skip-chars-backward "\s\t")
            (delete-region (point)
-                          (progn (skip-chars-forward "\s\t") (point)))
+                          (progn (skip-chars-forward "\s\t")
+                                 (point)))
            (insert " ")))))
 
 ;;    +--- next-opened-line
@@ -1667,12 +1684,8 @@
 ;;    +--- [paren.el] enable show-paren-mode
 
 (defconfig 'paren
-
   (show-paren-mode)
-  (make-variable-buffer-local 'show-paren-mode)
-
-  (setq show-paren-delay 0)
-  )
+  (setq show-paren-delay 0))
 
 ;;    +--- (cedit.el) cedit settings
 
@@ -3643,12 +3656,16 @@
                      :height 125 :width semi-condensed)))
       (buffer-face-mode 1))
 
-    ;; global-hl-line-mode must be made buffer-local
-    (setq global-hl-line-mode nil)
+    ;; hl-line-mode and global-hl-line-mode is independent
+    (set (make-local-variable 'global-hl-line-mode) nil)
 
-    ;; show-paren-mode must be made buffer-local
-    (setq show-paren-mode nil)
+    ;; show-paren-mode is always global
+    (set (make-local-variable 'show-paren-mode) nil)
     )
+
+  (defpostload "indent-guide"
+    (defadvice indent-guide-show (around disable-in-view-mode activate)
+      (unless view-mode ad-do-it)))
 
   (add-hook 'view-mode-hook 'my-view-mode-hook)
 
@@ -3977,10 +3994,10 @@
       (hs-minor-mode 1)))
   )
 
-;;    +--- *COMMENT* (indent-guide.el) enable indent-guide
+;;    +--- (indent-guide.el) enable indent-guide
 
-;; (defconfig 'indent-guide
-;;   (indent-guide-global-mode))
+(defconfig 'indent-guide
+  (indent-guide-global-mode))
 
 ;;    +--- (outline-magic.el) outline-cycle-dwim
 
@@ -4811,11 +4828,8 @@
 
 ;;    +--- [hl-line.el] enable hl-line-mode
 
-;; reference | http://stackoverflow.com/questions/9990370/how-to-disable-hl-line-feature-in-specified-mode
-
 (defconfig 'hl-line
-  (global-hl-line-mode 1)
-  (make-variable-buffer-local 'global-hl-line-mode))
+  (global-hl-line-mode 1))
 
 ;;    +--- [menu-bar.el] disable menu-bar
 
@@ -4837,6 +4851,11 @@
 (defconfig 'time
   (setq display-time-string-forms '(24-hours ":" minutes))
   (display-time))
+
+;;    +--- [frame.el] do not blink cursor
+
+(defpostload "frame"
+  (blink-cursor-mode -1))
 
 ;;    +--- (page-break-lines.el) enable page-break-lines
 
@@ -4869,12 +4888,12 @@
     ;;         (base02          "#073642") ; hl-line, inactive modeline
     ;;         (modeline-active "#194854") ; active modeline
     ;;         (modeline-record "#594854") ; recording modeline
-    ;;         (base01          "#586e75") ; region, comment
+    ;;         (base01          "#586e75") ; region, comment, ace-jump base
     ;;         (base00          "#657b83") ;
     ;;         (base0           "#839496") ; foreground, cursor
     ;;         (base1           "#93a1a1") ; modeline active (fg)
     ;;         (base2           "#eee8d5") ;
-    ;;         (base3           "#fdf6e3") ;
+    ;;         (base3           "#fdf6e3") ; ace-jump match
     ;;         (yellow          "#b58900") ; type, highlight
     ;;         (orange          "#cb4b16") ; preprocessor, regexp group
     ;;         (red             "#dc322f") ; warning, mismatch
@@ -4895,12 +4914,12 @@
     ;;         (base02          "#292929") ; hl-line, inactive modeline
     ;;         (modeline-active "#393939") ; active modeline
     ;;         (modeline-record "#593939") ; recording modeline
-    ;;         (base01          "#666666") ; region, comment
+    ;;         (base01          "#666666") ; region, comment, ace-jump base
     ;;         (base00          "#ffffff") ;
     ;;         (base0           "#b8b8a3") ; foreground, cursor
     ;;         (base1           "#a8b8b3") ; modeline active (fg)
     ;;         (base2           "#ffffff") ;
-    ;;         (base3           "#ffffff") ;
+    ;;         (base3           "#ffffff") ; ace-jump match
     ;;         (yellow          "#ffb964") ; type, highlight
     ;;         (orange          "#8fbfdc") ; preprocessor, regexp group
     ;;         (red             "#a04040") ; warning, mismatch
@@ -4915,18 +4934,18 @@
     ;;      +--- "mesa" inspired palette
 
     (setq solarized-colors
-          '((base03          "#ffffff") ;
-            (lmntal-name     "#fdfdfd") ; for lmntal-mode (bg)
-            (flymake-err     "#fff0e9") ; flymake highlight
-            (base02          "#ede9e2") ; inactive modeline
+          '((base03          "#ee0000") ; ace-jump match
+            (lmntal-name     "#efefef") ; for lmntal-mode (bg)
+            (flymake-err     "#ffefe8") ; flymake highlight
+            (base02          "#f2ede6") ; inactive modeline
             (modeline-active "#ddd9f2") ; active modeline
             (modeline-record "#fdd9d2") ; recording modeline
             (base01          "#4d4d4d") ; modeline active (fg)
             (base00          "#4d4d4d") ; foreground, cursor
             (base0           "#ffffff") ;
-            (base1           "#697799") ; region, comment
-            (base2           "#ede9e2") ; hl-line
-            (base3           "#f6f2eb") ; background
+            (base1           "#697799") ; region, comment, ace-jump base
+            (base2           "#f2ede6") ; hl-line
+            (base3           "#faf5ee") ; background
             (yellow          "#3388dd") ; type, highlight
             (orange          "#ac3d1a") ; preprocessor, regexp group
             (red             "#dd2222") ; warning, mismatch
@@ -4941,13 +4960,19 @@
     ;;   +--- ace-jump-mode
 
     (defpostload "ace-jump-mode"
+      (case (frame-parameter nil 'background-mode)
 
-      (set-face-foreground 'ace-jump-face-foreground
-                           (my-solarized-color 'base3))
+        (dark (set-face-foreground 'ace-jump-face-foreground
+                                   (my-solarized-color 'base3))
+              (set-face-foreground 'ace-jump-face-background
+                                   (my-solarized-color 'base01)))
 
-      (set-face-foreground 'ace-jump-face-background
-                           (my-solarized-color 'base01))
-      )
+        (light (set-face-foreground 'ace-jump-face-foreground
+                                    (my-solarized-color 'base03))
+               (set-face-foreground 'ace-jump-face-background
+                                    (my-solarized-color 'base1)))
+
+        ))
 
     ;;   +--- font-lock
 
@@ -4957,11 +4982,12 @@
       ;; reference | http://pastelwill.jp/wiki/doku.php?id=emacs:init.el
 
       (set-face-foreground 'font-lock-regexp-grouping-backslash
-                           (my-solarized-color 'orange))
+                           (my-solarized-color 'red))
 
       (set-face-foreground 'font-lock-regexp-grouping-construct
-                           (my-solarized-color 'orange))
+                           (my-solarized-color 'red))
       )
+
     ;;   +--- highlight-parentheses
 
     ;; the last color is ignored
@@ -5083,6 +5109,16 @@
                            (my-solarized-color 'modeline-active))
       (set-face-background 'phi-search-selection-face
                            (my-solarized-color 'modeline-record)))
+
+    ;;   +--- indent-guide
+
+    (defpostload "indent-guide"
+      (case (frame-parameter nil 'background-mode)
+        (dark (set-face-foreground 'indent-guide-face
+                                   (my-solarized-color 'base01)))
+        (light (set-face-foreground 'indent-guide-face
+                                    (my-solarized-color 'base1)))
+        ))
 
     ;;   +--- (sentinel)
     ))

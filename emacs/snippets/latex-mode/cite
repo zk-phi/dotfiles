@@ -1,0 +1,4 @@
+# name : cite
+# key : cite
+# --
+\cite{$1}$0

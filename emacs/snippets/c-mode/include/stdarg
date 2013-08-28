@@ -1,0 +1,4 @@
+# name : stdarg.h
+# key : arg
+# --
+#include <stdarg.h>

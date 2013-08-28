@@ -1,0 +1,10 @@
+# name : image
+# key : img
+# --
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=${1:5}cm]{${2:foo.eps}}
+  \caption{${3:attribute}}
+  \label{${4:label}}
+\end{figure}
+$0

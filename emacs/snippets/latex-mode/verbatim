@@ -1,0 +1,8 @@
+# name : verbatim
+# key : ver
+# --
+\begin{screen}
+\begin{verbatim}
+$0
+\end{verbatim}
+\end{screen}
