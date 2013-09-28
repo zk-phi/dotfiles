@@ -120,16 +120,20 @@
 
 (when (not (boundp 'my-home-system-p))
   (defconst my-home-system-p nil)
-  (message "!! [init] WARNING: site-start.el does not match"))
+  (message "!! [init] WARNING: site-start.el does not match")
+  (sit-for 0.4))
 
 (when (not my-home-system-p)
-  (message "!! [init] WARNING: this is not my home system"))
+  (message "!! [init] WARNING: this is not my home system")
+  (sit-for 0.4))
 
 (when (not (string-match "^23\." emacs-version))
-  (message "!! [init] WARNING: emacs version is not 23.X"))
+  (message "!! [init] WARNING: emacs version is not 23.X")
+  (sit-for 0.4))
 
 (when (not (eq 'windows-nt system-type))
-  (message "!! [init] WARNING: system type is not windows-nt"))
+  (message "!! [init] WARNING: system type is not windows-nt")
+  (sit-for 0.4))
 
 ;;       +--- customs
 
@@ -1308,12 +1312,104 @@
 
 (deflazyconfig '(er/expand-region) "expand-region")
 
-;;    +--- (phi-rectangle.el) rectangle-mark
+;;    +--+ (phi-rectangle.el) rectangle-mark (and some hacks)
 
-(deflazyconfig '(phi-rectangle-set-mark-command
-                 phi-rectangle-kill-ring-save
-                 phi-rectangle-kill-region
-                 phi-rectangle-yank) "phi-rectangle")
+(deflazyconfig
+  '(phi-rectangle-set-mark-command
+    phi-rectangle-kill-ring-save
+    phi-rectangle-kill-region
+    phi-rectangle-yank) "phi-rectangle"
+
+    ;;   +--- swap-region
+
+    (defvar swap-region-pending-overlay nil)
+    (make-variable-buffer-local 'swap-region-pending-overlay)
+
+    (defvar swap-pending-face 'cursor)
+
+    (defadvice phi-rectangle-yank (around swap-region-start activate)
+      (if (eq last-command 'kill-region)
+          (progn
+            (setq swap-region-pending-overlay
+                  (make-overlay (point) (1+ (point))))
+            (overlay-put swap-region-pending-overlay
+                         'face swap-pending-face))
+        (progn
+          (when swap-region-pending-overlay
+            (delete-overlay swap-region-pending-overlay)
+            (setq swap-region-pending-overlay nil))
+          ad-do-it)))
+
+    (defadvice phi-rectangle-kill-region (around swap-region-exec activate)
+      (if (not (and (use-region-p)
+                    swap-region-pending-overlay))
+          ad-do-it
+        (let* ((str (buffer-substring (region-beginning) (region-end)))
+               (pending-pos (overlay-start swap-region-pending-overlay))
+               (pos (+ (region-beginning)
+                       (if (< pending-pos (point)) (length str) 0))))
+          (delete-region (region-beginning) (region-end))
+          (goto-char (overlay-start swap-region-pending-overlay))
+          (delete-overlay swap-region-pending-overlay)
+          (setq swap-region-pending-overlay nil)
+          (insert str)
+          (goto-char pos)
+          (setq this-command 'kill-region))))
+
+    ;;   +--- oneshot-snippet
+
+    (defprepare "yasnippet"
+      (defadvice phi-rectangle-kill-ring-save (around yas-oneshot-save activate)
+        (if (and (interactive-p)
+                 (eq last-command this-command))
+            (call-interactively 'my-yas-register-oneshot)
+          ad-do-it)))
+
+    (deflazyconfig
+      '(my-yas-expand-oneshot
+        my-yas-register-oneshot) "yasnippet"
+
+        ;; reference | http://d.hatena.ne.jp/rubikitch/20090702/1246477577
+
+        (defvar my-yas-oneshot-snippet nil)
+
+        (defun my-yas-expand-oneshot ()
+          (interactive)
+          (if my-yas-oneshot-snippet
+              (yas-expand-snippet my-yas-oneshot-snippet (point) (point) nil)
+            (message "oneshot-snippet is not registered")))
+
+        (defun my-yas-register-oneshot (start end)
+          (interactive "r")
+          (setq my-yas-oneshot-snippet (buffer-substring-no-properties start end))
+          (delete-region start end)
+          (my-yas-expand-oneshot)
+          (message "%s" (substitute-command-keys
+                         "Press \\[my-yas-expand-oneshot] to expand."))))
+
+    ;;   +--- auto indent
+
+    (defvar my-auto-indent-inhibit-modes
+      '(fundamental-mode org-mode text-mode ahk-mode latex-mode eshell-mode))
+
+    (defadvice phi-rectangle-yank (around my-auto-indent activate)
+      (if (not (member major-mode my-auto-indent-inhibit-modes))
+          (indent-region (point) (progn ad-do-it (point)))
+        ad-do-it))
+
+    ;;   +--- exchange-point-and-mark with set-mark
+
+    (dolist (command '(set-mark-command phi-rectangle-set-mark-command))
+      (eval
+       `(defadvice ,command (around exchange-mark activate)
+          "if set-mark-command is called more than twice, exchange-point-and-mark"
+          (if (not (or phi-rectangle-mark-active mark-active))
+              ad-do-it
+            (setq this-command 'exchange-point-and-mark)
+            (exchange-point-and-mark)))))
+
+    ;;   +--- (sentinel)
+    )
 
 ;; +--+ 0x17. whitespaces, newlines
 ;;    +--- shrink-spaces
@@ -1381,6 +1477,16 @@
     (sit-for 0.4)))
 
 (add-hook 'before-save-hook 'my-delete-trailing-whitespace-before-save)
+
+;;    +--- [simple.el] shrink indents on kill-line
+
+;; reference | http://www.emacswiki.org/emacs/AutoIndentation
+
+(defadvice kill-line (around shrink-indent activate)
+  (if (or (not (eolp)) (bolp))
+      ad-do-it
+    ad-do-it
+    (save-excursion (just-one-space))))
 
 ;;    +--- [whitespace.el] visible whitespaces
 
@@ -2275,10 +2381,7 @@
 
 ;;       +--- (prelude)
 
-(deflazyconfig
-  '(yas-expand
-    my-yas-expand-oneshot
-    my-yas-register-oneshot) "yasnippet"
+(deflazyconfig '(yas-expand) "yasnippet"
 
     ;;   +--- snippets directory
 
@@ -2300,26 +2403,6 @@
     ;;   +--- use ido-prompt
 
     (custom-set-variables '(yas-prompt-functions '(yas-ido-prompt)))
-
-    ;;   +--- oneshot snippet
-
-    ;; reference | http://d.hatena.ne.jp/rubikitch/20090702/1246477577
-
-    (defvar my-yas-oneshot-snippet nil)
-
-    (defun my-yas-expand-oneshot ()
-      (interactive)
-      (if my-yas-oneshot-snippet
-          (yas-expand-snippet my-yas-oneshot-snippet (point) (point) nil)
-        (message "oneshot-snippet is not registered")))
-
-    (defun my-yas-register-oneshot (start end)
-      (interactive "r")
-      (setq my-yas-oneshot-snippet (buffer-substring-no-properties start end))
-      (delete-region start end)
-      (my-yas-expand-oneshot)
-      (message "%s" (substitute-command-keys
-                     "Press \\[my-yas-expand-oneshot] to expand.")))
 
     ;;   +--- fix fallback behavior
 

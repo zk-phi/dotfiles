@@ -1,0 +1,43 @@
+#name : Dijkstra
+#expand-env : ((tmp (and (fboundp 'include-everywhere-insert) (include-everywhere-insert "#include <stdlib.h>"))))
+# --
+#define INF 1000000000
+
+int cost(int,int);
+
+int* dijkstra(int dest, int size)
+{
+     int i, min, min_i, t;
+     int* res = (int*)malloc(size*sizeof(int));
+     int* used = (int*)malloc(size*sizeof(int));
+
+     for(i=0; i<size; i++) res[i]=INF, used[i]=0;
+     res[dest] = 0;
+
+     while(1){
+	  min=INF, min_i=-1;
+	  for(i=0; i<size; i++)
+	       if(!used[i] && res[i]<min) min=res[i], min_i=i;
+
+	  if(min_i==-1) break;
+
+	  for(i=0; i<size; i++){
+	       t = cost(i, min_i) + res[min_i];
+	       if(t<res[i]) res[i]=t;
+	  }
+
+	  used[min_i]=1;
+     }
+
+     free(used);
+     return res;
+}
+
+/* if cannot go there from here then return INF */
+/* otherwise return cost to go there */
+int cost(int from, int to)
+{
+     $1
+}
+
+$0

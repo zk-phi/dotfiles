@@ -1,0 +1,9 @@
+# name : comparator
+# key : cmp
+# --
+int cmp_$1(const void *a, const void *b)
+{
+     return (*($1*)a) - (*($1*)b);
+}
+
+$0
