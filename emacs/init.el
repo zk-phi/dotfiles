@@ -6,6 +6,11 @@
 
 ;; FIXME :
 ;; - show-paren advice for vi-mode (incorrect opening-paren matching)
+;; - compilation fails when the window is splitted (why?)
+
+;; NOTE :
+;; - indent-guide is temporally disabled, to check if the
+;;   post-command-hook type-error (wholenump -2) is caused by indent-guide
 
 (eval-when-compile (require 'cl))
 
@@ -39,8 +44,8 @@
 
 ;; M-_
 ;; |AlWnd|SpWnd|Blnce|Follw|     |     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
-;;    |Scrtc|Palet| Eval|Recnt|Table|YankP|Untab|Shell|Opcty|EvalP|     |     |
-;;       |Artst| All | Dir | File| Grep|Shrnk| Jump|KlWnd| Goto|     |     |
+;;    |Scrtc|Palet| Eval|Recnt|Table|YankP|UndoT|Shell|Opcty|EvalP|     |     |
+;;       |Artst| All |Dired| File| Grep|Shrnk| Jump|KlWnd| Goto|     |     |
 ;;          |     |Comnd|Cmpil| VReg|Buffr|Narrw|DMcro| Howm|     |     |
 
 ;;    +--- Meta-Shift-
@@ -55,9 +60,9 @@
 
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     |Scale|     |     |
-;;    |     |Write|Encod|Revrt|Trnct|     |     |Align|     |RdOly|     |     |
-;;       |Spell| Save|Dired|FindF|     |FHead|     |KilBf|CgLog|     |     |
-;;          |     |     |Close|     |     |     |ExMcr|     |     |     |
+;;    |     |Write|Encod|Revrt|Trnct|     |Untab|Spell|     |RdOly|     |     |
+;;       |     | Save|     |     |     |FHead|     |KilBf|CgLog|     |     |
+;;          |     |     |Close|     |Bffrs|     |ExMcr|     |     |     |
 
 ;;    +--- others
 
@@ -117,28 +122,33 @@
 ;; + codes
 ;; +--+ 0x00. init for init
 ;;    +--+ environment
-;;       +--- system
-
-(when (not (boundp 'my-home-system-p))
-  (defconst my-home-system-p nil)
-  (message "!! [init] WARNING: site-start.el does not match")
-  (sit-for 0.2))
-
-(when (not my-home-system-p)
-  (message "!! [init] WARNING: this is not my home system")
-  (sit-for 0.2))
-
-(when (not (string-match "^23\." emacs-version))
-  (message "!! [init] WARNING: emacs version is not 23.X")
-  (sit-for 0.2))
-
-(when (not (eq 'windows-nt system-type))
-  (message "!! [init] WARNING: system type is not windows-nt")
-  (sit-for 0.2))
-
 ;;       +--- customs
 
-(defconst my:skip-checking-libraries my-home-system-p)
+(defconst my:home-system-p (when (boundp 'my:home-system-p)
+                             my:home-system-p))
+
+(defconst my:skip-checking-libraries my:home-system-p
+  "when non-nil, Emacs assumes all dependencies are provided")
+
+(defconst my:skip-warnings nil
+  "when non-nil Emacs does not warn differences of system")
+
+;;       +--- system
+
+(unless my:skip-warnings
+
+  (unless my:home-system-p
+    (message "!! [init] WARNING: this is not my home system")
+    (sit-for 0.2))
+
+  (unless (string-match "^23\." emacs-version)
+    (message "!! [init] WARNING: emacs version is not 23.X")
+    (sit-for 0.2))
+
+  (unless (eq 'windows-nt system-type)
+    (message "!! [init] WARNING: system type is not windows-nt")
+    (sit-for 0.2))
+  )
 
 ;;       +--- directories
 
@@ -170,13 +180,13 @@
 ;;       +--- dropbox integration
 
 (defconst my:dropbox-directory
-  (if my-home-system-p "~/../../Dropbox/"))
+  (if my:home-system-p "~/../../Dropbox/"))
 
 (defconst my:howm-import-directory
-  (if my-home-system-p (concat my:dropbox-directory "howm_import/")))
+  (if my:home-system-p (concat my:dropbox-directory "howm_import/")))
 
 (defconst my:howm-export-file
-  (if my-home-system-p (concat my:dropbox-directory "howm_schedule.txt")))
+  (if my:home-system-p (concat my:dropbox-directory "howm_schedule.txt")))
 
 ;;    +--+ macros / utilities
 ;;       +--- locate libraries
@@ -306,12 +316,12 @@
 
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-(setq frame-title-format                    "%b - Emacs"
+(setq frame-title-format                    "%b - Emacs++"
       redisplay-dont-pause                  t
       completion-ignore-case                t
       read-file-name-completion-ignore-case t
-      gc-cons-threshold                     20000000 ; less GC
-      message-log-max                       1000     ; keep messages more
+      gc-cons-threshold                     20000000
+      message-log-max                       1000
       enable-local-variables                :safe
       echo-keystrokes                       0.1
       delete-by-moving-to-trash             t)
@@ -319,14 +329,24 @@
 (when (fboundp 'set-message-beep)
   (set-message-beep 'silent))
 
+;; use disabled commands
+(dolist (command '(narrow-to-region dired-find-alternate-file
+                                    upcase-region downcase-region))
+  (put command 'disabled nil))
+
 ;;    +--- [w32vars.el] use clipboard
 
 (setq x-select-enable-clipboard t)
 
+;;    +--- [ls-lisp.el] use "ls" in all platforms
+
+(defconfig 'ls-lisp
+  (setq ls-lisp-use-insert-directory-program nil
+        ls-lisp-dirs-first t))
+
 ;;    +--- [mule-cmds.el] use "japanese" input-method
 
-(defpostload "mule-cmds"
-  (setq default-input-method "japanese"))
+(setq default-input-method "japanese")
 
 ;;    +--- [bytecomp.el] automatically byte-compile init.el
 
@@ -342,16 +362,15 @@
 
 ;; reference | http://d.hatena.ne.jp/IMAKADO/20090215/1234699972
 
-(deflazyconfig '(toggle-opacity) "frame"
-  (defun toggle-opacity()
-    "toggle opacity"
-    (interactive)
-    (let ((current-alpha
-           (or (cdr (assoc 'alpha (frame-parameters))) 100)))
-      (set-frame-parameter nil 'alpha
-                           (if (= current-alpha 100) 66 100)))))
+(defun toggle-opacity ()
+  "toggle opacity"
+  (interactive)
+  (let ((current-alpha
+         (or (cdr (assoc 'alpha (frame-parameters))) 100)))
+    (set-frame-parameter nil 'alpha
+                         (if (= current-alpha 100) 66 100))))
 
-;;    +--+ [ido.el] ido settings
+;;    +--+ [ido.el] (ido-ubiquitous.el)(flx-ido.el) ido settings
 ;;       +--- (prelude)
 
 (defconfig 'ido
@@ -364,6 +383,16 @@
 
   (ido-mode t)
   (ido-everywhere t)
+  (defconfig 'ido-ubiquitous (ido-ubiquitous-mode))
+
+  ;;     +--- enable flex matching
+
+  ;; a hack to enable flex-matching ONLY WHEN no items exactly matched
+  (defconfig 'flx-ido
+    (defadvice ido-set-matches-1 (around flx-ido-set-matches-1 activate)
+      (when (null (setq ad-return-value ad-do-it))
+        (catch :too-big
+          (setq ad-return-value (flx-ido-match ido-text (ad-get-arg 0)))))))
 
   ;;     +--- settings
 
@@ -415,38 +444,14 @@
 
 ;;    +--- [startup.el] inhibit startup messages
 
-(defpostload "startup"
-  (setq inhibit-startup-screen  t
-        inhibit-startup-message t
-        initial-scratch-message ""))
-
-;;    +--- (flx-ido.el) use "flx" matching in ido
-
-(defpostload "ido"
-  (defconfig 'flx-ido
-    (flx-ido-mode 1)))
+(setq inhibit-startup-screen  t
+      inhibit-startup-message t
+      initial-scratch-message "")
 
 ;;    +--- (key-chord.el) key-chord settings
 
 (defconfig 'key-chord
-
-  (key-chord-mode 1)
-
-  ;; disable in vi-mode
-  (defpostload "vi"
-    (defadvice vi-mode (after disable-key-chord activate)
-      (set (make-local-variable 'key-chord-mode) nil)
-      (set (make-local-variable 'input-method-function) nil))
-    (defadvice vi-goto-insert-state (after disable-key-chord activate)
-      (kill-local-variable 'key-chord-mode)
-      (kill-local-variable 'input-method-function)))
-
-  ;; disable in view-mode
-  (defpostload "view"
-    (defadvice view-mode (after disable-key-chord activate)
-      (set (make-local-variable 'key-chord-mode) nil)
-      (set (make-local-variable 'input-method-function) nil)))
-  )
+  (key-chord-mode 1))
 
 ;;    +--+ (key-combo.el) key-combo settings
 
@@ -476,12 +481,6 @@
   (add-hook 'window-setup-hook 'maximize-frame)
   )
 
-;;    +--- (ido-ubiquitous.el) enable ido-ubiquitous
-
-(defpostload "ido"
-  (defconfig 'ido-ubiquitous
-    (ido-ubiquitous-mode)))
-
 ;;    +--- (smex.el) autoload smex
 
 (deflazyconfig '(smex) "smex"
@@ -489,19 +488,20 @@
   (smex-initialize))
 
 ;; +--+ 0x11. windows
-;;    +--- swap windows
+;;    +--- rotate windows
 
-;; reference | http://www.bookshelf.jp/soft/meadow_30.html#SEC400
+;; reference | https://github.com/milkypostman/dotemacs
 
-(defun my-swap-windows ()
-  "Swap two screens, with cursor in the same buffer."
+(defun my-rotate-windows ()
   (interactive)
-  (let ((thiswin (selected-window))
-        (thisbuf (window-buffer)))
-    (other-window 1)
-    (set-window-buffer thiswin (window-buffer))
-    (set-window-buffer (selected-window) thisbuf)
-    (other-window -1)))
+  (let ((windows (window-list))
+        win1 win2 tmp)
+    (dotimes (i (1- (length windows)))
+      (setq win1 (nth i windows)
+            win2 (nth (1+ i) windows))
+      (setq tmp (window-buffer win1))
+      (set-window-buffer win1 (window-buffer win2))
+      (set-window-buffer win2 tmp))))
 
 ;;    +--- retop
 
@@ -621,18 +621,19 @@
 ;;    +--- (popwin.el) enable popwin
 
 (defconfig 'popwin
-
   (setq popwin:special-display-config
         '(
           ("ChangeLog")
-          ("*compilation*")
-          ("*Compile-Log*")
+          ("*howm-remember*")
+          ("*Buffer List*")
+          ("*Kill Ring*")
           ("*Help*")
           ("*Calendar*")
-          ("*howm-remember*")
-          ("*Kill Ring*")
           ("*Warnings*")
           ("*Shell Command Output*")
+          ;; if *Compile-Log* is selected immediately, it fails!!
+          ("*Compile-Log*" :noselect t)
+          ("*compilation*" :noselect t)
           ("*Completions*" :noselect t)
           ("*Backtrace*" :noselect t)
           ))
@@ -642,6 +643,7 @@
 
 ;;    +--- (pager.el) autoload pager
 
+;; "scroll-preserve-screen-position" is not enough.
 (deflazyconfig
   '(pager-row-up
     pager-row-down
@@ -698,20 +700,22 @@
 
 ;;    +--- toggle-narrowing
 
-;; enable narrowing
-(put 'narrow-to-region 'disabled nil)
-
 (defun my-is-narrowed-p ()
   "Returns if the buffer is narrowed"
   (or (not (= (point-min) 1))
       (not (= (1+ (buffer-size)) (point-max)))))
 
-(defun my-toggle-narrowing (s e)
+(defun my-toggle-narrowing ()
   "If the buffer is narrowed, widen. Otherwise, narrow to region."
-  (interactive "r")
-  (if (my-is-narrowed-p) (widen) (narrow-to-region s e)))
+  (interactive)
+  (cond ((use-region-p)
+         (narrow-to-region (region-beginning) (region-end)))
+        ((my-is-narrowed-p)
+         (widen))
+        (t
+         (error "there is no active region"))))
 
-;;    +--- (uniquify.el) enable uniquify
+;;    +--- [uniquify.el] enable uniquify
 
 (defconfig 'uniquify
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets
@@ -747,17 +751,6 @@
 
 (add-hook 'after-save-hook 'delete-file-if-no-contents)
 
-;;    +--- [autorevert.el] automatically revert buffers
-
-(defconfig 'autorevert
-
-  (global-auto-revert-mode 1)
-
-  ;; revert also dired buffers
-  (setq global-auto-revert-non-file-buffers t
-        auto-revert-verbose                 nil)
-  )
-
 ;;    +--- [add-log.el] add-change-log-entry
 
 (deflazyconfig '(my-add-change-log-entry) "add-log"
@@ -779,105 +772,85 @@
   )
 
 ;;    +--+ [files.el] backup/auto-save files
-;;       +--- (prelude)
+;;       +--- backup
 
-(defconfig 'files
+;; backup directory
 
-  ;;     +--- backup
+(setq backup-directory-alist
+      `( ("\\.*$" . ,(expand-file-name my:backup-directory))) )
 
-  ;; backup directory
+;; version control
+;; reference | http://aikotobaha.blogspot.jp/2010/07/emacs.html
 
-  (setq backup-directory-alist
-        `( ("\\.*$" . ,(expand-file-name my:backup-directory))) )
+(setq version-control     t
+      kept-new-versions   20
+      kept-old-versions   2
+      delete-old-versions t)
 
-  ;; version control
-  ;; reference | http://aikotobaha.blogspot.jp/2010/07/emacs.html
+;; make backup even when VC is enabled
 
-  (setq version-control     t
-        kept-new-versions   10
-        kept-old-versions   1
-        delete-old-versions t)
+(setq vc-make-backup-files t)
 
-  ;; make backup even when VC is enabled
+;;       +--- auto-save
 
-  (setq vc-make-backup-files t)
-
-  ;;     +--- auto-save
-
-  (setq auto-save-default      t
-        delete-auto-save-files t)
-
-  ;;     +--- (sentinel)
-  )
+(setq auto-save-default      t
+      delete-auto-save-files t)
 
 ;;    +--- [files.el] open files as root
 
-(defpostload "files"
+(defun my-should-open-as-root-p (file)
+  (and
+   ;; the owner is Mr.Root
+   (eq 0 (nth 2 (file-attributes file)))
+   ;; write-protected
+   (not (file-writable-p file))))
 
- (defun my-should-open-as-root-p (file)
-   (and
-    ;; the owner is Mr.Root
-    (eq 0 (nth 2 (file-attributes file)))
-    ;; write-protected
-    (not (file-writable-p file))))
-
- (defadvice find-file (around my-find-file-as-root activate)
-   (let ((file (ad-get-arg 0)))
-     (if (and (my-should-open-as-root-p file)
-              (y-or-n-p "Open as root ? "))
-         (find-file (concat "/sudo:root@localhost:" file))
-       ad-do-it)))
- )
+(defadvice find-file (around my-find-file-as-root activate)
+  (let ((file (ad-get-arg 0)))
+    (if (and (my-should-open-as-root-p file)
+             (y-or-n-p "Open as root ? "))
+        (find-file (concat "/sudo:root@localhost:" file))
+      ad-do-it)))
 
 ;;    +--- [files.el] automatically make directories
 
-(defpostload "files"
+(defun my-make-directory-before-save ()
+  (when buffer-file-name
+    (let ((dir (file-name-directory buffer-file-name)))
+      (when (and (not (file-exists-p dir))
+                 (y-or-n-p (format "Directory does not exist. Create it? ")))
+        (make-directory dir t)))))
 
-  (defun my-make-directory-before-save ()
-    (when buffer-file-name
-      (let ((dir (file-name-directory buffer-file-name)))
-        (when (and (not (file-exists-p dir))
-                   (y-or-n-p (format "Directory does not exist. Create it? ")))
-          (make-directory dir t)))))
+(add-hook 'before-save-hook 'my-make-directory-before-save)
 
- (add-hook 'before-save-hook 'my-make-directory-before-save)
- )
+;;    +--+ [recentf.el] ido-recentf-open
 
-;;    +--+ [recentf.el] open recent files with ido
-;;       +--- recentf settings
-
-(defpostload "recentf"
-
+(defprepare "recentf"
   (setq recentf-save-file       my:recentf-file
         recentf-max-saved-items 100
-        recentf-exclude         '("/tmp/" "/ssh:" "/sudo:"))
+        recentf-auto-cleanup    10
+        recentf-exclude         '("/[^/]*\\<tmp\\>[^/]*/" "/[^/]*\\<backup\\>[^/]*/"
+                                  "~$" "^#[^#]*#$" "/ssh:" "/sudo:" "/GitHub/" "/palette/")))
 
-  (recentf-mode 1)
+(defprepare "ido"
+  (deflazyconfig '(ido-recentf-open) "recentf"
 
-  ;; auto-save recentf-list / delayed cleanup
-  ;; reference | http://d.hatena.ne.jp/tomoya/20110217/1297928222
+    (recentf-mode 1)
 
-  (run-with-idle-timer 20 t 'recentf-save-list)
-  (setq recentf-auto-cleanup 60)
-  )
+    ;; auto-save recentf-list / delayed cleanup
+    ;; reference | http://d.hatena.ne.jp/tomoya/20110217/1297928222
+    (run-with-idle-timer 30 t 'recentf-save-list)
 
-;;       +--- interactive command
-
-(deflazyconfig '(ido-recentf-open) "ido"
-
-  (require 'recentf)
-
-  ;; find recent file with ido completion
-  ;; reference | http://www.masteringemacs.org/articles/2011/01/27/find-files-faster-recent-files-package/
-
-  (defun ido-recentf-open ()
-    "Use `ido-completing-read' to \\[find-file] a recent file"
-    (interactive)
-    (if (find-file
-         (ido-completing-read "Find recent file: " recentf-list))
-        (message "Opening file...")
-      (message "Aborting")))
-  )
+    ;; find recent file with ido completion
+    ;; reference | http://www.masteringemacs.org/articles/2011/01/27/find-files-faster-recent-files-package/
+    (defun ido-recentf-open ()
+      "Use `ido-completing-read' to \\[find-file] a recent file"
+      (interactive)
+      (if (find-file
+           (ido-completing-read "Find recent file: " recentf-list))
+          (message "Opening file...")
+        (message "Aborting")))
+    ))
 
 ;;    +--- (traverselisp.el) autoload traverselisp
 
@@ -935,21 +908,6 @@
   (defconfig 'htmlize))
 
 ;; +--+ 0x15. jumping around
-;;    +--- visible-register
-
-(defvar my-visible-register nil)
-
-(defun my-visible-register ()
-  "store the cursor position, or back to the stored position"
-  (interactive)
-  (if my-visible-register
-      (progn
-        (goto-char (overlay-start my-visible-register))
-        (delete-overlay my-visible-register)
-        (setq my-visible-register nil))
-    (setq my-visible-register (make-overlay (point) (1+ (point))))
-    (overlay-put my-visible-register 'face 'cursor)))
-
 ;;    +--- next/previous-blank-line
 
 (defun my-next-blank-line ()
@@ -1157,16 +1115,16 @@
 
     (defun my-change-candidates ()
       (with-current-buffer my-change-buffer
-       (let ((start (point-min)) tmp candidates)
-         (while (setq tmp (my-change-search-next start))
-           (add-to-list 'candidates
-                        (cons (format "%5d:: %s"
-                                      (line-number-at-pos (car tmp))
-                                      (apply 'my-change-get-string tmp))
-                              (car tmp)))
-           ;; change start position of search
-           (setq start (cadr tmp)))
-         (reverse candidates))))
+        (let ((start (point-min)) tmp candidates)
+          (while (setq tmp (my-change-search-next start))
+            (add-to-list 'candidates
+                         (cons (format "%5d:: %s"
+                                       (line-number-at-pos (car tmp))
+                                       (apply 'my-change-get-string tmp))
+                               (car tmp)))
+            ;; change start position of search
+            (setq start (cadr tmp)))
+          (reverse candidates))))
 
     ;;         +--- provide source
 
@@ -1288,8 +1246,7 @@
   '(phi-search phi-search-backward) "phi-search")
 
 (deflazyconfig
-  '(phi-replace phi-replace-query) "phi-replace"
-  (setq phi-replace-weight 0))
+  '(phi-replace phi-replace-query) "phi-replace")
 
 ;;    +--- (point-undo.el) load point-undo
 
@@ -1362,7 +1319,7 @@
 (defun my-kill-line-backward ()
   (interactive)
   (kill-line 0)
-  (call-interactively indent-line-function))
+  (indent-according-to-mode))
 
 ;;    +--- (browse-kill-ring.el) browse-kill-ring settings
 
@@ -1379,20 +1336,10 @@
 
 (deflazyconfig '(er/expand-region) "expand-region")
 
-;;    +--+ (phi-rectangle.el) rectangle-mark (and some hacks)
-;;       +--- delsel-autoload workaround
-
-(defprepare "phi-rectangle"
-  (defpostload "delsel"
-    (put 'phi-rectangle-yank 'delete-selection 'yank)))
-
+;;    +--+ (phi-rectangle.el) rectangle-mark
 ;;       +--- (prelude)
 
-(deflazyconfig
-  '(phi-rectangle-set-mark-command
-    phi-rectangle-kill-ring-save
-    phi-rectangle-kill-region
-    phi-rectangle-yank) "phi-rectangle"
+(defconfig 'phi-rectangle
 
     ;;   +--- swap-region
 
@@ -1491,11 +1438,39 @@
             (setq this-command 'exchange-point-and-mark)
             (exchange-point-and-mark)))))
 
+    ;;   +--- visible-register
+
+    (defvar my-visible-register nil)
+
+    (defun my-visible-register ()
+      "store the cursor position, or back to the stored position"
+      (interactive)
+      (if my-visible-register
+          (progn
+            (goto-char (overlay-start my-visible-register))
+            (delete-overlay my-visible-register)
+            (setq my-visible-register nil))
+        (setq my-visible-register (make-overlay (point) (1+ (point))))
+        (overlay-put my-visible-register 'face 'cursor)))
+
+    (dolist (command '(set-mark-command phi-rectangle-set-mark-command))
+      (eval
+       `(defadvice ,command (around visible-register activate)
+          (if (eq this-command last-command)
+              (progn (deactivate-mark)
+                     (my-visible-register))
+            ad-do-it))))
+
     ;;   +--- (sentinel)
     )
 
 ;; +--+ 0x17. whitespaces, newlines
 ;;    +--- shrink-spaces
+
+(defun my-maybe-insert-space ()
+  (and (looking-at "[^])}]")
+       (looking-back "[^[({]")
+       (insert " ")))
 
 (defun my-shrink-whitespaces ()
   "shrink adjacent whitespaces or newlines in a dwim way"
@@ -1512,7 +1487,7 @@
                      (line-number-at-pos bos)) 3)
                (progn
                  (delete-region bos eos)
-                 (insert " "))
+                 (my-maybe-insert-space))
              (delete-region bos
                             (save-excursion (goto-char eos)
                                             (point-at-bol)))
@@ -1521,15 +1496,15 @@
                (save-excursion (insert "\n")))))
           ((<= (point) bol)             ; bol: fix indentation => join
            (when (= (point)
-                    (progn (funcall indent-line-function)
+                    (progn (call-interactively indent-line-function)
                            (point)))
              (delete-region bos (point))
-             (insert " ")))
+             (my-maybe-insert-space)))
           ((= (point) eol)              ; eol: delete trailing ws => join
            (if (not (= (point) bos))
                (delete-region (point) bos)
              (delete-region (point) eos)
-             (save-excursion (insert " "))))
+             (my-maybe-insert-space)))
           (t                            ; otherwise: just-one-space
            (just-one-space)))))
 
@@ -1548,7 +1523,7 @@
   (interactive)
   (open-line 1)
   (save-excursion (forward-line)
-                  (call-interactively indent-line-function)))
+                  (indent-according-to-mode)))
 
 ;;    +--- new-line-between
 
@@ -1585,9 +1560,11 @@
 
 ;;    +--- [whitespace.el] visible whitespaces
 
-(defconfig 'whitespace
+(defprepare "whitespace"
+  (add-hook 'find-file-hook
+            (defun turn-on-whitespace-mode () (whitespace-mode 1))))
 
-  (global-whitespace-mode)
+(deflazyconfig '(whitespace-mode) "whitespace"
 
   (setq whitespace-space-regexp "\\(\x3000+\\)")
 
@@ -1610,10 +1587,14 @@
 ;;    +--- (electric-align.el) enable electric-align
 
 (defconfig 'electric-align
+
   (electric-align-global-mode 1)
-  (add-to-list 'electric-align-disable-conditions
-               '(let ((syntax-info (syntax-ppss)))
-                  (or (nth 3 syntax-info) (nth 4 syntax-info)))))
+
+  ;; ;; disable in comments and strings
+  ;; (add-to-list 'electric-align-disable-conditions
+  ;;              '(let ((syntax-info (syntax-ppss)))
+  ;;                 (or (nth 3 syntax-info) (nth 4 syntax-info))))
+  )
 
 ;; +--+ 0x18. manipulate "thing"s
 ;;    +--- split camelCase words
@@ -1828,10 +1809,10 @@
                                        lisp-interaction-mode))
                (save-excursion
                  (backward-char 1)
-                 (when (looking-back "[^\s\t\n([{'\"]")
+                 (when (looking-back "[^\s\t\n([{'`,@\"]")
                    (insert " "))
                  (forward-char 2)
-                 (when (looking-at "[^])}'\"\s\t\n]")
+                 (when (looking-at "[^])}'`,@\"\s\t\n]")
                    (save-excursion (insert " ")))
                  (backward-char 1)))))))
 
@@ -1882,7 +1863,7 @@
   )
 
 ;;    +--+ (paredit.el) paredit settings
-;;       +--- utilities
+;;       +--- paredit commmon utilities
 
 (defpostload "paredit"
 
@@ -1897,7 +1878,7 @@
          (if (paredit-in-string-p)
              (= (char-before) ?\")
            (member (char-before) '(?\( ?\[)))))
-  )
+)
 
 ;;       +--+ automatically splice with delete-char
 ;;          +--- commands
@@ -1962,7 +1943,7 @@
       (define-key map (kbd "C-M-d") 'my-paredit-delete-forward-word)))
 
   ;; and scheme-mode
-  (defpostload "scheme-mode"
+  (defpostload "scheme"
     (define-key scheme-mode-map (kbd "DEL") 'my-paredit-delete-backward)
     (define-key scheme-mode-map (kbd "C-d") 'my-paredit-delete-forward)
     (define-key scheme-mode-map (kbd "C-M-h") 'my-paredit-delete-backward-word)
@@ -1973,9 +1954,9 @@
 
 (deflazyconfig
   '(my-paredit-kill
+    my-paredit-wrap-round
     paredit-newline
     paredit-forward-barf-sexp
-    paredit-wrap-round
     paredit-forward-slurp-sexp
     paredit-raise-sexp
     paredit-convolute-sexp
@@ -1996,27 +1977,20 @@
                      (progn (while (ignore-errors (forward-sexp 1) t))
                             (point)))))
 
-    (defadvice paredit-wrap-round (around paredit-auto-insert-spc activate)
-      (if (not (member major-mode
-                       '(lisp-mode emacs-lisp-mode scheme-mode
-                                   lisp-interaction-mode)))
-          ;; NOT lisp modes
-          ;; => automatically delete SPC just after ")"
-          (let ((spc-req (save-excursion
-                           (ignore-errors
-                             (forward-sexp)
-                             (= (char-after) ?\s)))))
-            ad-do-it
-            (when (not spc-req)
-              (save-excursion (backward-up-list)
-                              (forward-sexp)
-                              (when (= (char-after) ?\s)
-                                (delete-char 1)))))
-        ;; lisp modes
-        ;; => automatically insert SPC just after "("
-        ad-do-it
-        (when (my-beginning-of-sexp-p)
-          (save-excursion (just-one-space)))))
+    (defun my-paredit-wrap-round ()
+      (interactive)
+      (unless (<= (point)
+                  (save-excursion
+                    (forward-sexp)
+                    (backward-sexp)
+                    (point)))
+        (backward-sexp 1))
+      (paredit-wrap-round)
+      (when (and (member major-mode
+                         '(lisp-mode emacs-lisp-mode scheme-mode
+                                     lisp-interaction-mode))
+                 (not (member (char-after) '(?\) ?\s ?\t ?\n))))
+        (save-excursion (insert " "))))
     )
 
 ;;    +--- (rainbow-delimiters.el) enable rainbow-delimiters
@@ -2064,7 +2038,23 @@
 
 (defpostload "key-combo"
 
-  ;;     +--- smartchr for C-like languages
+  ;;     +--- smart-unary commands
+
+  (defun my-generate-smart-unary-command (name str)
+    (eval
+     `(defun ,(intern (concat "my-smart-" name)) ()
+        (interactive)
+        (if (looking-back "[a-zA-Z0-9_)] *")
+            (let ((back (unless (looking-back " ") " "))
+                  (forward (unless (looking-at " ") " ")))
+              (insert back ,str forward))
+          (insert ,str)))))
+
+  (my-generate-smart-unary-command "plus" "+")
+  (my-generate-smart-unary-command "minus" "-")
+
+  ;;     +--+ smartchr for C-like languages
+  ;;        +--- common settings
 
   (defun my-c-smart-braces ()
     "smart insertion of braces for C-like laguages"
@@ -2093,10 +2083,10 @@
 
   (defun my-install-c-common-smartchr ()
     ;; add / sub / mul / div
-    (key-combo-define-local (kbd "+") '(" + " "++"))
+    (key-combo-define-local (kbd "+") '(my-smart-plus "++"))
     (key-combo-define-local (kbd "+=") " += ")
     ;; vv conflict with electric-case vv
-    (key-combo-define-local (kbd "-") '(" - " "--" "-"))
+    (key-combo-define-local (kbd "-") '(my-smart-minus "--"))
     ;; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     (key-combo-define-local (kbd "-=") " -= ")
     (key-combo-define-local (kbd "*") " * ")
@@ -2131,23 +2121,59 @@
   (defpostload "promela-mode"
     (add-hook 'promela-mode-hook 'my-install-c-common-smartchr))
 
-  ;;     +--- smartchr for C
+  ;;        +--- C settings
+
+  (defun my-c-smart-angles ()
+    (interactive)
+    (if (looking-back "#include *")
+        (progn
+          (insert "<>")
+          (backward-char 1))
+      (let ((back (unless (looking-back " ") " "))
+            (forward (unless (looking-at " ") " ")))
+        (insert (concat back "<" forward)))))
+
+  (defun my-c-generate-smart-pointer-command (name str)
+    (eval
+     `(defun ,(intern (concat "my-c-smart-" name)) ()
+        (interactive)
+        (if (or (not (looking-back "[0-9a-zA-Z_)] *"))
+                ;; declaration
+                (and (looking-back "\\_<\\([a-z_]*\\)\\_> *")
+                     (eq 'font-lock-type-face
+                         (get-text-property (match-beginning 1) 'face)))
+                ;; cast
+                (and (looking-back "([][)(,*a-z_ ]*) *")
+                     (save-excursion
+                       (condition-case nil
+                           (let ((beg (match-beginning 0)))
+                             (while (and (search-backward-regexp "[a-z_]+" beg)
+                                         (not (text-property-not-all
+                                               (match-beginning 0) (match-end 0)
+                                               'face 'font-lock-type-face)))))
+                         (error t)))))
+            (insert ,str)
+          (let ((back (unless (looking-back " ") " "))
+                (forward (unless (looking-at " ") " ")))
+            (insert (concat back ,str forward)))))))
+
+  (my-c-generate-smart-pointer-command "star" "*")
+  (my-c-generate-smart-pointer-command "and" "&")
 
   (defun my-install-c-smartchr ()
     ;; pointers
-    (key-combo-define-local (kbd "&") '("&" " && " " & "))
-    (key-combo-define-local (kbd "*") '(" * " "*"))
+    (key-combo-define-local (kbd "&") '(my-c-smart-and " && "))
+    (key-combo-define-local (kbd "*") '(my-c-smart-star))
     (key-combo-define-local (kbd "->") "->")
     ;; include
-    (key-combo-define-local (kbd "<") '(" < " " << " "<"))
-    (key-combo-define-local (kbd ">") '(" > " " >> " ">"))
+    (key-combo-define-local (kbd "<") '(my-c-smart-angles " << "))
     ;; triary operation
     (key-combo-define-local (kbd "?") '( " ? `!!' : " "?")))
 
   (defpostload "cc-mode"
     (add-hook 'c-mode-hook 'my-install-c-smartchr))
 
-  ;;     +--- smartchr for Java
+  ;;        +--- Java settings
 
   (defun my-install-java-smartchr ()
     ;; javadoc comment
@@ -2161,7 +2187,7 @@
   (defpostload "cc-mode"
     (add-hook 'java-mode-hook 'my-install-java-smartchr))
 
-  ;;     +--- smartchr for promela
+  ;;        +--- promela settings
 
   (defun my-promela-smart-colons ()
     "insert two colons followed by a space, and reindent"
@@ -2185,11 +2211,20 @@
   (defpostload "promela-mode"
     (add-hook 'promela-mode-hook 'my-install-promela-smartchr))
 
-  ;;     +--- smartchr for lisp-like languages
+  ;;     +--+ smartchr for lispy languages
+  ;;        +--- common settings
+
+  (defun my-lisp-smart-point ()
+    (interactive)
+    (if (looking-back "[0-9]")
+        (insert ".")
+      (let ((back (unless (looking-back " ") " "))
+            (forward (unless (looking-at " ") " ")))
+        (insert (concat back "." forward)))))
 
   (defun my-install-lisp-common-smartchr ()
-    (key-combo-define-local (kbd ".") '(" . " ".")) ; . may be floating point
-    (key-combo-define-local (kbd ";") ";; ")        ;
+    (key-combo-define-local (kbd ".") '(my-lisp-smart-point))
+    (key-combo-define-local (kbd ";") ";; ")
     (key-combo-define-local (kbd "=") '("=" "equal" "eq")))
 
   (defpostload "lisp-mode"
@@ -2200,7 +2235,7 @@
   (defpostload "scheme"
     (add-hook 'scheme-mode-hook 'my-install-lisp-common-smartchr))
 
-  ;;     +--- smartchr for emacs-lisp
+  ;;        +--- emacs-lisp settings
 
   (defun my-install-elisp-smartchr ()
     (key-combo-define-local (kbd "#") '("#" ";;;###autoload")))
@@ -2253,8 +2288,8 @@
     (key-combo-define-local (kbd "<=") " <= ")
     (key-combo-define-local (kbd ">=") " >= ")
     ;; operation
-    (key-combo-define-local (kbd "+") '(" + " " ++ " " +++ "))
-    (key-combo-define-local (kbd "-") '(" - " "-")) ; maybe unary
+    (key-combo-define-local (kbd "+") '(my-smart-plus " ++ " " +++ "))
+    (key-combo-define-local (kbd "-") '(my-smart-minus))
     (key-combo-define-local (kbd "*") '(" * " " ** "))
     (key-combo-define-local (kbd "/") '(" / " " // "))
     (key-combo-define-local (kbd "%") " % ")
@@ -2328,9 +2363,10 @@
     (key-combo-define-local (kbd "<=") " <= ")
     (key-combo-define-local (kbd ">") " > ")
     (key-combo-define-local (kbd ">=") " >= ")
-    (key-combo-define-local (kbd "+") '(" + " "+"))
-    (key-combo-define-local (kbd "-") '(" - " "-"))
-    (key-combo-define-local (kbd "*") '(" * " "*")))
+    (key-combo-define-local (kbd "+") '(my-smart-plus))
+    (key-combo-define-local (kbd "-") '(my-smart-minus))
+    (key-combo-define-local (kbd "*") " * ")
+    (key-combo-define-local (kbd "/") " / "))
 
   (defpostload "coq"
     (add-hook 'coq-mode-hook 'my-install-coq-smartchr))
@@ -2363,8 +2399,8 @@
     (key-combo-define-local (kbd ":-") " :- ")
     (key-combo-define-local (kbd "|") '(my-lmntal-smart-pipes))
     ;; arithmetic
-    (key-combo-define-local (kbd "+") " + ")
-    (key-combo-define-local (kbd "-") " - ")
+    (key-combo-define-local (kbd "+") '(my-smart-plus))
+    (key-combo-define-local (kbd "-") '(my-smart-minus))
     (key-combo-define-local (kbd "*") " * ")
     (key-combo-define-local (kbd "/") '(my-lmntal-smart-thrashes))
     ;; eq neq
@@ -2398,7 +2434,7 @@
   ;;     +--- (sentinel)
   )
 
-;;    +--+ (auto-complete.el) auto-complete settings
+;;    +--+ (auto-complete.el) (ac-c-headers.el) auto-complete settings
 ;;       +--- (prelude)
 
 (defconfig 'auto-complete-config
@@ -2426,40 +2462,59 @@
                 '(ac-source-dictionary
                   ac-source-words-in-same-mode-buffers))
 
+  ;;        +--- c/c++
+
+  (defpostload "cc-mode"
+    (defconfig 'ac-c-headers
+
+      (defun my-ac-c-sources ()
+        (setq ac-sources '(ac-source-c-headers
+                           ac-source-dictionary
+                           ac-source-words-in-same-mode-buffers
+                           ac-source-c-header-symbols)))
+
+      (add-hook 'c-mode-hook 'my-ac-c-sources)
+      (add-hook 'c++-mode-hook 'my-ac-c-sources)
+      ))
+
   ;;        +--- elisp
 
-  ;; ac-source-symbols is very nice but buggy
-  (defun my-ac-elisp-sources ()
-    (setq ac-sources
-          '(ac-source-filename
-            ac-source-dictionary
-            ac-source-words-in-buffer
-            ac-source-functions
-            ac-source-variables
-            ac-source-features)))
-
   (defpostload "lisp-mode"
+
+    ;; ac-source-symbols is very nice but buggy
+    (defun my-ac-elisp-sources ()
+      (setq ac-sources '(ac-source-filename
+                         ac-source-dictionary
+                         ac-source-words-in-same-mode-buffers
+                         ac-source-functions
+                         ac-source-variables
+                         ac-source-features)))
+
     (add-hook 'emacs-lisp-mode-hook 'my-ac-elisp-sources)
-    (add-hook 'lisp-interaction-mode-hook 'my-ac-elisp-sources))
+    (add-hook 'lisp-interaction-mode-hook 'my-ac-elisp-sources)
+    )
 
   ;;        +--- css
 
-  (defun my-ac-css-sources ()
-    (setq ac-sources
-          '(ac-source-filename
-            ac-source-css-property
-            ac-source-dictionary
-            ac-source-words-in-same-mode-buffers)))
-
   (defpostload "css-mode"
-    (add-hook 'css-mode-hook 'my-ac-css-sources))
+
+    (defun my-ac-css-sources ()
+      (setq ac-sources '(ac-source-filename
+                         ac-source-css-property
+                         ac-source-dictionary
+                         ac-source-words-in-same-mode-buffers)))
+
+    (add-hook 'css-mode-hook 'my-ac-css-sources)
+    )
 
   ;;        +--- eshell
 
+  (defvar my-ac-eshell-sources
+    '(ac-source-files-in-current-dir
+      ac-source-words-in-same-mode-buffers))
+
   (defun my-ac-eshell-sources ()
-    (setq ac-sources
-          '(ac-source-files-in-current-dir
-            ac-source-words-in-same-mode-buffers)))
+    (setq ac-sources my-ac-eshell-sources))
 
   (defpostload "eshell"
     (add-hook 'eshell-mode-hook 'my-ac-eshell-sources))
@@ -3082,12 +3137,6 @@
     (define-key map (kbd "M-TAB") nil)
     (define-key map (kbd "C-j") nil)))
 
-;;    +--- (morlock.el) more keywords for elisp-mode
-
-(defpostload "lisp-mode"
-  (defconfig 'morlock
-    (font-lock-add-keywords 'emacs-lisp-mode morlock-font-lock-keywords)))
-
 ;;    +--- [sgml-mode.el] sgml-mode settings
 
 (defpostload "sgml-mode"
@@ -3388,6 +3437,9 @@
   (define-key artist-mode-map (kbd "C-M-w") 'my-picture-copy-rectangle)
   (define-key artist-mode-map (kbd "C-y") 'picture-yank-rectangle)
 
+  (define-key artist-mode-map (kbd ">") 'picture-self-insert)
+  (define-key artist-mode-map (kbd "<") 'picture-self-insert)
+
   ;;     +--- (sentinel)
   )
 
@@ -3426,20 +3478,51 @@
   ;;     +--- (sentinel)
   )
 
-;;    +--- [dired.el] dired settings
+;;    +--+ [dired.el] (idired.el) dired settings
+;;       +--- (prelude)
 
-(defpostload "dired"
+(deflazyconfig '(my-dired-default-directory) "dired"
 
-  ;; show summary on startup
+  ;;     +--- command
 
-  (add-hook 'dired-mode-hook 'dired-summary)
+  (defun my-dired-default-directory ()
+    (interactive)
+    (dired default-directory))
 
-  ;; add "[Dired]" on dired mode buffer
-  ;; reference | http://qiita.com/items/13585a5711d62e9800ef
+  ;;     +--- settings
 
-  (add-hook 'dired-mode-hook
-            (lambda ()
-              (rename-buffer (concat "[Dired]" (buffer-name)) t)))
+  (setq dired-dwim-target          t
+        dired-auto-revert-buffer   t
+        dired-recursive-copies     'always
+        dired-recursive-deletes    'top
+        dired-keep-marker-copy     nil
+        dired-keep-marker-symlink  nil
+        dired-keep-marker-hardlink nil
+        dired-keep-marker-rename   t)
+
+  ;;     +--- disable indent-guide
+
+  (defadvice indent-guide-show (around disable-in-dired activate)
+    (unless (eq major-mode 'dired-mode)
+      ad-do-it))
+
+  ;;     +--- use idired-mode
+
+  (defprepare "idired"
+    (add-hook 'dired-mode-hook 'idired-mode))
+
+  (deflazyconfig '(idired-mode) "idired")
+
+  ;;     +--- hooks
+
+  (defun my-dired-mode-hook ()
+    (rename-buffer (concat "[Dired]" (buffer-name)) t)
+    ;; disable key-chord
+    (set (make-local-variable 'key-chord-mode) nil)
+    (set (make-local-variable 'input-method-function) nil))
+  (add-hook 'dired-mode-hook 'my-dired-mode-hook)
+
+  ;;     +--- (sentinel)
   )
 
 ;;    +--+ [eshell.el] eshell settings
@@ -3681,67 +3764,23 @@
   )
 
 ;;    +--+ [vi.el] vi-mode settings
-;;       +--- (prelude)
 
 (defpostload "vi"
 
-  ;;     +--- do not put cursor at eol
+  ;; undo-tree integration
 
-  (defun my-vi-maybe-backward-char ()
-    (when (and (eolp) (not (bolp)) (not mark-active))
-      (backward-char)))
+  (defprepare "undo-tree"
+    (define-key vi-com-map "\C-r" 'undo-tree-redo)
+    (define-key vi-com-map "u" 'undo-tree-undo))
 
-  (defun my-vi-forward-char ()
-    (interactive)
-    (unless (= (if mark-active
-                   (point-at-eol)
-                 (1- (point-at-eol)))
-               (point))
-      (forward-char)))
-
-  (defun my-vi-previous-line ()
-    (interactive)
-    (previous-line 1)
-    (my-vi-maybe-backward-char))
-
-  (defun my-vi-next-line ()
-    (interactive)
-    (next-line 1)
-    (my-vi-maybe-backward-char))
-
-  (defun my-vi-end-of-line ()
-    (interactive)
-    (end-of-line)
-    (my-vi-maybe-backward-char))
-
-  (defun my-vi-backward-char ()
-    (interactive)
-    (unless (bolp)
-      (backward-char)))
-
-  (defadvice vi-mode (after vi-maybe-backward-char activate)
-    (my-vi-maybe-backward-char))
-
-  (define-key vi-com-map "h" 'my-vi-backward-char)
-  (define-key vi-com-map "j" 'my-vi-next-line)
-  (define-key vi-com-map "k" 'my-vi-previous-line)
-  (define-key vi-com-map "l" 'my-vi-forward-char)
-  (define-key vi-com-map "$" 'my-vi-end-of-line)
-
-  ;;     +--- redo+ integration
-
-  (defprepare "redo+"
-    (define-key vi-com-map "\C-r" 'redo)
-    (define-key vi-com-map "u" 'undo-only))
-
-  ;;     +--- vi-like paren-matching
+  ;; vi-like paren-matching
 
   (defadvice show-paren-function (around vi-show-paren activate)
     (if (eq major-mode 'vi-mode)
         (save-excursion (forward-char) ad-do-it)
       ad-do-it))
 
-  ;;     +--- make cursor "box" while in vi-mode
+  ;; make cursor "box" while in vi-mode
 
   (defadvice vi-mode (after make-cursor-box-while-vi activate)
     (setq cursor-type 'box))
@@ -3749,11 +3788,19 @@
   (defadvice vi-goto-insert-state (after make-cursor-box-while-vi activate)
     (setq cursor-type 'bar))
 
-  ;;     +--- keybinds
+  ;; disable key-chord
+
+  (defpostload "key-chord"
+    (defadvice vi-mode (after disable-key-chord activate)
+      (set (make-local-variable 'key-chord-mode) nil)
+      (set (make-local-variable 'input-method-function) nil))
+    (defadvice vi-goto-insert-state (after disable-key-chord activate)
+      (kill-local-variable 'key-chord-mode)
+      (kill-local-variable 'input-method-function)))
+
+  ;; keybinds
 
   (define-key vi-com-map (kbd "v") 'set-mark-command)
-
-  ;;     +--- (sentinel)
   )
 
 ;;    +--+ [view.el] view-mode settings
@@ -3780,13 +3827,19 @@
 
     ;; show-paren-mode is always global
     (set (make-local-variable 'show-paren-mode) nil)
+
+    ;; disable key-chord
+    (set (make-local-variable 'key-chord-mode) nil)
+    (set (make-local-variable 'input-method-function) nil)
     )
+
+  (add-hook 'view-mode-hook 'my-view-mode-hook)
+
+  ;;     +--- disable indent-guide
 
   (defpostload "indent-guide"
     (defadvice indent-guide-show (around disable-in-view-mode activate)
       (unless view-mode ad-do-it)))
-
-  (add-hook 'view-mode-hook 'my-view-mode-hook)
 
   ;;     +--- keybinds
 
@@ -4120,8 +4173,8 @@
 
 ;;    +--- (indent-guide.el) enable indent-guide
 
-(defconfig 'indent-guide
-  (indent-guide-global-mode))
+;; (defconfig 'indent-guide
+;;   (indent-guide-global-mode))
 
 ;;    +--- (outline-magic.el) outline-cycle-dwim
 
@@ -4306,27 +4359,6 @@
     ;;   +--- (sentinel)
     )
 
-;;    +--- (nav.el) autoload nav
-
-(defprepare "nav"
-  (idle-require 'nav))
-
-(deflazyconfig '(my-nav-toggle) "nav"
-
-  (defun my-nav-toggle ()
-    (interactive)
-    ;; if the left margin (perhaps createed by automargin)
-    ;; is larger than nav-width, open nav there.
-    (let ((nav-width
-           (max nav-width
-                (- (or (car (window-margins)) 0) 3))))
-      (nav-toggle))
-    (message "o-pen u-p c-opy m-ove d-elete n-ew SPC-index"))
-
-  (define-key nav-mode-map (kbd "C-g") 'nav-unsplit-window-horizontally)
-  (define-key nav-mode-map (kbd "M-d") 'nav-unsplit-window-horizontally)
-  )
-
 ;;    +--- (scratch-palette.el) autoload scratch-palette
 
 (deflazyconfig '(scratch-palette-popup) "scratch-palette"
@@ -4357,9 +4389,10 @@
 (deflazyconfig '(simple-demo-set-up) "simple-demo"
   (setq simple-demo-highlight-face 'compilation-warning))
 
-;;    +--- (redo+.el) load redo+
+;;    +--- (undo-tree.el) enable undo-tree
 
-(defconfig 'redo+)
+(defconfig 'undo-tree
+  (global-undo-tree-mode 1))
 
 ;; +--+ 0x20. keybinds
 ;;    +--- keyboard translations
@@ -4446,7 +4479,8 @@
 ;; Ctrl-x
 (global-set-key (kbd "C-x C-w") 'write-file)
 (global-set-key (kbd "C-x C-s") 'save-buffer)
-(global-set-key (kbd "C-x C-k") 'kill-buffer)
+(global-set-key (kbd "C-x C-b") 'list-buffers)
+(global-set-key (kbd "C-x C-k") 'kill-this-buffer)
 (global-set-key (kbd "C-x C-e") 'set-buffer-file-coding-system)
 (global-set-key (kbd "C-x C-r") 'revert-buffer-with-coding-system)
 
@@ -4458,7 +4492,7 @@
 (global-set-key (kbd "M-2") 'my-split-window)
 (global-set-key (kbd "M-3") 'balance-windows)
 (global-set-key (kbd "M-4") 'follow-delete-other-windows-and-split)
-(global-set-key (kbd "M-8") 'my-swap-windows)
+(global-set-key (kbd "M-8") 'my-rotate-windows)
 (global-set-key (kbd "M-9") 'previous-multiframe-window)
 (global-set-key (kbd "M-o") 'toggle-opacity)
 (global-set-key (kbd "M-k") 'delete-window)
@@ -4517,17 +4551,20 @@
 ;; Meta-Shift-
 (global-set-key (kbd "M-L") 'recenter)
 
+;; Ctrl-x
+(global-set-key (kbd "C-x C-u") 'untabify)
+
 ;;       +--+ edit
 ;;          +--- undo, redo
 
 ;; Ctrl-
-(global-set-key (kbd "C--") '("redo+" undo-only undo))
+(global-set-key (kbd "C--") '("undo-tree" undo-tree-undo undo))
 
 ;; Ctrl-Meta-
-(global-set-key (kbd "C-M--") '("redo+" redo repeat-complex-command))
+(global-set-key (kbd "C-M--") '("undo-tree" undo-tree-redo repeat-complex-command))
 
 ;; Meta-Shift-
-(global-set-key (kbd "M-_") 'undo)
+(global-set-key (kbd "M-_") '("undo-tree" undo-tree-undo undo))
 
 ;;          +--- mark, region
 
@@ -4593,15 +4630,12 @@
 (global-set-key (kbd "C-M-m") 'my-next-opened-line)
 
 ;; Meta-
-(global-set-key (kbd "M-u") 'untabify)
+(global-set-key (kbd "M-u") '("undo-tree" undo-tree-visualize))
 
 ;; Meta-Shift-
 (global-set-key (kbd "M-I") 'my-reindent-sexp)
 (global-set-key (kbd "M-O") 'my-open-line-and-indent)
 (global-set-key (kbd "M-M") '("paredit" paredit-newline newline-and-indent))
-
-;; Ctrl-x
-(global-set-key (kbd "C-x C-a") 'ispell-region)
 
 ;;          +--- search, replace
 
@@ -4628,7 +4662,7 @@
 ;; Meta-
 (global-set-key (kbd "M-h") 'my-shrink-whitespaces)
 (global-set-key (kbd "M-*") '("paredit" paredit-forward-barf-sexp))
-(global-set-key (kbd "M-(") '("paredit" paredit-wrap-round))
+(global-set-key (kbd "M-(") '("paredit" my-paredit-wrap-round))
 (global-set-key (kbd "M-)") '("paredit" paredit-forward-slurp-sexp))
 (global-set-key (kbd "M-R") '("paredit" paredit-raise-sexp))
 (global-set-key (kbd "M-U") '("paredit" paredit-splice-sexp-killing-backward))
@@ -4650,15 +4684,13 @@
 ;;          +--- browsing
 
 ;; Meta-
-(global-set-key (kbd "M-d") '("nav" my-nav-toggle dired))
+(global-set-key (kbd "M-d") 'my-dired-default-directory)
 (global-set-key (kbd "M-f") 'find-file)
 (global-set-key (kbd "M-g") '("traverselisp" traverse-deep-rfind rgrep))
 (global-set-key (kbd "M-r") 'ido-recentf-open)
 
 ;; Ctrl-x
 (global-set-key (kbd "C-x DEL") 'ff-find-other-file) ; C-x C-h
-(global-set-key (kbd "C-x C-d") 'dired)
-(global-set-key (kbd "C-x C-f") 'find-file)
 
 ;;          +--- shell command
 
@@ -4718,7 +4750,7 @@
 (global-set-key (kbd "C-x C-t") 'toggle-truncate-lines)
 (global-set-key (kbd "C-x C-p") 'toggle-read-only)
 (global-set-key (kbd "C-x C-=") 'text-scale-adjust)
-(global-set-key (kbd "C-x C-i") 'align-regexp)
+(global-set-key (kbd "C-x C-i") 'ispell-region)
 
 ;;    +--- keychord
 
@@ -4747,8 +4779,8 @@
     (key-chord-define-global "hj" 'phi-search)
     (key-chord-define-global "fg" 'phi-search-backward)
     (defpostload "phi-search"
-      (key-chord-define phi-search-mode-map "hj" 'phi-search-again-or-next)
-      (key-chord-define phi-search-mode-map "fg" 'phi-search-again-or-previous)))
+      (key-chord-define phi-search-default-map "hj" 'phi-search-again-or-next)
+      (key-chord-define phi-search-default-map "fg" 'phi-search-again-or-previous)))
   (defprepare "ace-jump-mode"
     (key-chord-define-global "jl" 'ace-jump-word-mode))
   )
@@ -4765,7 +4797,7 @@
 
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
 
-(when my-home-system-p
+(when my:home-system-p
 
   (set-face-attribute 'default nil        ; ASCII
                       :family "Source Code Pro"
@@ -4950,11 +4982,6 @@
 (defpostload "frame"
   (blink-cursor-mode -1))
 
-;;    +--- (page-break-lines.el) enable page-break-lines
-
-(defconfig 'page-break-lines
-  (global-page-break-lines-mode))
-
 ;;    +--- (color-theme.el) load color-theme
 
 (defconfig 'color-theme)
@@ -5127,11 +5154,11 @@
     (defpostload "whitespace"
 
       (set-face-attribute 'whitespace-space nil
-                          :foreground (my-solarized-color 'yellow)
+                          :foreground (my-solarized-color 'modeline-active)
                           :background 'unspecified)
 
       (set-face-attribute 'whitespace-tab nil
-                          :foreground (my-solarized-color 'yellow)
+                          :foreground (my-solarized-color 'modeline-active)
                           :background 'unspecified)
       )
 
@@ -5197,7 +5224,7 @@
 
     ;;   +--- phi-search
 
-    (defpostload "phi-search"
+    (defpostload "phi-search-core"
       (set-face-background 'phi-search-match-face
                            (my-solarized-color 'modeline-active))
       (set-face-background 'phi-search-selection-face
@@ -5226,6 +5253,8 @@
 
 (defconfig 'sublimity
   (sublimity-global-mode 1)
-  (sublimity-scroll))
+  (sublimity-scroll)
+  (setq sublimity-scroll-weight 6
+        sublimity-scroll-drift-length 4))
 
 ;; + (sentinel)
