@@ -1,4 +1,4 @@
-;; init.el (for Emacs 23.3) | 2013 zk_phi
+;; init.el (for Emacs 24.3) | 2013 zk_phi
 
 ;; following plug-ins are not updated for long time :
 ;; - solarized ... settings for modeline colors conflicts
@@ -132,8 +132,8 @@
     (message "!! [init] WARNING: this is not my home system")
     (sit-for 0.2))
 
-  (unless (string-match "^23\." emacs-version)
-    (message "!! [init] WARNING: emacs version is not 23.X")
+  (unless (string-match "^24\." emacs-version)
+    (message "!! [init] WARNING: emacs version is not 24.X")
     (sit-for 0.2))
 
   (unless (eq 'windows-nt system-type)
@@ -698,6 +698,11 @@
   (automargin-mode 1)
   (setq automargin-target-width 120))
 
+;;    +--- (winpoint.el) remember point per window
+
+(defconfig 'winpoint
+  (winpoint-mode 1))
+
 ;;    +--- (popwin.el) enable popwin
 
 (defconfig 'popwin
@@ -733,11 +738,6 @@
 
 (defconfig 'smooth-scrolling
   (setq smooth-scroll-margin 3))
-
-;;    +--- (winpoint.el) remember point per window
-
-(defconfig 'winpoint
-  (winpoint-mode 1))
 
 ;; +--+ 0x12. buffers
 ;;    +--- make *scratch* parsistent
@@ -5277,7 +5277,7 @@
 (defconfig 'sublimity
   (sublimity-global-mode 1)
   (sublimity-scroll)
-  (setq sublimity-scroll-weight 6
-        sublimity-scroll-drift-length 4))
+  (setq sublimity-scroll-weight 5
+        sublimity-scroll-drift-length 2))
 
 ;; + (sentinel)
