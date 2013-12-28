@@ -110,8 +110,9 @@
 ;;    +--+ environment
 ;;       +--- customs
 
-(defconst my:home-system-p (when (boundp 'my:home-system-p)
-                             my:home-system-p))
+;; may be defined in site-start.el
+(defconst my:home-system-p
+  (when (boundp 'my:home-system-p) my:home-system-p))
 
 (defconst my:skip-checking-libraries my:home-system-p
   "when non-nil, Emacs assumes all dependencies are provided")
@@ -147,13 +148,11 @@
 (defconst my:snippets-directory (concat my:init-directory "snippets/"))
 (defconst my:dictionary-directory (concat my:init-directory "ac-dict/"))
 
+;; may be defined in site-start.el
 (defconst my:additional-include-directories
-  (when my:home-system-p '("C:/MinGW/include/")))
-
+  (when (boundp 'my:additional-include-directories) my:additional-include-directories))
 (defconst my:additional-info-directories
-  (when my:home-system-p '("C:/MinGW/share/info"
-                           "C:/Users/zk_phi/Softwares/emacs/info/"
-                           "C:/Users/zk_phi/Softwares/Gauche/share/info/")))
+  (when (boundp 'my:additional-include-directories) my:additional-info-directories))
 
 ;;       +--- files
 
@@ -170,17 +169,17 @@
 (defconst my:eshell-directory (concat my:init-directory "dat/eshell_" system-name "/"))
 (defconst my:howm-keyword-file (concat my:dat-directory "howm-keys_" system-name ".dat"))
 (defconst my:howm-history-file (concat my:dat-directory "howm-history_" system-name ".dat"))
+(defconst my:save-place-file (concat my:dat-directory "save-place_" system-name ".dat"))
 
 ;;       +--- dropbox integration
 
+;; may be defined in site-start.el
 (defconst my:dropbox-directory
-  (when my:home-system-p "~/../../Dropbox/"))
-
+  (when (boundp 'my:dropbox-directory) my:dropbox-directory))
 (defconst my:howm-import-directory
-  (when my:home-system-p (concat my:dropbox-directory "howm_import/")))
-
+  (when (boundp 'my:howm-import-directory) my:howm-import-directory))
 (defconst my:howm-export-file
-  (when my:home-system-p (concat my:dropbox-directory "howm_schedule.txt")))
+  (when (boundp 'my:howm-export-file) my:howm-export-file))
 
 ;;    +--+ macros / utilities
 ;;       +--- locate libraries
@@ -385,6 +384,14 @@
   (defun my-completing-read-with-ido (prompt collection &optional
                                              predicate require-match initial-input
                                              hist def inherit-input-method)
+    ;; workaround for info-lookup
+    (when (consp collection)
+      (setq collection
+            (apply 'vector
+                   (mapcar (lambda (x) (let ((obj (if (consp x) (car x) x)))
+                                         (if (stringp obj) (make-symbol obj) obj)))
+                           collection))))
+    ;; --------------------------
     (if (or (symbolp collection)
             (and (symbolp this-command)
                  (eq (get this-command 'ido) 'ignore))
@@ -413,6 +420,7 @@
                                  completions))))
         (ido-read-internal 'list prompt hist def require-match initial-input))))
 
+  (defvar ido-hacks-original-completing-read-function completing-read-function)
   (setq completing-read-function 'my-completing-read-with-ido)
 
   ;;     +--- (sentinel)
@@ -954,6 +962,25 @@
           (message "Opening file...")
         (message "Aborting")))
     ))
+
+;;    +--+ [saveplace.el] save last place
+
+(defconfig 'saveplace
+
+  ;; settings
+
+  (setq save-place-file my:save-place-file)
+  (setq-default save-place t)
+
+  ;; open invisible automatically
+  (defadvice save-place-find-file-hook (after save-place-open-invisible activate)
+    (mapc (lambda (ov)
+            (let ((ioit (overlay-get ov 'isearch-open-invisible-temporary)))
+              (cond (ioit (funcall ioit ov hidep))
+                    ((overlay-get ov 'isearch-open-invisible)
+                     (overlay-put ov 'invisible nil)))))
+          (overlays-at (point))))
+  )
 
 ;;    +--- (traverselisp.el) autoload traverselisp
 
@@ -3367,7 +3394,6 @@ file."
 
 (defprepare "gauche-mode"
   (add-to-list 'auto-mode-alist '("\\.scm$" . gauche-mode)))
-
 (deflazyconfig '(gauche-mode) "gauche-mode")
 
 (defpostload "gauche-mode"
@@ -3376,26 +3402,6 @@ file."
   (defadvice gauche-mode (after gauche-use-interactive activate)
     (when (eq major-mode 'gauche-mode)
       (setq scheme-program-name "gosh -i")))
-
-  ;; "describe-function" for gauche builtin functions
-  (defun my-gauche-describe-function (&optional function)
-    "describe-function for gauche built-in functions"
-    (interactive)
-    (unless function
-      (setq function (ido-completing-read
-                      "describe Gauche function : "
-                      (when (fboundp 'scheme-current-env)
-                        (mapcar (lambda (x) (symbol-name (car x)))
-                                (apply 'append (scheme-current-env))))
-                      nil nil nil)))
-    (select-window (display-buffer (get-buffer-create "*info*")))
-    (info "gauche-refj.info")
-    (Info-index function)
-    ;; visiblity
-    (setq-local global-hl-line-mode nil)
-    (setq-local show-paren-mode nil)
-    ;; use vi keybinds
-    (vi-mode))
 
   (defconfig 'scheme-complete
 
@@ -3433,7 +3439,6 @@ file."
   (define-key gauche-mode-map (kbd "C-c C-e") 'my-scheme-send-dwim)
   (define-key gauche-mode-map (kbd "C-c C-m") 'gauche-mode-macroexpand)
   (define-key gauche-mode-map (kbd "C-c C-s") 'my-run-scheme-other-window)
-  (define-key gauche-mode-map (kbd "<f1> s") 'my-gauche-describe-function)
   )
 
 ;; +--+ 0x1c. other modes
@@ -3781,7 +3786,7 @@ file."
   ;; reference | http://dev.ariel-networks.com/Members/matsuyama/tokyo-emacs-02/
 
   (defadvice org-table-cut-region (around cut-region-or-kill-row activate)
-    (if (and (interactive-p) transient-mark-mode (not mark-active))
+    (if (use-region-p)
         (org-table-kill-row)
       ad-do-it))
 
@@ -3978,11 +3983,14 @@ file."
 (defpostload "help-mode"
   (add-hook 'help-mode-hook 'view-mode))
 
-;;    +--- [info.el] add info directories
+;;    +--- [info.el] [info-look.el] add info directories
 
 (defpostload "info"
   (setq Info-directory-list (append my:additional-info-directories
                                     Info-directory-list)))
+
+(defpostload "info-look"
+  (setq info-lookup-other-window-flag nil))
 
 ;;    +--- [debug.el] debugger-mode settings
 
