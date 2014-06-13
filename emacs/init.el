@@ -114,6 +114,8 @@
                   . "Directory wich Howm should import notes from.")
                  (my-howm-export-file
                   . "File which Howm should export schedules to.")
+                 (my-howm-export-ics
+                  . "iCal which Howm should export schedules to.")
                  (my-ditaa-jar-file
                   . "Path to ditaa.jar executable")
                  (my-clojure-jar-file
@@ -387,6 +389,7 @@
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
 (!when my-home-system-p
   (set-face-attribute 'default nil :family "Source Code Pro" :height 90)
+  ;; (set-fontset-font t nil (font-spec :family "Source Code Pro"))
   (set-fontset-font t 'unicode (font-spec :family "VL ゴシック"))
   (push '("VL ゴシック.*" . 1.2) face-font-rescale-alist))
 
@@ -533,7 +536,8 @@
           ("*All*")
           ;; if *Compile-Log* is selected immediately, it fails!!
           ("*Compile-Log*" :noselect t) ; ???
-          ("*compilation*" :noselect t) ; ???
+          ("*compilation*" ;; :noselect t
+           ) ; ???
           ("*Completions*" :noselect t)
           ("*Backtrace*" :noselect t)))
   (popwin-mode 1))
@@ -581,8 +585,9 @@
         '(("\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH" . "[0-9A-Za-z]")
           ("[0-9A-Za-z]" . "\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH"))))
 
-(setup-include "popup")
-(setup-include "auto-complete"
+;; *FIXME* setup-include seems buggy for auto-complete ...
+(setup "popup")
+(setup "auto-complete"
   (setq ac-comphist-file  my-ac-history-file
         ac-auto-start     t
         ac-dwim           t
@@ -1629,8 +1634,8 @@ for unary operators which can also be binary."
 
 ;; drag region with cursor keys
 ;; reference | http://www.pitecan.com/tmp/move-region.el
-(dolist (cmd '((my-move-region-up "upward" previous-line)
-               (my-move-region-down "downward" next-line)
+(dolist (cmd '((my-move-region-up "upward" my-previous-line)
+               (my-move-region-down "downward" my-next-line)
                (my-move-region-left "forward" backward-char)
                (my-move-region-right "backward" forward-char)))
   (eval `(defun ,(car cmd) ()
@@ -1979,6 +1984,10 @@ file."
     anything-register
     anything-manage-advice) "anything-config")
 
+;; Spritz-like speed reading mode
+(setup-lazy '(spray-mode) "spray"
+  (setq spray-wpm 500))
+
 ;; + | Appearance
 ;;   + mode-line settings
 ;;   + | faces
@@ -2125,9 +2134,9 @@ file."
            (dolist (var my-kindly-incompatible-global-variables)
              (set (make-local-variable var) nil))
            (let ((buffer-face-mode-face
-                  '(:family "Times New Roman"
-                            :height 125 :width semi-condensed)))
-             (buffer-face-mode 1)))
+                  '(:family "Times New Roman" :width semi-condensed)))
+             (buffer-face-mode 1))
+           (text-scale-set +2))
           (t
            (read-only-mode -1)
            (setq line-spacing (default-value 'line-spacing))
@@ -2136,7 +2145,8 @@ file."
              (when (boundp mode) (funcall mode 1)))
            (dolist (var my-kindly-incompatible-global-variables)
              (kill-local-variable var))
-           (buffer-face-mode -1)))))
+           (buffer-face-mode -1)
+           (text-scale-set 0)))))
 
 ;;   + Misc: built-ins
 
@@ -3936,6 +3946,7 @@ file."
   )
 
 ;;     + howm
+;;     + | (prelude)
 
 (setup-lazy '(howm-menu-or-remember) "howm"
   :prepare (progn (setup-in-idle "howm")
@@ -3943,7 +3954,8 @@ file."
 
   (require 'calendar)                   ; my-howm-exit needs calendar
 
-  ;; howm directories, files
+  ;;   + | settings
+
   (setq howm-directory                       my-howm-directory
         howm-keyword-file                    my-howm-keyword-file
         howm-history-file                    my-howm-history-file
@@ -3961,11 +3973,11 @@ file."
         '((-1000 . "\n// dead") (-1 . "\n// today")
           (0 . "\n// upcoming") (nil . "\n// someday")))
 
-  ;; diminish highlights
   (set-face-background 'howm-reminder-today-face nil)
   (set-face-background 'howm-reminder-tomorrow-face nil)
 
-  ;; import notes from dropbox
+  ;;   + | dropbox -> howm
+
   (setup-hook 'howm-menu-hook
     (when my-howm-import-directory
       (dolist (file (directory-files my-howm-import-directory))
@@ -3981,7 +3993,76 @@ file."
                 (howm-remember-submit)
                 (delete-file abs-path))))))))
 
-  ;; commands
+  ;;   + | howm -> dropbox
+
+  (defun my-howm-export-file (target)
+    (with-temp-file target
+      ;; dropbox App compatibility
+      (set-buffer-file-coding-system 'utf-8)
+      (insert (format "* Howm Schedule %s ~ %s *\n\n"
+                      (howm-reminder-today)
+                      (howm-reminder-today howm-menu-schedule-days))
+              ;; calender of the next two months
+              (let* ((date (calendar-current-date))
+                     (month (calendar-extract-month date))
+                     (year (calendar-extract-year date)))
+                (concat
+                 (with-temp-buffer
+                   (calendar-generate-month month year 0)
+                   (buffer-substring-no-properties (point-min) (point-max)))
+                 "\n\n"
+                 (with-temp-buffer
+                   (calendar-increment-month month year 1)
+                   (calendar-generate-month month year 0)
+                   (buffer-substring-no-properties (point-min) (point-max)))))
+              "\n"
+              (howm-menu-reminder))
+      (message "successfully exported")))
+
+  (defun my-howm-generate-vevent (y m d dd body)
+    (concat "BEGIN:VEVENT\n"
+            "SUMMARY:" body "\n"
+            "DTSTART:"
+            (format-time-string "%Y%m%d" (encode-time 0 0 0 d m y)) "\n"
+            "DTEND:"
+            (format-time-string "%Y%m%d" (encode-time 0 0 0 (+ d dd) m y)) "\n"
+            "END:VEVENT\n"))
+  (defun my-howm-export-ics (target)
+    (let ((lst nil))
+      (with-temp-buffer
+        (insert-string (howm-menu-reminder))
+        (goto-char 1)
+        (while (search-forward-regexp
+                "\\[\\([0-9]+\\)-\\([0-9]+\\)-\\([0-9]+\\)\\][@!]\\([0-9]+\\)? \\(.+\\)$"
+                nil t)
+          (push (list (read (match-string 1))          ; year
+                      (read (match-string 2))          ; month
+                      (read (match-string 3))          ; day
+                      (read (or (match-string 4) "1")) ; duration
+                      (match-string 5))                ; body
+                lst)))
+      (with-temp-file target
+        (set-buffer-file-coding-system 'utf-8-dos)
+        (insert (concat "BEGIN:VCALENDAR\n"
+                        "PRODID:Emacs Howm\n"
+                        "VERSION:2.0\n"
+                        "METHOD:PUBLISH\n"
+                        "CALSCALE:GREGORIAN\n"
+                        "X-WR-CALNAME:Emacs Howm\n"
+                        "X-WR-TIMEZONE:Asia/Tokyo\n"
+                        "BEGIN:VTIMEZONE\n"
+                        "TZID:Asia/Tokyo\n"
+                        "BEGIN:STANDARD\n"
+                        "DTSTART:19700101T000000\n"
+                        "TZOFFSETFROM:+0900\n"
+                        "TZOFFSETTO:+0900\n"
+                        "END:STANDARD\n"
+                        "END:VTIMEZONE\n"))
+        (dolist (elem lst)
+          (insert (apply 'my-howm-generate-vevent elem)))
+        (insert "END:VCALENDAR"))))
+
+  ;;   + | commands
 
   (defun my-howm-kill-buffer ()
     "save and kill this howm buffer"
@@ -3999,30 +4080,10 @@ file."
 
   (defun my-howm-exit ()
     (interactive)
-    ;; export to dropbox
     (when my-howm-export-file
-      (with-temp-file my-howm-export-file
-        ;; dropbox App compatibility
-        (set-buffer-file-coding-system 'utf-8)
-        (insert (format "* Howm Schedule %s ~ %s *\n\n"
-                        (howm-reminder-today)
-                        (howm-reminder-today howm-menu-schedule-days))
-                ;; calender of the next two months
-                (let* ((date (calendar-current-date))
-                       (month (calendar-extract-month date))
-                       (year (calendar-extract-year date)))
-                  (concat
-                   (with-temp-buffer
-                     (calendar-generate-month month year 0)
-                     (buffer-substring-no-properties (point-min) (point-max)))
-                   "\n\n"
-                   (with-temp-buffer
-                     (calendar-increment-month month year 1)
-                     (calendar-generate-month month year 0)
-                     (buffer-substring-no-properties (point-min) (point-max)))))
-                "\n"
-                (howm-menu-reminder))
-        (message "successfully exported")))
+      (my-howm-export-file my-howm-export-file))
+    (when my-howm-export-ics
+      (my-howm-export-ics my-howm-export-ics))
     ;; kill all howm buffers
     (mapc (lambda(b)
             (when (cdr (assq 'howm-mode (buffer-local-variables b)))
@@ -4037,15 +4098,35 @@ file."
           (insert str))
       (howm-menu)))
 
-  ;; keybinds
+  ;; reference | http://www.bookshelf.jp/soft/meadow_38.html#SEC563
+  (defun howm-insert-date-from-calendar ()
+    (interactive)
+    (let ((day nil)
+          (calendar-date-display-form
+           '("[" year "-" (format "%02d" (string-to-int month))
+             "-" (format "%02d" (string-to-int day)) "]")))
+      (setq day (calendar-date-string
+                 (calendar-cursor-to-date t)))
+      (calendar-exit)
+      (insert day)))
+  (defun howm-insert-date-with-calendar ()
+    (interactive)
+    (calendar)
+    (local-set-key (kbd "RET") 'howm-insert-date-from-calendar))
+
+  ;;   + | keybinds
+
   (setup-keybinds howm-mode-map
     "C-x C-s" 'my-howm-kill-buffer
-    "M-c"     'howm-insert-date)
+    "M-d"     'howm-insert-date
+    "M-c"     'howm-insert-date-with-calendar)
   (setup-keybinds howm-menu-mode-map
-    "q" '     'my-howm-exit)
+    "q"       'my-howm-exit)
   (setup-keybinds howm-remember-mode-map
     "C-g"     'howm-remember-discard
     "C-x C-s" 'howm-remember-submit)
+
+  ;;   + | (sentinel)
   )
 
 ;; + | Colorscheme
