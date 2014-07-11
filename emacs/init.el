@@ -6,6 +6,10 @@
 ;; to compile with a clean environ:
 ;; (setup-byte-compile-file)
 
+;; map-y-or-n-pを活用したい
+
+;; vi-com-mapがじゃましてkindly-view-modeのキーバインドを変更できない
+
 ;; + Cheat Sheet :
 ;; + | global
 ;;   + (format)
@@ -183,12 +187,25 @@
 (defconst my-scratch-file (! (format "~/.emacs.d/dat/scratch_%s.dat" system-name))
   "File to save scratch.")
 
-;; + | Variables
+;; + | Utilities
 
 (defvar my-lispy-modes
   '(lisp-mode emacs-lisp-mode scheme-mode
               lisp-interaction-mode gauche-mode
               clojure-mode racket-mode))
+
+(defun my-shorten-directory (dir len)
+  (if (null dir) ""
+    (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
+          (output ""))
+      (when (and path (equal "" (car path)))
+        (setq path (cdr path)))
+      (while (and path (< (length output) (- len 4)))
+        (setq output (concat (car path) "/" output)
+              path (cdr path)))
+      (when path
+        (setq output (concat ".../" output)))
+      output)))
 
 ;; + | System
 ;;   + *scratch* utilities
@@ -336,7 +353,6 @@
       save-interprogram-paste-before-kill   t
       yank-excluded-properties              t
       ;; files.el
-      interpreter-mode-alist                nil
       magic-mode-alist                      nil)
 
 (setq-default indent-tabs-mode      nil
@@ -582,8 +598,8 @@
 
 (setup-lazy '(electric-spacing-mode) "electric-spacing"
   (setq electric-spacing-regexp-pairs
-        '(("\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH" . "[0-9A-Za-z]")
-          ("[0-9A-Za-z]" . "\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH"))))
+        '(("\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH" . "[\"[(<{0-9A-Za-z]")
+          ("[]\")>}0-9A-Za-z]" . "\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH"))))
 
 ;; *FIXME* setup-include seems buggy for auto-complete ...
 (setup "popup")
@@ -605,8 +621,7 @@
 (setup-include "key-chord"
   (key-chord-mode 1))
 
-(setup-include "key-combo"
-  (global-key-combo-mode 1)
+(setup-lazy '(key-combo-mode) "key-combo"
   ;; input-method (and multiple-cursors) is incompatible with key-combo
   (defadvice key-combo-post-command-function (around mc-combo activate)
     (unless (or current-input-method
@@ -821,7 +836,7 @@ for unary operators which can also be binary."
         (when (and (ido-active) ido-enable-prefix)
           (ido-tidy)
           (setq ido-enable-prefix nil)
-          ;; *BUGGY* how can we update ido without ido-exhibit ?
+          (ido-tidy)
           (ido-exhibit)))
 
       (defadvice ido-set-matches-1 (after flx-ido-set-matches-1 activate)
@@ -1573,6 +1588,34 @@ for unary operators which can also be binary."
               (split 2 t)
               (setq this-command 'my-split-window-vertically-1)))))))
 
+;; window-undo
+(setup-lazy '(my-window-undo) "edmacro"
+  (defvar my-window-undo-list `((1 . ,(current-window-configuration))))
+  (defun my-window-undo-window-configuration-change-hook ()
+    (let ((wins (length (window-list))))
+      (unless (or (eq this-command 'my-window-undo)
+                  (and (boundp 'phi-search--original-position)
+                       phi-search--original-position)
+                  (and (boundp 'phi-search--target)
+                       phi-search--target)
+                  (and my-window-undo-list
+                       (= (caar my-window-undo-list) wins)))
+        (push (cons wins (current-window-configuration)) my-window-undo-list))))
+  (add-hook 'window-configuration-change-hook
+            'my-window-undo-window-configuration-change-hook)
+  (defun my-window-undo ()
+    (interactive)
+    (let ((repeat-key (vector last-input-event)))
+      (set-temporary-overlay-map
+       (let ((km (make-sparse-keymap)))
+         (define-key km repeat-key 'my-window-undo)
+         km))
+      (message "(Type %s to repeat)" (edmacro-format-keys repeat-key))
+      (pop my-window-undo-list)
+      (if (null my-window-undo-list)
+          (message "No further undo information")
+        (set-window-configuration (cdar my-window-undo-list))))))
+
 ;;   + | jump around
 
 (defun my-next-line (n)
@@ -1629,6 +1672,29 @@ for unary operators which can also be binary."
                                              font-lock-comment-face)))))
                       (and face (not (eq face type))))))
       (error (goto-char (point-min))))))
+
+;; point-undo
+(defvar my-point-undo-list nil)
+(make-variable-buffer-local 'my-point-undo-list)
+(defun my-point-undo-post-command-hook ()
+  (let ((lin (line-number-at-pos)))
+    (unless (or (eq this-command 'my-point-undo)
+                (and my-point-undo-list
+                     (< (abs (- lin (caar my-point-undo-list))) 2)))
+      (push (cons lin (point)) my-point-undo-list))))
+(add-hook 'post-command-hook 'my-point-undo-post-command-hook)
+(defun my-point-undo ()
+  (interactive)
+  (let ((repeat-key (vector last-input-event)))
+    (set-temporary-overlay-map
+     (let ((km (make-sparse-keymap)))
+       (define-key km repeat-key 'my-point-undo)
+       km))
+    (pop my-point-undo-list)
+    (message "(Type %s to repeat)" (edmacro-format-keys repeat-key))
+    (if (null my-point-undo-list)
+        (message "No further undo information")
+      (goto-char (cdar my-point-undo-list)))))
 
 ;;   + | edit
 
@@ -1865,9 +1931,6 @@ file."
 ;; "f"-like jump command
 (setup-lazy '(iy-go-to-char iy-go-to-char-backward) "iy-go-to-char")
 
-;; jump back to the last position
-(setup-include "point-undo")
-
 ;; use "phi-search/replace" and "phi-search-mc" instead of "isearch"
 (setup-after "phi-search"
   (setq phi-search-case-sensitive 'guess)
@@ -1986,218 +2049,7 @@ file."
 
 ;; Spritz-like speed reading mode
 (setup-lazy '(spray-mode) "spray"
-  (setq spray-wpm 500))
-
-;; + | Appearance
-;;   + mode-line settings
-;;   + | faces
-
-(dolist (face '(mode-line-bright-face
-                mode-line-dark-face
-                mode-line-highlight-face
-                mode-line-special-mode-face
-                mode-line-warning-face
-                mode-line-modified-face
-                mode-line-read-only-face
-                mode-line-narrowed-face
-                mode-line-mc-face
-                header-line))
-  (make-face face)
-  (set-face-attribute face nil :inherit 'mode-line-face))
-
-;;   + | change color while recording macros
-
-(defvar my-mode-line-background '("#194854" . "#594854"))
-
-(defadvice kmacro-start-macro (after my-recording-mode-line activate)
-  (set-face-background 'mode-line (cdr my-mode-line-background))
-  (add-hook 'post-command-hook 'my-recording-mode-line-end))
-
-(defun my-recording-mode-line-end ()
-  (unless defining-kbd-macro
-    (set-face-background 'mode-line (car my-mode-line-background))
-    (remove-hook 'post-command-hook 'my-recording-mode-line-end)))
-
-;;   + | mode-line-format
-
-(defun my-shorten-directory (max-length)
-  (let* ((file (buffer-file-name))
-         (dir (if file (file-name-directory file) "")))
-    (if (null dir) ""
-      (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
-            (output ""))
-        (when (and path (equal "" (car path)))
-          (setq path (cdr path)))
-        (while (and path (< (length output) (- max-length 4)))
-          (setq output (concat (car path) "/" output)
-                path (cdr path)))
-        (when path
-          (setq output (concat ".../" output)))
-        output))))
-
-(defun my-generate-mode-line-format ()
-  (let ((vbar
-         (! (propertize " : " 'face 'mode-line-dark-face)))
-        (linum
-         (! (propertize "%5l" 'face 'mode-line-bright-face)))
-        (colnum-or-region
-         (if (not mark-active)
-             (propertize "%3c" 'face 'mode-line-bright-face)
-           (let ((rows (count-lines (region-beginning) (region-end))))
-             (if (= rows 1)
-                 (propertize (format "%3d" (- (region-end) (region-beginning)))
-                             'face 'mode-line-warning-face)
-               (propertize (format "%3d" rows) 'face 'mode-line-warning-face)))))
-        (i-narrowed
-         (propertize "n" 'face (if (buffer-narrowed-p)
-                                   'mode-line-narrowed-face 'mode-line-bright-face)))
-        (i-readonly
-         (propertize "%%" 'face (if buffer-read-only
-                                    'mode-line-narrowed-face 'mode-line-bright-face)))
-        (i-modified
-         (propertize "*" 'face (if (buffer-modified-p)
-                                   'mode-line-modified-face 'mode-line-bright-face)))
-        (i-mc
-         (if (and (boundp 'multiple-cursors-mode) multiple-cursors-mode)
-             (propertize (format "%02d" (mc/num-cursors)) 'face 'mode-line-mc-face)
-           (! (propertize "00" 'face 'mode-line-bright-face))))
-        (dirname
-         (propertize (my-shorten-directory 10) 'face 'mode-line-dark-face))
-        (filename
-         (! (propertize "%b" 'face 'mode-line-highlight-face)))
-        (recur
-         (! (propertize " %]" 'face 'mode-line-dark-face)))
-        ;; right half must not contain "%" notation otherwise we
-        ;; cannot determine the size of right margin
-        (mode
-         (cond ((and (boundp 'artist-mode) artist-mode)
-                (! (propertize "*Artist*" 'face 'mode-line-special-mode-face)))
-               ((and (boundp 'orgtbl-mode) orgtbl-mode)
-                (! (propertize "*OrgTbl*" 'face 'mode-line-special-mode-face)))
-               (t
-                (propertize
-                 ;; mode-name may be a list in sgml modes
-                 (if (listp mode-name) (cadr mode-name) mode-name)
-                 'face 'mode-line-bright-face))))
-        (encoding
-         (propertize (format " (%s)" (symbol-name buffer-file-coding-system))
-                     'face 'mode-line-dark-face))
-        (time
-         (let ((time (decode-time (current-time))))
-           (propertize (format "%02d:%02d" (cl-caddr time) (cadr time))
-                       'face 'mode-line-bright-face))))
-    (let* ((lstr (concat linum vbar
-                         colnum-or-region vbar
-                         i-narrowed i-readonly i-modified i-mc vbar
-                         dirname filename recur))
-           (rstr (concat vbar mode encoding vbar time))
-           (lmargin (propertize " " 'display
-                                '((space :align-to (+ 1 left-fringe)))))
-           (rmargin (propertize " " 'display
-                                `((space :align-to (- right-fringe ,(length rstr)))))))
-      (concat lmargin lstr rmargin rstr))))
-
-(setq-default mode-line-format '(:eval (my-generate-mode-line-format)))
-
-;;   + | others
-
-;; force update mode-line every minutes
-(run-with-timer 60 60 'force-mode-line-update)
-
-;;   + "kindly-view" minor-mode
-
-;; reference | http://d.hatena.ne.jp/nitro_idiot/20130215/1360931962
-(setup-lazy '(my-kindly-view-mode) "vi"
-  (defvar my-kindly-view-mode-map (copy-keymap vi-com-map))
-  (setup-keybinds my-kindly-view-mode-map
-    '("j" "C-n")         '("pager" pager-row-down vi-next-line)
-    '("k" "C-p")         '("pager" pager-row-up previous-line)
-    '("C-g" "C-c" "RET") nil)
-  (defvar my-kindly-incompatible-minor-modes
-    '(indent-guide-mode)
-    "list of minor-modes that must be turned-off temporarily.")
-  (defvar my-kindly-incompatible-global-variables
-    '(global-hl-line-mode show-paren-mode
-                          key-chord-mode input-method-function)
-    "list of variables that must be set nil locally.")
-  (define-minor-mode my-kindly-view-mode
-    "easy-to-read view-mode"
-    :init-value nil
-    :global nil
-    :keymap my-kindly-view-mode-map
-    (cond (my-kindly-view-mode
-           (read-only-mode 1)
-           (setq line-spacing 0.3)
-           (setq cursor-type 'bar)
-           (dolist (mode my-kindly-incompatible-minor-modes)
-             (when (and (boundp mode) mode) (funcall mode -1)))
-           (dolist (var my-kindly-incompatible-global-variables)
-             (set (make-local-variable var) nil))
-           (let ((buffer-face-mode-face
-                  '(:family "Times New Roman" :width semi-condensed)))
-             (buffer-face-mode 1))
-           (text-scale-set +2))
-          (t
-           (read-only-mode -1)
-           (setq line-spacing (default-value 'line-spacing))
-           (setq cursor-type (default-value 'cursor-type))
-           (dolist (mode my-kindly-incompatible-minor-modes)
-             (when (boundp mode) (funcall mode 1)))
-           (dolist (var my-kindly-incompatible-global-variables)
-             (kill-local-variable var))
-           (buffer-face-mode -1)
-           (text-scale-set 0)))))
-
-;;   + Misc: built-ins
-
-(setup-after "frame"
-  (blink-cursor-mode -1))
-
-(setup-after "font-lock"
-  (setq font-lock-support-mode 'jit-lock-mode
-        jit-lock-stealth-time 16))
-
-;; highlight matching parens
-(setup-include "paren"
-  (show-paren-mode)
-  (setq show-paren-delay 0))
-
-(setup-include "hl-line"
-  (global-hl-line-mode 1))
-
-(setup-lazy '(whitespace-mode) "whitespace"
-  :prepare (add-hook 'find-file-hook 'whitespace-mode)
-  (setq whitespace-space-regexp     "\\(\x3000+\\)"
-        whitespace-style            '(face tabs spaces space-mark tab-mark)
-        whitespace-display-mappings '((space-mark ?\x3000 [?□])
-                                      (tab-mark ?\t [?\xBB ?\t]))))
-
-;;   + Misc: plug-ins
-
-(setup-include "indent-guide"
-  (indent-guide-global-mode))
-
-(setup-include "highlight-parentheses"
-  (define-globalized-minor-mode global-highlight-parentheses-mode
-    highlight-parentheses-mode
-    (lambda () (highlight-parentheses-mode 1)))
-  (global-highlight-parentheses-mode 1))
-
-(setup-lazy '(rainbow-delimiters-mode) "rainbow-delimiters")
-
-(setup-lazy '(rainbow-mode) "rainbow-mode")
-
-;; make GUI modern
-(setup-include "sublimity"
-  (sublimity-mode 1)
-  (setup-include "sublimity-scroll"
-    (setq sublimity-scroll-weight       4
-          sublimity-scroll-drift-length 3))
-  (setup-include "sublimity-attractive"
-    (setup-hook 'after-init-hook
-      (setq sublimity-attractive-centering-width 110)
-      (sublimity-attractive-hide-bars)
-      (sublimity-attractive-hide-fringes))))
+  (setq spray-wpm 400))
 
 ;; + | Modes
 ;;   + basic
@@ -2302,10 +2154,14 @@ file."
   (push '("\\.tex$" . latex-mode) auto-mode-alist))
 
 (setup-after "tex-mode"
-  (setup-keybinds latex-mode-map '("C-j" "C-M-i" "<C-return>") nil)
   (add-to-list 'tex-verbatim-environments "Verbatim")
   (add-hook 'latex-mode-hook 'turn-on-auto-fill)
-  (setup "phi-pretty-latex")
+  (setup-keybinds latex-mode-map
+    "、" "，"
+    "。" "．"
+    '("C-j" "C-M-i" "<C-return>") nil)
+  (setup-lazy '(magic-latex-buffer) "magic-latex-buffer"
+    :prepare (add-hook 'latex-mode-hook 'magic-latex-buffer))
   (setup-expecting "electric-spacing"
     (add-hook 'latex-mode-hook 'electric-spacing-mode))
   (setup-after "mark-hacks"
@@ -2331,7 +2187,7 @@ file."
       "<oem-pa1>"    'zencoding-expand-line
       "<muhenkan>"   'zencoding-expand-line
       "<nonconvert>" 'zencoding-expand-line))
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (defun my-sgml-sp-or-smart-lt ()
       "smart insertion of brackets for sgml languages"
       (interactive)
@@ -2347,6 +2203,7 @@ file."
         (insert "<>")                     ; insert <`!!'>
         (backward-char)))
     (setup-hook 'sgml-mode-hook
+      (key-combo-mode 1)
       (key-combo-define-local (kbd "<") '(my-sgml-sp-or-smart-lt "&lt;" "<"))
       (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
       (key-combo-define-local (kbd ">") '("&gt;" ">"))
@@ -2361,11 +2218,12 @@ file."
 ;;   + lispy
 ;;     + (common)
 
-(setup-after "key-combo"
+(setup-expecting "key-combo"
   (defun my-lisp-smart-dot ()
     (interactive)
     (insert (if (looking-back "[0-9]") "." " . ")))
   (defun my-install-lisp-common-smartchr ()
+    (key-combo-mode 1)
     (key-combo-define-local (kbd ".") '(my-lisp-smart-dot "."))
     (key-combo-define-local (kbd ";") ";; ")))
 
@@ -2376,7 +2234,7 @@ file."
     (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode))
   (setup-after "auto-complete"
     (add-to-list 'ac-modes 'lisp-mode))
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (add-hook 'lisp-mode-hook 'my-install-lisp-common-smartchr))
   (setup-keybinds lisp-mode-map '("M-TAB" "C-j") nil))
 
@@ -2406,7 +2264,7 @@ file."
     (add-to-list 'ac-modes 'emacs-lisp-mode)
     (add-to-list 'ac-modes 'lisp-interaction-mode)
     (add-hook 'emacs-lisp-mode-hook 'my-ac-install-elisp-sources))
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (setup-hook 'emacs-lisp-mode-hook
       (my-install-lisp-common-smartchr)
       (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
@@ -2541,7 +2399,7 @@ file."
   (setup-after "rainbow-delimiters-mode"
     (add-hook 'racket-mode-hook 'rainbow-delimiters-mode))
 
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (add-hook 'racket-mode-hook 'my-install-lisp-common-smartchr))
 
   (defun my-run-racket-other-window ()
@@ -2975,7 +2833,7 @@ file."
 
   ;;     + key-combo
 
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (defun my-c-smart-braces ()
       "smart insertion of braces for C-like laguages"
       (interactive)
@@ -3001,6 +2859,7 @@ file."
              (forward-line -1)
              (indent-according-to-mode))))
     (defun my-install-c-common-smartchr ()
+      (key-combo-mode 1)
       ;; add / sub / mul / div
       (key-combo-define-local (kbd "+") `(,(my-unary "+") "++"))
       (key-combo-define-local (kbd "+=") " += ")
@@ -3081,7 +2940,7 @@ file."
                  `(c-mode . ,(concat "gcc -ansi -pedantic -Wall -W"
                                      " -Wextra -Wunreachable-code %f"))))
 
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (defun my-c-smart-angles ()
       (interactive)
       (if (looking-back "#include *")
@@ -3180,7 +3039,7 @@ file."
     (add-to-list 'smart-compile-alist
                  '(java-mode . "javac -Xlint:all -encoding UTF-8 %f")))
 
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (setup-hook 'java-mode-hook
       ;; javadoc comment
       (key-combo-define-local (kbd "/**") "/**\n`!!'\n*/")
@@ -3235,7 +3094,7 @@ file."
                     (if (looking-at " ") "" " ")))
     (save-excursion (promela-indent-line)))
 
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (setup-hook 'promela-mode-hook
       (my-install-c-common-smartchr)
       ;; guards
@@ -3253,6 +3112,14 @@ file."
     ";"   'my-promela-electric-semi
     "C-m" 'promela-indent-newline-indent)
   )
+
+;;     + flex/bison-mode
+
+(setup-lazy '(flex-mode) "flex-mode"
+  :prepare (push '("\\.ll?$" . flex-mode) auto-mode-alist))
+
+(setup-lazy '(bison-mode) "bison-mode"
+  :prepare (push '("\\.yy?$" . bison-mode) auto-mode-alist))
 
 ;;   + functional
 ;;     + haskell-mode
@@ -3282,8 +3149,9 @@ file."
   (setup-expecting "flycheck"
     (add-hook 'haskell-mode-hook 'flycheck-mode))
 
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (defun my-install-haskell-smartchr ()
+      (key-combo-mode 1)
       ;; types
       (key-combo-define-local (kbd ":") '(":" " :: "))
       (key-combo-define-local (kbd "<-") " <- ")
@@ -3358,7 +3226,7 @@ file."
   (setup-after "auto-complete"
     (add-to-list 'ac-modes 'coq-mode))
 
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (defun my-coq-smart-pipes ()
       "insert pipe surrounded by spaces, and reindent"
       (interactive)
@@ -3370,35 +3238,35 @@ file."
                         "|"
                         (unless (looking-at " ") " "))))
       (save-excursion (smie-indent-line)))
-    (setup-after "coq"
-      (setup-hook 'coq-mode-hook
-        ;; top level(?)
-        (key-combo-define-local (kbd "|") '(my-coq-smart-pipes))
-        (key-combo-define-local (kbd ":") '(" : " " :: "))
-        (key-combo-define-local (kbd ":=") " := ")
-        (key-combo-define-local (kbd "=") " = ")
-        ;; logic
-        (key-combo-define-local (kbd "->") " -> ")
-        (key-combo-define-local (kbd "<-") " <- ")
-        (key-combo-define-local (kbd "&&") " && ")
-        (key-combo-define-local (kbd "||") " || ")
-        (key-combo-define-local (kbd "/\\") " /\\ ")
-        (key-combo-define-local (kbd "\\/") " \\/ ")
-        (key-combo-define-local (kbd "|-") " |- ")
-        (key-combo-define-local (kbd "|=") " |= ")
-        ;; types
-        (key-combo-define-local (kbd "=>") " => ")
-        (key-combo-define-local (kbd ":<") " :< ")
-        (key-combo-define-local (kbd ":>") " :> ")
-        ;; arithmetic
-        (key-combo-define-local (kbd "<") " < ")
-        (key-combo-define-local (kbd "<=") " <= ")
-        (key-combo-define-local (kbd ">") " > ")
-        (key-combo-define-local (kbd ">=") " >= ")
-        (key-combo-define-local (kbd "+") `(,(my-unary "+")))
-        (key-combo-define-local (kbd "-") `(,(my-unary "-")))
-        (key-combo-define-local (kbd "*") " * ")
-        (key-combo-define-local (kbd "/") " / "))))
+    (setup-hook 'coq-mode-hook
+      (key-combo-mode 1)
+      ;; top level(?)
+      (key-combo-define-local (kbd "|") '(my-coq-smart-pipes))
+      (key-combo-define-local (kbd ":") '(" : " " :: "))
+      (key-combo-define-local (kbd ":=") " := ")
+      (key-combo-define-local (kbd "=") " = ")
+      ;; logic
+      (key-combo-define-local (kbd "->") " -> ")
+      (key-combo-define-local (kbd "<-") " <- ")
+      (key-combo-define-local (kbd "&&") " && ")
+      (key-combo-define-local (kbd "||") " || ")
+      (key-combo-define-local (kbd "/\\") " /\\ ")
+      (key-combo-define-local (kbd "\\/") " \\/ ")
+      (key-combo-define-local (kbd "|-") " |- ")
+      (key-combo-define-local (kbd "|=") " |= ")
+      ;; types
+      (key-combo-define-local (kbd "=>") " => ")
+      (key-combo-define-local (kbd ":<") " :< ")
+      (key-combo-define-local (kbd ":>") " :> ")
+      ;; arithmetic
+      (key-combo-define-local (kbd "<") " < ")
+      (key-combo-define-local (kbd "<=") " <= ")
+      (key-combo-define-local (kbd ">") " > ")
+      (key-combo-define-local (kbd ">=") " >= ")
+      (key-combo-define-local (kbd "+") `(,(my-unary "+")))
+      (key-combo-define-local (kbd "-") `(,(my-unary "-")))
+      (key-combo-define-local (kbd "*") " * ")
+      (key-combo-define-local (kbd "/") " / ")))
 
   (defadvice proof-electric-terminator (before reindent-terminator activate)
     (open-line 1)
@@ -3424,7 +3292,7 @@ file."
 ;;   + declarative
 ;;     + (common)
 
-(setup-after "key-combo"
+(setup-expecting "key-combo"
   (defun my-prolog-smart-pipes ()
     "insert pipe surrounded by spaces"
     (interactive)
@@ -3434,6 +3302,7 @@ file."
                       "|"
                       (unless (looking-at " ") " ")))))
   (defun my-install-prolog-common-smartchr ()
+    (key-combo-mode 1)
     ;; comments, periods
     (key-combo-define-local (kbd "%") '("% " "%% "))
     ;; toplevel
@@ -3458,7 +3327,7 @@ file."
     (add-to-list 'popwin:special-display-config '("*prolog*")))
   (setup-after "auto-complete"
     (add-to-list 'ac-modes 'prolog-mode))
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (setup-hook 'prolog-mode-hook
       (my-install-prolog-common-smartchr)
       (key-combo-define-local (kbd "/") " / "))
@@ -3479,7 +3348,7 @@ file."
   (setup-after "auto-complete"
     (add-to-list 'ac-modes 'lmntal-mode))
 
-  (setup-after "key-combo"
+  (setup-expecting "key-combo"
     (defun my-lmntal-smart-slashes ()
       (interactive)
       (if (looking-back "}")
@@ -3798,7 +3667,12 @@ file."
   (setup-expecting "vi"
     (setup-hook 'Info-mode-hook
       (my-kindly-view-mode)
-      (local-set-key (kbd "RET") 'Info-follow-nearest-node))))
+      (local-set-key (kbd "RET") 'Info-follow-nearest-node)
+      (local-set-key (kbd "n") 'Info-next-reference)
+      (local-set-key (kbd "p") 'Info-prev-reference)
+      (local-set-key (kbd "q") 'Info-backward-node)
+      (local-set-key (kbd "]") 'Info-forward-node)
+      (local-set-key (kbd "u") 'Info-up))))
 
 ;;   + others
 ;;     + vi-mode
@@ -3909,7 +3783,13 @@ file."
 (setup-after "eshell"
 
   ;; eshell directory
-  (setq eshell-directory-name my-eshell-directory)
+  (setq eshell-directory-name my-eshell-directory
+        eshell-prompt-regexp  "[^#$\n]* >?> "
+        eshell-prompt-function
+        (lambda ()
+          (concat "\n"
+                  (my-shorten-directory (eshell/pwd) 20)
+                  (if (= (user-uid) 0) " >> " " > "))))
 
   (setup-after "mark-hacks"
     (add-to-list 'mark-hacks-auto-indent-inhibit-modes 'eshell-mode))
@@ -3981,17 +3861,20 @@ file."
   (setup-hook 'howm-menu-hook
     (when my-howm-import-directory
       (dolist (file (directory-files my-howm-import-directory))
-        (let ((abs-path (concat my-howm-import-directory file)))
-          (when (file-regular-p abs-path)
-            (howm-remember)
-            (insert-file-contents abs-path)
-            (beginning-of-buffer)
-            (if (not (y-or-n-p (format "import %s ?" file)))
-                (howm-remember-discard)
-              (let ((howm-template (concat "* " (howm-reminder-today)
-                                           "-100 " file "\n\n%cursor")))
-                (howm-remember-submit)
-                (delete-file abs-path))))))))
+        (unless (string-match "^-" file)
+          (let ((abs-path (concat my-howm-import-directory file)))
+            (when (file-regular-p abs-path)
+              (howm-remember)
+              (insert-file-contents abs-path)
+              (beginning-of-buffer)
+              (cond ((not (y-or-n-p (format "import %s ?" file)))
+                     (howm-remember-discard)
+                     (rename-file abs-path (concat my-howm-import-directory "-" file)))
+                    (t
+                     (let ((howm-template (concat "* " (howm-reminder-today)
+                                                  "-100 " file "\n\n%cursor")))
+                       (howm-remember-submit)
+                       (delete-file abs-path))))))))))
 
   ;;   + | howm -> dropbox
 
@@ -4112,7 +3995,8 @@ file."
   (defun howm-insert-date-with-calendar ()
     (interactive)
     (calendar)
-    (local-set-key (kbd "RET") 'howm-insert-date-from-calendar))
+    (local-set-key (kbd "RET") 'howm-insert-date-from-calendar)
+    (local-set-key (kbd "C-g") 'calendar-exit))
 
   ;;   + | keybinds
 
@@ -4129,13 +4013,161 @@ file."
   ;;   + | (sentinel)
   )
 
-;; + | Colorscheme
-;;   + solarized [solarized-definitions]
-;;   + | (prelude)
+;; + | Appearance
+;;   + mode-line settings
+;;     + faces
+
+(dolist (face '(mode-line-bright-face
+                mode-line-dark-face
+                mode-line-highlight-face
+                mode-line-special-mode-face
+                mode-line-warning-face
+                mode-line-modified-face
+                mode-line-read-only-face
+                mode-line-narrowed-face
+                mode-line-mc-face
+                header-line))
+  (make-face face)
+  (set-face-attribute face nil :inherit 'mode-line-face))
+
+;;     + change color while recording macros
+
+(defvar my-mode-line-background '("#194854" . "#594854"))
+
+(defadvice kmacro-start-macro (after my-recording-mode-line activate)
+  (set-face-background 'mode-line (cdr my-mode-line-background))
+  (add-hook 'post-command-hook 'my-recording-mode-line-end))
+
+(defun my-recording-mode-line-end ()
+  (unless defining-kbd-macro
+    (set-face-background 'mode-line (car my-mode-line-background))
+    (remove-hook 'post-command-hook 'my-recording-mode-line-end)))
+
+;;     + mode-line-format
+
+(defun my-generate-mode-line-format ()
+  (let ((vbar
+         (! (propertize " : " 'face 'mode-line-dark-face)))
+        (linum
+         (! (propertize "%5l" 'face 'mode-line-bright-face)))
+        (colnum-or-region
+         (if (not mark-active)
+             (propertize "%3c" 'face 'mode-line-bright-face)
+           (let ((rows (count-lines (region-beginning) (region-end))))
+             (if (= rows 1)
+                 (propertize (format "%3d" (- (region-end) (region-beginning)))
+                             'face 'mode-line-warning-face)
+               (propertize (format "%3d" rows) 'face 'mode-line-warning-face)))))
+        (i-narrowed
+         (propertize "n" 'face (if (buffer-narrowed-p)
+                                   'mode-line-narrowed-face 'mode-line-bright-face)))
+        (i-readonly
+         (propertize "%%" 'face (if buffer-read-only
+                                    'mode-line-narrowed-face 'mode-line-bright-face)))
+        (i-modified
+         (propertize "*" 'face (if (buffer-modified-p)
+                                   'mode-line-modified-face 'mode-line-bright-face)))
+        (i-mc
+         (if (and (boundp 'multiple-cursors-mode) multiple-cursors-mode)
+             (propertize (format "%02d" (mc/num-cursors)) 'face 'mode-line-mc-face)
+           (! (propertize "00" 'face 'mode-line-bright-face))))
+        (dirname
+         (propertize (let* ((file (buffer-file-name))
+                            (dir (if file (file-name-directory file) "")))
+                       (my-shorten-directory dir 10)) 'face 'mode-line-dark-face))
+        (filename
+         (! (propertize "%b" 'face 'mode-line-highlight-face)))
+        (recur
+         (! (propertize " %]" 'face 'mode-line-dark-face)))
+        ;; right half must not contain "%" notation otherwise we
+        ;; cannot determine the size of right margin
+        (mode
+         (cond ((and (boundp 'artist-mode) artist-mode)
+                (! (propertize "*Artist*" 'face 'mode-line-special-mode-face)))
+               ((and (boundp 'orgtbl-mode) orgtbl-mode)
+                (! (propertize "*OrgTbl*" 'face 'mode-line-special-mode-face)))
+               (t
+                (propertize
+                 ;; mode-name may be a list in sgml modes
+                 (if (listp mode-name) (cadr mode-name) mode-name)
+                 'face 'mode-line-bright-face))))
+        (encoding
+         (propertize (format " (%s)" (symbol-name buffer-file-coding-system))
+                     'face 'mode-line-dark-face))
+        (time
+         (let ((time (decode-time (current-time))))
+           (propertize (format "%02d:%02d" (cl-caddr time) (cadr time))
+                       'face 'mode-line-bright-face))))
+    (let* ((lstr (concat linum vbar
+                         colnum-or-region vbar
+                         i-narrowed i-readonly i-modified i-mc vbar
+                         dirname filename recur))
+           (rstr (concat vbar mode encoding vbar time))
+           (lmargin (propertize " " 'display
+                                '((space :align-to (+ 1 left-fringe)))))
+           (rmargin (propertize " " 'display
+                                `((space :align-to (- right-fringe ,(length rstr)))))))
+      (concat lmargin lstr rmargin rstr))))
+
+(setq-default mode-line-format '(:eval (my-generate-mode-line-format)))
+
+;;     + others
+
+;; force update mode-line every minutes
+(run-with-timer 60 60 'force-mode-line-update)
+
+;;   + "kindly-view" minor-mode
+
+;; reference | http://d.hatena.ne.jp/nitro_idiot/20130215/1360931962
+(setup-lazy '(my-kindly-view-mode) "vi"
+  (defvar my-kindly-view-mode-map (copy-keymap vi-com-map))
+  (setup-keybinds my-kindly-view-mode-map
+    '("j" "C-n")         '("pager" pager-row-down vi-next-line)
+    '("k" "C-p")         '("pager" pager-row-up previous-line)
+    '("C-g" "C-c" "RET") nil)
+  (defvar my-kindly-incompatible-minor-modes
+    '(indent-guide-mode)
+    "list of minor-modes that must be turned-off temporarily.")
+  (defvar my-kindly-incompatible-global-variables
+    '(global-hl-line-mode show-paren-mode
+                          key-chord-mode input-method-function)
+    "list of variables that must be set nil locally.")
+  (define-minor-mode my-kindly-view-mode
+    "easy-to-read view-mode"
+    :init-value nil
+    :keymap my-kindly-view-mode-map
+    :global nil
+    (cond (my-kindly-view-mode
+           (read-only-mode 1)
+           (setq line-spacing 0.3
+                 cursor-type 'bar)
+           (dolist (mode my-kindly-incompatible-minor-modes)
+             (when (and (boundp mode) mode) (funcall mode -1)))
+           (dolist (var my-kindly-incompatible-global-variables)
+             (set (make-local-variable var) nil))
+           (setq-local buffer-face-mode-face
+                       '(:family "Times New Roman" :width semi-condensed))
+           (buffer-face-mode 1)
+           (text-scale-set +2))
+          (t
+           (read-only-mode -1)
+           (setq line-spacing (default-value 'line-spacing)
+                 cursor-type (default-value 'cursor-type))
+           (dolist (mode my-kindly-incompatible-minor-modes)
+             (when (boundp mode) (funcall mode 1)))
+           (dolist (var my-kindly-incompatible-global-variables)
+             (kill-local-variable var))
+           (buffer-face-mode -1)
+           (text-scale-set 0)
+           (when (eq major-mode 'vi-mode)
+             (vi-goto-insert-state))))))
+
+;;   + colorscheme [solarized-definitions]
+;;     + (prelude)
 
 (setup-include "solarized-definitions"
 
-  ;; + | palettes
+  ;;   + palettes
 
   ;; copied from "solarized-color-definitions"
   (eval-and-compile
@@ -4224,7 +4256,7 @@ file."
   ;;           )))
   ;; (create-solarized-theme light)
 
-  ;; + | modeline
+  ;;   + modeline
 
   (setq my-mode-line-background
         (cons (! (solarized-find-color 'modeline-active))
@@ -4272,7 +4304,7 @@ file."
                       :box (append '(:line-width 1)
                                    `(:color ,(! (solarized-find-color 'base1)))))
 
-  ;; + | ace-jump-mode
+  ;;   + ace-jump-mode
 
   (setup-after "ace-jump-mode"
     (cl-case (frame-parameter nil 'background-mode)
@@ -4285,7 +4317,7 @@ file."
              (set-face-foreground 'ace-jump-face-background
                                   (! (solarized-find-color 'base1))))))
 
-  ;; + | font-lock
+  ;;   + font-lock
 
   ;; highlight regexp symbols
   ;; reference | http://pastelwill.jp/wiki/doku.php?id=emacs:init.el
@@ -4295,20 +4327,20 @@ file."
     (set-face-foreground 'font-lock-regexp-grouping-construct
                          (! (solarized-find-color 'red))))
 
-  ;; + | highlight-parentheses
+  ;;   + highlight-parentheses
 
   (setup-after "highlight-parentheses"
     (hl-paren-set 'hl-paren-colors nil)
     (hl-paren-set 'hl-paren-background-colors
                   (list (! (solarized-find-color 'modeline-active)))))
 
-  ;; + | paren
+  ;;   + paren
 
   (setup-after "paren"
     (set-face-attribute 'show-paren-match-face nil :underline t :bold t)
     (set-face-attribute 'show-paren-mismatch-face nil :underline t :bold t))
 
-  ;; + | flymake
+  ;;   + flymake
 
   (setup-after "flymake"
     (set-face-attribute 'flymake-errline nil
@@ -4320,7 +4352,7 @@ file."
                         :inverse-video 'unspecified
                         :background (! (solarized-find-color 'flymake-err))))
 
-  ;; + | whitespace
+  ;;   + whitespace
 
   (setup-after "whitespace"
     (set-face-attribute 'whitespace-space nil
@@ -4330,13 +4362,13 @@ file."
                         :foreground (! (solarized-find-color 'modeline-active))
                         :background 'unspecified))
 
-  ;; + | lmntal-mode
+  ;;   + lmntal-mode
 
   (setup-after "lmntal-mode"
     (set-face-background 'lmntal-link-name-face
                          (! (solarized-find-color 'lmntal-name))))
 
-  ;; + | phi-search
+  ;;   + phi-search
 
   (setup-after "phi-search-core"
     (set-face-background 'phi-search-match-face
@@ -4344,7 +4376,7 @@ file."
     (set-face-background 'phi-search-selection-face
                          (! (solarized-find-color 'modeline-record))))
 
-  ;; + | indent-guide
+  ;;   + indent-guide
 
   (setup-after "indent-guide"
     (cl-case (frame-parameter nil 'background-mode)
@@ -4353,14 +4385,68 @@ file."
       (light (set-face-foreground 'indent-guide-face
                                   (! (solarized-find-color 'base1))))))
 
-  ;; + | traverselisp
+  ;;   + traverselisp
 
   (setup-after "traverselisp"
     (set-face-background 'traverse-overlay-face
                          (! (solarized-find-color 'base02))))
 
-  ;; + | (sentinel)
+  ;;   + (sentinel)
   )
+
+;;   + Misc: built-ins
+
+(setup-after "frame"
+  (blink-cursor-mode -1))
+
+(setup-after "font-lock"
+  (setq font-lock-support-mode 'jit-lock-mode
+        jit-lock-stealth-time 16))
+
+;; highlight matching parens
+(setup-include "paren"
+  (show-paren-mode)
+  (setq show-paren-delay 0))
+
+(setup-include "hl-line"
+  (global-hl-line-mode 1))
+
+(setup-lazy '(whitespace-mode) "whitespace"
+  :prepare (add-hook 'find-file-hook 'whitespace-mode)
+  (setq whitespace-space-regexp     "\\(\x3000+\\)"
+        whitespace-style            '(face tabs spaces space-mark tab-mark)
+        whitespace-display-mappings '((space-mark ?\x3000 [?□])
+                                      (tab-mark ?\t [?\xBB ?\t]))))
+
+(setup-after "iimage"
+  (setup-keybinds iimage-mode-map "C-l" nil))
+
+;;   + Misc: plug-ins
+
+(setup-include "indent-guide"
+  (indent-guide-global-mode))
+
+(setup-include "highlight-parentheses"
+  (define-globalized-minor-mode global-highlight-parentheses-mode
+    highlight-parentheses-mode
+    (lambda () (highlight-parentheses-mode 1)))
+  (global-highlight-parentheses-mode 1))
+
+(setup-lazy '(rainbow-delimiters-mode) "rainbow-delimiters")
+
+(setup-lazy '(rainbow-mode) "rainbow-mode")
+
+;; make GUI modern
+(setup-include "sublimity"
+  (sublimity-mode 1)
+  (setup-include "sublimity-scroll"
+    (setq sublimity-scroll-weight       4
+          sublimity-scroll-drift-length 3))
+  (setup-include "sublimity-attractive"
+    (setup-hook 'after-init-hook
+      (setq sublimity-attractive-centering-width 110)
+      (sublimity-attractive-hide-bars)
+      (sublimity-attractive-hide-fringes))))
 
 ;; + | Keybinds
 ;;   + translations
@@ -4438,7 +4524,8 @@ file."
   "M-8" 'my-rotate-windows
   "M-9" 'previous-multiframe-window
   "M-o" 'my-toggle-transparency
-  "M-k" 'delete-window)
+  "M-k" 'delete-window
+  "C-x C--" 'my-window-undo)
 
 ;;   + | motion
 ;;     + cursor
@@ -4448,7 +4535,7 @@ file."
   "C-p"   'my-previous-line
   "C-n"   'my-next-line
   "C-f"   'forward-char
-  "M--"   '("point-undo" point-undo)
+  "M--"   'my-point-undo
   "C-M-b" 'backward-word
   "C-M-p" 'my-previous-blank-line
   "C-M-n" 'my-next-blank-line
