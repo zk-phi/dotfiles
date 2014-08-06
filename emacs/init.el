@@ -3,13 +3,6 @@
 (require 'setup)
 (setup-initialize)
 
-;; to compile with a clean environ:
-;; (setup-byte-compile-file)
-
-;; map-y-or-n-pを活用したい
-
-;; vi-com-mapがじゃましてkindly-view-modeのキーバインドを変更できない
-
 ;; + Cheat Sheet :
 ;; + | global
 ;;   + (format)
@@ -54,7 +47,7 @@
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     | Diff|     |     |
 ;;    |     |Write|Encod|Revrt|Trnct|     |Untab|Spell|     |RdOly|     |     |
 ;;       |     | Save|     |     |     |FHead|     |KilBf|CgLog|     |     |
-;;          |     |     |Close|     |Bffrs|     |ExMcr| WWW |  DL |     |
+;;          |     |     |Close|     |Bffrs|     |ExMcr|  DL |     |     |
 
 ;;   + specials
 
@@ -62,8 +55,8 @@
 ;;
 ;; - fj : transpose-chars
 ;; - hh : capitalize word
-;; - jj : upcase word
-;; - kk : downcase word
+;; - kk : upcase word
+;; - jj : downcase word
 ;;
 ;; - df : iy-go-to-char-backward
 ;; - jk : iy-go-to-char
@@ -120,8 +113,6 @@
                   . "File which Howm should export schedules to.")
                  (my-howm-export-ics
                   . "iCal which Howm should export schedules to.")
-                 (my-ditaa-jar-file
-                  . "Path to ditaa.jar executable")
                  (my-clojure-jar-file
                   . "Path to clojure.jar executable.")
                  (my-sdic-eiwa-dictionary
@@ -130,62 +121,108 @@
                   . "Path to Japanese->English sdic dictionary.")))
     (eval `(defconst ,(car var) (when (boundp ',(car var)) ,(car var)) ,(cdr var)))))
 
-;;   + files and directories
+;;   + path to library files
 
-;; Dictionaries
-
-(defconst my-snippets-directory "~/.emacs.d/snippets/"
+(defconst my-snippets-directory
+  (!when (file-exists-p "~/.emacs.d/snippets/")
+    "~/.emacs.d/snippets/")
   "Dictionary directory for yasnippet.")
 
-(defconst my-dictionary-directory "~/.emacs.d/ac-dict/"
+(defconst my-dictionary-directory
+  (!when (file-exists-p "~/.emacs.d/ac-dict/")
+    "~/.emacs.d/ac-dict/")
   "Dictionary directory for auto-complete.")
 
-(defconst my-latex-dictionary-directory "~/.emacs.d/ac-l-dict/"
+(defconst my-latex-dictionary-directory
+  (!when (file-exists-p "~/.emacs.d/ac-l-dict/")
+    "~/.emacs.d/ac-l-dict/")
   "Dictionary directory for auto-complete-latex.")
 
-;; Howm
+(defconst my-sdic-eiwa-dictionary
+  (!when (file-exists-p "~/.emacs.d/sdic/gene.sdic")
+    "~/.emacs.d/sdic/gene.sdic")
+  "Eiwa dictionary for sdic.")
 
-(defconst my-howm-directory "~/.emacs.d/howm/"
-  "Directory to save Howm notes.")
+(defconst my-sdic-waei-dictionary
+  (!when (file-exists-p "~/.emacs.d/sdic/jedict.sdic")
+    "~/.emacs.d/sdic/jedict.sdic")
+  "Waei dictionary for sdic.")
 
-(defconst my-howm-keyword-file (! (format "~/.emacs.d/dat/howm-keys_%s.dat" system-name))
-  "File to save Howm keyword list.")
+(defconst my-ditaa-jar-file
+  (!when (file-exists-p "~/.emacs.d/lib/ditaa.jar")
+    "~/.emacs.d/lib/ditaa.jar")
+  "/path/to/ditaa.jar")
 
-(defconst my-howm-history-file (! (format "~/.emacs.d/dat/howm-history_%s.dat" system-name))
-  "File to save Howm history.")
+;;   + path to data files
 
-;; History Files
+;; Directory
 
-(defconst my-eshell-directory (! (format "~/.emacs.d/dat/eshell_%s/" system-name))
-  "Directory to save eshell settings.")
+(defconst my-dat-directory "~/.emacs.d/dat/"
+  "Directory to save datas in.")
 
-(defconst my-smex-save-file "~/.emacs.d/dat/smex.dat"
-  "File to save smex history.")
+;; make sure that my-dat-directory exists
+(eval-when-compile
+  (unless (file-exists-p my-dat-directory)
+    (make-directory my-dat-directory)))
 
-(defconst my-ac-history-file "~/.emacs.d/dat/ac-comphist.dat"
+;; Common History Datas
+
+(defconst my-ac-history-file (! (concat my-dat-directory "ac-comphist"))
   "File to save auto-complete history.")
 
-(defconst my-ido-save-file (! (format "~/.emacs.d/dat/ido_%s.dat" system-name))
-  "File to save ido history.")
+(defconst my-smex-save-file (! (concat my-dat-directory "smex"))
+  "File to save smex history.")
 
-(defconst my-recentf-file (! (format "~/.emacs.d/dat/recentf_%s.dat" system-name))
-  "File to save recentf history.")
-
-;; Files and Buffers
-
-(defconst my-backup-directory "~/.emacs.d/backups/"
-  "Directory to save backup files.")
-
-(defconst my-mc-list-file "~/.emacs.d/dat/mc-list.dat"
+(defconst my-mc-list-file (! (concat my-dat-directory "mc-list"))
   "File to save the list of multiple-cursors compatible commands.")
 
-(defconst my-save-place-file (! (format "~/.emacs.d/dat/save-place_%s.dat" system-name))
+;; Howm Datas
+
+(defconst my-howm-directory
+  (! (concat my-dat-directory "howm_" system-name "/"))
+  "Directory to save Howm notes.")
+
+(defconst my-howm-keyword-file
+  (! (concat my-dat-directory "howm-keys_" system-name))
+  "File to save Howm keyword list.")
+
+(defconst my-howm-history-file
+  (! (concat my-dat-directory "howm-history_" system-name))
+  "File to save Howm history.")
+
+;; System-specific History Datas
+
+(defconst my-eshell-directory
+  (! (concat my-dat-directory "eshell_" system-name "/"))
+  "Directory to save eshell histories.")
+
+(defconst my-undohist-directory
+  (! (concat my-dat-directory "undohist_" system-name "/"))
+  "Directory to save undo histories.")
+
+(defconst my-kill-ring-file
+  (! (concat my-dat-directory "killring_" system-name))
+  "File to save kill-ring.")
+
+(defconst my-ido-save-file
+  (! (concat my-dat-directory "ido_" system-name))
+  "File to save ido history.")
+
+(defconst my-recentf-file
+  (! (concat my-dat-directory "recentf_" system-name))
+  "File to save recentf history.")
+
+(defconst my-save-place-file
+  (! (concat my-dat-directory "save-place_" system-name))
   "File to save save-place datas.")
 
-;; Others
-
-(defconst my-scratch-file (! (format "~/.emacs.d/dat/scratch_%s.dat" system-name))
+(defconst my-scratch-file
+  (! (concat my-dat-directory "scratch_" system-name))
   "File to save scratch.")
+
+(defconst my-backup-directory
+  (! (concat my-dat-directory "backups_" system-name "/"))
+  "Directory to save backup files.")
 
 ;; + | Utilities
 
@@ -209,7 +246,7 @@
 
 ;; + | System
 ;;   + *scratch* utilities
-;;   + | make *scratch* parsistent
+;;   + | make *scratch* persistent
 
 ;; reference | http://www.bookshelf.jp/soft/meadow_29.html#SEC392
 
@@ -278,14 +315,27 @@
              (y-or-n-p "Switch to root ? "))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
+;;   + save kill-ring
+
+(setup-hook 'kill-emacs-hook
+  (with-temp-buffer
+    (insert
+     (concat "(setq kill-ring '" (prin1-to-string kill-ring) ")"))
+    (write-region 1 (1+ (buffer-size)) my-kill-ring-file)))
+
+(setup-hook 'after-init-hook
+  (when (file-exists-p my-kill-ring-file)
+    (load my-kill-ring-file)))
+
 ;;   + yasnippet settings [yasnippet]
 
 (setup-lazy '(yas-expand) "yasnippet"
   :prepare (setup-in-idle "yasnippet")
 
-  (setq yas-snippet-dirs      (list my-snippets-directory)
-        yas-triggers-in-field t
-        yas-fallback-behavior '(apply my-dabbrev-expand . nil))
+  (setq yas-triggers-in-field t
+        yas-fallback-behavior '(apply my-dabbrev-expand . nil)
+        yas-snippet-dirs      (list my-snippets-directory)
+        yas-verbosity         3)
 
   ;; let fallback-behavior return-nil while expanding snippets
   (setup-hook 'yas-before-expand-snippet-hook
@@ -446,7 +496,7 @@
     ;; map over the hash-table
     (maphash
      (lambda (key files)
-       ;; remove non-backup files (like ., ..)
+       ;; exclude non-backup files (like ".", "..")
        (setq files (delq nil (mapcar (lambda (f)
                                        (when (backup-file-name-p f) f))
                                      files)))
@@ -517,6 +567,15 @@
     subword-mode
     (lambda () (subword-mode 1)))
   (subword-global-mode 1))
+
+;; track undo history across sessions
+(setup-include "undohist"
+  ;; fix for Windows
+  (defadvice make-undohist-file-name (around my-undohist-fix activate)
+    (flet ((convert-standard-filename (file) file))
+      ad-do-it))
+  (setq undohist-directory my-undohist-directory)
+  (undohist-initialize))
 
 ;;   + | assistants
 
@@ -598,8 +657,8 @@
 
 (setup-lazy '(electric-spacing-mode) "electric-spacing"
   (setq electric-spacing-regexp-pairs
-        '(("\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH" . "[\"[(<{0-9A-Za-z]")
-          ("[]\")>}0-9A-Za-z]" . "\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH"))))
+        '(("\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH" . "[\\\\{[(<$0-9A-Za-z]")
+          ("[]\\\\})>$0-9A-Za-z]" . "\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH"))))
 
 ;; *FIXME* setup-include seems buggy for auto-complete ...
 (setup "popup")
@@ -733,7 +792,7 @@ for unary operators which can also be binary."
         recentf-auto-cleanup    10
         recentf-exclude         '("/[^/]*\\<tmp\\>[^/]*/" "/[^/]*\\<backup\\>[^/]*/"
                                   "~$" "^#[^#]*#$" "/ssh:" "/sudo:" "/GitHub/" "/palette/"
-                                  "\\.elc$" "\\.howm$" "\\.dat$"))
+                                  "/undohist/" "\\.elc$" "\\.howm$" "\\.dat$"))
   ;; auto-save recentf-list / delayed cleanup
   ;; reference | http://d.hatena.ne.jp/tomoya/20110217/1297928222
   (run-with-idle-timer 30 t 'recentf-save-list))
@@ -1504,7 +1563,13 @@ for unary operators which can also be binary."
 
 (defun my-retop ()
   "Make cursor displayed on top of the window."
-  (interactive) (recenter 0))
+  (interactive)
+  (recenter 0))
+
+(defun my-recenter ()
+  "Make cursor displayed on 3/8 of the window"
+  (interactive)
+  (recenter (* (/ (window-height) 8) 3)))
 
 (defun my-toggle-narrowing ()
   "narrow-to-region or widen."
@@ -1643,6 +1708,7 @@ for unary operators which can also be binary."
   "Jump to the next empty line."
   (interactive)
   (when (eobp) (error "end of buffer"))
+  (skip-chars-forward "\s\t\n")
   (let ((type (car (memq (get-text-property (point) 'face)
                          '(font-lock-doc-face
                            font-lock-string-face
@@ -1660,6 +1726,7 @@ for unary operators which can also be binary."
   "Jump to the previous empty line."
   (interactive)
   (when (bobp) (error "beginning of buffer"))
+  (skip-chars-backward "\s\t\n")
   (let ((type (car (memq (get-text-property (point) 'face)
                          '(font-lock-doc-face
                            font-lock-string-face
@@ -1894,9 +1961,10 @@ file."
     (interactive)
     (select-window
      (split-window-below (* (/ (window-height) 3) 2)))
-    (add-change-log-entry)
-    (local-set-key (kbd "C-x C-s") 'my-change-log-save-and-kill)
-    (local-set-key (kbd "C-g") 'my-change-log-save-and-kill)))
+    (add-change-log-entry))
+  (setup-keybinds change-log-mode-map
+    "C-x C-s" 'my-change-log-save-and-kill
+    "C-g"     'my-change-log-save-and-kill))
 
 ;; run "diff" from emacs
 (setup-lazy '(ediff) "ediff")
@@ -1918,15 +1986,15 @@ file."
 ;; Elisp implementation of "info"
 (setup-lazy '(info-lookup-symbol) "info-look"
   (setq info-lookup-other-window-flag nil
-        Info-directory-list (append my-additional-info-directories
-                                    Info-directory-list)))
+        Info-directory-list
+        (append my-additional-info-directories Info-directory-list)))
 
 ;;   + Misc: plug-ins
 ;;   + | jump around
 
 ;; "hit-a-hint"-like jump command
 (setup-lazy '(ace-jump-word-mode) "ace-jump-mode"
-  (add-hook 'ace-jump-mode-end-hook 'recenter))
+  (add-hook 'ace-jump-mode-end-hook 'my-recenter))
 
 ;; "f"-like jump command
 (setup-lazy '(iy-go-to-char iy-go-to-char-backward) "iy-go-to-char")
@@ -1966,7 +2034,8 @@ file."
 (setup-after "shell-pop"
   (setq shell-pop-internal-mode        "eshell"
         shell-pop-internal-mode-buffer "*eshell*"
-        shell-pop-internal-mode-func   '(lambda () (eshell))))
+        shell-pop-internal-mode-func   '(lambda () (eshell))
+        shell-pop-window-height        19))
 
 ;;   + | trace changes
 
@@ -2017,29 +2086,6 @@ file."
 ;; download region as an url
 (setup-after "download-region"
   (setq download-region-max-downloads 5))
-
-;; an in-buffer browser
-(setup-expecting "shr"
-  (setup-after "eww"
-    ;; workaround for Emacs<24.4
-    (defun add-face-text-property (beg end face &optional appendp object)
-      "Combine FACE BEG and END."
-      (let ((b beg))
-        (while (< b end)
-          (let ((oldval (get-text-property b 'face)))
-            (put-text-property
-             b (setq b (next-single-property-change b 'face nil end))
-             'face (cond ((null oldval)
-                          face)
-                         ((and (consp oldval)
-                               (not (keywordp (car oldval))))
-                          (if appendp
-                              (nconc oldval (list face))
-                            (cons face oldval)))
-                         (t
-                          (if appendp
-                              (list oldval face)
-                            (list face oldval)))))))))))
 
 ;; autoload some anything commands
 (setup-lazy
@@ -2155,6 +2201,13 @@ file."
 
 (setup-after "tex-mode"
   (add-to-list 'tex-verbatim-environments "Verbatim")
+  (add-to-list 'tex-verbatim-environments "BVerbatim")
+  (add-to-list 'tex-verbatim-environments "lstlisting")
+  (setup-hook 'latex-mode-hook
+    (auto-fill-mode 1)
+    (outline-minor-mode 1)
+    (setq-local outline-regexp "\\\\\\(sub\\)*section\\>")
+    (setq-local outline-level (lambda () (- (outline-level) 7))))
   (add-hook 'latex-mode-hook 'turn-on-auto-fill)
   (setup-keybinds latex-mode-map
     "、" "，"
@@ -2215,6 +2268,80 @@ file."
   (setup-expecting "rainbow-mode"
     (add-hook 'css-mode-hook 'rainbow-mode)))
 
+;;   + generic
+
+(setup-lazy
+  '(apache-conf-generic-mode
+    apache-log-generic-mode
+    samba-generic-mode
+    fvwm-generic-mode
+    x-resource-generic-mode
+    xmodmap-generic-mode
+    hosts-generic-mode
+    inf-generic-mode
+    ini-generic-mode
+    reg-generic-mode
+    bat-generic-mode
+    mailagent-rules-generic-mode
+    prototype-generic-mode
+    pkginfo-generic-mode
+    vrml-generic-mode
+    java-manifest-generic-mode
+    alias-generic-mode
+    rc-generic-mode
+    rul-generic-mode
+    mailrc-generic-mode
+    inetd-conf-generic-mode
+    etc-services-generic-mode
+    etc-passwd-generic-mode
+    etc-fstab-generic-mode
+    etc-sudoers-generic-mode
+    named-boot-generic-mode
+    resolve-conf-generic-mode
+    spice-generic-mode
+    ibis-generic-mode
+    astap-generic-mode) "generic-x"
+
+    (setq auto-mode-alist
+          (nconc
+           '(("\\(?:srm\\|httpd\\|access\\)\\.conf\\'" . apache-conf-generic-mode)
+             ("access_log\\'" . apache-log-generic-mode)
+             ("smb\\.conf\\'" . samba-generic-mode)
+             ("\\.fvwm2?rc\\'" . fvwm-generic-mode)
+             ("\\.X\\(?:defaults\\|resources\\|environment\\)\\'" . x-resource-generic-mode)
+             ("\\.ad\\'" . x-resource-generic-mode)
+             ("[xX]modmap\\(rc\\)?\\'" . xmodmap-generic-mode)
+             ("[hH][oO][sS][tT][sS]\\'" . hosts-generic-mode)
+             ("\\.[iI][nN][fF]\\'" . inf-generic-mode)
+             ("\\.[iI][nN][iI]\\'" . ini-generic-mode)
+             ("\\.[rR][eE][gG]\\'" . reg-generic-mode)
+             ("\\.rules\\'" . mailagent-rules-generic-mode)
+             ("prototype\\'" . prototype-generic-mode)
+             ("pkginfo\\'" . pkginfo-generic-mode)
+             ("\\.wrl\\'" . vrml-generic-mode)
+             ("[mM][aA][nN][iI][fF][eE][sS][tT]\\.[mM][fF]\\'" . java-manifest-generic-mode)
+             ("alias\\'" . alias-generic-mode)
+             ("\\.[rR][cC]\\'" . rc-generic-mode)
+             ("\\.[rR][uU][lL]\\'" . rul-generic-mode)
+             ("\\.mailrc\\'" . mailrc-generic-mode)
+             ("/etc/inetd.conf\\'" . inetd-conf-generic-mode)
+             ("/etc/services\\'" . etc-services-generic-mode)
+             ("/etc/group\\'" . etc-passwd-generic-mode)
+             ("/etc/[v]*fstab\\'" . etc-fstab-generic-mode)
+             ("/etc/sudoers\\'" . etc-sudoers-generic-mode)
+             ("/etc/named.boot\\'" . named-boot-generic-mode)
+             ("/etc/resolv[e]?.conf\\'" . resolve-conf-generic-mode)
+             ("\\.?:[sS][pP]\\(?:[iI]\\(?:[cC][eE]\\)?\\)?\\'" . spice-generic-mode)
+             ("\\.[iI][nN][cC]\\'" . spice-generic-mode)
+             ("\\.[iI][bB][sS]\\'" . ibis-generic-mode)
+             ("\\.[aA]\\(?:[pP]\\|[sS][xX]\\|[sS][tT][aA][pP]\\)\\'" . astap-generic-mode)
+             ("\\.[pP][sS][pP]\\'" . astap-generic-mode)
+             ("\\.[dD][eE][cC][kK]\\'" . astap-generic-mode)
+             ("\\.[gG][oO][dD][aA][tT][aA]" . astap-generic-mode)
+             ("/etc/\\(?:modules.conf\\|conf.modules\\)" . etc-modules-conf-generic-mode))
+           auto-mode-alist))
+    )
+
 ;;   + lispy
 ;;     + (common)
 
@@ -2243,10 +2370,12 @@ file."
 (setup-after "lisp-mode"
   (font-lock-add-keywords
    'emacs-lisp-mode '(("(\\(defvar-local\\)" 1 font-lock-keyword-face)))
-  (setup "outlined-elisp-mode"
-    (add-hook 'emacs-lisp-mode-hook 'outlined-elisp-find-file-hook)
-    (setq outlined-elisp-regexp          "^[\s\t]*;;[\s]+\\+[+-]*\s"
-          outlined-elisp-trigger-pattern "^;;\s\\+\s"))
+  (setup-hook 'emacs-lisp-mode-hook
+    (outline-minor-mode 1)
+    (setq-local outline-regexp "^[\s\t]*;;[\s]+\\+[+-]*\s")
+    (setq-local outline-level (lambda () (- (outline-level) 4))))
+  (setup-keybinds emacs-lisp-mode-map '("M-TAB" "C-j") nil)
+  (setup-keybinds lisp-interaction-mode-map '("M-TAB" "C-j") nil)
   (setup-expecting "eldoc"
     (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode))
   (setup-after "smart-compile"
@@ -2274,9 +2403,7 @@ file."
     (add-hook 'emacs-lisp-mode-hook 'rainbow-mode))
   (setup-include "cl-lib-highlight"
     (add-hook 'emacs-lisp-mode-hook 'cl-lib-highlight-initialize)
-    (add-hook 'emacs-lisp-mode-hook 'cl-lib-highlight-warn-cl-initialize))
-  (setup-keybinds emacs-lisp-mode-map '("M-TAB" "C-j") nil)
-  (setup-keybinds lisp-interaction-mode-map '("M-TAB" "C-j") nil))
+    (add-hook 'emacs-lisp-mode-hook 'cl-lib-highlight-warn-cl-initialize)))
 
 ;;     + gauche-mode [scheme-complete]
 
@@ -3115,11 +3242,9 @@ file."
 
 ;;     + flex/bison-mode
 
-(setup-lazy '(flex-mode) "flex-mode"
-  :prepare (push '("\\.ll?$" . flex-mode) auto-mode-alist))
-
 (setup-lazy '(bison-mode) "bison-mode"
-  :prepare (push '("\\.yy?$" . bison-mode) auto-mode-alist))
+  :prepare (progn (push '("\\.ll?$" . bison-mode) auto-mode-alist)
+                  (push '("\\.yy?$" . bison-mode) auto-mode-alist)))
 
 ;;   + functional
 ;;     + haskell-mode
@@ -3420,7 +3545,12 @@ file."
 ;;     + dos-mode
 
 (setup-lazy '(dos-mode) "dos-mode"
-  :prepare (push  '("\\.bat$" . dos-mode) auto-mode-alist)
+  :prepare (setq auto-mode-alist
+                 (nconc
+                  '(("\\.\\(?:[bB][aA][tT]\\|[cC][mM][dD]\\)\\'" . dos-mode)
+                    ("\\`[cC][oO][nN][fF][iI][gG]\\." . bat-generic-mode)
+                    ("\\`[aA][uU][tT][oO][eE][xX][eE][cC]\\." . bat-generic-mode))
+                  auto-mode-alist))
   (setup-after "auto-complete"
     (add-to-list 'ac-modes 'dos-mode)))
 
@@ -3665,6 +3795,7 @@ file."
 
 (setup-after "info"
   (setup-expecting "vi"
+    ;; "Info-mode-map" does not work ?
     (setup-hook 'Info-mode-hook
       (my-kindly-view-mode)
       (local-set-key (kbd "RET") 'Info-follow-nearest-node)
@@ -3748,7 +3879,9 @@ file."
     (add-hook 'dired-mode-hook 'idired-mode))
 
   (setup "dired-k"
-    (add-hook 'dired-mode-hook 'dired-k))
+    (defun dired-k--inside-git-repository-p () nil)
+    (setup-hook 'dired-mode-hook
+      (run-with-idle-timer 0 nil 'dired-k--highlight)))
 
   ;; command
   (defun my-dired-default-directory ()
@@ -3781,15 +3914,13 @@ file."
 ;;     + eshell
 
 (setup-after "eshell"
-
-  ;; eshell directory
-  (setq eshell-directory-name my-eshell-directory
-        eshell-prompt-regexp  "[^#$\n]* >?> "
-        eshell-prompt-function
-        (lambda ()
-          (concat "\n"
-                  (my-shorten-directory (eshell/pwd) 20)
-                  (if (= (user-uid) 0) " >> " " > "))))
+  (setq eshell-directory-name  my-eshell-directory
+        eshell-prompt-regexp   "^λ>?> "
+        eshell-prompt-function (lambda ()
+                                 (concat "\n"
+                                         (my-shorten-directory (eshell/pwd) 20)
+                                         "\n"
+                                         (if (= (user-uid) 0) "λ>> " "λ> "))))
 
   (setup-after "mark-hacks"
     (add-to-list 'mark-hacks-auto-indent-inhibit-modes 'eshell-mode))
@@ -3832,7 +3963,15 @@ file."
   :prepare (progn (setup-in-idle "howm")
                   (push '("\\.howm$" . org-mode) auto-mode-alist))
 
-  (require 'calendar)                   ; my-howm-exit needs calendar
+  ;;   + | calendar settings
+
+  (require 'calendar)
+
+  (setup "japanese-holidays"
+    (setq mark-holidays-in-calendar t
+          calendar-holidays
+          (append japanese-holidays local-holidays other-holidays))
+    (add-hook 'calendar-today-visible-hook 'calendar-mark-today))
 
   ;;   + | settings
 
@@ -3994,9 +4133,10 @@ file."
       (insert day)))
   (defun howm-insert-date-with-calendar ()
     (interactive)
-    (calendar)
-    (local-set-key (kbd "RET") 'howm-insert-date-from-calendar)
-    (local-set-key (kbd "C-g") 'calendar-exit))
+    (calendar))
+  (setup-keybinds calendar-mode-map
+    "RET" 'howm-insert-date-from-calendar
+    "C-g" 'calendar-exit)
 
   ;;   + | keybinds
 
@@ -4122,45 +4262,30 @@ file."
 (setup-lazy '(my-kindly-view-mode) "vi"
   (defvar my-kindly-view-mode-map (copy-keymap vi-com-map))
   (setup-keybinds my-kindly-view-mode-map
-    '("j" "C-n")         '("pager" pager-row-down vi-next-line)
-    '("k" "C-p")         '("pager" pager-row-up previous-line)
-    '("C-g" "C-c" "RET") nil)
-  (defvar my-kindly-incompatible-minor-modes
-    '(indent-guide-mode)
+    '("j" "C-n")   '("pager" pager-row-down vi-next-line)
+    '("k" "C-p")   '("pager" pager-row-up previous-line)
+    '("C-g" "C-c") nil)
+  (defvar my-kindly-unsupported-minor-modes
+    '(indent-guide-mode phi-autopair-mode)
     "list of minor-modes that must be turned-off temporarily.")
-  (defvar my-kindly-incompatible-global-variables
+  (defvar my-kindly-unsupported-global-variables
     '(global-hl-line-mode show-paren-mode
                           key-chord-mode input-method-function)
     "list of variables that must be set nil locally.")
-  (define-minor-mode my-kindly-view-mode
-    "easy-to-read view-mode"
-    :init-value nil
-    :keymap my-kindly-view-mode-map
-    :global nil
-    (cond (my-kindly-view-mode
-           (read-only-mode 1)
-           (setq line-spacing 0.3
-                 cursor-type 'bar)
-           (dolist (mode my-kindly-incompatible-minor-modes)
-             (when (and (boundp mode) mode) (funcall mode -1)))
-           (dolist (var my-kindly-incompatible-global-variables)
-             (set (make-local-variable var) nil))
-           (setq-local buffer-face-mode-face
-                       '(:family "Times New Roman" :width semi-condensed))
-           (buffer-face-mode 1)
-           (text-scale-set +2))
-          (t
-           (read-only-mode -1)
-           (setq line-spacing (default-value 'line-spacing)
-                 cursor-type (default-value 'cursor-type))
-           (dolist (mode my-kindly-incompatible-minor-modes)
-             (when (boundp mode) (funcall mode 1)))
-           (dolist (var my-kindly-incompatible-global-variables)
-             (kill-local-variable var))
-           (buffer-face-mode -1)
-           (text-scale-set 0)
-           (when (eq major-mode 'vi-mode)
-             (vi-goto-insert-state))))))
+  (defun my-kindly-view-mode ()
+    (interactive)
+    (read-only-mode 1)
+    (setq line-spacing 0.3
+          cursor-type 'bar)
+    (dolist (mode my-kindly-unsupported-minor-modes)
+      (when (and (boundp mode) mode) (funcall mode -1)))
+    (dolist (var my-kindly-unsupported-global-variables)
+      (set (make-local-variable var) nil))
+    (setq-local buffer-face-mode-face
+                '(:family "Times New Roman" :width semi-condensed))
+    (buffer-face-mode 1)
+    (text-scale-set +2)
+    (use-local-map my-kindly-view-mode-map)))
 
 ;;   + colorscheme [solarized-definitions]
 ;;     + (prelude)
@@ -4560,11 +4685,11 @@ file."
 (setup-keybinds nil
   "C-u"     '("pager" pager-page-up scroll-down)
   "C-v"     '("pager" pager-page-down scroll-up)
-  "C-l"     'recenter
+  "C-l"     'my-recenter
   "C-M-u"   'beginning-of-buffer
   "C-M-v"   'end-of-buffer
   "C-M-l"   'my-retop
-  "M-L"     'recenter
+  "M-L"     'my-recenter
   "C-x C-u" 'untabify)
 
 ;;   + | edit
@@ -4694,7 +4819,8 @@ file."
   "<f1> x"    'describe-syntax
   "<f1> s"    'info-lookup-symbol
   "<f1> r"    '("pcre2el" pcre2el-describe-regexp)
-  "<f1> w"    '("sdic" sdic-describe-word))
+  "<f1> w"    '("sdic" sdic-describe-word)
+  "<f1> ,"    '("sos" sos))
 
 ;;   + | others
 
@@ -4718,20 +4844,34 @@ file."
   "C-x C-t"   'toggle-truncate-lines
   "C-x C-p"   'read-only-mode
   "C-x C-i"   'ispell-region
-  "C-x C-,"   '("eww" eww)
-  "C-x C-."   '("download-region" download-region-as-url))
+  "C-x C-,"   '("download-region" download-region-as-url))
 
 ;;   + keychord
 
 (setup-after "key-chord"
+
   (key-chord-define-global "fj" 'my-transpose-chars)
   (key-chord-define-global "hh" 'my-capitalize-word-dwim)
-  (key-chord-define-global "jj" 'my-upcase-previous-word)
-  (key-chord-define-global "kk" 'my-downcase-previous-word)
+  (key-chord-define-global "kk" 'my-upcase-previous-word)
+  (key-chord-define-global "jj" 'my-downcase-previous-word)
+
+  ;; reference | http://endlessparentheses.com/banishing-the-shift-key-with-key-chord-in-emacs.html
+  (key-chord-define-global "0o" ")")
+  (key-chord-define-global "1q" "!")
+  (key-chord-define-global "2w" "@")
+  (key-chord-define-global "3e" "#")
+  (key-chord-define-global "4r" "$")
+  (key-chord-define-global "5t" "%")
+  (key-chord-define-global "6y" "^")
+  (key-chord-define-global "6t" "^")
+  (key-chord-define-global "7y" "&")
+  (key-chord-define-global "8u" "*")
+  (key-chord-define-global "9i" "(")
+  (key-chord-define-global "-p" "_")
+
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "jk" 'iy-go-to-char)
     (key-chord-define-global "df" 'iy-go-to-char-backward))
   (setup-expecting "ace-jump-mode"
-    (key-chord-define-global "jl" 'ace-jump-word-mode)))
-
-;; + (sentinel)
+    (key-chord-define-global "jl" 'ace-jump-word-mode))
+  )
