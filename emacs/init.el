@@ -1,6 +1,7 @@
 ;; init.el (for Emacs 24.3) | 2014 zk_phi
 
 (require 'setup)
+(require 'cl-lib)
 (setup-initialize)
 
 ;; + Cheat Sheet :
@@ -200,6 +201,10 @@
   (! (concat my-dat-directory "undohist_" system-name "/"))
   "Directory to save undo histories.")
 
+(defconst my-backup-directory
+  (! (concat my-dat-directory "backups_" system-name "/"))
+  "Directory to save backup files.")
+
 (defconst my-kill-ring-file
   (! (concat my-dat-directory "killring_" system-name))
   "File to save kill-ring.")
@@ -219,10 +224,6 @@
 (defconst my-scratch-file
   (! (concat my-dat-directory "scratch_" system-name))
   "File to save scratch.")
-
-(defconst my-backup-directory
-  (! (concat my-dat-directory "backups_" system-name "/"))
-  "Directory to save backup files.")
 
 ;; + | Utilities
 
@@ -455,9 +456,9 @@
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
 (!when my-home-system-p
   (set-face-attribute 'default nil :family "Source Code Pro" :height 90)
-  ;; (set-fontset-font t nil (font-spec :family "Source Code Pro"))
-  (set-fontset-font t 'unicode (font-spec :family "VL ゴシック"))
-  (push '("VL ゴシック.*" . 1.2) face-font-rescale-alist))
+  (set-fontset-font t 'unicode (font-spec :family "VL ゴシック" :height 90))
+  ;; (push '("VL ゴシック.*" . 1.2) face-font-rescale-alist)
+  )
 
 ;; settings for the byte-compiler
 (eval-when-compile
@@ -570,12 +571,24 @@
 
 ;; track undo history across sessions
 (setup-include "undohist"
+  (setq undohist-directory my-undohist-directory)
+  (undohist-initialize)
   ;; fix for Windows
   (defadvice make-undohist-file-name (around my-undohist-fix activate)
     (flet ((convert-standard-filename (file) file))
       ad-do-it))
-  (setq undohist-directory my-undohist-directory)
-  (undohist-initialize))
+  ;; delete old histories
+  (defun my-delete-old-undohists ()
+    (let ((threshold (* (/ 365 2) 24 60 60))
+          (current (float-time (current-time))))
+      (dolist (file (directory-files undohist-directory t))
+        (when (and (file-regular-p file)
+                   (> (- current (float-time (nth 5 (file-attributes file))))
+                      threshold))
+          (message "deleting old undohist: %s" (file-name-base file))
+          (delete-file file))))
+    (message "Old undohists deleted."))
+  (run-with-idle-timer 30 nil 'my-delete-old-undohists))
 
 ;;   + | assistants
 
@@ -702,12 +715,8 @@ for unary operators which can also be binary."
 (setup-lazy '(flycheck-mode) "flycheck"
   (setq flycheck-display-errors-delay 0.1
         flycheck-highlighting-mode    'lines)
-  ;; display error messages by new lines
-  (setq flycheck-display-errors-function
-        (lambda (errors)
-          (let ((messages (delq nil (mapcar 'flycheck-error-message errors))))
-            (when (and messages (flycheck-may-use-echo-area-p))
-              (message (mapconcat 'identity messages " / ")))))))
+  (setup "flycheck-pos-tip"
+    (setq flycheck-display-errors-function 'flycheck-pos-tip-error-messages)))
 
 (setup-after "outline"
   (setup-lazy '(outline-cycle-dwim) "outline-magic"
@@ -1653,7 +1662,7 @@ for unary operators which can also be binary."
               (split 2 t)
               (setq this-command 'my-split-window-vertically-1)))))))
 
-;; window-undo
+;; window-undo ("winner-mode" simplified)
 (setup-lazy '(my-window-undo) "edmacro"
   (defvar my-window-undo-list `((1 . ,(current-window-configuration))))
   (defun my-window-undo-window-configuration-change-hook ()
@@ -1999,8 +2008,15 @@ file."
 ;; "f"-like jump command
 (setup-lazy '(iy-go-to-char iy-go-to-char-backward) "iy-go-to-char")
 
+(setup-lazy
+  '(pager-page-up
+    pager-page-down
+    pager-row-up
+    pager-row-down) "pager")
+
 ;; use "phi-search/replace" and "phi-search-mc" instead of "isearch"
-(setup-after "phi-search"
+(setup-lazy '(phi-replace) "phi-replace")
+(setup-lazy '(phi-search phi-search-backward) "phi-search"
   (setq phi-search-case-sensitive 'guess)
   (setup-expecting "multiple-cursors"
     (setup-lazy
@@ -2012,8 +2028,11 @@ file."
 
 ;;   + | edit
 
+;; autoload expand-region
+(setup-lazy '(er/expand-region) "expand-region")
+
 ;; browse kill-ring graphically
-(setup-after "browse-kill-ring"
+(setup-lazy '(browse-kill-ring) "browse-kill-ring"
   (setq browse-kill-ring-highlight-current-entry t)
   (setup-keybinds browse-kill-ring-mode-map
     "C-n" 'browse-kill-ring-forward
@@ -2026,16 +2045,19 @@ file."
 ;;   + | pop-out windows
 
 ;; make and popup scratch-notes for each files
-(setup-after "scratch-palette"
+(setup-lazy '(scratch-palette-popup) "scratch-palette"
   (setup-keybinds scratch-palette-minor-mode-map
     "M-w" 'scratch-palette-kill))
 
 ;; popup eshell
-(setup-after "shell-pop"
+(setup-lazy '(shell-pop) "shell-pop"
   (setq shell-pop-internal-mode        "eshell"
         shell-pop-internal-mode-buffer "*eshell*"
         shell-pop-internal-mode-func   '(lambda () (eshell))
         shell-pop-window-height        19))
+
+;; autoload scratch-pop
+(setup-lazy '(scratch-pop) "scratch-pop")
 
 ;;   + | trace changes
 
@@ -2055,10 +2077,14 @@ file."
 
 ;;   + | assistants
 
-(setup-lazy '(rxt-explain) "pcre2el"
+;; autoload pcre2el
+(setup-lazy '(pcre2el-describe-regexp) "pcre2el"
   :prepare (defalias 'pcre2el-describe-regexp 'rxt-explain)
   (setup-hook 'rxt-help-mode-hook
     (add-hook 'post-command-hook 'end-of-line nil t)))
+
+;; autoload sos
+(setup-lazy '(sos) "sos")
 
 ;;   + | jokes
 
@@ -2069,8 +2095,14 @@ file."
 
 ;;   + | others
 
+;; autoload smart-compile
+(setup-lazy '(smart-compile) "smart-compile")
+
+;; autoload ipretty
+(setup-lazy '(ipretty-last-sexp) "ipretty")
+
 ;; use "smex" instead of M-x
-(setup-after "smex"
+(setup-lazy '(smex) "smex"
   (setq smex-save-file my-smex-save-file)
   (smex-initialize))
 
@@ -2084,7 +2116,7 @@ file."
       (call-interactively 'dmacro-exec))))
 
 ;; download region as an url
-(setup-after "download-region"
+(setup-lazy '(download-region-as-url) "download-region"
   (setq download-region-max-downloads 5))
 
 ;; autoload some anything commands
@@ -2096,6 +2128,8 @@ file."
 ;; Spritz-like speed reading mode
 (setup-lazy '(spray-mode) "spray"
   (setq spray-wpm 400))
+
+(setup-lazy '(ace-link-help ace-link-info) "ace-link")
 
 ;; + | Modes
 ;;   + basic
@@ -2113,7 +2147,7 @@ file."
   (setup-after "mark-hacks"
     (add-to-list 'mark-hacks-auto-indent-inhibit-modes 'text-mode)))
 
-;;   + markup
+;;   + documents
 ;;     + org-mode [htmlize]
 
 (setup-after "org"
@@ -2212,6 +2246,7 @@ file."
   (setup-keybinds latex-mode-map
     "、" "，"
     "。" "．"
+    "C-c C-'" 'latex-close-block
     '("C-j" "C-M-i" "<C-return>") nil)
   (setup-lazy '(magic-latex-buffer) "magic-latex-buffer"
     :prepare (add-hook 'latex-mode-hook 'magic-latex-buffer))
@@ -2225,22 +2260,162 @@ file."
       (add-to-list 'ac-modes 'latex-mode)
       (add-hook 'latex-mode-hook 'ac-l-setup))))
 
-;;     + sgml-mode [zencoding]
+;;   + web [web-mode]
 
-(setup-after "sgml-mode"
+(setup-lazy '(web-mode) "web-mode"
+  :prepare (push (! `(,(format "\\.%s$"
+                               (regexp-opt
+                                '("phtml" "tpl" "php" "gsp" "jsp"
+                                  "aspx" "ascx" "erb" "mustache" "djhtml"
+                                  "html" "js" "jsx" "css" "xml")))
+                      . web-mode)) auto-mode-alist)
+
+  (setq web-mode-code-indent-offset 4
+        web-mode-css-indent-offset  4
+        web-mode-style-padding      2
+        web-mode-script-padding     2
+        web-mode-block-padding      2)
+
+  (defun my-web-forward-sexp (n)
+    (interactive "p")
+    (if (< n 0)
+        (my-web-backward-sexp (- n))
+      (let ((origpos (point)))
+        (dotimes (_ n)
+          (skip-chars-forward "\s\t\n")
+          (unless (eobp)
+            (let ((pos (point)))
+              (cond ((eq (get-text-property pos 'face)
+                         'web-mode-html-tag-bracket-face)
+                     ;; we're looking at a tag delimiter
+                     (cond ((= (char-after pos) ?<)
+                            ;; we're looking at the tag: |<foo>
+                            (web-mode-navigate)
+                            (if (< (point) pos)
+                                ;; we've moved BACKWARD with "web-mode-navigate"
+                                ;; (the tag we're looking at was the ender of the element)
+                                ;; <foo>brabrabra|</foo> -> |<foo>brabrabra</foo>
+                                (signal 'scan-error
+                                        (list "Containing expression ends prematurely"
+                                              pos
+                                              (prog1 (1+ (web-mode-tag-end-position pos))
+                                                (goto-char origpos))))
+                              ;; we've successfully moved FORWARD, or haven't moved
+                              ;; |<foo>brabrabra</foo> -> <foo>brabrabra|</foo>
+                              ;;                 |<br> -> |<br>
+                              (web-mode-tag-end)))
+                           (t
+                            ;; we're looking up the end of the tag: <foo|>
+                            (signal 'scan-error
+                                    (list "Containing expression ends prematurely"
+                                          pos (1+ pos))))))
+                    ((get-text-property pos 'block-beg)
+                     ;; we're looking at a block
+                     (web-mode-block-end))
+                    ((and (not (string= (web-mode-language-at-pos) "html"))
+                          (eq (get-text-property pos 'face)
+                              'web-mode-block-delimiter-face))
+                     ;; we're looking at the end of the block
+                     ;; <?php foo |?>
+                     (signal 'scan-error
+                             (list "Containing expression ends prematurely"
+                                   pos
+                                   (prog1 (1+ (web-mode-block-end-position))
+                                     (goto-char origpos)))))
+                    (t
+                     ;; otherwise, do the normal "forward-sexp"
+                     (let ((forward-sexp-function nil))
+                       (forward-sexp))
+                     (unless (looking-back "\\s)")
+                       (let ((delim
+                              (or (text-property-any
+                                   pos (point) 'face 'web-mode-block-delimiter-face)
+                                  (text-property-any
+                                   pos (point) 'face 'web-mode-html-tag-bracket-face))))
+                         (when delim
+                           ;; we've skipped over a block/tag delimiter
+                           ;; brabrabra|:<br> -> brabrabra:<br|>
+                           (goto-char delim)
+                           (skip-chars-backward "\s\t\n"))))))))))))
+
+  (defun my-web-backward-sexp (n)
+    (interactive "p")
+    (if (< n 0) (my-web-forward-sexp (- n))
+      (let ((origpos (point)))
+        (dotimes (_ n)
+          (skip-chars-backward "\s\t\n")
+          (unless (bobp)
+            (let ((pos (point)))
+              (cond ((eq (get-text-property (1- pos) 'face)
+                         'web-mode-html-tag-bracket-face)
+                     ;; we're looking back a tag delimiter
+                     (cond ((= (char-before pos) ?>)
+                            ;; we're looking back the tag ender: <foo>|
+                            (backward-char 1)
+                            (web-mode-navigate)
+                            (if (< pos (point))
+                                ;; we've moved FORWARD
+                                ;; <foo|>brabrabra</foo> -> <foo>brabrabra|</foo>
+                                (signal 'scan-error
+                                        (list "Containing expression ends prematurely"
+                                              (prog1 (web-mode-tag-beginning-position (1- pos))
+                                                (goto-char origpos))
+                                              pos))
+                              (web-mode-tag-beginning)))
+                           (t
+                            ;; we're looking back the beginning of the tag: <|foo>
+                            (signal 'scan-error
+                                    (list "Containing expression ends prematurely"
+                                          (1- pos) pos)))))
+                    ((get-text-property (1- pos) 'block-end)
+                     ;; we're looking back the block-end
+                     (backward-char 1)
+                     (web-mode-block-beginning))
+                    ((and (not (string= (web-mode-language-at-pos pos) "html"))
+                          (eq (get-text-property (1- pos) 'face)
+                              'web-mode-block-delimiter-face))
+                     ;; we're looking back the beginning of the block
+                     ;; <?php| foo ?>
+                     (signal 'scan-error
+                             (list "Containing expression ends prematurely"
+                                   (prog1 (web-mode-block-beginning-position)
+                                     (goto-char origpos))
+                                   pos)))
+                    (t
+                     (let ((forward-sexp-function nil))
+                       (backward-sexp))
+                     (unless (looking-at "\\s(")
+                       (let ((delim
+                              (or (text-property-any
+                                   (point) pos 'face 'web-mode-block-delimiter-face)
+                                  (text-property-any
+                                   (point) pos 'face 'web-mode-html-tag-bracket-face))))
+                         (when delim
+                           (goto-char
+                            (next-single-property-change delim 'face)))))))))))))
+
+  (setup-hook 'web-mode-hook
+    (setq-local forward-sexp-function 'my-web-forward-sexp))
+
+  (setup-keybinds web-mode-map
+    [remap comment-dwim]  'web-mode-comment-or-uncomment
+    "C-c C-'"             'web-mode-element-close)
+
+  (setup-after "auto-complete"
+    (setup "auto-complete-config"
+      (setq web-mode-ac-sources-alist
+            '(("javascript" . (ac-source-words-in-same-mode-buffers))
+              ("php" . (ac-source-words-in-same-mode-buffers))
+              ("css" . (ac-source-css-property ac-source-words-in-same-mode-buffers))
+              ("html" . (ac-source-words-in-same-mode-buffers))))
+      (add-to-list 'ac-modes 'web-mode)))
+
   (setup-after "smart-compile"
     (add-to-list 'smart-compile-alist
-                 '(html-mode . (browse-url-of-buffer))))
-  (setup "zencoding"
-    (add-hook 'sgml-mode-hook 'zencoding-mode)
-    (setq zencoding-indent 2)
-    (setup-keybinds zencoding-mode-keymap
-      "C-j"          nil
-      "<C-return>"   nil
-      "<oem-pa1>"    'zencoding-expand-line
-      "<muhenkan>"   'zencoding-expand-line
-      "<nonconvert>" 'zencoding-expand-line))
+                 '(web-mode . (browse-url-of-buffer))))
+
   (setup-expecting "key-combo"
+    ;; does not work ?
     (defun my-sgml-sp-or-smart-lt ()
       "smart insertion of brackets for sgml languages"
       (interactive)
@@ -2255,23 +2430,19 @@ file."
               (insert ">")))
         (insert "<>")                     ; insert <`!!'>
         (backward-char)))
-    (setup-hook 'sgml-mode-hook
+    (setup-hook 'web-mode-hook
       (key-combo-mode 1)
       (key-combo-define-local (kbd "<") '(my-sgml-sp-or-smart-lt "&lt;" "<"))
       (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
       (key-combo-define-local (kbd ">") '("&gt;" ">"))
-      (key-combo-define-local (kbd "&") '("&amp;" "&")))))
-
-;;     + css-mode
-
-(setup-after "css-mode"
-  (setup-expecting "rainbow-mode"
-    (add-hook 'css-mode-hook 'rainbow-mode)))
+      (key-combo-define-local (kbd "&") '("&amp;" "&"))))
+  )
 
 ;;   + generic
 
 (setup-lazy
-  '(apache-conf-generic-mode
+  '(
+    apache-conf-generic-mode
     apache-log-generic-mode
     samba-generic-mode
     fvwm-generic-mode
@@ -2281,7 +2452,6 @@ file."
     inf-generic-mode
     ini-generic-mode
     reg-generic-mode
-    bat-generic-mode
     mailagent-rules-generic-mode
     prototype-generic-mode
     pkginfo-generic-mode
@@ -2300,11 +2470,13 @@ file."
     resolve-conf-generic-mode
     spice-generic-mode
     ibis-generic-mode
-    astap-generic-mode) "generic-x"
+    astap-generic-mode
+    ) "generic-x"
 
     (setq auto-mode-alist
           (nconc
-           '(("\\(?:srm\\|httpd\\|access\\)\\.conf\\'" . apache-conf-generic-mode)
+           '(
+             ("\\(?:srm\\|httpd\\|access\\)\\.conf\\'" . apache-conf-generic-mode)
              ("access_log\\'" . apache-log-generic-mode)
              ("smb\\.conf\\'" . samba-generic-mode)
              ("\\.fvwm2?rc\\'" . fvwm-generic-mode)
@@ -2338,7 +2510,8 @@ file."
              ("\\.[pP][sS][pP]\\'" . astap-generic-mode)
              ("\\.[dD][eE][cC][kK]\\'" . astap-generic-mode)
              ("\\.[gG][oO][dD][aA][tT][aA]" . astap-generic-mode)
-             ("/etc/\\(?:modules.conf\\|conf.modules\\)" . etc-modules-conf-generic-mode))
+             ("/etc/\\(?:modules.conf\\|conf.modules\\)" . etc-modules-conf-generic-mode)
+             )
            auto-mode-alist))
     )
 
@@ -3548,8 +3721,8 @@ file."
   :prepare (setq auto-mode-alist
                  (nconc
                   '(("\\.\\(?:[bB][aA][tT]\\|[cC][mM][dD]\\)\\'" . dos-mode)
-                    ("\\`[cC][oO][nN][fF][iI][gG]\\." . bat-generic-mode)
-                    ("\\`[aA][uU][tT][oO][eE][xX][eE][cC]\\." . bat-generic-mode))
+                    ("\\`[cC][oO][nN][fF][iI][gG]\\." . dos-mode)
+                    ("\\`[aA][uU][tT][oO][eE][xX][eE][cC]\\." . dos-mode))
                   auto-mode-alist))
   (setup-after "auto-complete"
     (add-to-list 'ac-modes 'dos-mode)))
@@ -3787,23 +3960,29 @@ file."
 
 (setup-after "help-mode"
   (setup-expecting "vi"
-    (add-hook 'help-mode-hook 'my-kindly-view-mode)))
+    (add-hook 'help-mode-hook 'my-kindly-view-mode)
+    (setup-keybinds help-mode-map
+      "h" 'help-go-back
+      "l" 'help-go-forward
+      "f" '("ace-link" ace-link-help))))
 
-(setup-after "sdic"
+(setup-lazy '(sdic-describe-word) "sdic"
   (setup-expecting "vi"
     (add-hook 'sdic-mode-hook 'my-kindly-view-mode)))
 
 (setup-after "info"
   (setup-expecting "vi"
     ;; "Info-mode-map" does not work ?
-    (setup-hook 'Info-mode-hook
-      (my-kindly-view-mode)
-      (local-set-key (kbd "RET") 'Info-follow-nearest-node)
-      (local-set-key (kbd "n") 'Info-next-reference)
-      (local-set-key (kbd "p") 'Info-prev-reference)
-      (local-set-key (kbd "q") 'Info-backward-node)
-      (local-set-key (kbd "]") 'Info-forward-node)
-      (local-set-key (kbd "u") 'Info-up))))
+    (add-hook 'Info-mode-hook 'my-kindly-view-mode)
+    (setup-keybinds Info-mode-map
+      "RET" 'Info-follow-nearest-node
+      "SPC" 'Info-next-reference
+      "DEL" 'Info-prev-reference
+      "h"   'Info-history-back
+      "l"   'Info-history-forward
+      "u"   'Info-up
+      "q"   'Info-exit
+      "f"   '("ace-link" ace-link-info))))
 
 ;;   + others
 ;;     + vi-mode
@@ -4155,7 +4334,7 @@ file."
 
 ;; + | Appearance
 ;;   + mode-line settings
-;;     + faces
+;;   + | faces
 
 (dolist (face '(mode-line-bright-face
                 mode-line-dark-face
@@ -4170,7 +4349,7 @@ file."
   (make-face face)
   (set-face-attribute face nil :inherit 'mode-line-face))
 
-;;     + change color while recording macros
+;;   + | change color while recording macros
 
 (defvar my-mode-line-background '("#194854" . "#594854"))
 
@@ -4183,7 +4362,7 @@ file."
     (set-face-background 'mode-line (car my-mode-line-background))
     (remove-hook 'post-command-hook 'my-recording-mode-line-end)))
 
-;;     + mode-line-format
+;;   + | mode-line-format
 
 (defun my-generate-mode-line-format ()
   (let ((vbar
@@ -4251,7 +4430,7 @@ file."
 
 (setq-default mode-line-format '(:eval (my-generate-mode-line-format)))
 
-;;     + others
+;;   + | others
 
 ;; force update mode-line every minutes
 (run-with-timer 60 60 'force-mode-line-update)
@@ -4264,7 +4443,8 @@ file."
   (setup-keybinds my-kindly-view-mode-map
     '("j" "C-n")   '("pager" pager-row-down vi-next-line)
     '("k" "C-p")   '("pager" pager-row-up previous-line)
-    '("C-g" "C-c") nil)
+    "h"            'backward-char
+    "l"            'forward-char)
   (defvar my-kindly-unsupported-minor-modes
     '(indent-guide-mode phi-autopair-mode)
     "list of minor-modes that must be turned-off temporarily.")
@@ -4272,11 +4452,16 @@ file."
     '(global-hl-line-mode show-paren-mode
                           key-chord-mode input-method-function)
     "list of variables that must be set nil locally.")
+  (defvar-local my-kindly-view-mode nil)
+  (push (cons 'my-kindly-view-mode
+              my-kindly-view-mode-map) minor-mode-map-alist)
   (defun my-kindly-view-mode ()
     (interactive)
+    (setq my-kindly-view-mode t)
     (read-only-mode 1)
-    (setq line-spacing 0.3
-          cursor-type 'bar)
+    (setq my-kindly-view-mode t
+          line-spacing        0.3
+          cursor-type         'bar)
     (dolist (mode my-kindly-unsupported-minor-modes)
       (when (and (boundp mode) mode) (funcall mode -1)))
     (dolist (var my-kindly-unsupported-global-variables)
@@ -4285,239 +4470,159 @@ file."
                 '(:family "Times New Roman" :width semi-condensed))
     (buffer-face-mode 1)
     (text-scale-set +2)
+    (setcdr (assq 'my-kindly-view-mode minor-mode-map-alist)
+            (current-local-map))
     (use-local-map my-kindly-view-mode-map)))
 
-;;   + colorscheme [solarized-definitions]
-;;     + (prelude)
+;;   + colorscheme
+;;   + | util
+
+(setup-lazy '(my-make-color) "color"
+  (defun my-make-color (basecolor &optional br sat mixcolor percent)
+    (let ((hsl
+           (if mixcolor
+               (cl-destructuring-bind (r g b) (color-name-to-rgb basecolor)
+                 (cl-destructuring-bind (rr gg bb) (color-name-to-rgb mixcolor)
+                   (let* ((x (if percent (/ percent 100.0) 0.5))
+                          (y (- 1 x)))
+                     (color-rgb-to-hsl (+ (* r y) (* rr x))
+                                       (+ (* g y) (* gg x))
+                                       (+ (* b y) (* bb x))))))
+             (apply 'color-rgb-to-hsl (color-name-to-rgb basecolor)))))
+      (when br
+        (setq br (if (eq frame-background-mode 'light) (- br) br))
+        (setq hsl (apply 'color-lighten-hsl `(,@hsl ,br))))
+      (when sat
+        (setq hsl (apply 'color-saturate-hsl `(,@hsl ,sat))))
+      (apply 'color-rgb-to-hex (apply 'color-hsl-to-rgb hsl)))))
+
+(eval-when-compile
+  (require 'term)
+  (require 'hl-line))
+
+;;   + | colorscheme [solarized-definitions]
 
 (setup-include "solarized-definitions"
+  (create-solarized-theme dark))
 
-  ;;   + palettes
+;;   + | modeline
 
-  ;; copied from "solarized-color-definitions"
-  (eval-and-compile
-    (defun solarized-find-color (name)
-      (let ((index (cl-case window-system
-                     (nil (cl-case (display-color-cells)
-                            (16 4)
-                            (8  5)
-                            (otherwise 3)))
-                     (mac 2)
-                     (otherwise 1))))
-        (nth index (assoc name solarized-colors)))))
+(setq my-mode-line-background
+      (! (cons (my-make-color (face-background 'hl-line) 8 -25)
+               (my-make-color (face-background 'hl-line) 8 -25 "red" 20))))
 
-  (eval-and-compile
-    (setq solarized-colors
-          '((base03          "#002b36")  ; background
-            (lmntal-name     "#003944")  ; for lmntal-mode (bg)
-            (flymake-err     "#402b36")  ; flymake highlight
-            (base02          "#073642")  ; hl-line, inactive modeline
-            (modeline-active "#194854")  ; active modeline
-            (modeline-record "#594854")  ; recording modeline
-            (base01          "#586e75") ; region, comment, ace-jump base
-            (base00          "#657b83") ;
-            (base0           "#839496") ; foreground, cursor
-            (base1           "#93a1a1") ; modeline active (fg)
-            (base2           "#eee8d5") ;
-            (base3           "#fdf6e3") ; ace-jump match
-            (yellow          "#b58900") ; type, highlight
-            (orange          "#cb4b16") ; preprocessor, regexp group
-            (red             "#dc322f") ; warning, mismatch
-            (magenta         "#d33682") ; visited link
-            (violet          "#6c71c4") ; link
-            (blue            "#268bd2") ; function, variable name
-            (cyan            "#2aa198") ; string, showparen, minibuffer
-            (green           "#859900") ; keyword, builtin, constant
-            )))
-  (create-solarized-theme dark)
+(set-face-attribute
+ 'mode-line nil
+ :foreground    (! (my-make-color (face-foreground 'default) 6 -1))
+ :background    (car my-mode-line-background)
+ :inverse-video nil
+ :box           `(:line-width 1 :color ,(car my-mode-line-background)))
+(set-face-attribute
+ 'mode-line-inactive nil
+ :foreground    (! (my-make-color (face-foreground 'default) -16 2))
+ :background    (! (face-background 'hl-line))
+ :inverse-video nil
+ :box           (! `(:line-width 1 :color ,(face-background 'hl-line))))
 
-  ;; (eval-and-compile
-  ;;   (setq solarized-colors
-  ;;         '((base03          "#202020")  ; background
-  ;;           (lmntal-name     "#2c2c2c")  ; for lmntal-mode (bg)
-  ;;           (flymake-err     "#3a2020")  ; flymake highlight
-  ;;           (base02          "#292929")  ; hl-line, inactive modeline
-  ;;           (modeline-active "#393939")  ; active modeline
-  ;;           (modeline-record "#593939")  ; recording modeline
-  ;;           (base01          "#666666") ; region, comment, ace-jump base
-  ;;           (base00          "#ffffff") ;
-  ;;           (base0           "#b8b8a3") ; foreground, cursor
-  ;;           (base1           "#a8b8b3") ; modeline active (fg)
-  ;;           (base2           "#ffffff") ;
-  ;;           (base3           "#ffffff") ; ace-jump match
-  ;;           (yellow          "#ffb964") ; type, highlight
-  ;;           (orange          "#8fbfdc") ; preprocessor, regexp group
-  ;;           (red             "#a04040") ; warning, mismatch
-  ;;           (magenta         "#b05080") ; visited link
-  ;;           (violet          "#805090") ; link
-  ;;           (blue            "#fad08a") ; function, variable name
-  ;;           (cyan            "#99ad6a") ; string, showparen, minibuffer
-  ;;           (green           "#8fbfdc") ; keyword, builtin, constant
-  ;;           )))
-  ;; (create-solarized-theme dark)
+(set-face-attribute
+ 'mode-line-dark-face nil
+ :foreground (face-foreground 'mode-line-inactive))
+(set-face-attribute
+ 'mode-line-highlight-face nil
+ :foreground (! (face-foreground 'term-color-yellow))
+ :weight     'bold)
+(set-face-attribute
+ 'mode-line-warning-face nil
+ :foreground (! (face-background 'default))
+ :background (! (face-foreground 'term-color-yellow)))
+(set-face-attribute
+ 'mode-line-special-mode-face nil
+ :foreground (! (face-foreground 'term-color-cyan))
+ :weight     'bold)
 
-  ;; (eval-and-compile
-  ;;   (setq solarized-colors
-  ;;         '((base03          "#ee0000")  ; ace-jump match
-  ;;           (lmntal-name     "#efefef")  ; for lmntal-mode (bg)
-  ;;           (flymake-err     "#ffefe8")  ; flymake highlight
-  ;;           (base02          "#f2ede6")  ; inactive modeline
-  ;;           (modeline-active "#dcd7f0")  ; active modeline
-  ;;           (modeline-record "#fdd9d2")  ; recording modeline
-  ;;           (base01          "#4d4d4d")  ; modeline active (fg)
-  ;;           (base00          "#4d4d4d")  ; foreground, cursor
-  ;;           (base0           "#ffffff")  ;
-  ;;           (base1           "#697799") ; region, comment, ace-jump base
-  ;;           (base2           "#f2ede6") ; hl-line
-  ;;           (base3           "#faf5ee") ; background
-  ;;           (yellow          "#3388dd") ; type, highlight
-  ;;           (orange          "#ac3d1a") ; preprocessor, regexp group
-  ;;           (red             "#dd2222") ; warning, mismatch
-  ;;           (magenta         "#8b008b") ; visited link
-  ;;           (violet          "#00b7f0") ; link
-  ;;           (blue            "#1388a2") ; function, variable name
-  ;;           (cyan            "#104e8b") ; string, showparen, minibuffer
-  ;;           (green           "#00688b") ; keyword, builtin, constant
-  ;;           )))
-  ;; (create-solarized-theme light)
+(set-face-attribute
+ 'mode-line-modified-face nil
+ :foreground (! (face-foreground 'term-color-magenta))
+ :box        (! `(:line-width 1 :color ,(face-foreground 'term-color-magenta))))
+(set-face-attribute
+ 'mode-line-read-only-face nil
+ :foreground (! (face-foreground 'term-color-blue))
+ :box        (! `(:line-width 1 :color ,(face-foreground 'term-color-blue))))
+(set-face-attribute
+ 'mode-line-narrowed-face nil
+ :foreground (! (face-foreground 'term-color-cyan))
+ :box        (! `(:line-width 1 :color ,(face-foreground 'term-color-cyan))))
+(set-face-attribute
+ 'mode-line-mc-face nil
+ :foreground (! (my-make-color (face-foreground 'default) 6 -1))
+ :box        `(:line-width 1 :color ,(face-foreground 'mode-line)))
 
-  ;;   + modeline
+;;   + | ace-jump-mode
 
-  (setq my-mode-line-background
-        (cons (! (solarized-find-color 'modeline-active))
-              (! (solarized-find-color 'modeline-record))))
+(setup-after "ace-jump-mode"
+  (set-face-foreground 'ace-jump-face-foreground
+                       (! (if (eq frame-background-mode 'light) "#000000" "#ffffff")))
+  (set-face-foreground 'ace-jump-face-background
+                       (! (face-foreground 'font-lock-comment-face))))
 
-  (set-face-attribute 'mode-line nil
-                      :foreground (! (solarized-find-color 'base1))
-                      :background (! (solarized-find-color 'modeline-active))
-                      :inverse-video nil
-                      :box (append '(:line-width 1)
-                                   `(:color ,(! (solarized-find-color 'modeline-active)))))
-  (set-face-attribute 'mode-line-inactive nil
-                      :foreground (! (solarized-find-color 'base01))
-                      :background (! (solarized-find-color 'base02))
-                      :inverse-video nil
-                      :box (append '(:line-width 1)
-                                   `(:color ,(! (solarized-find-color 'base02)))))
+;;   + | font-lock
 
-  (set-face-attribute 'mode-line-dark-face nil
-                      :foreground (! (solarized-find-color 'base01)))
-  (set-face-attribute 'mode-line-highlight-face nil
-                      :foreground (! (solarized-find-color 'yellow))
-                      :weight 'bold)
-  (set-face-attribute 'mode-line-warning-face nil
-                      :foreground (! (solarized-find-color 'base03))
-                      :background (! (solarized-find-color 'yellow)))
-  (set-face-attribute 'mode-line-special-mode-face nil
-                      :foreground (! (solarized-find-color 'cyan))
-                      :weight 'bold)
+;; highlight regexp symbols
+;; reference | http://pastelwill.jp/wiki/doku.php?id=emacs:init.el
+(setup-after "font-lock"
+  (set-face-foreground 'font-lock-regexp-grouping-backslash
+                       (! (face-foreground 'term-color-red)))
+  (set-face-foreground 'font-lock-regexp-grouping-construct
+                       (! (face-foreground 'term-color-red))))
 
-  (set-face-attribute 'mode-line-modified-face nil
-                      :foreground (! (solarized-find-color 'magenta))
-                      :box (append '(:line-width 1)
-                                   `(:color ,(! (solarized-find-color 'magenta)))))
-  (set-face-attribute 'mode-line-read-only-face nil
-                      :foreground (! (solarized-find-color 'blue))
-                      :box (append '(:line-width 1)
-                                   `(:color ,(! (solarized-find-color 'blue)))))
-  (set-face-attribute 'mode-line-narrowed-face nil
-                      :foreground (! (solarized-find-color 'cyan))
-                      :box (append '(:line-width 1)
-                                   `(:color ,(! (solarized-find-color 'cyan)))))
-  (set-face-attribute 'mode-line-mc-face nil
-                      :foreground (! (solarized-find-color 'base1))
-                      :box (append '(:line-width 1)
-                                   `(:color ,(! (solarized-find-color 'base1)))))
+;;   + | highlight-parentheses
 
-  ;;   + ace-jump-mode
+(setup-after "highlight-parentheses"
+  (hl-paren-set 'hl-paren-colors nil)
+  (hl-paren-set 'hl-paren-background-colors
+                (! (list (car my-mode-line-background)))))
 
-  (setup-after "ace-jump-mode"
-    (cl-case (frame-parameter nil 'background-mode)
-      (dark (set-face-foreground 'ace-jump-face-foreground
-                                 (! (solarized-find-color 'base3)))
-            (set-face-foreground 'ace-jump-face-background
-                                 (! (solarized-find-color 'base01))))
-      (light (set-face-foreground 'ace-jump-face-foreground
-                                  (! (solarized-find-color 'base03)))
-             (set-face-foreground 'ace-jump-face-background
-                                  (! (solarized-find-color 'base1))))))
+;;   + | paren
 
-  ;;   + font-lock
+(setup-after "paren"
+  (set-face-attribute 'show-paren-match-face nil :underline t :bold t)
+  (set-face-attribute 'show-paren-mismatch-face nil :underline t :bold t))
 
-  ;; highlight regexp symbols
-  ;; reference | http://pastelwill.jp/wiki/doku.php?id=emacs:init.el
-  (setup-after "font-lock"
-    (set-face-foreground 'font-lock-regexp-grouping-backslash
-                         (! (solarized-find-color 'red)))
-    (set-face-foreground 'font-lock-regexp-grouping-construct
-                         (! (solarized-find-color 'red))))
+;;   + | whitespace
 
-  ;;   + highlight-parentheses
+(setup-after "whitespace"
+  (set-face-attribute 'whitespace-space nil
+                      :foreground (car my-mode-line-background)
+                      :background 'unspecified)
+  (set-face-attribute 'whitespace-tab nil
+                      :foreground (car my-mode-line-background)
+                      :background 'unspecified))
 
-  (setup-after "highlight-parentheses"
-    (hl-paren-set 'hl-paren-colors nil)
-    (hl-paren-set 'hl-paren-background-colors
-                  (list (! (solarized-find-color 'modeline-active)))))
+;;   + | lmntal-mode
 
-  ;;   + paren
+(setup-after "lmntal-mode"
+  (set-face-background 'lmntal-link-name-face
+                       (! (face-background 'hl-line))))
 
-  (setup-after "paren"
-    (set-face-attribute 'show-paren-match-face nil :underline t :bold t)
-    (set-face-attribute 'show-paren-mismatch-face nil :underline t :bold t))
+;;   + | phi-search
 
-  ;;   + flymake
+(setup-after "phi-search-core"
+  (set-face-background 'phi-search-match-face
+                       (car my-mode-line-background))
+  (set-face-background 'phi-search-selection-face
+                       (cdr my-mode-line-background)))
 
-  (setup-after "flymake"
-    (set-face-attribute 'flymake-errline nil
-                        :foreground 'unspecified
-                        :inverse-video 'unspecified
-                        :background (! (solarized-find-color 'flymake-err)))
-    (set-face-attribute 'flymake-warnline nil
-                        :foreground 'unspecified
-                        :inverse-video 'unspecified
-                        :background (! (solarized-find-color 'flymake-err))))
+;;   + | indent-guide
 
-  ;;   + whitespace
+(setup-after "indent-guide"
+  (set-face-foreground 'indent-guide-face
+                       (! (face-foreground 'font-lock-comment-face))))
 
-  (setup-after "whitespace"
-    (set-face-attribute 'whitespace-space nil
-                        :foreground (! (solarized-find-color 'modeline-active))
-                        :background 'unspecified)
-    (set-face-attribute 'whitespace-tab nil
-                        :foreground (! (solarized-find-color 'modeline-active))
-                        :background 'unspecified))
+;;   + | traverselisp
 
-  ;;   + lmntal-mode
-
-  (setup-after "lmntal-mode"
-    (set-face-background 'lmntal-link-name-face
-                         (! (solarized-find-color 'lmntal-name))))
-
-  ;;   + phi-search
-
-  (setup-after "phi-search-core"
-    (set-face-background 'phi-search-match-face
-                         (! (solarized-find-color 'modeline-active)))
-    (set-face-background 'phi-search-selection-face
-                         (! (solarized-find-color 'modeline-record))))
-
-  ;;   + indent-guide
-
-  (setup-after "indent-guide"
-    (cl-case (frame-parameter nil 'background-mode)
-      (dark (set-face-foreground 'indent-guide-face
-                                 (! (solarized-find-color 'base01))))
-      (light (set-face-foreground 'indent-guide-face
-                                  (! (solarized-find-color 'base1))))))
-
-  ;;   + traverselisp
-
-  (setup-after "traverselisp"
-    (set-face-background 'traverse-overlay-face
-                         (! (solarized-find-color 'base02))))
-
-  ;;   + (sentinel)
-  )
+(setup-after "traverselisp"
+  (set-face-background 'traverse-overlay-face
+                       (! (face-background 'hl-line))))
 
 ;;   + Misc: built-ins
 
@@ -4730,7 +4835,7 @@ file."
   "C-M-k" 'my-kill-line-backward
   "C-M-d" '("phi-autopair" phi-autopair-delete-forward-word kill-word)
   "C-M-h" '("phi-autopair" phi-autopair-delete-backward-word backward-kill-word)
-  "C-M-y" '("yasnippet" my-yas-expand-oneshot)
+  "C-M-y" '("yasnippet" mark-hacks-expand-oneshot-snippet)
   "M-W"   'my-yank-sexp
   "M-K"   '("paredit" my-paredit-kill kill-line)
   "M-D"   'kill-sexp
@@ -4854,21 +4959,6 @@ file."
   (key-chord-define-global "hh" 'my-capitalize-word-dwim)
   (key-chord-define-global "kk" 'my-upcase-previous-word)
   (key-chord-define-global "jj" 'my-downcase-previous-word)
-
-  ;; reference | http://endlessparentheses.com/banishing-the-shift-key-with-key-chord-in-emacs.html
-  (key-chord-define-global "0o" ")")
-  (key-chord-define-global "1q" "!")
-  (key-chord-define-global "2w" "@")
-  (key-chord-define-global "3e" "#")
-  (key-chord-define-global "4r" "$")
-  (key-chord-define-global "5t" "%")
-  (key-chord-define-global "6y" "^")
-  (key-chord-define-global "6t" "^")
-  (key-chord-define-global "7y" "&")
-  (key-chord-define-global "8u" "*")
-  (key-chord-define-global "9i" "(")
-  (key-chord-define-global "-p" "_")
-
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "jk" 'iy-go-to-char)
     (key-chord-define-global "df" 'iy-go-to-char-backward))
