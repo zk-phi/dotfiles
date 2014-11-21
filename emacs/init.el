@@ -1,7 +1,5 @@
 ;; init.el (for Emacs 24.3) | 2014 zk_phi
 
-;; (my-unary "+") が 「"hoge" + "fuga"」とかにスペースいれてくれない
-
 (require 'setup)
 (setup-initialize)
 
@@ -13,36 +11,36 @@
 
 ;; C-_
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Undo|Zoom+|     |     |
-;;    | Quot| Cut | End |Rplce|TrsWd| Yank| PgUp| Tab | Open| U p |  *  |     |
-;;       |MCNxt|Serch|Delte|Right| Quit| B S | Home|CutLn|Centr|Comnt|     |
-;;          |     |  *  |  *  | PgDn| Left| Down|Retrn|MrkPg|     |     |
+;;    | Quot| Cut | End |Rplce|TrsWd| Yank| PgUp| Tab | Open| U p | ESC |     |
+;;       |MCNxt|Serch|Delte|Right| Quit| B S | Home|KilLn|Centr|Comnt|     |
+;;          |     |  *  |  *  | PgDn| Left| Down|Retrn|ExpRg|     |     |
 
 ;; C-M-_
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|Zoom-|     |     |
-;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf| Fill|NlBet|BPgph|  *  |     |
-;;       |MCAll|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|KlPgh|Cntr0|  -  |     |
-;;          |     |  -  |  -  |EdBuf|BWord|NPgph|NNLin|MrkAl|     |     |
+;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf| Fill|NLBet|BPgph|M-ESC|     |
+;;       |MCAll|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|BKlLn| Top |     |     |
+;;          |     |     |     |EdBuf|BWord|NPgph|FwRet|MrkAl|     |     |
 
 ;;   + Meta-
 
 ;; M-_
-;; |AlWnd|SpWnd|Blnce|Follw|     |     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
-;;    |Scrtc|Palet| Eval|Recnt|Table|YankP|UndoT|Shell|Opcty|EvalP|     |     |
-;;       |Artst| All |Dired| File| Grep|Shrnk| Jump|KlWnd| Goto|     |     |
+;; |KlWnd|MkWnd|Blnce|Follw|     |     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
+;;    |Scrat|Palet| Eval|Recnt|Table|YankP|UndoT|Shell|Opcty|EvalP|     |     |
+;;       |Artst| All |Dired| File| Grep|Shrnk|Anthg|KlWnd| Goto|     |     |
 ;;          |     |Comnd|Cmpil| Vim |Buffr|Narrw|DMcro| Howm|     |     |
 
 ;; M-Shift-
 ;; |     |     |     |     |     |     |     | Barf|Wrap(|Slurp| Undo|     |     |     |
-;;    |     |CpSex|EvalR|Raise|TrsSx| Yank|RaisB|IdntX| Open|UpSex|     |     |
-;;       |     |SpltS|KlSex|FwSex| Quit|KlSex|JoinS|KillX|Centr|CmntX|Wrap"|
-;;          |     |     |     | Mark|BwSex|DnSex|Retrn|MkSex|     |     |
+;;    |     |CpSex|EvlRp|Raise|TrsSx|YnkRp|Splce|IndtX| Open|UpLst|Wrap[|     |
+;;       |     |SpltS|KlSex|FwrdX|     |KillX|JoinX|KillX|Centr|CmntX|Wrap"|
+;;          |     |     |Convo| Mark|BackX|DnLst|Retrn|MkSex|     |     |
 
 ;;   + C-x -
 
 ;; C-x C-_
-;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     | Diff|     |     |
-;;    |     |Write|Encod|Revrt|Trnct|     |Untab|Spell|     |RdOly|     |     |
-;;       |MFile| Save|     |     |     |FHead|     |KilBf|CgLog|     |     |
+;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|WUndo| Diff|     |     |
+;;    |     |Write|Encod|Revrt|Trnct|     |Untab|     |SpChk|RdOly|CxESC|     |
+;;       |MFile| Save|     | FFF |     | FFOF|     |KilBf|CgLog|     |     |
 ;;          |     |     |Close|     |Bffrs|     |ExMcr|  DL |     |     |
 
 ;;   + specials
@@ -150,6 +148,11 @@
   (!when (file-exists-p "~/.emacs.d/lib/ditaa.jar")
     "~/.emacs.d/lib/ditaa.jar")
   "/path/to/ditaa.jar")
+
+(defconst my-lmntal-ildoc-directory
+  (!when (file-exists-p "~/.emacs.d/ildoc/")
+    "~/.emacs.d/ildoc/")
+  "ildoc directory for lmntal-mode")
 
 ;;   + path to data files
 
@@ -622,19 +625,20 @@
   (setq eldoc-idle-delay                0.1
         eldoc-echo-area-use-multiline-p nil))
 
+(setup-lazy '(ispell-region) "ispell"
+  (setq ispell-personal-dictionary my-ispell-dictionary
+        ispell-extra-args
+        `("--sug-mode=ultra"
+          ,(concat "--repl=" (expand-file-name my-ispell-repl))))
+  (ispell-change-dictionary "english")
+  ;; do not spell-check non-ascii characters
+  (add-to-list 'ispell-skip-region-alist '("[^\000-\377]")))
+
 (setup-lazy '(my-turn-on-flyspell) "flyspell"
   ;; *FIXME* flyspell seems buggy on Windows
   ;; :prepare (add-hook 'find-file-hook 'my-turn-on-flyspell t)
 
-  ;; dependency
-  (setup "ispell"
-    (setq ispell-personal-dictionary my-ispell-dictionary
-          ispell-extra-args
-          `("--sug-mode=ultra"
-            ,(concat "--repl=" (expand-file-name my-ispell-repl))))
-    (ispell-change-dictionary "english")
-    ;; do not spell-check non-ascii characters
-    (add-to-list 'ispell-skip-region-alist '("[^\000-\377]")))
+  (require 'ispell)
 
   (setq flyspell-mark-duplications-flag nil
         flyspell-duplicate-distance     0
@@ -693,9 +697,10 @@
   ;; correct words with pop-up UI
   ;; Reference | EmacsWiki - Flyspell
   (setup-after "popup"
-    (defun flyspell-emacs-popup (event poss word)
-      "A textual flyspell pop-up menu."
-      (let* ((corrects (if flyspell-sort-corrections
+    ;; advice "flyspell-emacs-popup" to use popup.el
+    (defadvice flyspell-emacs-popup (around my-flyspell-use-popup activate)
+      (let* ((poss (ad-get-arg 1))
+             (corrects (if flyspell-sort-corrections
                            (sort (car (cdr (cdr poss))) 'string<)
                          (car (cdr (cdr poss)))))
              (cor-menu (if (consp corrects)
@@ -720,7 +725,8 @@
              (menu (mapcar
                     (lambda (arg) (if (consp arg) (car arg) arg))
                     base-menu)))
-        (cadr (assoc (popup-menu* menu :scroll-bar t) base-menu)))))
+        (setq ad-return-value
+              (cadr (assoc (popup-menu* menu :scroll-bar t) base-menu))))))
 
   ;; apply workaround for auto-complete
   (setup-after "auto-complete"
@@ -734,7 +740,7 @@
 (setup-include "maxframe"
   (!when (string= window-system "x")
     ;; send X messages
-    (defadvice maximize-frame (after x-maximize-frame activate)
+    (defadvice maximize-frame (after my-x-maximize-frame activate)
       (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
                              '(2 "_NET_WM_STATE_MAXIMIZED_VERT" 0))
       (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
@@ -790,9 +796,12 @@
 ;;   + | files
 
 ;; an Elisp implementation of "rgrep"
-(setup-lazy '(phi-grep-in-directory) "phi-grep"
-  (setup-after "indent-guide"
-    (add-to-list 'indent-guide-inhibit-modes 'phi-grep-mode)))
+(setup-lazy
+  '(phi-grep-in-directory
+    phi-grep-in-file
+    phi-grep-find-file-flat) "phi-grep"
+    (setup-after "indent-guide"
+      (add-to-list 'indent-guide-inhibit-modes 'phi-grep-mode)))
 
 ;;   + | edit
 
@@ -844,7 +853,7 @@
 for unary operators which can also be binary."
     (eval `(lambda ()
              (interactive)
-             (if (looking-back "[])a-zA-Z0-9_] *")
+             (if (looking-back "[])\"a-zA-Z0-9_] *")
                  (let ((back (unless (looking-back " ") " "))
                        (forward (unless (looking-at " ") " ")))
                    (insert (concat back ,str forward)))
@@ -868,20 +877,20 @@ for unary operators which can also be binary."
   (defadvice sdic-mode (after my-sdic-run-hooks activate)
     (run-hooks 'sdic-mode-hook))
 
-  ;; use "word-at-point" instead of "sdic-word-at-point"
+  ;; advice "word-at-point" to use "word-at-point"
   (setup "thingatpt"
-    (defun sdic-word-at-point ()
+    (defadvice sdic-word-at-point (around my-fix-sdic-word-at-point activate)
       (let* ((str (or (word-at-point) ""))
              (len (length str)))
         (set-text-properties 0 len nil str)
-        str)))
+        (setq ad-return-value str))))
 
   ;; popwin workaround
   (setup-after "popwin"
     (push '("*sdic*") popwin:special-display-config)
     ;; redefine some functions so that popwin can work with
     ;; reference | http://aikotobaha.blogspot.jp/2013/04/popwinel.html
-    (defun sdic-display-buffer (arg)
+    (defadvice sdic-display-buffer (around my-sdic-display-popwin activate)
       (let ((p (or arg (point))))
         (and sdic-warning-hidden-entry
              (> p (point-min))
@@ -889,9 +898,9 @@ for unary operators which can also be binary."
         (goto-char p)
         (display-buffer (get-buffer sdic-buffer-name))
         (set-window-start (get-buffer-window sdic-buffer-name) p)))
-    (defun sdic-other-window ()
+    (defadvice sdic-other-window (around my-sdic-fix-other-window activate)
       (other-window 1))
-    (defun sdic-close-window ()
+    (defadvice sdic-close-window (around my-sdic-fix-close-window activate)
       (bury-buffer sdic-buffer-name)))
 
   ;; settings
@@ -929,8 +938,8 @@ for unary operators which can also be binary."
   (run-with-idle-timer 30 t 'recentf-save-list))
 
 (setup-expecting "ido"
-  (setup-lazy '(ido-recentf-open) "recentf"
-    (defun ido-recentf-open ()
+  (setup-lazy '(my-ido-recentf-open) "recentf"
+    (defun my-ido-recentf-open ()
       "Use `ido-completing-read' to \\[find-file] a recent file"
       (interactive)
       (if (find-file
@@ -1126,14 +1135,11 @@ for unary operators which can also be binary."
   ;;   + | force anything split window
 
   ;; reference | http://emacs.g.hatena.ne.jp/k1LoW/20090713/1247496970
-
-  (defun anything-split-window (buf)
-    (select-window
-     (split-window (selected-window)
-                   (/ (* (window-height) 3) 5)))
-    (switch-to-buffer buf))
-
-  (setq anything-display-function 'anything-split-window)
+  (setq anything-display-function
+        (lambda (buf)
+          (select-window (split-window (selected-window)
+                                       (/ (* (window-height) 3) 5)))
+          (switch-to-buffer buf)))
 
   ;;   + | execute parsistent-action on move
 
@@ -1271,50 +1277,17 @@ for unary operators which can also be binary."
   ;;   + | (sentinel)
   )
 
-;;   + slice programs [all]
-
-(setup-lazy '(my-all-command) "all"
-
-  (defvar my-all-previous-position nil)
-
-  (defun my-all-command ()
-    (interactive)
-    (setq my-all-previous-position (point))
-    (call-interactively 'all))
-
-  (defun my-all-exit ()
-    (interactive)
-    (kill-buffer)
-    (delete-window)
-    (goto-char my-all-previous-position))
-
-  (defun my-all-next-line ()
-    (interactive)
-    (next-line)
-    (save-selected-window (all-mode-goto)))
-
-  (defun my-all-previous-line ()
-    (interactive)
-    (previous-line)
-    (save-selected-window (all-mode-goto)))
-
-  (setup-keybinds all-mode-map
-    "C-n" 'my-all-next-line
-    "C-p" 'my-all-previous-line
-    "C-g" 'my-all-exit)
-  )
-
 ;;   + isearch (isearch)
 
 (setup-after "isearch"
   ;; isearch in japanese (for windows)
   ;; reference | http://d.hatena.ne.jp/myhobby20xx/20110228/1298865536
   (when (string= window-system "w32")
-    (defun w32-isearch-update ()
+    (defun my-isearch-update ()
       (interactive)
       (isearch-update))
     (setup-keybinds isearch-mode-map
-      [compend] 'w32-isearch-update
+      [compend] 'my-isearch-update
       [kanji]   'isearch-toggle-input-method))
   ;; do not use lax-whitespace (for Emacs>=24)
   (setq isearch-lax-whitespace nil))
@@ -1331,9 +1304,9 @@ for unary operators which can also be binary."
 
     ;; keep mark active on "require" and "load"
     ;; reference | https://github.com/milkypostman/dotemacs
-    (defadvice require (around require-advice activate)
+    (defadvice require (around my-require-advice activate)
       (save-excursion (let (deactivate-mark) ad-do-it)))
-    (defadvice load (around require-advice activate)
+    (defadvice load (around my-require-advice activate)
       (save-excursion (let (deactivate-mark) ad-do-it)))
 
     ;; (mc--in-defun) sometimes seems not work (why?)
@@ -1453,7 +1426,7 @@ for unary operators which can also be binary."
       ((for-list) (forward-char for-list))
       ((for-str) (forward-char for-str)))))
 
-(defun my-yank-sexp ()
+(defun my-copy-sexp ()
   (interactive)
   (save-excursion
     (my-mark-sexp)
@@ -1466,23 +1439,16 @@ for unary operators which can also be binary."
 (defun my-up-list ()
   "handy version of up-list for interactive use"
   (interactive)
-  (let* ((str-p (and (member (get-text-property (point) 'face)
-                             '(font-lock-string-face font-lock-doc-face))
-                     (member (get-text-property (1- (point)) 'face)
-                             '(font-lock-string-face font-lock-doc-face))))
+  (let* ((str-p (nth 3 (syntax-ppss (point))))
          (back-pos (save-excursion
                      (if str-p
-                         (progn (skip-chars-backward "^\"")
-                                (backward-char)
-                                (point))
+                         (search-backward-regexp "\\s\"" nil t)
                        (condition-case err
                            (progn (backward-up-list) (point))
                          (error nil)))))
          (for-pos (save-excursion
                     (if str-p
-                        (progn (skip-chars-forward "^\"")
-                               (forward-char)
-                               (point))
+                        (search-forward-regexp "\\s\"" nil t)
                       (condition-case err
                           (progn (up-list) (point))
                         (error nil))))))
@@ -1667,18 +1633,28 @@ for unary operators which can also be binary."
 ;;   + Misc: core
 ;;   + | buffers / windows
 
-;; reference | https://github.com/milkypostman/dotemacs
-(defun my-rotate-windows ()
+;; move buffers among windows smartly
+(defun my-transpose-window-buffers ()
   "Rotate buffers among windows."
   (interactive)
-  (let ((windows (window-list))
-        win1 win2 tmp)
-    (dotimes (i (1- (length windows)))
-      (setq win1 (nth i windows)
-            win2 (nth (1+ i) windows))
-      (setq tmp (window-buffer win1))
-      (set-window-buffer win1 (window-buffer win2))
-      (set-window-buffer win2 tmp))))
+  (set-temporary-overlay-map
+   (let ((m (make-sparse-keymap)))
+     (dolist (cmd '(other-window
+                    previous-multiframe-window
+                    next-multiframe-window))
+       (dolist (key (where-is-internal cmd))
+         (define-key m key
+           `(lambda ()
+              (interactive)
+              (let* ((w1 (selected-window))
+                     (w2 (progn
+                           (call-interactively ',cmd)
+                           (selected-window)))
+                     (tmp (window-buffer w1)))
+                (set-window-buffer w1 (window-buffer w2))
+                (set-window-buffer w2 tmp))))))
+     m)
+   t))
 
 (defun my-retop ()
   "Make cursor displayed on top of the window."
@@ -1765,7 +1741,7 @@ for unary operators which can also be binary."
        (setq my-split-window-saved-configuration
              (current-window-configuration))
        (cond ((> (window-total-width)
-                 (* 2.1 (window-height)))
+                 (* 2.6 (window-height)))
               (split 2)
               (setq this-command 'my-split-window-horizontally-1))
              (t
@@ -1867,7 +1843,7 @@ for unary operators which can also be binary."
   (let ((lin (line-number-at-pos)))
     (unless (or (eq this-command 'my-point-undo)
                 (and my-point-undo-list
-                     (< (abs (- lin (caar my-point-undo-list))) 10)))
+                     (not (= lin (caar my-point-undo-list)))))
       (push (cons lin (point)) my-point-undo-list))))
 (setup-lazy '(my-point-undo) "edmacro"
   (defun my-point-undo ()
@@ -2222,6 +2198,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;; dynamic keyboard-macro
 (setup-expecting "dmacro"
+  ;; define a temporary function that loads "dmacro"
   (defun dmacro-exec ()
     (interactive)
     (let ((*dmacro-key* (this-single-command-keys)))
@@ -2249,9 +2226,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;; org-like cycling for outline-mode
 (setup-after "outline"
-  (setup-lazy '(outline-cycle-dwim) "outline-magic"
-    :prepare (setup-keybinds outline-minor-mode-map "TAB" 'outline-cycle-dwim)
-    (defun outline-cycle-dwim ()
+  (setup-lazy '(my-outline-cycle-dwim) "outline-magic"
+    :prepare (setup-keybinds outline-minor-mode-map "TAB" 'my-outline-cycle-dwim)
+    (defun my-outline-cycle-dwim ()
       (interactive)
       (if (or (outline-on-heading-p) (= (point) 1))
           (outline-cycle)
@@ -2594,8 +2571,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;   + generic
 
 (setup-lazy
-  '(
-    apache-conf-generic-mode
+  '(apache-conf-generic-mode
     apache-log-generic-mode
     samba-generic-mode
     fvwm-generic-mode
@@ -2623,8 +2599,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     resolve-conf-generic-mode
     spice-generic-mode
     ibis-generic-mode
-    astap-generic-mode
-    ) "generic-x"
+    astap-generic-mode) "generic-x"
 
     (setq auto-mode-alist
           (nconc
@@ -2671,6 +2646,42 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;   + lispy
 ;;     + (common)
 
+(defun my-lisp-toggle-exp (exprs)
+  (save-excursion
+    (when (nth 3 (syntax-ppss (point)))
+      (search-backward-regexp "\\s\""))
+    (let ((match-res (cl-some (lambda (pair)
+                                (and (looking-at (car pair)) pair))
+                              exprs)))
+      (cond (match-res
+             (replace-match (cdr match-res))
+             (indent-sexp))
+            ((looking-at "\\_<\\|\\s(")
+             (condition-case nil
+                 (backward-up-list)
+               (error (error "nothing to toggle")))
+             (forward-sexp)
+             (backward-sexp)
+             (my-lisp-toggle-exp exprs))
+            (t
+             (backward-sexp)
+             (my-lisp-toggle-exp exprs))))))
+
+(defun my-lisp-toggle-let ()
+  "toggle let and let"
+  (interactive)
+  (my-lisp-toggle-exp
+   '(("(let\\*" . "(let") ("(let" . "(let*"))))
+
+(defun my-lisp-toggle-quote ()
+  "toggle ' and `"
+  (interactive)
+  (my-lisp-toggle-exp '(("'" . "`") ("`" . "'"))))
+
+(defun my-lisp-install-toggle-commands ()
+  (local-set-key (kbd "C-c C-'") 'my-lisp-toggle-quote)
+  (local-set-key (kbd "C-c C-8") 'my-lisp-toggle-let))
+
 (setup-expecting "key-combo"
   (defun my-lisp-smart-dot ()
     (interactive)
@@ -2683,6 +2694,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;     + lisp-mode
 
 (setup-after "lisp-mode"
+  (setup-hook 'lisp-mode-hook 'my-lisp-install-toggle-commands)
   (setup-expecting "rainbow-delimiters"
     (setup-hook 'lisp-mode-hook 'rainbow-delimiters-mode))
   (setup-after "auto-complete"
@@ -2701,7 +2713,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-hook 'emacs-lisp-mode-hook
     (outline-minor-mode 1)
     (setq-local outline-regexp "^[\s\t]*;;[\s]+\\+[+-]*\s")
-    (setq-local outline-level (lambda () (- (outline-level) 4))))
+    (setq-local outline-level (lambda () (- (outline-level) 4)))
+    (my-lisp-install-toggle-commands))
   (setup-keybinds emacs-lisp-mode-map '("M-TAB" "C-j") nil)
   (setup-keybinds lisp-interaction-mode-map '("M-TAB" "C-j") nil)
   (setup-expecting "eldoc"
@@ -2750,7 +2763,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   ;; use "-i" option to launch gosh process
   (setup-hook 'gauche-mode-hook
-    (setq scheme-program-name "gosh -i"))
+    (setq scheme-program-name "gosh -i")
+    (my-lisp-install-toggle-commands))
 
   ;; use auto-complete and eldoc in gauche-mode buffers
   (setup "scheme-complete"
@@ -2811,6 +2825,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setq clojure-inf-lisp-command (when my-clojure-jar-file
                                    (concat "java -jar " my-clojure-jar-file)))
 
+  (setup-hook 'clojure-mode-hook 'my-lisp-install-toggle-commands)
+
   (setup-after "auto-complete"
     (push 'clojure-mode ac-modes))
 
@@ -2847,6 +2863,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (defvar racket-mode-hook nil)
   (defadvice racket-mode (after my-racket-run-hooks activate)
     (run-hooks 'racket-mode-hook))
+
+  (setup-hook 'racket-mode-hook 'my-lisp-install-toggle-commands)
 
   (setup-after "auto-complete"
     (push 'racket-mode ac-modes))
@@ -2909,14 +2927,14 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "C-c C-e x" "C-c C-e e" "C-c C-e r" "C-c C-e a"
       "RET" ")" "]" "}" "C-c C-p" "M-C-y" "<f1>"
       "C-c C-h" "C-c C-d" "C-c C-f" "C-c C-U") nil
-    "C-c C-e" 'my-racket-send-dwim
-    "C-c C-m" 'my-racket-expand-dwim
-    "C-c C-s" 'my-run-racket-other-window
-    "C-c C-p" 'racket-cycle-paren-shapes
-    "C-c C-d" 'racket-find-definition
-    "C-c C-f" 'racket-fold-all-tests
-    "C-c C-u" 'racket-unfold-all-tests
-    "<f1> s" 'racket-help)
+      "C-c C-e" 'my-racket-send-dwim
+      "C-c C-m" 'my-racket-expand-dwim
+      "C-c C-s" 'my-run-racket-other-window
+      "C-c C-p" 'racket-cycle-paren-shapes
+      "C-c C-d" 'racket-find-definition
+      "C-c C-f" 'racket-fold-all-tests
+      "C-c C-u" 'racket-unfold-all-tests
+      "<f1> s" 'racket-help)
   )
 
 ;;   + c-like
@@ -3307,12 +3325,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                                   (line-number-at-pos end))))
                (deactivate-mark)
                (goto-char beg)
-               (insert (if one-liner "{ " "{\n"))
+               (insert (if one-liner "{ " "\n{"))
                (goto-char (+ 2 end))
                (insert (if one-liner " }" "\n}"))
                (indent-region beg (point))))
             ((looking-back "\s")         ; insert {`!!'}
-             (insert "{  }")
+             (indent-region (point) (progn (insert "{  }") (point)))
              (backward-char 2))
             (t                           ; insert {\n`!!'\n}
              (unless (= (point)
@@ -3451,23 +3469,23 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     ;; C/C++ checkers using gcc/g++
     ;; reference | https://github.com/jedrz/.emacs.d/blob/master/setup-flycheck.el
     (flycheck-define-checker c-gcc
-      "A C checker using gcc"
-      :command ("gcc" "-fsyntax-only" "-ansi" "-pedantic"
-                "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
-      :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
-                                " warning: " (message) line-end)
-                       (error line-start (file-name) ":" line ":" column ":"
-                              " error: " (message) line-end))
-      :modes 'c-mode)
+                             "A C checker using gcc"
+                             :command ("gcc" "-fsyntax-only" "-ansi" "-pedantic"
+                                       "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+                             :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
+                                                       " warning: " (message) line-end)
+                                              (error line-start (file-name) ":" line ":" column ":"
+                                                     " error: " (message) line-end))
+                             :modes 'c-mode)
     (flycheck-define-checker c++-g++
-      "A C checker using g++"
-      :command ("g++" "-fsyntax-only" "-std=c++11" "-pedantic"
-                "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
-      :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
-                                " warning: " (message) line-end)
-                       (error line-start (file-name) ":" line ":" column ":"
-                              " error: " (message) line-end))
-      :modes 'c++-mode)
+                             "A C checker using g++"
+                             :command ("g++" "-fsyntax-only" "-std=c++11" "-pedantic"
+                                       "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+                             :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
+                                                       " warning: " (message) line-end)
+                                              (error line-start (file-name) ":" line ":" column ":"
+                                                     " error: " (message) line-end))
+                             :modes 'c++-mode)
     (add-to-list 'flycheck-checkers 'c-gcc)
     (add-to-list 'flycheck-checkers 'c++-g++))
   )
@@ -3639,7 +3657,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                    (haskell-ds-forward-decl)))))))
 
   (setup-hook 'haskell-mode-hook
-    (turn-on-haskell-indent)
+    (turn-on-haskell-indentation)
     (turn-on-haskell-doc-mode))
 
   (setup-after "auto-complete"
@@ -3714,19 +3732,18 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   :prepare (push '("\\.scala$" . scala-mode) auto-mode-alist)
 
   (require 'scala-mode-auto)
+  (autoload 'scala-mode-inf "scala-mode-inf")
 
   (defun my-run-scala-other-window ()
     (interactive)
     (let ((file (buffer-file-name)))
       (with-selected-window (split-window-vertically -10)
-        (let ((cmd/args (split-string scala-interpreter)))
-          (switch-to-buffer
-           (apply 'make-comint
-                  "inferior-scala" (car cmd/args) nil (cdr cmd/args))))
+        (switch-to-buffer (make-comint "inferior-scala" "scala"))
         (scala-mode-inf))
       (when file
         (scala-load-file file))))
 
+  ;; *FIXME* not DWIM for multi-line defuns
   (defun my-scala-eval-dwim ()
     (interactive)
     (if (use-region-p)
@@ -3744,7 +3761,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-c C-l" 'scala-load-file
     "C-c C-e" 'my-scala-eval-dwim
     "C-c C-s" 'my-run-scala-other-window
-    "<f1>" nil)
+    "<f1>"    nil)
 
   (setup-after "auto-complete"
     (push 'scala-mode ac-modes))
@@ -3769,63 +3786,63 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (setup-after "coq"
 
-   (setup-after "auto-complete"
-     (push 'coq-mode ac-modes))
+    (setup-after "auto-complete"
+      (push 'coq-mode ac-modes))
 
-   (setup-expecting "key-combo"
-     (defun my-coq-smart-pipes ()
-       "insert pipe surrounded by spaces, and reindent"
-       (interactive)
-       (if (looking-back "\\[")
-           ;; empty list delimiter
-           (insert "| ")
-         ;; guard
-         (insert (concat (unless (looking-back " ") " ")
-                         "|"
-                         (unless (looking-at " ") " "))))
-       (save-excursion (smie-indent-line)))
-     (setup-hook 'coq-mode-hook
-       (key-combo-mode 1)
-       ;; top level(?)
-       (key-combo-define-local (kbd "|") '(my-coq-smart-pipes))
-       (key-combo-define-local (kbd ":") '(" : " " :: "))
-       (key-combo-define-local (kbd ":=") " := ")
-       (key-combo-define-local (kbd "=") " = ")
-       ;; logic
-       (key-combo-define-local (kbd "->") " -> ")
-       (key-combo-define-local (kbd "<-") " <- ")
-       (key-combo-define-local (kbd "&&") " && ")
-       (key-combo-define-local (kbd "||") " || ")
-       (key-combo-define-local (kbd "/\\") " /\\ ")
-       (key-combo-define-local (kbd "\\/") " \\/ ")
-       (key-combo-define-local (kbd "|-") " |- ")
-       (key-combo-define-local (kbd "|=") " |= ")
-       ;; types
-       (key-combo-define-local (kbd "=>") " => ")
-       (key-combo-define-local (kbd ":<") " :< ")
-       (key-combo-define-local (kbd ":>") " :> ")
-       ;; arithmetic
-       (key-combo-define-local (kbd "<") " < ")
-       (key-combo-define-local (kbd "<=") " <= ")
-       (key-combo-define-local (kbd ">") " > ")
-       (key-combo-define-local (kbd ">=") " >= ")
-       (key-combo-define-local (kbd "+") `(,(my-unary "+")))
-       (key-combo-define-local (kbd "-") `(,(my-unary "-")))
-       (key-combo-define-local (kbd "*") " * ")
-       (key-combo-define-local (kbd "/") " / ")))
+    (setup-expecting "key-combo"
+      (defun my-coq-smart-pipes ()
+        "insert pipe surrounded by spaces, and reindent"
+        (interactive)
+        (if (looking-back "\\[")
+            ;; empty list delimiter
+            (insert "| ")
+          ;; guard
+          (insert (concat (unless (looking-back " ") " ")
+                          "|"
+                          (unless (looking-at " ") " "))))
+        (save-excursion (smie-indent-line)))
+      (setup-hook 'coq-mode-hook
+        (key-combo-mode 1)
+        ;; top level(?)
+        (key-combo-define-local (kbd "|") '(my-coq-smart-pipes))
+        (key-combo-define-local (kbd ":") '(" : " " :: "))
+        (key-combo-define-local (kbd ":=") " := ")
+        (key-combo-define-local (kbd "=") " = ")
+        ;; logic
+        (key-combo-define-local (kbd "->") " -> ")
+        (key-combo-define-local (kbd "<-") " <- ")
+        (key-combo-define-local (kbd "&&") " && ")
+        (key-combo-define-local (kbd "||") " || ")
+        (key-combo-define-local (kbd "/\\") " /\\ ")
+        (key-combo-define-local (kbd "\\/") " \\/ ")
+        (key-combo-define-local (kbd "|-") " |- ")
+        (key-combo-define-local (kbd "|=") " |= ")
+        ;; types
+        (key-combo-define-local (kbd "=>") " => ")
+        (key-combo-define-local (kbd ":<") " :< ")
+        (key-combo-define-local (kbd ":>") " :> ")
+        ;; arithmetic
+        (key-combo-define-local (kbd "<") " < ")
+        (key-combo-define-local (kbd "<=") " <= ")
+        (key-combo-define-local (kbd ">") " > ")
+        (key-combo-define-local (kbd ">=") " >= ")
+        (key-combo-define-local (kbd "+") `(,(my-unary "+")))
+        (key-combo-define-local (kbd "-") `(,(my-unary "-")))
+        (key-combo-define-local (kbd "*") " * ")
+        (key-combo-define-local (kbd "/") " / ")))
 
-   (setup-expecting "flycheck"
-     (setup-hook 'coq-mode-hook 'flycheck-mode))
+    (setup-expecting "flycheck"
+      (setup-hook 'coq-mode-hook 'flycheck-mode))
 
-   (setup-keybinds coq-mode-map
-     "C-m"     'reindent-then-newline-and-indent
-     "C-c C-n" 'proof-assert-next-command-interactive
-     "C-c C-p" 'proof-undo-last-successful-command
-     "C-c C-u" 'proof-retract-buffer
-     "C-c C-e" 'proof-goto-end-of-locked
-     "C-c C-c" 'proof-goto-point
-     '("M-a" "M-e" "M-n" "M-p") nil)
-   )
+    (setup-keybinds coq-mode-map
+      "C-m"     'reindent-then-newline-and-indent
+      "C-c C-n" 'proof-assert-next-command-interactive
+      "C-c C-p" 'proof-undo-last-successful-command
+      "C-c C-u" 'proof-retract-buffer
+      "C-c C-e" 'proof-goto-end-of-locked
+      "C-c C-c" 'proof-goto-point
+      '("M-a" "M-e" "M-n" "M-p") nil)
+    )
   )
 
 ;;     + tuareg (OCaml)
@@ -3912,13 +3929,34 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;     + prolog-mode
 
 (setup-expecting "prolog"
-  (push '("\\.swi$" . prolog-mode) auto-mode-alist))
+  (push '("\\.swi$" . prolog-mode) auto-mode-alist)
+  (push '("\\.pro$" . prolog-mode) auto-mode-alist))
 
 (setup-after "prolog"
   (setup-keybinds prolog-mode-map
-    "C-c C-l" 'inferior-prolog-load-file)
-  (setup-after "popwin"
-    (push '("*prolog*") popwin:special-display-config))
+    "C-c C-l" 'prolog-consult-file
+    "C-c C-e" 'my-prolog-consult-dwim
+    "C-c C-s" 'my-run-prolog-other-window
+    "C-c C-t" 'prolog-trace-on
+    '("M-a" "M-e" "M-q"
+      "C-M-a" "C-M-e" "C-M-c"
+      "C-M-h" "C-M-n" "C-M-p"
+      "C-M-h" "C-M-e" "C-M-a"
+      "C-M-c" "C-M-n" "C-M-n") nil)
+  (defun my-run-prolog-other-window ()
+    (interactive)
+    (let ((file (buffer-file-name)))
+      (with-selected-window (split-window-vertically -10)
+        (switch-to-buffer (get-buffer-create "*prolog*"))
+        (prolog-mode-variables)
+        (prolog-ensure-process))
+      (when file
+        (prolog-consult-file))))
+  (defun my-prolog-consult-dwim ()
+    (interactive)
+    (if (use-region-p)
+        (prolog-consult-region (region-beginning) (region-end))
+      (prolog-consult-predicate)))
   (setup-after "auto-complete"
     (push 'prolog-mode ac-modes))
   (setup-expecting "key-combo"
@@ -3928,15 +3966,22 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;;     + (cs)lmntal-mode
 
-(setup-lazy '(lmntal-mode) "lmntal-mode"
-  :prepare (push '("\\.lmn$" . lmntal-mode) auto-mode-alist)
+(setup-lazy '(lmntal-mode lmntal-slimcode-mode) "lmntal-mode"
+  :prepare (progn
+             (push '("\\.lmn$" . lmntal-mode) auto-mode-alist)
+             (push '("\\.il$" . lmntal-slimcode-mode) auto-mode-alist))
 
-  (setq lmntal-home-directory  "~/Documents/LMNtal/lmntal/lmntal-compiler/"
-        lmntal-slim-executable "../slim/bin/slim"
-        lmntal-mc-use-dot     (! (executable-find "dot")))
+  (setq lmntal-home-directory           "~/Documents/LMNtal/lmntal/lmntal-compiler/"
+        lmntal-slim-executable          "../slim/bin/slim"
+        lmntal-mc-use-dot               (! (executable-find "dot"))
+        lmntal-slimcode-ildoc-directory my-lmntal-ildoc-directory)
 
   (setup-hook 'lmntal-trace-mode-hook 'my-kindly-view-mode)
   (setup-hook 'lmntal-mc-mode-hook 'my-kindly-view-mode)
+  (setup-hook 'lmntal-slimcode-help-hook 'my-kindly-view-mode)
+
+  (setup-after "popwin"
+    (push '("*SLIMcode-help*") popwin:special-display-config))
 
   (setup-after "auto-complete"
     (push 'lmntal-mode ac-modes))
@@ -4048,12 +4093,17 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   ;;   + line-draw commands
 
-  (defun picture-line-draw-str (h v str)
-    (cond ((/= h 0) (cond ((string= str "|") "+") ((string= str "+") "+") (t "-")))
-          ((/= v 0) (cond ((string= str "-") "+") ((string= str "+") "+") (t "|")))
-          (t str)))
+  (defun my-picture-line-draw-str (h v str)
+    (cond ((/= h 0)
+           (cond ((string= str "|") "+")
+                 ((string= str "+") "+") (t "-")))
+          ((/= v 0)
+           (cond ((string= str "-") "+")
+                 ((string= str "+") "+") (t "|")))
+          (t
+           str)))
 
-  (defun picture-line-draw (num v h del)
+  (defun my-picture-line-draw (num v h del)
     (let ((indent-tabs-mode nil)
           (old-v picture-vertical-step)
           (old-h picture-horizontal-step))
@@ -4068,48 +4118,61 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
           (setq str
                 (if (eobp) " " (buffer-substring (point) (+ (point) 1))))
           (setq new-str
-                (if del (picture-line-delete-str h v str)
-                  (picture-line-draw-str h v str)))
+                (if del (my-picture-line-delete-str h v str)
+                  (my-picture-line-draw-str h v str)))
           (picture-clear-column (string-width str))
           (picture-update-desired-column nil)
           (picture-insert (string-to-char new-str) 1)))
       (setq picture-vertical-step old-v)
       (setq picture-horizontal-step old-h)))
 
-  (defun picture-line-draw-right (n)
-    (interactive "p") (picture-line-draw n 0 1 nil))
+  (defun my-picture-line-draw-right (n)
+    (interactive "p")
+    (my-picture-line-draw n 0 1 nil))
 
-  (defun picture-line-draw-left (n)
-    (interactive "p") (picture-line-draw n 0 -1 nil))
+  (defun my-picture-line-draw-left (n)
+    (interactive "p")
+    (my-picture-line-draw n 0 -1 nil))
 
-  (defun picture-line-draw-up (n)
-    (interactive "p") (picture-line-draw n -1 0 nil))
+  (defun my-picture-line-draw-up (n)
+    (interactive "p")
+    (my-picture-line-draw n -1 0 nil))
 
-  (defun picture-line-draw-down (n)
-    (interactive "p") (picture-line-draw n 1 0 nil))
+  (defun my-picture-line-draw-down (n)
+    (interactive "p")
+    (my-picture-line-draw n 1 0 nil))
 
   ;;   + line-delete commands
 
-  (defun picture-line-delete-str (h v str)
-    (cond ((/= h 0) (cond ((string= str "|") "|") ((string= str "+") "|") (t " ")))
-          ((/= v 0) (cond ((string= str "-") "-") ((string= str "+") "-") (t " ")))
-          (t str)))
+  (defun my-picture-line-delete-str (h v str)
+    (cond ((/= h 0)
+           (cond ((string= str "|") "|")
+                 ((string= str "+") "|") (t " ")))
+          ((/= v 0)
+           (cond ((string= str "-") "-")
+                 ((string= str "+") "-") (t " ")))
+          (t
+           str)))
 
-  (defun picture-line-delete-right (n)
-    (interactive "p") (picture-line-draw n 0 1 t))
+  (defun my-picture-line-delete-right (n)
+    (interactive "p")
+    (my-picture-line-draw n 0 1 t))
 
-  (defun picture-line-delete-left (n)
-    (interactive "p") (picture-line-draw n 0 -1 t))
+  (defun my-picture-line-delete-left (n)
+    (interactive "p")
+    (my-picture-line-draw n 0 -1 t))
 
-  (defun picture-line-delete-up (n)
-    (interactive "p") (picture-line-draw n -1 0 t))
+  (defun my-picture-line-delete-up (n)
+    (interactive "p")
+    (my-picture-line-draw n -1 0 t))
 
-  (defun picture-line-delete-down (n)
-    (interactive "p") (picture-line-draw n 1 0 t))
+  (defun my-picture-line-delete-down (n)
+    (interactive "p")
+    (my-picture-line-draw n 1 0 t))
 
   ;;   + region-move commands
 
-  (defun picture-region-move (start end num v h)
+  (defun my-picture-region-move (start end num v h)
     (let ((indent-tabs-mode nil)
           (old-v picture-vertical-step)
           (old-h picture-horizontal-step) rect)
@@ -4125,17 +4188,21 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (setq picture-vertical-step old-v)
       (setq picture-horizontal-step old-h)))
 
-  (defun picture-region-move-right (start end num)
-    (interactive "r\np") (picture-region-move start end num 0 1))
+  (defun my-picture-region-move-right (start end num)
+    (interactive "r\np")
+    (my-picture-region-move start end num 0 1))
 
-  (defun picture-region-move-left (start end num)
-    (interactive "r\np") (picture-region-move start end num 0 -1))
+  (defun my-picture-region-move-left (start end num)
+    (interactive "r\np")
+    (my-picture-region-move start end num 0 -1))
 
-  (defun picture-region-move-up (start end num)
-    (interactive "r\np") (picture-region-move start end num -1 0))
+  (defun my-picture-region-move-up (start end num)
+    (interactive "r\np")
+    (my-picture-region-move start end num -1 0))
 
-  (defun picture-region-move-down (start end num)
-    (interactive "r\np") (picture-region-move start end num 1 0))
+  (defun my-picture-region-move-down (start end num)
+    (interactive "r\np")
+    (my-picture-region-move start end num 1 0))
 
   ;;   + rectangle copy command
 
@@ -4146,18 +4213,18 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   ;;   + keymap
 
   (setup-keybinds artist-mode-map
-    "<right>"   'picture-line-draw-right
-    "<left>"    'picture-line-draw-left
-    "<up>"      'picture-line-draw-up
-    "<down>"    'picture-line-draw-down
-    "C-<right>" 'picture-line-delete-right
-    "C-<left>"  'picture-line-delete-left
-    "C-<up>"    'picture-line-delete-up
-    "C-<down>"  'picture-line-delete-down
-    "M-<right>" 'picture-region-move-right
-    "M-<left>"  'picture-region-move-left
-    "M-<up>"    'picture-region-move-up
-    "M-<down>"  'picture-region-move-down
+    "<right>"   'my-picture-line-draw-right
+    "<left>"    'my-picture-line-draw-left
+    "<up>"      'my-picture-line-draw-up
+    "<down>"    'my-picture-line-draw-down
+    "C-<right>" 'my-picture-line-delete-right
+    "C-<left>"  'my-picture-line-delete-left
+    "C-<up>"    'my-picture-line-delete-up
+    "C-<down>"  'my-picture-line-delete-down
+    "M-<right>" 'my-picture-region-move-right
+    "M-<left>"  'my-picture-region-move-left
+    "M-<up>"    'my-picture-region-move-up
+    "M-<down>"  'my-picture-region-move-down
     "C-r"       'picture-draw-rectangle
     "C-w"       'picture-clear-rectangle
     "C-M-w"     'my-picture-copy-rectangle
@@ -4180,7 +4247,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       ad-do-it))
 
   ;; enable overlay while editing formulas
-  (defadvice org-table-eval-formula (around table-formula-helper activate)
+  (defadvice org-table-eval-formula (around my-table-formula-helper activate)
     "enable overlays while editing formulas"
     (unless org-table-coordinate-overlays
       (org-table-toggle-coordinate-overlays))
@@ -4295,7 +4362,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   ;; vi-like paren-matching
   (setup-after "paren"
     (defadvice show-paren-function (around vi-show-paren activate)
-      (if (eq major-mode 'vi-mode)
+      (if (and (eq major-mode 'vi-mode)
+               (looking-back "\\s)"))
           (save-excursion (forward-char) ad-do-it)
         ad-do-it)))
 
@@ -4350,7 +4418,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'dired-mode-hook 'idired-mode))
 
   (setup "dired-k"
-    (defun dired-k--inside-git-repository-p () nil)
+    (defadvice dired-k--inside-git-repository-p (around my-fix-dired-k activate)
+      (setq ad-return-value nil))
     (setup-hook 'dired-mode-hook
       (run-with-idle-timer 0 nil 'dired-k--highlight)))
 
@@ -4430,7 +4499,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;     + howm
 ;;     + | (prelude)
 
-(setup-lazy '(howm-menu-or-remember) "howm"
+(setup-lazy '(my-howm-menu-or-remember) "howm"
   :prepare (progn (setup-in-idle "howm")
                   (push '("\\.howm$" . org-mode) auto-mode-alist))
 
@@ -4472,21 +4541,25 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (setup-hook 'howm-menu-hook
     (when my-howm-import-directory
-      (dolist (file (directory-files my-howm-import-directory))
-        (unless (string-match "^-" file)
-          (let ((abs-path (concat my-howm-import-directory file)))
-            (when (file-regular-p abs-path)
-              (howm-remember)
-              (insert-file-contents abs-path)
-              (beginning-of-buffer)
-              (cond ((not (y-or-n-p (format "import %s ?" file)))
-                     (howm-remember-discard)
-                     (rename-file abs-path (concat my-howm-import-directory "-" file)))
-                    (t
-                     (let ((howm-template (concat "* " (howm-reminder-today)
-                                                  "- " file "\n\n%cursor")))
-                       (howm-remember-submit)
-                       (delete-file abs-path))))))))))
+      (let ((imported-flag nil))
+        (dolist (file (directory-files my-howm-import-directory))
+          (unless (string-match "^-" file)
+            (let ((abs-path (concat my-howm-import-directory file)))
+              (when (file-regular-p abs-path)
+                (howm-remember)
+                (insert-file-contents abs-path)
+                (beginning-of-buffer)
+                (cond ((not (y-or-n-p (format "import %s ?" file)))
+                       (howm-remember-discard)
+                       (rename-file abs-path (concat my-howm-import-directory "-" file)))
+                      (t
+                       (let ((howm-template (concat "* " (howm-reminder-today)
+                                                    "- " file "\n\n%cursor")))
+                         (howm-remember-submit)
+                         (delete-file abs-path)
+                         (setq imported-flag t))))))))
+        ;; force update
+        (when imported-flag (howm-menu-refresh)))))
 
   ;;   + | howm -> dropbox
 
@@ -4559,6 +4632,31 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   ;;   + | commands
 
+  (defvar my-howm-saved-window-configuration nil)
+
+  (defun my-howm-exit ()
+    (interactive)
+    (when my-howm-export-file
+      (my-howm-export-file my-howm-export-file))
+    (when my-howm-export-ics
+      (my-howm-export-ics my-howm-export-ics))
+    ;; kill all howm buffers
+    (mapc (lambda(b)
+            (when (cdr (assq 'howm-mode (buffer-local-variables b)))
+              (kill-buffer b)))
+          (buffer-list))
+    (set-window-configuration my-howm-saved-window-configuration))
+
+  (defun my-howm-menu-or-remember ()
+    (interactive)
+    (if (use-region-p)
+        (let ((str (buffer-substring (region-beginning) (region-end))))
+          (howm-remember)
+          (insert str))
+      (setq my-howm-saved-window-configuration (current-window-configuration))
+      (delete-other-windows)
+      (howm-menu)))
+
   (defun my-howm-kill-buffer ()
     "save and kill this howm buffer"
     (interactive)
@@ -4571,30 +4669,10 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         ;; - kill only when the buffer exists
         (when (string= (buffer-name) buf) (kill-buffer))
         ;; - reflesh menu
-        (howm-menu))))
-
-  (defun my-howm-exit ()
-    (interactive)
-    (when my-howm-export-file
-      (my-howm-export-file my-howm-export-file))
-    (when my-howm-export-ics
-      (my-howm-export-ics my-howm-export-ics))
-    ;; kill all howm buffers
-    (mapc (lambda(b)
-            (when (cdr (assq 'howm-mode (buffer-local-variables b)))
-              (kill-buffer b)))
-          (buffer-list)))
-
-  (defun howm-menu-or-remember ()
-    (interactive)
-    (if (use-region-p)
-        (let ((str (buffer-substring (region-beginning) (region-end))))
-          (howm-remember)
-          (insert str))
-      (howm-menu)))
+        (howm-menu-refresh))))
 
   ;; reference | http://www.bookshelf.jp/soft/meadow_38.html#SEC563
-  (defun howm-insert-date-from-calendar ()
+  (defun my-howm-insert-date-from-calendar ()
     (interactive)
     (let ((day nil)
           (calendar-date-display-form
@@ -4604,11 +4682,11 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                  (calendar-cursor-to-date t)))
       (calendar-exit)
       (insert day)))
-  (defun howm-insert-date-with-calendar ()
+  (defun my-howm-insert-date-with-calendar ()
     (interactive)
     (calendar))
   (setup-keybinds calendar-mode-map
-    "RET" 'howm-insert-date-from-calendar
+    "RET" 'my-howm-insert-date-from-calendar
     "C-g" 'calendar-exit)
 
   ;;   + | keybinds
@@ -4616,7 +4694,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-keybinds howm-mode-map
     "C-x C-s" 'my-howm-kill-buffer
     "M-d"     'howm-insert-date
-    "M-c"     'howm-insert-date-with-calendar)
+    "M-c"     'my-howm-insert-date-with-calendar)
   (setup-keybinds howm-menu-mode-map
     "q"       'my-howm-exit)
   (setup-keybinds howm-remember-mode-map
@@ -4751,7 +4829,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
               my-kindly-view-mode-map) minor-mode-map-alist)
   (defun my-kindly-view-mode ()
     (interactive)
-    (read-only-mode 1)
     (setq my-kindly-view-mode t
           line-spacing        0.3
           cursor-type         'bar)
@@ -4966,10 +5043,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-lazy '(rainbow-delimiters-mode) "rainbow-delimiters")
 
 (!-
- (setup "color")               ; dependency
  (setup "highlight-stages"
-   (setq highlight-stages-highlight-real-quote t
-         highlight-stages-lighten-step         -3)
+   (setq highlight-stages-highlight-real-quote t)
    (highlight-stages-global-mode 1)))
 
 (setup-lazy '(rainbow-mode) "rainbow-mode")
@@ -5059,7 +5134,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   "M-2" 'my-split-window
   "M-3" 'balance-windows
   "M-4" 'follow-delete-other-windows-and-split
-  "M-8" 'my-rotate-windows
+  "M-8" 'my-transpose-window-buffers
   "M-9" 'previous-multiframe-window
   "M-o" 'my-toggle-transparency
   "M-k" 'delete-window
@@ -5144,7 +5219,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   "C-M-d" '("phi-autopair" phi-autopair-delete-forward-word kill-word)
   "C-M-h" '("phi-autopair" phi-autopair-delete-backward-word backward-kill-word)
   "C-M-y" '("yasnippet" mark-hacks-expand-oneshot-snippet)
-  "M-W"   'my-yank-sexp
+  "M-W"   'my-copy-sexp
   "M-K"   '("paredit" my-paredit-kill kill-line)
   "M-D"   'kill-sexp
   "M-H"   'backward-kill-sexp
@@ -5172,7 +5247,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   "C-s"   '("phi-search" phi-search isearch-forward-regexp)
   "C-M-r" '("phi-replace" phi-replace replace-regexp)
   "C-M-s" '("phi-search" phi-search-backward isearch-backward-regexp)
-  "M-s"   '("all" my-all-command))
+  "M-s"   '("phi-grep" phi-grep-in-file))
 
 ;;     + other edit commands
 
@@ -5204,7 +5279,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   "M-d"     'my-dired-default-directory
   "M-f"     '("ido" ido-find-file find-file)
   "M-g"     '("phi-grep" phi-grep-in-directory rgrep)
-  "M-r"     'ido-recentf-open
+  "M-r"     'my-ido-recentf-open
+  "C-x C-f" '("phi-grep" phi-grep-find-file-flat)
   "C-x C-=" '("ediff" ediff)
   "C-x C-d" '("ido" ido-dired dired)
   "C-x DEL" 'ff-find-other-file ; C-x C-h
@@ -5251,8 +5327,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   "M-t"       'orgtbl-mode
   "M-a"       'artist-mode
   "M-n"       'my-toggle-narrowing
-  "M-,"       '("howm" howm-menu-or-remember)
+  "M-,"       '("howm" my-howm-menu-or-remember)
   "M-c"       '("smart-compile" smart-compile compile)
+  "C-x C-i"   '("ispell" ispell-region)
   "C-x C-a"   'mf/mirror-region-in-multifile
   "C-x C-l"   'my-add-change-log-entry
   "C-x C-t"   'toggle-truncate-lines
@@ -5265,8 +5342,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (key-chord-define-global "fj" 'my-transpose-chars)
   (key-chord-define-global "hh" 'my-capitalize-word-dwim)
-  (key-chord-define-global "kk" 'my-upcase-previous-word)
-  (key-chord-define-global "jj" 'my-downcase-previous-word)
+  (key-chord-define-global "jj" 'my-upcase-previous-word)
+  (key-chord-define-global "kk" 'my-downcase-previous-word)
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "jk" 'iy-go-to-char)
     (key-chord-define-global "df" 'iy-go-to-char-backward))
