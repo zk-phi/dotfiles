@@ -115,7 +115,10 @@
     "iCal which Howm should export schedules to.")
   (defconst my-clojure-jar-file
     (when (boundp 'my-clojure-jar-file) my-clojure-jar-file)
-    "Path to clojure.jar executable."))
+    "Path to clojure.jar executable.")
+  (defconst my-migemo-dictionary
+    (when (boundp 'my-migemo-dictionary) my-migemo-dictionary)
+    "Dictionary file for migemo."))
 
 ;;   + path to library files
 
@@ -220,10 +223,6 @@
   (! (concat my-dat-directory "backups_" system-name "/"))
   "Directory to save backup files.")
 
-(defconst my-kill-ring-file
-  (! (concat my-dat-directory "killring_" system-name))
-  "File to save kill-ring.")
-
 (defconst my-ido-save-file
   (! (concat my-dat-directory "ido_" system-name))
   "File to save ido history.")
@@ -249,16 +248,20 @@
 
 (defun my-shorten-directory (dir len)
   (if (null dir) ""
-    (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
-          (output ""))
-      (when (and path (equal "" (car path)))
-        (setq path (cdr path)))
-      (while (and path (< (length output) (- len 4)))
-        (setq output (concat (car path) "/" output)
-              path (cdr path)))
-      (when path
-        (setq output (concat ".../" output)))
-      output)))
+    (let ((lst (mapcar (lambda (s)
+                         (if (> (length s) 10)
+                             (cons 10 (concat (substring s 0 9) "…"))
+                           (cons (length s) s)))
+                       (reverse (split-string (abbreviate-file-name dir) "/"))))
+          (reslen 0)
+          (res ""))
+      (when (zerop (caar lst)) (setq lst (cdr lst))) ; ?
+      (while (and lst (< (+ reslen (caar lst) 1 (if (cdr lst) 4 0)) len))
+        (setq res    (concat (cdar lst) "/" res)
+              reslen (+ reslen (caar lst) 1)
+              lst    (cdr lst)))
+      (when lst (setq res (concat ".../" res)))
+      res)))
 
 ;; + | System
 ;;   + *scratch* utilities
@@ -268,9 +271,10 @@
 
 (defun my-clean-scratch ()
   (with-current-buffer "*scratch*"
-    (funcall initial-major-mode)
     (erase-buffer)
-    (when (and initial-scratch-message (not inhibit-startup-message))
+    (lisp-interaction-mode)
+    (when (and initial-scratch-message
+               (not inhibit-startup-message))
       (insert initial-scratch-message))
     (message "*scratch* is cleaned up.")))
 
@@ -292,12 +296,20 @@
 (!-
  (setup-hook 'kill-emacs-hook
    (with-current-buffer "*scratch*"
-     (write-region 1 (1+ (buffer-size)) my-scratch-file))))
+     (widen)
+     (let ((str (buffer-substring-no-properties (point-min) (point-max)))
+           (mode major-mode))
+       (with-temp-buffer
+         (insert
+          "(with-current-buffer \"*scratch*\""
+          "(insert " (prin1-to-string str) ")"
+          (when mode
+            (concat "(setq initial-major-mode '" (prin1-to-string mode) ")")) ")")
+         (write-region (point-min) (point-max) my-scratch-file))))))
 
 (setup-hook 'after-init-hook
-  (with-current-buffer "*scratch*"
-    (when (file-exists-p my-scratch-file)
-      (insert-file-contents my-scratch-file))))
+  (when (file-exists-p my-scratch-file)
+    (load my-scratch-file)))
 
 ;;   + hooks for save/open
 
@@ -335,22 +347,6 @@
              (not (file-writable-p buffer-file-name))
              (y-or-n-p "Switch to root ? "))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
-
-;;   + save kill-ring
-
-(!-
- (setup-hook 'kill-emacs-hook
-   (with-temp-buffer
-     (insert
-      (concat "(setq kill-ring '"
-              (prin1-to-string (mapcar 'substring-no-properties kill-ring))
-              ")"))
-     (write-region 1 (1+ (buffer-size)) my-kill-ring-file))))
-
-(setup-hook 'after-init-hook
-  (when (file-exists-p my-kill-ring-file)
-    (load my-kill-ring-file)
-    (setq kill-ring-yank-pointer kill-ring)))
 
 ;;   + yasnippet settings [yasnippet]
 
@@ -427,6 +423,7 @@
       shift-select-mode                     nil
       save-interprogram-paste-before-kill   t
       yank-excluded-properties              t
+      delete-trailing-lines                 t
       ;; files.el
       magic-mode-alist                      nil)
 
@@ -469,6 +466,10 @@
 (setq minibuffer-prompt-properties
       '(read-only t point-entered minibuffer-avoid-prompt
                   face minibuffer-prompt))
+
+;; truncate minibuffer
+(setup-hook 'minibuffer-setup-hook
+  (setq truncate-lines t))
 
 ;; make keyboard-quit quiet
 ;; reference | https://github.com/maginemu/dotfiles/blob/master/emacs.d/init.el
@@ -590,22 +591,17 @@
 (setup-include "delsel"
   (delete-selection-mode 1))
 
-;; count camelCase word as two or more words
-(!-
- (setup "subword"
-   (define-globalized-minor-mode subword-global-mode
-     subword-mode
-     (lambda () (subword-mode 1)))
-   (subword-global-mode 1)))
-
 ;; track undo history across sessions
 (setup-include "undohist"
   (setq undohist-directory my-undohist-directory)
   (undohist-initialize)
   ;; fix for Windows
-  (defadvice make-undohist-file-name (around my-undohist-fix activate)
-    (flet ((convert-standard-filename (file) file))
-      ad-do-it))
+  (defun make-undohist-file-name (file)
+    (when (string-match "\\(.\\):/?\\(.*\\)$" file)
+      (setq file (concat "/drive_" (match-string 1 file) "/" (match-string 2 file))))
+    (expand-file-name
+     (subst-char-in-string ?/ ?! (replace-regexp-in-string "!" "!!" file))
+     undohist-directory))
   ;; delete old histories
   (defun my-delete-old-undohists ()
     (let ((threshold (* (/ 365 2) 24 60 60))
@@ -814,6 +810,11 @@
         '(("\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH" . "[\\\\{[(<$0-9A-Za-z]")
           ("[]\\\\})>$0-9A-Za-z]" . "\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH"))))
 
+;; handle japanese words better
+(!-
+ (setup "jaword"
+   (global-jaword-mode 1)))
+
 (!-
  (setup "popup")
  (setup "auto-complete"
@@ -867,6 +868,38 @@ for unary operators which can also be binary."
   (setup "flycheck-pos-tip"
     (setq flycheck-display-errors-function 'flycheck-pos-tip-error-messages)))
 
+;; org-like folding via outline-mode
+(setup "outline"
+  (defvar-local my-outline-minimum-heading-len 10000)
+  (setup-hook 'prog-mode-hook
+    (when comment-start
+      (outline-minor-mode 1)
+      (setq-local outline-regexp (concat "^\\(\s*" (regexp-quote comment-start)
+                                         "[" (regexp-quote comment-start) "]*\\)"
+                                         "\s?\\(\s*\\++\\)\s"))
+      (setq-local outline-level (lambda ()
+                                  (setq my-outline-minimum-heading-len
+                                        (min my-outline-minimum-heading-len
+                                             (- (match-end 0) (match-beginning 0))))
+                                  (- (match-end 0) (match-beginning 0)
+                                     my-outline-minimum-heading-len)))))
+  (setup-lazy '(my-outline-cycle-dwim) "outline-magic"
+    :prepare (setup-keybinds outline-minor-mode-map "TAB" 'my-outline-cycle-dwim)
+    (defun my-outline-cycle-dwim ()
+      (interactive)
+      (if (or (outline-on-heading-p) (= (point) 1))
+          (outline-cycle)
+        (call-interactively (global-key-binding "\t"))))
+    (defadvice outline-cycle (after outline-cycle-do-not-show-subtree activate)
+      ;; change "folded -> children -> subtree"
+      ;; to "folded -> children -> folded -> ..."
+      (when (eq this-command 'outline-cycle-children)
+        (setq this-command 'outline-cycle))
+      ;; change "overview -> contents -> show all"
+      ;; to "overview -> show all -> overview -> ..."
+      (when (eq this-command 'outline-cycle-overview)
+        (setq this-command 'outline-cycle-toc)))))
+
 ;; + | Commands
 ;;   + english <-> japanese dictionary [sdic]
 
@@ -891,7 +924,7 @@ for unary operators which can also be binary."
     ;; redefine some functions so that popwin can work with
     ;; reference | http://aikotobaha.blogspot.jp/2013/04/popwinel.html
     (defadvice sdic-display-buffer (around my-sdic-display-popwin activate)
-      (let ((p (or arg (point))))
+      (let ((p (or (ad-get-arg 0) (point))))
         (and sdic-warning-hidden-entry
              (> p (point-min))
              (message "この前にもエントリがあります。"))
@@ -931,7 +964,7 @@ for unary operators which can also be binary."
   (setq recentf-max-saved-items 500
         recentf-auto-cleanup    10
         recentf-exclude         '("/[^/]*\\<tmp\\>[^/]*/" "/[^/]*\\<backup\\>[^/]*/"
-                                  "~$" "^#[^#]*#$" "/ssh:" "/sudo:" "/GitHub/" "/palette/"
+                                  "~$" "^#[^#]*#$" "/ssh:" "/sudo:" "/GitHub/" "\\.emacs\\.d/dat/"
                                   "/undohist/" "\\.elc$" "\\.howm$" "\\.dat$"))
   ;; auto-save recentf-list / delayed cleanup
   ;; reference | http://d.hatena.ne.jp/tomoya/20110217/1297928222
@@ -1039,30 +1072,36 @@ for unary operators which can also be binary."
           (ido-tidy)
           (ido-exhibit)))
 
+      (defun my-valid-regex-p (regexp)
+        (ignore-errors
+          (string-match regexp "")
+          t))
+
       (defadvice ido-set-matches-1 (after flx-ido-set-matches-1 activate)
-        (unless ad-return-value
-          (when ido-enable-prefix (my-ido-disable-prefix))
+        (when (my-valid-regex-p ido-text)
           (unless ad-return-value
-            ;; if not found, try flex matching
-            (catch :too-big
-              (setq ad-return-value (flx-ido-match ido-text (ad-get-arg 0)))
-              ;; if not found, try super-flex matching
-              (unless ad-return-value
-                (setq ad-return-value
-                      (my-super-flx-ido-match ido-text (ad-get-arg 0)))))))
-        (let ((rx (concat "^" ido-text))
-              prefixed prefixed-sans-dir not-prefixed)
-          (dolist (str ad-return-value)
-            (cond ((string-match rx str)
-                   (push str prefixed))
-                  ((and (string-match "\\(?:.+/\\)?\\([^/]*\\)" str)
-                        (string-match rx (match-string 1 str)))
-                   (push str prefixed-sans-dir))
-                  (t
-                   (push str not-prefixed))))
-          (setq ad-return-value (nconc (nreverse prefixed)
-                                       (nreverse prefixed-sans-dir)
-                                       (nreverse not-prefixed)))))
+            (when ido-enable-prefix (my-ido-disable-prefix))
+            (unless ad-return-value
+              ;; if not found, try flex matching
+              (catch :too-big
+                (setq ad-return-value (flx-ido-match ido-text (ad-get-arg 0)))
+                ;; if not found, try super-flex matching
+                (unless ad-return-value
+                  (setq ad-return-value
+                        (my-super-flx-ido-match ido-text (ad-get-arg 0)))))))
+          (let ((rx (concat "^" ido-text))
+                prefixed prefixed-sans-dir not-prefixed)
+            (dolist (str ad-return-value)
+              (cond ((string-match rx str)
+                     (push str prefixed))
+                    ((and (string-match "\\(?:.+/\\)?\\([^/]*\\)" str)
+                          (string-match rx (match-string 1 str)))
+                     (push str prefixed-sans-dir))
+                    (t
+                     (push str not-prefixed))))
+            (setq ad-return-value (nconc (nreverse prefixed)
+                                         (nreverse prefixed-sans-dir)
+                                         (nreverse not-prefixed))))))
 
       ;; enable prefix initially, and disable after 1sec of idle-time
       (add-hook 'ido-setup-hook (setq ido-enable-prefix t))
@@ -1115,7 +1154,9 @@ for unary operators which can also be binary."
   ;; clear highlights after save
   (setup-hook 'after-save-hook
     (when highlight-changes-mode
-      (highlight-changes-remove-highlight 1 (1+ (buffer-size)))))
+      (save-restriction
+        (widen)
+        (highlight-changes-remove-highlight (point-min) (point-max)))))
 
   ;; fix for yasnippet
   (setup-after "yasnippet"
@@ -1801,18 +1842,20 @@ for unary operators which can also be binary."
   "Jump to the next empty line."
   (interactive)
   (when (eobp) (error "end of buffer"))
-  (skip-chars-forward "\s\t\n")
   (let ((type (car (memq (get-text-property (point) 'face)
                          '(font-lock-doc-face
                            font-lock-string-face
                            font-lock-comment-face
+                           markdown-pre-face
                            org-block)))))
+    (skip-chars-forward "\s\t\n")
     (condition-case nil
         (while (and (search-forward-regexp "\n[\s\t]*$")
                     (let ((face (car (memq (get-text-property (point) 'face)
                                            '(font-lock-doc-face
                                              font-lock-string-face
                                              font-lock-comment-face
+                                             markdown-pre-face
                                              org-block)))))
                       (and face (not (eq face type))))))
       (error (goto-char (point-max))))))
@@ -1821,18 +1864,20 @@ for unary operators which can also be binary."
   "Jump to the previous empty line."
   (interactive)
   (when (bobp) (error "beginning of buffer"))
-  (skip-chars-backward "\s\t\n")
   (let ((type (car (memq (get-text-property (point) 'face)
                          '(font-lock-doc-face
                            font-lock-string-face
                            font-lock-comment-face
+                           markdown-pre-face
                            org-block)))))
+    (skip-chars-backward "\s\t\n")
     (condition-case nil
         (while (and (search-backward-regexp "^[\s\t]*\n")
                     (let ((face (car (memq (get-text-property (point) 'face)
                                            '(font-lock-doc-face
                                              font-lock-string-face
                                              font-lock-comment-face
+                                             markdown-pre-face
                                              org-block)))))
                       (and face (not (eq face type))))))
       (error (goto-char (point-min))))))
@@ -2012,13 +2057,13 @@ for unary operators which can also be binary."
     (set-frame-parameter nil 'alpha
                          (if (= current-alpha 100) 66 100))))
 
+;; URL encode / decode region
 (defun my-url-decode-region (beg end)
   "Decode region as hexified string."
   (interactive "r")
   (let ((str (buffer-substring beg end)))
     (delete-region beg end)
     (insert (url-unhex-string str))))
-
 (defun my-url-encode-region (beg end)
   "Hexify region."
   (interactive "r")
@@ -2120,6 +2165,14 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                      (append '(((kbd "C-a") . 'phi-search-mc/mark-next)
                                ((kbd "C-M-a") . 'phi-search-mc/mark-all))
                              phi-search-additional-keybinds)))))
+(setup-lazy '(phi-search-migemo phi-search-migemo-backward) "phi-search-migemo"
+  (setq migemo-command          "cmigemo"
+        migemo-options          '("-q" "--emacs")
+        migemo-dictionary       my-migemo-dictionary
+        migemo-user-dictionary  nil
+        migemo-regex-dictionary nil
+        migemo-coding-system    'utf-8-unix
+        migemo-isearch-enable-p nil))
 
 ;;   + | edit
 
@@ -2168,20 +2221,23 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;   + | assistants
 
 ;; autoload pcre2el
-(setup-lazy '(pcre2el-describe-regexp) "pcre2el"
-  :prepare (defalias 'pcre2el-describe-regexp 'rxt-explain)
-  (setup-hook 'rxt-help-mode-hook
-    (add-hook 'post-command-hook 'end-of-line nil t)))
+(setup-lazy '(rxt-explain) "pcre2el"
+  :prepare (defun describe-regexp () (interactive) (rxt-explain))
+  (setup-after "rainbow-delimiters"
+    (setup-hook 'rxt-help-mode-hook
+      (rainbow-delimiters-mode -1))))
 
 ;; autoload sos
 (setup-lazy '(sos) "sos")
 
-;;   + | jokes
+;;   + | jokes / games
 
 ;; ＿人人人人人人人人＿
 ;; ＞  sudden-death  ＜
 ;; ￣ＹＹＹＹＹＹＹＹ￣
 (setup-lazy '(sudden-death) "sudden-death")
+
+(setup-lazy '(2048-game) "2048-game")
 
 ;;   + | others
 
@@ -2224,42 +2280,19 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 (setup-lazy '(mf/mirror-region-in-multifile) "multifiles")
 
-;; org-like cycling for outline-mode
-(setup-after "outline"
-  (setup-lazy '(my-outline-cycle-dwim) "outline-magic"
-    :prepare (setup-keybinds outline-minor-mode-map "TAB" 'my-outline-cycle-dwim)
-    (defun my-outline-cycle-dwim ()
-      (interactive)
-      (if (or (outline-on-heading-p) (= (point) 1))
-          (outline-cycle)
-        (call-interactively (global-key-binding "\t"))))
-    (defadvice outline-cycle (after outline-cycle-do-not-show-subtree activate)
-      ;; change "folded -> children -> subtree"
-      ;; to "folded -> children -> folded -> ..."
-      (when (eq this-command 'outline-cycle-children)
-        (setq this-command 'outline-cycle))
-      ;; change "overview -> contents -> show all"
-      ;; to "overview -> show all -> overview -> ..."
-      (when (eq this-command 'outline-cycle-overview)
-        (setq this-command 'outline-cycle-toc)))))
-
 ;; + | Modes
-;;   + basic
-;;     + fundamental-mode
-
-(setup-after "fundamental-mode"
-  (setup-after "mark-hacks"
-    (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes)))
-
+;;   + texts
 ;;     + text-mode
 
 (setup-after "text-mode"
   (setup-expecting "electric-spacing"
     (setup-hook 'text-mode-hook 'electric-spacing-mode))
   (setup-after "mark-hacks"
-    (push 'text-mode mark-hacks-auto-indent-inhibit-modes)))
+    (push 'text-mode mark-hacks-auto-indent-inhibit-modes))
+  (setup-expecting "phi-search-migemo"
+    (define-key text-mode-map [remap phi-search] 'phi-search-migemo)
+    (define-key text-mode-map [remap phi-search-backward] 'phi-search-migemo-backward)))
 
-;;   + documents
 ;;     + org-mode [htmlize]
 
 (setup-after "org"
@@ -2282,6 +2315,10 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "smart-compile"
     (push '(org-mode . (org-export-as-html-and-open nil))
           smart-compile-alist))
+
+  (setup-expecting "phi-search-migemo"
+    (define-key org-mode-map [remap phi-search] 'phi-search-migemo)
+    (define-key org-mode-map [remap phi-search-backward] 'phi-search-migemo-backward))
 
   (setup-after "org-exp"
 
@@ -2385,20 +2422,35 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'latex-mode-hook 'electric-spacing-mode))
   (setup-after "mark-hacks"
     (push 'latex-mode mark-hacks-auto-indent-inhibit-modes))
+  (setup-expecting "phi-search-migemo"
+    (define-key latex-mode-map [remap phi-search] 'phi-search-migemo)
+    (define-key latex-mode-map [remap phi-search-backward] 'phi-search-migemo-backward))
   (setup-after "auto-complete"
     (setup "auto-complete-latex"
       (setq ac-l-dict-directory my-latex-dictionary-directory)
       (push 'latex-mode ac-modes)
       (setup-hook 'latex-mode-hook 'ac-l-setup))))
 
-;;   + web [web-mode]
+;;     + gfm-mode [markdown-mode]
+
+(setup-lazy '(gfm-mode) "markdown-mode"
+  :prepare (progn
+             (push '("\\.md$" . gfm-mode) auto-mode-alist)
+             (push '("\\.markdown$" . gfm-mode) auto-mode-alist))
+  (setup-keybinds gfm-mode-map
+    '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
+    "TAB" 'markdown-cycle))
+
+;;   + web-mode
 
 (setup-lazy '(web-mode) "web-mode"
   :prepare (push (! `(,(format "\\.%s$"
                                (regexp-opt
-                                '("phtml" "tpl" "php" "gsp" "jsp"
-                                  "aspx" "ascx" "erb" "mustache" "djhtml"
-                                  "html" "js" "jsx" "css" "xml")))
+                                '("html" "css" "xml"
+                                  ;; "phtml" "tpl" "php" "gsp" "jsp"
+                                  ;; "aspx" "ascx" "erb" "mustache" "djhtml"
+                                  ;; "js" "jsx"
+                                  )))
                       . web-mode)) auto-mode-alist)
 
   (setq web-mode-code-indent-offset 4
@@ -2710,11 +2762,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
    'emacs-lisp-mode '(("(\\(defvar-local\\)" 1 font-lock-keyword-face)))
   (font-lock-add-keywords
    'lisp-interaction-mode '(("(\\(defvar-local\\)" 1 font-lock-keyword-face)))
-  (setup-hook 'emacs-lisp-mode-hook
-    (outline-minor-mode 1)
-    (setq-local outline-regexp "^[\s\t]*;;[\s]+\\+[+-]*\s")
-    (setq-local outline-level (lambda () (- (outline-level) 4)))
-    (my-lisp-install-toggle-commands))
+  (setup-hook 'emacs-lisp-mode-hook 'my-lisp-install-toggle-commands)
   (setup-keybinds emacs-lisp-mode-map '("M-TAB" "C-j") nil)
   (setup-keybinds lisp-interaction-mode-map '("M-TAB" "C-j") nil)
   (setup-expecting "eldoc"
@@ -3368,8 +3416,11 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "|") '(" | " " || "))
       (key-combo-define-local (kbd "|=") " |= ")
       (key-combo-define-local (kbd "||=") " ||= ")
+      (key-combo-define-local (kbd ">>=") " >>= ")
+      (key-combo-define-local (kbd "<<=") " <<= ")
       (key-combo-define-local (kbd "^") " ^ ")
-      (key-combo-define-local (kbd "^=") " ^= ")
+      ;; (key-combo-define-local (kbd "^=") " ^= ")
+      ;; => cannot invoke C-= when enabled (why?)
       ;; others
       (key-combo-define-local (kbd "/*") "/* `!!' */")
       (key-combo-define-local (kbd "{") '(my-c-smart-braces "{ `!!' }"))))
@@ -3468,26 +3519,42 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "flycheck"
     ;; C/C++ checkers using gcc/g++
     ;; reference | https://github.com/jedrz/.emacs.d/blob/master/setup-flycheck.el
+    (defun my-flycheck-use-c99-p ()
+      (save-excursion
+        (goto-char (point-min))
+        (search-forward-regexp "__STDC_VERSION__[^\n]*1999" 500 t)))
     (flycheck-define-checker c-gcc
-                             "A C checker using gcc"
-                             :command ("gcc" "-fsyntax-only" "-ansi" "-pedantic"
-                                       "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
-                             :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
-                                                       " warning: " (message) line-end)
-                                              (error line-start (file-name) ":" line ":" column ":"
-                                                     " error: " (message) line-end))
-                             :modes 'c-mode)
+      "A C checker using gcc"
+      :command ("gcc" "-fsyntax-only" "-ansi" "-pedantic"
+                "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+      :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
+                                " warning: " (message) line-end)
+                       (error line-start (file-name) ":" line ":" column ":"
+                              " error: " (message) line-end))
+      :modes 'c-mode
+      :predicate (lambda () (not (my-flycheck-use-c99-p))))
+    (flycheck-define-checker c99-gcc
+      "A C checker using gcc -std=c99"
+      :command ("gcc" "-fsyntax-only" "-std=c99" "-pedantic"
+                "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+      :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
+                                " warning: " (message) line-end)
+                       (error line-start (file-name) ":" line ":" column ":"
+                              " error: " (message) line-end))
+      :modes 'c-mode
+      :predicate my-flycheck-use-c99-p)
     (flycheck-define-checker c++-g++
-                             "A C checker using g++"
-                             :command ("g++" "-fsyntax-only" "-std=c++11" "-pedantic"
-                                       "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
-                             :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
-                                                       " warning: " (message) line-end)
-                                              (error line-start (file-name) ":" line ":" column ":"
-                                                     " error: " (message) line-end))
-                             :modes 'c++-mode)
+      "A C checker using g++"
+      :command ("g++" "-fsyntax-only" "-std=c++11" "-pedantic"
+                "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+      :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
+                                " warning: " (message) line-end)
+                       (error line-start (file-name) ":" line ":" column ":"
+                              " error: " (message) line-end))
+      :modes 'c++-mode)
     (add-to-list 'flycheck-checkers 'c-gcc)
-    (add-to-list 'flycheck-checkers 'c++-g++))
+    (add-to-list 'flycheck-checkers 'c++-g++)
+    (add-to-list 'flycheck-checkers 'c99-gcc))
   )
 
 ;;     + Java
@@ -4042,6 +4109,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "auto-complete"
     (push 'hydla-mode ac-modes)))
 
+;;   + esolangs
+;;     + zombie-mode
+
+(setup-lazy '(zombie-mode) "zombie"
+  :prepare (push '("\\.zombie$" . zombie-mode) auto-mode-alist))
+
 ;;   + other PLs
 ;;     + ahk-mode
 
@@ -4349,6 +4422,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "g"   nil)))
 
 ;;   + others
+;;     + fundamental-mode
+
+(setup-after "fundamental-mode"
+  (setup-after "mark-hacks"
+    (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes)))
+
 ;;     + vi-mode
 
 (setup-after "vi"
@@ -4386,11 +4465,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-keybinds vi-com-map "v" 'set-mark-command)
   )
 
-;;     + dired [idired] [dired-k] [find-dired-lisp]
+;;     + dired [dired-k] [find-dired-lisp] [phi-search-dired] [dired-explore]
 
 (setup-lazy '(my-dired-default-directory) "dired"
 
   ;; settings
+
   (setq dired-dwim-target          t
         dired-auto-revert-buffer   t
         dired-recursive-copies     'always
@@ -4402,7 +4482,13 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   ;; add "[Dired]" prefix to buffer names
   (setup-hook 'dired-mode-hook
-    (rename-buffer (concat "[Dired]" (buffer-name)) t))
+    (rename-buffer (concat "[Dired]" (buffer-name)) t)
+    ;; use '*' instead of 'D'
+    (add-hook 'post-command-hook
+              (lambda ()
+                (dired-change-marks ?D dired-marker-char)) nil t))
+
+  ;; plugins
 
   ;; disable key-chord
   (setup-after "key-chord"
@@ -4414,19 +4500,141 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (require 'find-dired)               ; dependency (find-ls-option)
     (setup-keybinds dired-mode-map "f" 'find-dired-lisp))
 
-  (setup "idired"
-    (setup-hook 'dired-mode-hook 'idired-mode))
-
   (setup "dired-k"
     (defadvice dired-k--inside-git-repository-p (around my-fix-dired-k activate)
       (setq ad-return-value nil))
     (setup-hook 'dired-mode-hook
       (run-with-idle-timer 0 nil 'dired-k--highlight)))
 
-  ;; command
+  (setup-lazy '(phi-search-dired) "phi-search-dired")
+  (setup-lazy '(dired-explore) "dired-explore")
+
+  ;; keybinds
+
+  ;; dired-x modifies keybinds so load it first.
+  (require 'dired-x)
+
+  (setup-keybinds dired-mode-map
+    "RET"     'my-dired-find-alternate-file
+    "SPC"     'my-dired-toggle-mark
+    "DEL"     'dired-unmark-backward
+    "`"       'dired-flag-backup-files               ; '~'
+    "1"       'dired-do-shell-command                ; '!'
+    "2"       'dired-mark-symlinks                   ; '@'
+    "3"       'dired-flag-auto-save-files            ; '#'
+    "5"       'dired-do-query-replace-regexp         ; '%'
+    "7"       'dired-do-async-shell-command          ;
+    "8"       'dired-mark-executables                ; '*'
+    "="       'dired-diff                            ;
+    "q"       'kill-this-buffer                      ; 'Q'uit
+    "w"       'wdired-change-to-wdired-mode          ; 'W'dired
+    "t"       'dired-toggle-marks                    ; 'T'oggle
+    "u"       'dired-unmark-all-marks                ; 'U'nmark
+    "i"       'my-dired-do-insert-subdirs            ; 'I'nsert
+    "o"       'dired-find-file-other-window          ; 'O'ther-window
+    "r"       'revert-buffer                         ; 'R'efresh
+    "e"       'my-dired-do-convert-coding-system     ; 'E'ncoding
+    "s"       'dired-do-isearch-regexp               ; 'S'earch
+    "d"       'dired-do-delete                       ; 'D'elete
+    "g"       'dired-flag-garbage-files              ; 'G'arbage
+    "h"       'my-dired-up-directory                 ; (inspired by vi)
+    "j"       'dired-next-line                       ; (inspired by vi)
+    "k"       'dired-previous-line                   ; (inspired by vi)
+    "l"       'my-dired-find-alternate-file          ; (inspired by vi)
+    "z"       'dired-do-compress                     ; 'Z'ip
+    "x"       'my-dired-winstart                     ; e'X'ecute
+    "c"       'dired-do-copy                         ; 'C'opy
+    "v"       'dired-view-file                       ; 'V'iew
+    "b"       'dired-do-byte-compile                 ; 'B'ytecompile
+    "n"       'dired-create-directory                ; 'N'ew
+    "m"       'dired-do-rename                       ; 'M'ove
+    ","       'dired-sort-toggle-or-edit             ;
+    "/"       '("phi-search-dired" phi-search-dired) ; (inspired by vi)
+    "C-c C-o" 'dired-do-chown                        ; 'C'hange-'O'wn
+    "C-c C-m" 'dired-do-chmod                        ; 'C'hange-'M'od
+    "C-c C-g" 'dired-do-chgrp                        ; 'C'hange-'G'rp
+    "C-c C-s" 'dired-do-symlink                      ; 'C'reate-'S'ymlink
+    "C-c C-h" 'dired-do-hardlink                     ; 'C'reate-'H'ardlink
+    '("!" "@" "#" "$" "%" "^" "&" "*" "(" ")" "_" "+" "{" "}" ":" "\"" "|" "<"
+      ">" "?" "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P"
+      "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z") '("dired-explore" dired-explore))
+
+  ;; interactive commands
+
   (defun my-dired-default-directory ()
     (interactive)
     (dired default-directory))
+
+  (defun my-dired-find-alternate-file ()
+    (interactive)
+    (dired-find-alternate-file))
+
+  ;; taken from http://www.bookshelf.jp/soft/meadow_25.html#SEC276
+  (defun my-dired-toggle-mark (arg)
+    "Toggle the current (or next ARG) files."
+    (interactive "P")
+    (let ((dired-marker-char
+           (if (save-excursion (beginning-of-line)
+                               (looking-at " "))
+               dired-marker-char ?\040)))
+      (dired-mark arg)))
+
+  ;; taken from http://www.emacswiki.org/emacs/DiredReuseDirectoryBuffer
+  (defun my-dired-up-directory ()
+    "like dired-up-directory but reuse current buffer"
+    (interactive)
+    (let* ((current-dir (dired-current-directory))
+           (up-dir (file-name-directory (directory-file-name current-dir)))
+           (prev-buf (current-buffer)))
+      (or (dired-goto-file (directory-file-name current-dir))
+          (and (cdr dired-subdir-alist)
+               (dired-goto-subdir up-dir))
+          (progn
+            (kill-buffer prev-buf)
+            (dired up-dir)
+            (dired-goto-file current-dir)))))
+
+  (defun my-dired-do-convert-coding-system ()
+    "Convert file (s) in specified coding system."
+    (interactive)
+    (let ((coding
+           (read-coding-system
+            (format "Coding system for converting file (s) (default, %s): "
+                    buffer-file-coding-system)
+            buffer-file-coding-system)))
+      (check-coding-system coding)
+      (dired-map-over-marks-check
+       (lambda ()
+         (let ((file (dired-get-filename))
+               (coding-system-for-write coding))
+           (condition-case err
+               (with-temp-buffer
+                 (insert-file-contents file)
+                 (write-region (point-min) (point-max) file))
+             (error (dired-log "convert coding system error for %s:\n%s\n" file err)
+                    err))))
+       nil 'convert-coding-system t)))
+
+  (defun my-dired-do-insert-subdirs ()
+    (interactive)
+    (dired-map-over-marks-check
+     (lambda ()
+       (let ((dirname (dired-get-filename)))
+         (condition-case err
+             (progn (dired-insert-subdir dirname) nil)
+           (error (dired-log "failed to insert %s:\n%s\n" dirname err)
+                  err))))
+     nil 'insert-subdir t))
+
+  ;; taken from uenox-dired.el
+  (defun my-dired-winstart ()
+    "win-start the current line's file."
+    (interactive)
+    (if (eq system-type 'windows-nt)
+        (let ((file (dired-get-filename)))
+          (w32-shell-execute "open" file)
+          (message "win-started %s" file))
+      (error "works only on Windows")))
   )
 
 ;;     + Buffer-menu
@@ -4438,13 +4646,13 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setq-local input-method-function nil))
   (setup-keybinds Buffer-menu-mode-map
     "RET" 'Buffer-menu-select
+    "SPC" 'Buffer-menu-delete
     "j" 'next-line
     "k" 'previous-line
     "l" 'Buffer-menu-select
     "o" 'Buffer-menu-other-window
     "v" 'Buffer-menu-view
     "s" 'Buffer-menu-save
-    "m" 'Buffer-menu-delete
     "d" 'Buffer-menu-execute
     "u" 'Buffer-menu-unmark
     "5" 'Buffer-menu-toggle-read-only
@@ -4454,13 +4662,17 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;     + eshell
 
 (setup-after "eshell"
+
   (setq eshell-directory-name  my-eshell-directory
-        eshell-prompt-regexp   "^λ>?> "
+        eshell-prompt-regexp   (concat "^" (regexp-opt
+                                            '("（*>w<）? " "（*'-'）? " "（`;w;）! ")))
         eshell-prompt-function (lambda ()
-                                 (concat "\n"
-                                         (my-shorten-directory (eshell/pwd) 20)
-                                         "\n"
-                                         (if (= (user-uid) 0) "λ>> " "λ> "))))
+                                 (concat "\n" (my-shorten-directory (eshell/pwd) 30) "\n"
+                                         (cond ((= (user-uid) 0) "（*>w<）? ")
+                                               ((= eshell-last-command-status 0) "（*'-'）? ")
+                                               (t "（`;w;）! ")))))
+  (setup-hook 'eshell-mode-hook
+    (setq eshell-last-command-status 0))
 
   (setup-after "mark-hacks"
     (push 'eshell-mode mark-hacks-auto-indent-inhibit-modes))
@@ -4524,12 +4736,13 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         howm-template-date-format            "[%Y-%m-%d]"
         howm-template                        "* %date %cursor\n"
         howm-action-lock-forward-save-buffer t
+        howm-insert-date-future              t
         howm-menu-lang                       'en
         howm-menu-schedule-days-before       0
-        howm-menu-schedule-days              185
-        howm-menu-todo-num                   50
+        howm-menu-schedule-days              250
+        howm-menu-todo-num                   100
         howm-menu-reminder-separators
-        '((-1000 . "\n// dead")
+        '((-1000 . "\n// past")
           (-1 . "\n// today")
           (0 . "\n// upcoming")
           (nil . "\n// todo (-n: n日後から↓ / +n: n日後から↑ / ~n: n日周期↑↓)")))
@@ -4689,12 +4902,44 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "RET" 'my-howm-insert-date-from-calendar
     "C-g" 'calendar-exit)
 
+  ;; redefine howm-action-lock-date to allow from~to style input
+  (defun howm-action-lock-interpret-input (str)
+    (cond ((string-match "^[-+][0-9]+$" str) ; relative
+           (howm-datestr-shift date 0 0 (string-to-number str)))
+          ((string-match "^[0-9]+$" str)  ; absolute
+           (howm-datestr-expand str date future-p))
+          ((string-match "^\\.$" str)     ; today
+           (howm-time-to-datestr))
+          (t
+           (error (format "Invalid input %s." str)))))
+  (defun howm-action-lock-date (date &optional new future-p)
+    (let* ((prompt (concat "[" (howm-datestr-day-of-week date) "] "
+                           "RET(list), [+-]num(shift), yymmdd(set)"
+                           ", x~y(from/to), .(today): "))
+           (str (howm-read-string prompt nil "+-~0123456789" nil nil)))
+      (if (not (string-match
+                "^\\([-+]?[0-9]+\\|\\.\\)\\(?:~\\([-+]?[0-9]+\\|\\.\\)\\)?$" str))
+          (error (format "Invalid input %s." str))
+        (save-excursion
+          (let ((d1 (save-match-data
+                      (howm-action-lock-interpret-input (match-string 1 str))))
+                (d2 (when (match-beginning 2)
+                      (howm-action-lock-interpret-input (match-string 2 str)))))
+            (while (not (looking-at howm-date-regexp))
+              (backward-char))
+            (replace-match d1)
+            (when d2
+              (goto-char (1+ (match-end 0)))
+              (insert
+               (format "@%d" (- (1+ (time-to-days (howm-datestr-to-time d2)))
+                                (time-to-days (howm-datestr-to-time d1)))))))))))
+
   ;;   + | keybinds
 
   (setup-keybinds howm-mode-map
     "C-x C-s" 'my-howm-kill-buffer
-    "M-d"     'howm-insert-date
-    "M-c"     'my-howm-insert-date-with-calendar)
+    "C-c C-d" 'howm-insert-date
+    "C-c C-c" 'my-howm-insert-date-with-calendar)
   (setup-keybinds howm-menu-mode-map
     "q"       'my-howm-exit)
   (setup-keybinds howm-remember-mode-map
@@ -4736,8 +4981,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;;   + | mode-line-format
 
+(require 'battery)
 (defun my-generate-mode-line-format ()
-  (let ((vbar
+  (let ((VBAR
          (! (propertize " : " 'face 'mode-line-dark-face)))
         (linum
          (! (propertize "%5l" 'face 'mode-line-bright-face)))
@@ -4765,11 +5011,11 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         (dirname
          (propertize (let* ((file (buffer-file-name))
                             (dir (if file (file-name-directory file) "")))
-                       (my-shorten-directory dir 10)) 'face 'mode-line-dark-face))
+                       (my-shorten-directory dir 20)) 'face 'mode-line-dark-face))
         (filename
          (! (propertize "%b" 'face 'mode-line-highlight-face)))
         (recur
-         (! (propertize " %]" 'face 'mode-line-dark-face)))
+         (! (propertize "%]" 'face 'mode-line-dark-face)))
         ;; right half must not contain "%" notation otherwise we
         ;; cannot determine the size of right margin
         (mode
@@ -4783,24 +5029,30 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                  (if (listp mode-name) (cadr mode-name) mode-name)
                  'face 'mode-line-bright-face))))
         (encoding
-         (propertize (format " (%s)" (symbol-name buffer-file-coding-system))
+         (propertize (format "(%c)" (coding-system-mnemonic buffer-file-coding-system))
                      'face 'mode-line-dark-face))
         (time
          (let ((time (decode-time (current-time))))
            (propertize (format "%02d:%02d" (cl-caddr time) (cadr time))
-                       'face 'mode-line-bright-face))))
-    (let* ((lstr (concat linum vbar
-                         colnum-or-region vbar
-                         i-narrowed i-readonly i-modified i-mc vbar
-                         dirname filename recur))
-           (rstr (concat vbar mode encoding vbar time))
+                       'face 'mode-line-bright-face)))
+        (battery
+         (propertize (let ((bat (read (cdr (assoc ?p (funcall battery-status-function))))))
+                       (cond ((> bat 87)  "█") ((> bat 75)  "▇")
+                             ((> bat 62)  "▆") ((> bat 50)  "▅")
+                             ((> bat 37)  "▄") ((> bat 25)  "▃")
+                             ((> bat 12)  "▂") (t           "▁")))
+                     'face 'mode-line-dark-face)))
+    (let* ((lstr (concat linum VBAR colnum-or-region VBAR
+                         i-narrowed i-readonly i-modified i-mc VBAR
+                         dirname filename " " recur))
+           (rstr (concat VBAR mode " " encoding VBAR time " " battery))
            (lmargin (propertize " " 'display
                                 '((space :align-to (+ 1 left-fringe)))))
            (rmargin (propertize " " 'display
                                 `((space :align-to (- right-fringe ,(length rstr)))))))
       (concat lmargin lstr rmargin rstr))))
 
-(setq-default mode-line-format '(:eval (my-generate-mode-line-format)))
+(setq-default mode-line-format '((:eval (my-generate-mode-line-format))))
 
 ;;   + | others
 
@@ -4875,7 +5127,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 (eval-and-compile
   (setup-include "solarized-definitions"
-    (create-solarized-theme dark)))
+    ;; (create-solarized-theme dark)
+    (create-solarized-theme dard)))
 
 ;;   + | modeline
 
@@ -5307,7 +5560,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   "<f1> a"    'describe-face
   "<f1> x"    'describe-syntax
   "<f1> s"    'info-lookup-symbol
-  "<f1> r"    '("pcre2el" pcre2el-describe-regexp)
+  "<f1> r"    '("pcre2el" describe-regexp)
   "<f1> w"    '("sdic" sdic-describe-word)
   "<f1> ,"    '("sos" sos))
 
