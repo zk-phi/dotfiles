@@ -72,7 +72,7 @@
 ;; C-_
 ;; |     | Edit|     |     |     |     |     |     |     |     |     |ColFm|     |     |
 ;;    |     |RcCut|     |     |TrRow|RcPst|     |FwCel|InRow|     |     |     |
-;;       |     |     |     |     | Exit|     |     |     |     |     |     |
+;;       |     |     |     |     |     |     |     |     |     |     |     |
 ;;          |     |     |     |     |     |     |FwRow|     |     | Sort|
 
 ;; C-M-_
@@ -2186,7 +2186,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;   + | pop-up windows
 
 ;; make and popup scratch-notes for each files
-(setup-lazy '(scratch-palette-popup) "scratch-palette"
+(setup "scratch-palette"
   (setq scratch-palette-directory my-palette-directory)
   (setup-keybinds scratch-palette-minor-mode-map
     "M-w" 'scratch-palette-kill))
@@ -4383,8 +4383,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "C-M-=" 'my-orgtbl-eval-field-formula
       "C-/"   'org-table-sort-lines
       "C-2"   'org-table-edit-field
-      "M-e"   'my-orgtbl-recalculate
-      "C-g"   'orgtbl-mode))
+      "M-e"   'my-orgtbl-recalculate))
   )
 
 ;;   + reading modes
@@ -4951,7 +4950,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;; + | Appearance
 ;;   + mode-line settings
-;;   + | faces
+;;   + | faces, colors
 
 (!foreach '(mode-line-bright-face
             mode-line-dark-face
@@ -4962,13 +4961,20 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
             mode-line-read-only-face
             mode-line-narrowed-face
             mode-line-mc-face
+            mode-line-palette-face
             header-line)
   (make-face ,it)
   (set-face-attribute ,it nil :inherit 'mode-line-face))
 
-;;   + | change color while recording macros
-
 (defvar my-mode-line-background '("#194854" . "#594854"))
+
+(defvar my-mode-line-battery-indicator-colors
+  ;; (mapcar (lambda (c) (apply 'color-rgb-to-hex c))
+  ;;         (color-gradient '(1 .2 .1) '(.4 .9 .2) 11))
+  '("#f2411b" "#e5501d" "#d85f1f" "#cb6e22" "#bf7d24" "#b28c26"
+    "#a59b28" "#98aa2a" "#8cb82c" "#7fc72e" "#72d630"))
+
+;;   + | change color while recording macros
 
 (defadvice kmacro-start-macro (after my-recording-mode-line activate)
   (set-face-background 'mode-line (cdr my-mode-line-background))
@@ -4981,7 +4987,31 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;;   + | mode-line-format
 
+;; battery status
 (require 'battery)
+(defvar my-battery-status nil "cons of (PERCENTILE . CHARGING)")
+(defun my-update-battery-status ()
+  (let* ((stat (funcall battery-status-function))
+         (percentile (read (cdr (assoc ?p stat))))
+         (charging (string= (cdr (assoc ?L stat)) "on-line"))
+         (last-stat my-battery-status))
+    (setq my-battery-status (cons percentile charging))
+    (unless (equal last-stat my-battery-status)
+      (force-mode-line-update))))
+(run-with-timer 0 5 'my-update-battery-status)
+
+;; scratch-palette status
+(defvar-local my-palette-available-p nil)
+(setup-after "scratch-palette"
+  (defun my-update-palette-status ()
+    (let ((fname (scratch-palette--palette-file-name)))
+      (when (and fname (file-exists-p fname))
+        (setq my-palette-available-p t))))
+  (defadvice scratch-palette-kill (after my-update-palette-status activate)
+    (my-update-palette-status))
+  (setup-hook 'find-file-hook 'my-update-palette-status)
+  (my-update-palette-status))
+
 (defun my-generate-mode-line-format ()
   (let ((VBAR
          (! (propertize " : " 'face 'mode-line-dark-face)))
@@ -5014,8 +5044,11 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                        (my-shorten-directory dir 20)) 'face 'mode-line-dark-face))
         (filename
          (! (propertize "%b" 'face 'mode-line-highlight-face)))
+        (palette
+         (when my-palette-available-p
+           (! (propertize " :p" 'face 'mode-line-palette-face))))
         (recur
-         (! (propertize "%]" 'face 'mode-line-dark-face)))
+         (! (propertize " %]" 'face 'mode-line-dark-face)))
         ;; right half must not contain "%" notation otherwise we
         ;; cannot determine the size of right margin
         (mode
@@ -5028,28 +5061,35 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                  ;; mode-name may be a list in sgml modes
                  (if (listp mode-name) (cadr mode-name) mode-name)
                  'face 'mode-line-bright-face))))
+        (process
+         (when mode-line-process
+           (propertize (car mode-line-process) 'face 'mode-line-highlight-face)))
         (encoding
-         (propertize (format "(%c)" (coding-system-mnemonic buffer-file-coding-system))
+         (propertize (format "(%c%s)"
+                             (coding-system-mnemonic buffer-file-coding-system)
+                             (coding-system-eol-type-mnemonic buffer-file-coding-system))
                      'face 'mode-line-dark-face))
         (time
          (let ((time (decode-time (current-time))))
            (propertize (format "%02d:%02d" (cl-caddr time) (cadr time))
                        'face 'mode-line-bright-face)))
         (battery
-         (propertize (let ((bat (read (cdr (assoc ?p (funcall battery-status-function))))))
-                       (cond ((> bat 87)  "█") ((> bat 75)  "▇")
-                             ((> bat 62)  "▆") ((> bat 50)  "▅")
-                             ((> bat 37)  "▄") ((> bat 25)  "▃")
-                             ((> bat 12)  "▂") (t           "▁")))
-                     'face 'mode-line-dark-face)))
-    (let* ((lstr (concat linum VBAR colnum-or-region VBAR
-                         i-narrowed i-readonly i-modified i-mc VBAR
-                         dirname filename " " recur))
-           (rstr (concat VBAR mode " " encoding VBAR time " " battery))
-           (lmargin (propertize " " 'display
-                                '((space :align-to (+ 1 left-fringe)))))
-           (rmargin (propertize " " 'display
-                                `((space :align-to (- right-fringe ,(length rstr)))))))
+         (let* ((index (/ (car my-battery-status) 10))
+                (str (nth index '("₀!" "₁_" "₂▁" "₃▂" "₄▃" "₅▄" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█")))
+                (color (nth index my-mode-line-battery-indicator-colors)))
+           (if (cdr my-battery-status)
+               (propertize str 'face 'mode-line-dark-face)
+             (propertize str 'face `(:foreground ,color))))))
+    (let* ((lstr
+            (concat linum VBAR colnum-or-region VBAR
+                    i-narrowed i-readonly i-modified i-mc VBAR
+                    dirname filename palette recur))
+           (rstr
+            (concat VBAR mode process " " encoding VBAR time " " battery))
+           (lmargin
+            (propertize " " 'display '((space :align-to (+ 1 left-fringe)))))
+           (rmargin
+            (propertize " " 'display `((space :align-to (- right-fringe ,(length rstr)))))))
       (concat lmargin lstr rmargin rstr))))
 
 (setq-default mode-line-format '((:eval (my-generate-mode-line-format))))
@@ -5181,6 +5221,11 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
  'mode-line-mc-face nil
  :foreground (! (my-make-color (face-foreground 'default) 6 -1))
  :box        `(:line-width 1 :color ,(face-foreground 'mode-line)))
+
+(set-face-attribute
+ 'mode-line-palette-face nil
+ :foreground (! (face-foreground 'term-color-cyan))
+ :bold       t)
 
 ;;   + | ace-jump-mode
 
