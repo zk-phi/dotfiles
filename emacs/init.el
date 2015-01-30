@@ -900,6 +900,12 @@ for unary operators which can also be binary."
       (when (eq this-command 'outline-cycle-overview)
         (setq this-command 'outline-cycle-toc)))))
 
+;;   + | others
+
+(!-
+ (setup "symon"
+   (symon-mode)))
+
 ;; + | Commands
 ;;   + english <-> japanese dictionary [sdic]
 
@@ -5012,6 +5018,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-hook 'find-file-hook 'my-update-palette-status)
   (my-update-palette-status))
 
+(defun my-eol-type-mnemonic (coding-system)
+  (let ((eol-type (coding-system-eol-type coding-system)))
+    (if (vectorp eol-type) ?-
+      (cl-case eol-type
+        ((0) ?u) ((1) ?d) ((2) ?m) (else ?-)))))
+
 (defun my-generate-mode-line-format ()
   (let ((VBAR
          (! (propertize " : " 'face 'mode-line-dark-face)))
@@ -5065,14 +5077,13 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
          (when mode-line-process
            (propertize (car mode-line-process) 'face 'mode-line-highlight-face)))
         (encoding
-         (propertize (format "(%c%s)"
+         (propertize (format "(%c%c)"
                              (coding-system-mnemonic buffer-file-coding-system)
-                             (coding-system-eol-type-mnemonic buffer-file-coding-system))
+                             (my-eol-type-mnemonic buffer-file-coding-system))
                      'face 'mode-line-dark-face))
         (time
-         (let ((time (decode-time (current-time))))
-           (propertize (format "%02d:%02d" (cl-caddr time) (cadr time))
-                       'face 'mode-line-bright-face)))
+         (cl-destructuring-bind (_ min hour day . __) (decode-time (current-time))
+           (propertize (format "%d %02d:%02d" day hour min) 'face 'mode-line-bright-face)))
         (battery
          (let* ((index (/ (car my-battery-status) 10))
                 (str (nth index '("₀!" "₁_" "₂▁" "₃▂" "₄▃" "₅▄" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█")))
