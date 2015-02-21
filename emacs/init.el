@@ -1,4 +1,4 @@
-;; init.el (for Emacs 24.3) | 2014 zk_phi
+;; init.el (for Emacs 24.3) | 2012-2015 zk_phi
 
 (require 'setup)
 (setup-initialize)
@@ -19,7 +19,7 @@
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|Zoom-|     |     |
 ;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf| Fill|NLBet|BPgph|M-ESC|     |
 ;;       |MCAll|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|BKlLn| Top |     |     |
-;;          |     |     |     |EdBuf|BWord|NPgph|FwRet|MrkAl|     |     |
+;;          |     |     | Calc|EdBuf|BWord|NPgph|FwRet|MrkAl|     |     |
 
 ;;   + Meta-
 
@@ -810,10 +810,7 @@
         '(("\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH" . "[\\\\{[(<$0-9A-Za-z]")
           ("[]\\\\})>$0-9A-Za-z]" . "\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH"))))
 
-;; handle japanese words better
-(!-
- (setup "jaword"
-   (global-jaword-mode 1)))
+(setup-lazy '(jaword-mode) "jaword")
 
 (!-
  (setup "popup")
@@ -904,6 +901,7 @@ for unary operators which can also be binary."
 
 (!-
  (setup "symon"
+   (setq symon-sparkline-ascent (!if my-home-system-p 97 100))
    (symon-mode)))
 
 ;; + | Commands
@@ -1523,9 +1521,10 @@ for unary operators which can also be binary."
 (defun my-eval-sexp-dwim ()
   "eval-last-sexp or eval-region"
   (interactive)
-  (if (use-region-p)
-      (eval-region (region-beginning) (region-end))
-    (call-interactively 'eval-last-sexp))) ; must be interactive
+  (if (not (use-region-p))
+      (call-interactively 'eval-last-sexp) ; must be interactive
+    (eval-region (region-beginning) (region-end))
+    (deactivate-mark)))
 
 (defun my-eval-and-replace-sexp ()
   "Evaluate the sexp at point and replace it with its value"
@@ -1788,7 +1787,7 @@ for unary operators which can also be binary."
        (setq my-split-window-saved-configuration
              (current-window-configuration))
        (cond ((> (window-total-width)
-                 (* 2.6 (window-height)))
+                 (* 2.7 (window-height)))
               (split 2)
               (setq this-command 'my-split-window-horizontally-1))
              (t
@@ -1888,27 +1887,31 @@ for unary operators which can also be binary."
                       (and face (not (eq face type))))))
       (error (goto-char (point-min))))))
 
-;; point-undo
-(defvar-local my-point-undo-list nil)
-(setup-hook 'post-command-hook
-  (let ((lin (line-number-at-pos)))
-    (unless (or (eq this-command 'my-point-undo)
-                (and my-point-undo-list
-                     (not (= lin (caar my-point-undo-list)))))
-      (push (cons lin (point)) my-point-undo-list))))
-(setup-lazy '(my-point-undo) "edmacro"
-  (defun my-point-undo ()
+;; jump-back!
+(setup-include "ring")
+(defvar-local my-jump-back!--marker-ring nil)
+(defun my-jump-back!--ring-update ()
+  (let ((marker (point-marker)))
+    (unless my-jump-back!--marker-ring
+      (setq my-jump-back!--marker-ring (make-ring 30)))
+    (ring-insert my-jump-back!--marker-ring marker)))
+(run-with-idle-timer 1 t 'my-jump-back!--ring-update)
+(setup-lazy '(my-jump-back!) "edmacro"
+  (defun my-jump-back! ()
     (interactive)
-    (let ((repeat-key (vector last-input-event)))
-      (set-temporary-overlay-map
-       (let ((km (make-sparse-keymap)))
-         (define-key km repeat-key 'my-point-undo)
-         km))
-      (pop my-point-undo-list)
-      (message "(Type %s to repeat)" (edmacro-format-keys repeat-key))
-      (if (null my-point-undo-list)
-          (message "No further undo information")
-        (goto-char (cdar my-point-undo-list))))))
+    (if (ring-empty-p my-jump-back!--marker-ring)
+        (error "No further undo information")
+      (let ((marker (ring-ref my-jump-back!--marker-ring 0))
+            (repeat-key (vector last-input-event)))
+        (ring-remove my-jump-back!--marker-ring 0)
+        (if (= (point-marker) marker)
+            (my-jump-back!)
+          (goto-char marker)
+          (message "(Type %s to repeat)" (edmacro-format-keys repeat-key))
+          (set-temporary-overlay-map
+           (let ((km (make-sparse-keymap)))
+             (define-key km repeat-key 'my-jump-back!)
+             km)))))))
 
 ;;   + | edit
 
@@ -2233,8 +2236,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'rxt-help-mode-hook
       (rainbow-delimiters-mode -1))))
 
-;; autoload sos
-(setup-lazy '(sos) "sos")
+;; autoload RPN calc
+(setup-lazy '(rpn-calc) "rpn-calc")
 
 ;;   + | jokes / games
 
@@ -2286,18 +2289,23 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 (setup-lazy '(mf/mirror-region-in-multifile) "multifiles")
 
+(setup-lazy '(simple-demo-set-up) "simple-demo")
+
 ;; + | Modes
-;;   + texts
+;;   + text modes
 ;;     + text-mode
 
 (setup-after "text-mode"
   (setup-expecting "electric-spacing"
     (setup-hook 'text-mode-hook 'electric-spacing-mode))
+  (setup-expecting "jaword"
+    (setup-hook 'text-mode-hook 'jaword-mode))
   (setup-after "mark-hacks"
     (push 'text-mode mark-hacks-auto-indent-inhibit-modes))
   (setup-expecting "phi-search-migemo"
     (define-key text-mode-map [remap phi-search] 'phi-search-migemo)
-    (define-key text-mode-map [remap phi-search-backward] 'phi-search-migemo-backward)))
+    (define-key text-mode-map [remap phi-search-backward] 'phi-search-migemo-backward))
+  (setup-keybinds text-mode-map "C-M-i" nil))
 
 ;;     + org-mode [htmlize]
 
@@ -2314,6 +2322,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (setup-expecting "electric-spacing"
     (setup-hook 'org-mode-hook 'electric-spacing-mode))
+
+  (setup-expecting "jaword"
+    (setup-hook 'text-mode-hook 'jaword-mode))
 
   (setup-after "mark-hacks"
     (push 'org-mode mark-hacks-auto-indent-inhibit-modes))
@@ -2426,6 +2437,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     :prepare (setup-hook 'latex-mode-hook 'magic-latex-buffer))
   (setup-expecting "electric-spacing"
     (setup-hook 'latex-mode-hook 'electric-spacing-mode))
+  (setup-expecting "jaword"
+    (setup-hook 'text-mode-hook 'jaword-mode))
   (setup-after "mark-hacks"
     (push 'latex-mode mark-hacks-auto-indent-inhibit-modes))
   (setup-expecting "phi-search-migemo"
@@ -2443,11 +2456,21 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   :prepare (progn
              (push '("\\.md$" . gfm-mode) auto-mode-alist)
              (push '("\\.markdown$" . gfm-mode) auto-mode-alist))
+  (setup-expecting "electric-spacing"
+    (setup-hook 'latex-mode-hook 'electric-spacing-mode))
+  (setup-expecting "jaword"
+    (setup-hook 'text-mode-hook 'jaword-mode))
+  (setup-after "mark-hacks"
+    (push 'latex-mode mark-hacks-auto-indent-inhibit-modes))
+  (setup-expecting "phi-search-migemo"
+    (define-key latex-mode-map [remap phi-search] 'phi-search-migemo)
+    (define-key latex-mode-map [remap phi-search-backward] 'phi-search-migemo-backward))
   (setup-keybinds gfm-mode-map
     '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
     "TAB" 'markdown-cycle))
 
-;;   + web-mode
+;;   + prog modes
+;;     + web-mode
 
 (setup-lazy '(web-mode) "web-mode"
   :prepare (push (! `(,(format "\\.%s$"
@@ -2626,7 +2649,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "&") '("&amp;" "&"))))
   )
 
-;;   + generic
+;;     + generic
 
 (setup-lazy
   '(apache-conf-generic-mode
@@ -2701,8 +2724,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
            auto-mode-alist))
     )
 
-;;   + lispy
-;;     + (common)
+;;     + lispy
+;;       + (common)
 
 (defun my-lisp-toggle-exp (exprs)
   (save-excursion
@@ -2749,7 +2772,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (key-combo-define-local (kbd ".") '(my-lisp-smart-dot "."))
     (key-combo-define-local (kbd ";") ";; ")))
 
-;;     + lisp-mode
+;;       + lisp-mode
 
 (setup-after "lisp-mode"
   (setup-hook 'lisp-mode-hook 'my-lisp-install-toggle-commands)
@@ -2761,7 +2784,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'lisp-mode-hook 'my-install-lisp-common-smartchr))
   (setup-keybinds lisp-mode-map '("M-TAB" "C-j") nil))
 
-;;     + emacs-lisp-mode [outlined-elisp] [cl-lib-hl]
+;;       + emacs-lisp-mode [outlined-elisp] [cl-lib-hl]
 
 (setup-after "lisp-mode"
   (font-lock-add-keywords
@@ -2802,7 +2825,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'emacs-lisp-mode-hook 'cl-lib-highlight-initialize)
     (setup-hook 'emacs-lisp-mode-hook 'cl-lib-highlight-warn-cl-initialize)))
 
-;;     + gauche-mode [scheme-complete]
+;;       + gauche-mode [scheme-complete]
 
 (setup-lazy '(gauche-mode) "gauche-mode"
   :prepare (push '("\\.scm$" . gauche-mode) auto-mode-alist)
@@ -2871,7 +2894,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-c C-l" 'scheme-load-file)
   )
 
-;;     + clojure-mode
+;;       + clojure-mode
 
 (setup-lazy '(clojure-mode) "clojure-mode"
   :prepare (progn (push '("\\.clj$" . clojure-mode) auto-mode-alist))
@@ -2908,7 +2931,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-c C-l" 'clojure-load-file)
   )
 
-;;     + racket-mode
+;;       + racket-mode
 
 (setup-lazy '(racket-mode) "racket-mode"
   :prepare (push '("\\.rkt$" . racket-mode) auto-mode-alist)
@@ -2991,13 +3014,13 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "<f1> s" 'racket-help)
   )
 
-;;   + c-like
-;;     + (common)
-;;       + (prelude)
+;;     + c-like
+;;       + (common)
+;;         + (prelude)
 
 (setup-after "cc-mode"
 
-  ;;     + coding style
+  ;;       + coding style
 
   ;; setup coding style for C-like languages
   ;; reference | http://www.cozmixng.org/webdav/kensuke/site-lisp/mode/my-c.el
@@ -3366,7 +3389,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setq c-auto-newline t)
     (c-set-style "phi"))
 
-  ;;     + key-combo
+  ;;       + key-combo
 
   (setup-expecting "key-combo"
     (defun my-c-smart-braces ()
@@ -3431,7 +3454,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "/*") "/* `!!' */")
       (key-combo-define-local (kbd "{") '(my-c-smart-braces "{ `!!' }"))))
 
-  ;;     + auto-complete
+  ;;       + auto-complete
 
   (setup-after "auto-complete"
     (setup "ac-c-headers"
@@ -3441,10 +3464,10 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                            ac-source-dictionary
                            ac-source-c-header-symbols)))))
 
-  ;;     + (sentinel)
+  ;;       + (sentinel)
   )
 
-;;     + C, C++, Objetive-C
+;;       + C, C++, Objetive-C
 
 (setup-after "cc-mode"
 
@@ -3563,7 +3586,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (add-to-list 'flycheck-checkers 'c99-gcc))
   )
 
-;;     + Java
+;;       + Java
 
 (setup-after "cc-mode"
 
@@ -3609,7 +3632,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "M-e" "M-j" "C-M-h" "C-M-j" "DEL") nil)
   )
 
-;;     + promela-mode
+;;       + promela-mode
 
 (setup-lazy '(promela-mode) "promela-mode"
   :prepare (progn (push '("\\.pml$" . promela-mode) auto-mode-alist)
@@ -3667,7 +3690,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-m" 'promela-indent-newline-indent)
   )
 
-;;     + arduino-mode
+;;       + arduino-mode
 
 (setup-lazy '(arduino-mode) "arduino-mode"
   :prepare (progn (push '("\\.ino$" . arduino-mode) auto-mode-alist)
@@ -3685,14 +3708,14 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (push '(arduino-mode . (my-arduino-compile-and-upload))
             smart-compile-alist))))
 
-;;     + flex/bison-mode
+;;       + flex/bison-mode
 
 (setup-lazy '(bison-mode) "bison-mode"
   :prepare (progn (push '("\\.ll?$" . bison-mode) auto-mode-alist)
                   (push '("\\.yy?$" . bison-mode) auto-mode-alist)))
 
-;;   + functional
-;;     + haskell-mode
+;;     + functional
+;;       + haskell-mode
 
 (setup-lazy '(haskell-mode literate-haskell-mode) "haskell-mode"
   :prepare (progn (push '("\\.hs$" . haskell-mode) auto-mode-alist)
@@ -3799,7 +3822,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'literate-haskell-mode-hook 'my-install-haskell-smartchr))
   )
 
-;;     + scala-mode
+;;       + scala-mode
 
 (setup-lazy '(scala-mode) "scala-mode"
   :prepare (push '("\\.scala$" . scala-mode) auto-mode-alist)
@@ -3843,7 +3866,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'scala-mode-hook 'flycheck-mode))
   )
 
-;;     + coq-mode (proof-general)
+;;       + coq-mode (proof-general)
 
 (setup-lazy '(coq-mode) "proof-site"
   :prepare (push '("\\.v$" . coq-mode) auto-mode-alist)
@@ -3918,7 +3941,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     )
   )
 
-;;     + tuareg (OCaml)
+;;       + tuareg (OCaml)
 
 (setup-lazy '(tuareg-mode) "tuareg"
   :prepare (push '("\\.ml[iylp]?$" . tuareg-mode) auto-mode-alist)
@@ -3975,8 +3998,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'tuareg-mode-hook 'flycheck-mode))
   )
 
-;;   + declarative
-;;     + (common)
+;;     + declarative
+;;       + (common)
 
 (setup-expecting "key-combo"
   (defun my-prolog-smart-pipes ()
@@ -3999,7 +4022,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (key-combo-define-local (kbd "-") `(,(my-unary "-")))
     (key-combo-define-local (kbd "*") " * ")))
 
-;;     + prolog-mode
+;;       + prolog-mode
 
 (setup-expecting "prolog"
   (push '("\\.swi$" . prolog-mode) auto-mode-alist)
@@ -4037,7 +4060,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (my-install-prolog-common-smartchr)
       (key-combo-define-local (kbd "/") " / "))))
 
-;;     + (cs)lmntal-mode
+;;       + (cs)lmntal-mode
 
 (setup-lazy '(lmntal-mode lmntal-slimcode-mode) "lmntal-mode"
   :prepare (progn
@@ -4108,21 +4131,21 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "auto-complete"
     (push 'cslmntal-mode ac-modes)))
 
-;;     + hydla-mode
+;;       + hydla-mode
 
 (setup-lazy '(hydla-mode) "hydla-mode"
   :prepare (push '("\\.hydla$" . hydla-mode) auto-mode-alist)
   (setup-after "auto-complete"
     (push 'hydla-mode ac-modes)))
 
-;;   + esolangs
-;;     + zombie-mode
+;;     + esolangs
+;;       + zombie-mode
 
 (setup-lazy '(zombie-mode) "zombie"
   :prepare (push '("\\.zombie$" . zombie-mode) auto-mode-alist))
 
-;;   + other PLs
-;;     + ahk-mode
+;;     + other PLs
+;;       + ahk-mode
 
 (setup-lazy '(ahk-mode) "ahk-mode"
   :prepare (push '("\\.ahk$" . ahk-mode) auto-mode-alist)
@@ -4134,7 +4157,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-hook 'ahk-mode-hook
     (setup-keybinds ahk-mode-map '("C-j" "C-h") nil)))
 
-;;     + dos-mode
+;;       + dos-mode
 
 (setup-lazy '(dos-mode) "dos"
   :prepare (setq auto-mode-alist
@@ -4146,7 +4169,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "auto-complete"
     (push 'dos-mode ac-modes)))
 
-;;     + makefile-mode
+;;       + makefile-mode
 
 (setup-after "makefile-mode"
   (setup-expecting "flycheck"
@@ -4416,15 +4439,15 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     ;; "Info-mode-map" does not work ?
     (setup-hook 'Info-mode-hook 'my-kindly-view-mode)
     (setup-keybinds Info-mode-map
-      "RET" 'Info-follow-nearest-node
-      "SPC" 'Info-next-reference
-      "DEL" 'Info-prev-reference
-      "h"   'Info-history-back
-      "l"   'Info-history-forward
-      "u"   'Info-up
-      "q"   'Info-exit
-      "f"   '("ace-link" ace-link-info)
-      "g"   nil)))
+      "RET"      'Info-follow-nearest-node
+      "SPC"      'Info-next-reference
+      "DEL"      'Info-prev-reference
+      "h"        'Info-history-back
+      "l"        'Info-history-forward
+      "u"        'Info-up
+      "q"        'Info-exit
+      "f"        '("ace-link" ace-link-info)
+      '("g" "n") nil)))
 
 ;;   + others
 ;;     + fundamental-mode
@@ -4991,7 +5014,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (set-face-background 'mode-line (car my-mode-line-background))
     (remove-hook 'post-command-hook 'my-recording-mode-line-end)))
 
-;;   + | mode-line-format
+;;   + | the mode-line-format
 
 ;; battery status
 (require 'battery)
@@ -5018,6 +5041,19 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-hook 'find-file-hook 'my-update-palette-status)
   (my-update-palette-status))
 
+;; ramen timer
+(defvar my-ramen-start-time nil)
+(defvar my-ramen-timer-object nil)
+(defun my-ramen ()
+  (interactive)
+  (cond (my-ramen-start-time
+         (setq my-ramen-start-time nil)
+         (cancel-timer my-ramen-timer-object))
+        (t
+         (setq my-ramen-start-time   (and (not my-ramen-start-time) (current-time))
+               my-ramen-timer-object (run-with-timer 0 1 'force-mode-line-update)))))
+
+;; coding system
 (defun my-eol-type-mnemonic (coding-system)
   (let ((eol-type (coding-system-eol-type coding-system)))
     (if (vectorp eol-type) ?-
@@ -5082,8 +5118,11 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                              (my-eol-type-mnemonic buffer-file-coding-system))
                      'face 'mode-line-dark-face))
         (time
-         (cl-destructuring-bind (_ min hour day . __) (decode-time (current-time))
-           (propertize (format "%d %02d:%02d" day hour min) 'face 'mode-line-bright-face)))
+         (if (null my-ramen-start-time)
+             (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face)
+           (propertize (format-time-string
+                        "%M:%S" (time-subtract (current-time) my-ramen-start-time))
+                       'face 'mode-line-warning-face)))
         (battery
          (let* ((index (/ (car my-battery-status) 10))
                 (str (nth index '("₀!" "₁_" "₂▁" "₃▂" "₄▃" "₅▄" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█")))
@@ -5128,8 +5167,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                           key-chord-mode input-method-function)
     "list of variables that must be set nil locally.")
   (defvar-local my-kindly-view-mode nil)
-  (push (cons 'my-kindly-view-mode
-              my-kindly-view-mode-map) minor-mode-map-alist)
   (defun my-kindly-view-mode ()
     (interactive)
     (setq my-kindly-view-mode t
@@ -5139,12 +5176,13 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (when (and (boundp mode) mode) (funcall mode -1)))
     (dolist (var my-kindly-unsupported-global-variables)
       (set (make-local-variable var) nil))
-    (setq-local buffer-face-mode-face
-                '(:family "Times New Roman" :width semi-condensed))
+    (setq-local buffer-face-mode-face '(:family "Times New Roman" :width semi-condensed))
     (buffer-face-mode 1)
     (text-scale-set +2)
-    (setcdr (assq 'my-kindly-view-mode minor-mode-map-alist)
-            (current-local-map))
+    ;; use current major-mode's bindings as the minor-mode bindings
+    (setq-local minor-mode-map-alist
+                (cons (cons 'my-kindly-view-mode (current-local-map)) minor-mode-map-alist))
+    ;; and kindly-view-mode-map as the major-mode bindings
     (use-local-map my-kindly-view-mode-map)))
 
 ;;   + colorscheme
@@ -5152,7 +5190,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 (eval-and-compile
   (require 'color)
-  (defun my-make-color (basecolor &optional br sat mixcolor percent)
+  (defun my-make-color (basecolor &optional bright sat mixcolor percent)
+    "generate a color by brightening BASECOLOR by BRIGHT,
+saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     (let ((hsl
            (if mixcolor
                (cl-destructuring-bind (r g b) (color-name-to-rgb basecolor)
@@ -5163,29 +5203,89 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                                        (+ (* g y) (* gg x))
                                        (+ (* b y) (* bb x))))))
              (apply 'color-rgb-to-hsl (color-name-to-rgb basecolor)))))
-      (when br
-        (setq br (if (eq frame-background-mode 'light) (- br) br))
-        (setq hsl (apply 'color-lighten-hsl `(,@hsl ,br))))
+      (when bright
+        (when (eq (frame-parameter nil 'background-mode) 'light)
+          (setq bright (- bright)))
+        (setq hsl (apply 'color-lighten-hsl `(,@hsl ,bright))))
       (when sat
         (setq hsl (apply 'color-saturate-hsl `(,@hsl ,sat))))
       (apply 'color-rgb-to-hex (apply 'color-hsl-to-rgb hsl)))))
 
+;; load "term" and "hl-line" during compile so that we can use
+;; "(face-foreground 'term-color-red)"
 (eval-when-compile
-  (require 'term)
-  (require 'hl-line))
+  (require 'term))
 
 ;;   + | colorscheme [solarized-definitions]
 
-(eval-and-compile
+(eval-and-compile          ; we want theme applied also during compile
   (setup-include "solarized-definitions"
-    ;; (create-solarized-theme dark)
-    (create-solarized-theme dard)))
+
+    (defun create-solarized-based-theme
+      (name mode description darkest-base brightest-base
+            type-yellow warning-orange error-red visited-magenta
+            link-violet identifier-blue string-cyan keyword-green)
+      (declare (indent 2))
+      (let ((solarized-colors
+             `((base03  ,darkest-base)
+               (base02  ,(my-make-color darkest-base nil nil brightest-base 3))
+               (base01  ,(my-make-color darkest-base nil nil brightest-base 35))
+               (base00  ,(my-make-color darkest-base nil nil brightest-base 40))
+               (base0   ,(my-make-color darkest-base nil nil brightest-base 52))
+               (base1   ,(my-make-color darkest-base nil nil brightest-base 58))
+               (base2   ,(my-make-color darkest-base nil nil brightest-base 97 ;; 94
+                                        ))
+               (base3   ,brightest-base)
+               (yellow  ,type-yellow)
+               (orange  ,warning-orange)
+               (red     ,error-red)
+               (magenta ,visited-magenta)
+               (violet  ,link-violet)
+               (blue    ,identifier-blue)
+               (cyan    ,string-cyan)
+               (green   ,keyword-green))))
+        (set-frame-parameter nil 'background-mode mode)
+        (create-solarized-theme name description (solarized-color-definitions))))
+
+    ;; ;; the solarized-dark theme
+    ;; (set-frame-parameter nil 'background-mode 'dark)
+    ;; (create-solarized-theme
+    ;;  solarized solarized-description (solarized-color-definitions))
+
+    ;; ;; the solarized-light theme
+    ;; (set-frame-parameter nil 'background-mode 'light)
+    ;; (create-solarized-theme
+    ;;  solarized solarized-description (solarized-color-definitions))
+
+    ;; ;; "jellybeans" based theme
+    ;; ;; reference | https://github.com/nanotech/jellybeans.vim
+    ;; (create-solarized-based-theme 'solarized-jellybeans 'dark
+    ;;   "solarized-based theme with `jellybeans' inspired color-palette."
+    ;;   "#202020" "#ffffff" "#ffb964" "#8fbfdc" "#a04040"
+    ;;   "#b05080" "#805090" "#fad08a" "#99ad6a" "#8fbfdc")
+
+    ;; ;; "mesa" based theme
+    ;; ;; reference | http://emacsfodder.github.io/blog/mesa-theme/
+    ;; (create-solarized-based-theme 'solarized-mesa 'light
+    ;;   "solarized-based theme with `mesa' inspired color-palette."
+    ;;   "#000000" "#faf5ee" "#3388dd" "#ac3d1a" "#dd2222"
+    ;;   "#8b008b" "#00b7f0" "#1388a2" "#104e8b" "#00688b")
+
+    ;; "kagamine len" inspired theme
+    ;; reference | http://vocaloidcolorpalette.tumblr.com/
+    ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
+    (create-solarized-based-theme 'lenlen 'light
+      "solarized-based theme with kagamine len inspired color-palette."
+      "#291e03" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
+      "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
+
+    ))
 
 ;;   + | modeline
 
 (setq my-mode-line-background
-      (! (cons (my-make-color (face-background 'hl-line) 8 -25)
-               (my-make-color (face-background 'hl-line) 8 -25 "red" 20))))
+      (! (cons (my-make-color (face-background 'mode-line) 8 -25)
+               (my-make-color (face-background 'mode-line) 8 -25 "red" 20))))
 
 (set-face-attribute
  'mode-line nil
@@ -5196,9 +5296,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (set-face-attribute
  'mode-line-inactive nil
  :foreground    (! (my-make-color (face-foreground 'default) -16 2))
- :background    (! (face-background 'hl-line))
+ :background    (! (face-background 'mode-line))
  :inverse-video nil
- :box           (! `(:line-width 1 :color ,(face-background 'hl-line))))
+ :box           (! `(:line-width 1 :color ,(face-background 'mode-line))))
 
 (set-face-attribute
  'mode-line-dark-face nil
@@ -5242,7 +5342,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 (setup-after "ace-jump-mode"
   (set-face-foreground 'ace-jump-face-foreground
-                       (! (if (eq frame-background-mode 'light) "#000000" "#ffffff")))
+                       (! (if (eq (frame-parameter nil 'background-mode) 'light)
+                              "#000000"
+                            "#ffffff")))
   (set-face-foreground 'ace-jump-face-background
                        (! (face-foreground 'font-lock-comment-face))))
 
@@ -5283,7 +5385,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 (setup-after "lmntal-mode"
   (set-face-background 'lmntal-link-name-face
-                       (! (face-background 'hl-line))))
+                       (! (face-background 'mode-line))))
 
 ;;   + | phi-search
 
@@ -5366,7 +5468,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
           sublimity-scroll-drift-length 3))
   (setup-include "sublimity-attractive"
     (setup-hook 'after-init-hook
-      (setq sublimity-attractive-centering-width 110)
+      (setq sublimity-attractive-centering-width 94)
       (sublimity-attractive-hide-bars)
       (sublimity-attractive-hide-fringes))))
 
@@ -5457,7 +5559,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   "C-p"   'my-previous-line
   "C-n"   'my-next-line
   "C-f"   'forward-char
-  "M--"   'my-point-undo
+  "M--"   'my-jump-back!
   "C-M-b" 'backward-word
   "C-M-p" 'my-previous-blank-line
   "C-M-n" 'my-next-blank-line
@@ -5521,12 +5623,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-keybinds nil
   "C-w"   '("phi-rectangle" phi-rectangle-kill-region kill-region)
   "C-k"   'kill-line
-  "C-d"   '("phi-autopair" phi-autopair-delete-forward delete-char)
+  "C-d"   'delete-char
   "C-y"   '("phi-rectangle" phi-rectangle-yank yank)
   "C-M-w" '("phi-rectangle" phi-rectangle-kill-ring-save kill-ring-save)
   "C-M-k" 'my-kill-line-backward
-  "C-M-d" '("phi-autopair" phi-autopair-delete-forward-word kill-word)
-  "C-M-h" '("phi-autopair" phi-autopair-delete-backward-word backward-kill-word)
+  "C-M-d" 'kill-word
+  "C-M-h" 'backward-kill-word
   "C-M-y" '("yasnippet" mark-hacks-expand-oneshot-snippet)
   "M-W"   'my-copy-sexp
   "M-K"   '("paredit" my-paredit-kill kill-line)
@@ -5617,8 +5719,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   "<f1> x"    'describe-syntax
   "<f1> s"    'info-lookup-symbol
   "<f1> r"    '("pcre2el" describe-regexp)
-  "<f1> w"    '("sdic" sdic-describe-word)
-  "<f1> ,"    '("sos" sos))
+  "<f1> w"    '("sdic" sdic-describe-word))
 
 ;;   + | others
 
@@ -5631,6 +5732,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   "M-q"       '("scratch-pop" scratch-pop)
   "C-="       'text-scale-increase
   "C-M-="     'text-scale-decrease
+  "C-M-c"     '("rpn-calc" rpn-calc calc)
   "<escape>"  'vi-mode
   "M-v"       'vi-mode
   "M-t"       'orgtbl-mode
@@ -5639,7 +5741,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   "M-,"       '("howm" my-howm-menu-or-remember)
   "M-c"       '("smart-compile" smart-compile compile)
   "C-x C-i"   '("ispell" ispell-region)
-  "C-x C-a"   'mf/mirror-region-in-multifile
+  "C-x C-a"   '("multifiles" mf/mirror-region-in-multifile)
   "C-x C-l"   'my-add-change-log-entry
   "C-x C-t"   'toggle-truncate-lines
   "C-x C-p"   'read-only-mode
