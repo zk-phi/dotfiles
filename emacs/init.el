@@ -1787,7 +1787,7 @@ for unary operators which can also be binary."
        (setq my-split-window-saved-configuration
              (current-window-configuration))
        (cond ((> (window-total-width)
-                 (* 2.7 (window-height)))
+                 (* 2.65 (window-height)))
               (split 2)
               (setq this-command 'my-split-window-horizontally-1))
              (t
@@ -2324,7 +2324,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'org-mode-hook 'electric-spacing-mode))
 
   (setup-expecting "jaword"
-    (setup-hook 'text-mode-hook 'jaword-mode))
+    (setup-hook 'org-mode-hook 'jaword-mode))
 
   (setup-after "mark-hacks"
     (push 'org-mode mark-hacks-auto-indent-inhibit-modes))
@@ -2438,7 +2438,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-expecting "electric-spacing"
     (setup-hook 'latex-mode-hook 'electric-spacing-mode))
   (setup-expecting "jaword"
-    (setup-hook 'text-mode-hook 'jaword-mode))
+    (setup-hook 'latex-mode-hook 'jaword-mode))
   (setup-after "mark-hacks"
     (push 'latex-mode mark-hacks-auto-indent-inhibit-modes))
   (setup-expecting "phi-search-migemo"
@@ -2457,14 +2457,14 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
              (push '("\\.md$" . gfm-mode) auto-mode-alist)
              (push '("\\.markdown$" . gfm-mode) auto-mode-alist))
   (setup-expecting "electric-spacing"
-    (setup-hook 'latex-mode-hook 'electric-spacing-mode))
+    (setup-hook 'gfm-mode-hook 'electric-spacing-mode))
   (setup-expecting "jaword"
-    (setup-hook 'text-mode-hook 'jaword-mode))
+    (setup-hook 'gfm-mode-hook 'jaword-mode))
   (setup-after "mark-hacks"
-    (push 'latex-mode mark-hacks-auto-indent-inhibit-modes))
+    (push 'gfm-mode mark-hacks-auto-indent-inhibit-modes))
   (setup-expecting "phi-search-migemo"
-    (define-key latex-mode-map [remap phi-search] 'phi-search-migemo)
-    (define-key latex-mode-map [remap phi-search-backward] 'phi-search-migemo-backward))
+    (define-key gfm-mode-map [remap phi-search] 'phi-search-migemo)
+    (define-key gfm-mode-map [remap phi-search-backward] 'phi-search-migemo-backward))
   (setup-keybinds gfm-mode-map
     '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
     "TAB" 'markdown-cycle))
