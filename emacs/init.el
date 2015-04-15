@@ -11,13 +11,13 @@
 
 ;; C-_
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Undo|Zoom+|     |     |
-;;    | Quot| Cut | End |Rplce|TrsWd| Yank| PgUp| Tab | Open| U p | ESC |     |
+;;    | Quot| Cut | End |Rplce|TrsWd| Yank| PgUp| Tab | Open| U p |(ESC)|     |
 ;;       |MCNxt|Serch|Delte|Right| Quit| B S | Home|KilLn|Centr|Comnt|     |
 ;;          |     |  *  |  *  | PgDn| Left| Down|Retrn|ExpRg|     |     |
 
 ;; C-M-_
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|Zoom-|     |     |
-;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf| Fill|NLBet|BPgph|M-ESC|     |
+;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf| Fill|NLBet|BPgph|(ESC)|     |
 ;;       |MCAll|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|BKlLn| Top |     |     |
 ;;          |     |     | Calc|EdBuf|BWord|NPgph|FwRet|MrkAl|     |     |
 
@@ -39,9 +39,9 @@
 
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|WUndo| Diff|     |     |
-;;    |     |Write|Encod|Revrt|Trnct|     |Untab|     |SpChk|RdOly|CxESC|     |
-;;       |MFile| Save|     | FFF |     | FFOF|     |KilBf|CgLog|     |     |
-;;          |     |     |Close|     |Bffrs|     |ExMcr|  DL |     |     |
+;;    |     |Write|Encod|Revrt|Trnct|     |Untab|SpChk|     |RdOly|(ESC)|     |
+;;       |MFile| Save|     |FFlat|     |OthrF|     |KilBf|CgLog|     |     |
+;;          |     |Rname|Close|     |Bffrs|     |ExMcr|  DL |     |     |
 
 ;;   + specials
 
@@ -49,8 +49,8 @@
 ;;
 ;; - fj : transpose-chars
 ;; - hh : capitalize word
-;; - kk : up-case word
-;; - jj : down-case word
+;; - kk : downcase word
+;; - jj : upcase word
 ;;
 ;; - df : iy-go-to-char-backward
 ;; - jk : iy-go-to-char
@@ -151,11 +151,6 @@
   (!when (file-exists-p "~/.emacs.d/lib/ditaa.jar")
     "~/.emacs.d/lib/ditaa.jar")
   "/path/to/ditaa.jar")
-
-(defconst my-lmntal-ildoc-directory
-  (!when (file-exists-p "~/.emacs.d/ildoc/")
-    "~/.emacs.d/ildoc/")
-  "ildoc directory for lmntal-mode")
 
 ;;   + path to data files
 
@@ -272,23 +267,26 @@
 (defun my-clean-scratch ()
   (with-current-buffer "*scratch*"
     (erase-buffer)
-    (lisp-interaction-mode)
-    (when (and initial-scratch-message
-               (not inhibit-startup-message))
+    (funcall initial-major-mode)
+    (when (and initial-scratch-message (not inhibit-startup-message))
       (insert initial-scratch-message))
     (message "*scratch* is cleaned up.")))
 
 ;; clean scratch instead of killing it
 (!-
  (setup-hook 'kill-buffer-query-functions
-   (or (not (string= "*scratch*" (buffer-name)))
-       (progn (my-clean-scratch) nil))))
+   (or
+    ;; unless *scratch* is being killed, it's okay to kill
+    (not (string= "*scratch*" (buffer-name)))
+    ;; otherwise, clean *scratch* instead of killing it
+    (when (y-or-n-p "Erase *scratch* buffer ? ")
+      (my-clean-scratch)
+      nil))))
 
 ;; make a new scratch buffer on save
 (setup-hook 'after-save-hook
   (unless (get-buffer "*scratch*")
     (generate-new-buffer "*scratch*")
-    (message "new *scratch* is created.")
     (my-clean-scratch)))
 
 ;;   + | save *scratch* across sessions
@@ -401,7 +399,7 @@
 
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-(setq frame-title-format                    "%b - emacs++"
+(setq frame-title-format                    "%b - Emacs"
       completion-ignore-case                t
       read-file-name-completion-ignore-case t
       gc-cons-threshold                     20000000
@@ -417,6 +415,7 @@
       inhibit-startup-screen                t
       inhibit-startup-message               t
       initial-scratch-message               ""
+      initial-major-mode                    'emacs-lisp-mode
       ;; simple.el
       eval-expression-print-length          nil
       eval-expression-print-level           10
@@ -559,7 +558,7 @@
   (defadvice save-place-find-file-hook (after save-place-open-invisible activate)
     (mapc (lambda (ov)
             (let ((ioit (overlay-get ov 'isearch-open-invisible-temporary)))
-              (cond (ioit (funcall ioit ov hidep))
+              (cond (ioit (funcall ioit ov nil))
                     ((overlay-get ov 'isearch-open-invisible)
                      (overlay-put ov 'invisible nil)))))
           (overlays-at (point)))))
@@ -845,17 +844,17 @@
     (unless (or current-input-method
                 (and (boundp 'multiple-cursors-mode) multiple-cursors-mode))
       ad-do-it)))
-(setup-expecting "key-combo"
-  (defun my-unary (str)
-    "a utility function that generates smart insertion commands
-for unary operators which can also be binary."
-    (eval `(lambda ()
-             (interactive)
-             (if (looking-back "[])\"a-zA-Z0-9_] *")
-                 (let ((back (unless (looking-back " ") " "))
-                       (forward (unless (looking-at " ") " ")))
-                   (insert (concat back ,str forward)))
-               (insert ,str))))))
+(defun my-unary (str)
+  "a utility macro that generates smart insertion commands for
+unary operators which can also be binary."
+  `(lambda ()
+     (interactive)
+     (if (and (looking-back "[])\"a-zA-Z0-9_] *")
+              (not (looking-back "return *")))
+         (let ((back (unless (looking-back " ") " "))
+               (forward (unless (looking-at " ") " ")))
+           (insert (concat back ,str forward)))
+       (insert ,str))))
 
 ;;   + | assistants
 
@@ -1130,7 +1129,7 @@ for unary operators which can also be binary."
 
     ;; + | keymap
 
-    ;; reference | http://github.com/milkypostman/dotemacs/blob/master/init.el
+    ;; reference | http://github.com/milkypostman/dotemacs/init.el
     (setup-hook 'ido-minibuffer-setup-hook
       (setup-keybinds ido-completion-map
         "C-n" 'ido-prev-work-directory
@@ -1247,7 +1246,7 @@ for unary operators which can also be binary."
   ;;   + | anything source for flycheck
 
   ;; reference | http://d.hatena.ne.jp/kiris60/20091003
-  ;;           | https://github.com/yasuyk/helm-flycheck
+  ;;           | https://github.com/yasuyk/helm-flycheck/
   (setup-after "flycheck"
     (defvar my-flycheck-candidates nil)
     (defun my-flycheck-candidates ()
@@ -1348,7 +1347,7 @@ for unary operators which can also be binary."
     (ignore-errors (load mc/list-file))
 
     ;; keep mark active on "require" and "load"
-    ;; reference | https://github.com/milkypostman/dotemacs
+    ;; reference | https://github.com/milkypostman/dotemacs/init.el
     (defadvice require (around my-require-advice activate)
       (save-excursion (let (deactivate-mark) ad-do-it)))
     (defadvice load (around my-require-advice activate)
@@ -1484,21 +1483,17 @@ for unary operators which can also be binary."
 (defun my-up-list ()
   "handy version of up-list for interactive use"
   (interactive)
-  (let* ((str-p (nth 3 (syntax-ppss (point))))
+  (let* ((in-string (nth 3 (syntax-ppss (point))))
          (back-pos (save-excursion
-                     (if str-p
+                     (if in-string
                          (search-backward-regexp "\\s\"" nil t)
-                       (condition-case err
-                           (progn (backward-up-list) (point))
-                         (error nil)))))
+                       (ignore-errors (backward-up-list) (point)))))
          (for-pos (save-excursion
-                    (if str-p
+                    (if in-string
                         (search-forward-regexp "\\s\"" nil t)
-                      (condition-case err
-                          (progn (up-list) (point))
-                        (error nil))))))
+                      (ignore-errors (up-list) (point))))))
     (when (not (or back-pos for-pos))
-      (error "cannot go up"))
+      (signal 'scan-error "cannot go up"))
     (goto-char (cond ((null back-pos) for-pos)
                      ((null for-pos) back-pos)
                      ((< (abs (- (point) for-pos))
@@ -1637,7 +1632,7 @@ for unary operators which can also be binary."
     (forward-line)
     (indent-according-to-mode)))
 
-;; reference | https://github.com/milkypostman/dotemacs
+;; reference | https://github.com/milkypostman/dotemacs/init.el
 (defun my-new-line-between ()
   (interactive)
   (newline)
@@ -1660,17 +1655,21 @@ for unary operators which can also be binary."
       (capitalize-word 1)
     (capitalize-word -1)))
 
+(defvar my-upcase-previous-word-count nil)
 (defun my-upcase-previous-word ()
   (interactive)
-  (save-excursion
-    (skip-chars-backward "^a-z")
-    (upcase-word -1)))
+  (if (not (eq last-command this-command))
+      (upcase-word (setq my-upcase-previous-word-count -1))
+    (cl-decf my-upcase-previous-word-count)
+    (upcase-word my-upcase-previous-word-count)))
 
+(defvar my-downcase-previous-word-count nil)
 (defun my-downcase-previous-word ()
   (interactive)
-  (save-excursion
-    (skip-chars-backward "^A-Z")
-    (downcase-word -1)))
+  (if (not (eq last-command this-command))
+      (downcase-word (setq my-downcase-previous-word-count -1))
+    (cl-decf my-downcase-previous-word-count)
+    (downcase-word my-downcase-previous-word-count)))
 
 (defun my-transpose-words ()
   (interactive)
@@ -1683,24 +1682,40 @@ for unary operators which can also be binary."
 (defun my-transpose-window-buffers ()
   "Rotate buffers among windows."
   (interactive)
-  (set-temporary-overlay-map
-   (let ((m (make-sparse-keymap)))
-     (dolist (cmd '(other-window
-                    previous-multiframe-window
-                    next-multiframe-window))
-       (dolist (key (where-is-internal cmd))
-         (define-key m key
-           `(lambda ()
-              (interactive)
-              (let* ((w1 (selected-window))
-                     (w2 (progn
-                           (call-interactively ',cmd)
-                           (selected-window)))
-                     (tmp (window-buffer w1)))
-                (set-window-buffer w1 (window-buffer w2))
-                (set-window-buffer w2 tmp))))))
-     m)
-   t))
+  (let ((m (make-sparse-keymap)))
+    (dolist (cmd '(other-window previous-multiframe-window next-multiframe-window))
+      (let ((keys (where-is-internal cmd))
+            (def `(lambda ()
+                    (interactive)
+                    (let* ((w1 (selected-window))
+                           (w2 (progn (call-interactively ',cmd) (selected-window)))
+                           (tmp (window-buffer w1)))
+                      (set-window-buffer w1 (window-buffer w2))
+                      (set-window-buffer w2 tmp)))))
+        (dolist (key keys) (define-key m key def))))
+    (set-temporary-overlay-map m t)))
+
+;; resize windows
+;; reference | http://d.hatena.ne.jp/mooz/touch/20100119/p1
+(defun my-resize-window ()
+  (interactive)
+  (cl-case (read-char "Press npbf or hjkl to resize.")
+    ((?f ? ?l)
+     (enlarge-window-horizontally
+      (if (zerop (car (window-edges))) 1 -1))
+     (my-resize-window))
+    ((?b ? ?h)
+     (shrink-window-horizontally
+      (if (zerop (car (window-edges))) 1 -1))
+     (my-resize-window))
+    ((?n ? ?j)
+     (enlarge-window
+      (if (zerop (cadr (window-edges))) 1 -1))
+     (my-resize-window))
+    ((?p ? ?k)
+     (shrink-window
+      (if (zerop (cadr (window-edges))) 1 -1))
+     (my-resize-window))))
 
 (defun my-retop ()
   "Make cursor displayed on top of the window."
@@ -1813,7 +1828,7 @@ for unary operators which can also be binary."
       (set-temporary-overlay-map
        (let ((km (make-sparse-keymap)))
          (define-key km repeat-key 'my-window-undo)
-         km))
+         km) t)
       (message "(Type %s to repeat)" (edmacro-format-keys repeat-key))
       (pop my-window-undo-list)
       (if (null my-window-undo-list)
@@ -1846,7 +1861,7 @@ for unary operators which can also be binary."
 (defun my-next-blank-line ()
   "Jump to the next empty line."
   (interactive)
-  (when (eobp) (error "end of buffer"))
+  (when (eobp) (signal 'end-of-buffer "end of buffer"))
   (let ((type (car (memq (get-text-property (point) 'face)
                          '(font-lock-doc-face
                            font-lock-string-face
@@ -1868,7 +1883,7 @@ for unary operators which can also be binary."
 (defun my-previous-blank-line ()
   "Jump to the previous empty line."
   (interactive)
-  (when (bobp) (error "beginning of buffer"))
+  (when (bobp) (signal 'beginning-of-buffer "beginning of buffer"))
   (let ((type (car (memq (get-text-property (point) 'face)
                          '(font-lock-doc-face
                            font-lock-string-face
@@ -1899,19 +1914,22 @@ for unary operators which can also be binary."
 (setup-lazy '(my-jump-back!) "edmacro"
   (defun my-jump-back! ()
     (interactive)
-    (if (ring-empty-p my-jump-back!--marker-ring)
-        (error "No further undo information")
-      (let ((marker (ring-ref my-jump-back!--marker-ring 0))
-            (repeat-key (vector last-input-event)))
-        (ring-remove my-jump-back!--marker-ring 0)
-        (if (= (point-marker) marker)
-            (my-jump-back!)
-          (goto-char marker)
-          (message "(Type %s to repeat)" (edmacro-format-keys repeat-key))
-          (set-temporary-overlay-map
-           (let ((km (make-sparse-keymap)))
-             (define-key km repeat-key 'my-jump-back!)
-             km)))))))
+    (let (marker)
+      (cond ((or (null my-jump-back!--marker-ring)
+                 (ring-empty-p my-jump-back!--marker-ring))
+             (error "No further undo information"))
+            ((= (point-marker)
+                (prog1 (setq marker (ring-ref my-jump-back!--marker-ring 0))
+                  (ring-remove my-jump-back!--marker-ring 0)))
+             (my-jump-back!))
+            (t
+             (goto-char marker)
+             (let ((repeat-key (vector last-input-event)))
+               (message "(Type %s to repeat)" (edmacro-format-keys repeat-key))
+               (set-temporary-overlay-map
+                (let ((km (make-sparse-keymap)))
+                  (define-key km repeat-key 'my-jump-back!)
+                  km) t)))))))
 
 ;;   + | edit
 
@@ -2057,6 +2075,22 @@ for unary operators which can also be binary."
 
 ;;   + | others
 
+;; reference | http://github.com/milkypostman/dotemacs/init.el
+(defun my-rename-current-buffer-file ()
+  "Rename current buffer file."
+  (interactive)
+  (let ((oldname (buffer-file-name)))
+    (if (null oldname)
+        (error "Not a file buffer.")
+      (let ((newname (read-file-name "New name: " nil oldname)))
+        (if (get-file-buffer newname)
+            (error "A buffer named %s already exists." newname)
+          (rename-file oldname newname 0)
+          (rename-buffer newname)
+          (set-visited-file-name newname)
+          (set-buffer-modified-p nil)
+          (message "Successfully renamed to %s." (file-name-nondirectory newname)))))))
+
 ;; reference | http://d.hatena.ne.jp/IMAKADO/20090215/1234699972
 (defun my-toggle-transparency ()
   "Toggle transparency."
@@ -2103,10 +2137,10 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                     (overlays-in (1- (point)) (point)))
            (flyspell-correct-word-before-point))
           ((and (not (eq this-command last-command))
-                (memq major-mode '(lisp-interaction-mode emacs-lisp-mode))
+                (eq major-mode 'emacs-lisp-mode)
                 (looking-back "[[(\s,'`@]")
-                (buffer-file-name))
-           (insert (file-name-base (buffer-file-name)) "-")
+                buffer-file-name)
+           (insert (file-name-base buffer-file-name) "-")
            (dabbrev--reset-global-variables))
           (t
            (when (= (char-before) ?\s)
@@ -2146,6 +2180,15 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setq info-lookup-other-window-flag nil
         Info-directory-list
         (append my-additional-info-directories Info-directory-list)))
+
+;; Calendar
+(setup-after "calendar"
+  ;; mark today
+  (add-hook 'calendar-today-visible-hook 'calendar-mark-today)
+  ;; mark japanese holidays
+  (setup "japanese-holidays"
+    (setq mark-holidays-in-calendar t
+          calendar-holidays (append japanese-holidays local-holidays other-holidays))))
 
 ;;   + Misc: plug-ins
 ;;   + | jump around
@@ -2789,11 +2832,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-after "lisp-mode"
   (font-lock-add-keywords
    'emacs-lisp-mode '(("(\\(defvar-local\\)" 1 font-lock-keyword-face)))
-  (font-lock-add-keywords
-   'lisp-interaction-mode '(("(\\(defvar-local\\)" 1 font-lock-keyword-face)))
   (setup-hook 'emacs-lisp-mode-hook 'my-lisp-install-toggle-commands)
   (setup-keybinds emacs-lisp-mode-map '("M-TAB" "C-j") nil)
-  (setup-keybinds lisp-interaction-mode-map '("M-TAB" "C-j") nil)
   (setup-expecting "eldoc"
     (setup-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode))
   (setup-after "smart-compile"
@@ -2877,8 +2917,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (with-selected-window (split-window-vertically -10)
       (switch-to-buffer (get-buffer-create "*scheme*"))
       (run-scheme scheme-program-name))
-    (let ((file (buffer-file-name)))
-      (when file (scheme-load-file file))))
+    (when buffer-file-name
+      (scheme-load-file buffer-file-name)))
 
   ;; send an expression DWIM to the REPL
   (defun my-scheme-send-dwim ()
@@ -2916,8 +2956,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         (error "Clojure executable is not specified.")
       (with-selected-window (split-window-vertically -10)
         (run-lisp clojure-inf-lisp-command))
-      (let ((file (buffer-file-name)))
-        (when file (clojure-load-file file)))))
+      (when buffer-file-name
+        (clojure-load-file buffer-file-name))))
 
   (defun my-clojure-send-dwim ()
     (interactive)
@@ -2960,8 +3000,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (with-selected-window (split-window-vertically -10)
       (racket-repl)
       (switch-to-buffer racket--repl-buffer-name))
-    (let ((file (buffer-file-name)))
-      (when file (my-racket-load file))))
+    (when buffer-file-name
+      (my-racket-load buffer-file-name)))
 
   (defun my-racket-send-dwim ()
     (interactive)
@@ -2972,7 +3012,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (defun my-racket-load (&optional file)
     (interactive)
     (let ((file (or file
-                    (expand-file-name (buffer-file-name))
+                    (expand-file-name buffer-file-name)
                     (read-file-name "Load file: "))))
       (with-temp-buffer
         (racket--eval (format ",run %s\n" (expand-file-name file))))))
@@ -3734,11 +3774,10 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (defun my-run-haskell-other-window ()
     (interactive)
-    (let ((file (buffer-file-name)))
-      (with-selected-window (split-window-vertically -10)
-        (switch-to-buffer
-         (process-buffer (inferior-haskell-process nil))))
-      (inferior-haskell-load-file)))
+    (with-selected-window (split-window-vertically -10)
+      (switch-to-buffer
+       (process-buffer (inferior-haskell-process nil))))
+    (inferior-haskell-load-file))
 
   (defun my-haskell-send-decl-dwim ()
     (interactive)
@@ -3832,12 +3871,11 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (defun my-run-scala-other-window ()
     (interactive)
-    (let ((file (buffer-file-name)))
-      (with-selected-window (split-window-vertically -10)
-        (switch-to-buffer (make-comint "inferior-scala" "scala"))
-        (scala-mode-inf))
-      (when file
-        (scala-load-file file))))
+    (with-selected-window (split-window-vertically -10)
+      (switch-to-buffer (make-comint "inferior-scala" "scala"))
+      (scala-mode-inf))
+    (when buffer-file-name
+      (scala-load-file buffer-file-name)))
 
   ;; *FIXME* not DWIM for multi-line defuns
   (defun my-scala-eval-dwim ()
@@ -3955,7 +3993,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (defun my-tuareg-load-file (&optional file)
     (interactive)
-    (let ((file (or file (buffer-file-name))))
+    (let ((file (or file buffer-file-name)))
       (when (and file (comint-check-proc tuareg-interactive-buffer-name))
         (with-current-buffer tuareg-interactive-buffer-name
           (comint-send-string
@@ -3964,13 +4002,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (defun my-run-ocaml-other-window ()
     (interactive)
-    (let ((file (buffer-file-name)))
-      (with-selected-window (split-window-vertically -10)
-        (switch-to-buffer
-         (get-buffer-create tuareg-interactive-buffer-name))
-        (tuareg-run-process-if-needed tuareg-interactive-program)
-        (when file
-          (my-tuareg-load-file file)))))
+    (with-selected-window (split-window-vertically -10)
+      (switch-to-buffer
+       (get-buffer-create tuareg-interactive-buffer-name))
+      (tuareg-run-process-if-needed tuareg-interactive-program)
+      (when buffer-file-name
+        (my-tuareg-load-file buffer-file-name))))
 
   (defun my-tuareg-send-dwim ()
     (interactive)
@@ -4041,13 +4078,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "C-M-c" "C-M-n" "C-M-n") nil)
   (defun my-run-prolog-other-window ()
     (interactive)
-    (let ((file (buffer-file-name)))
-      (with-selected-window (split-window-vertically -10)
-        (switch-to-buffer (get-buffer-create "*prolog*"))
-        (prolog-mode-variables)
-        (prolog-ensure-process))
-      (when file
-        (prolog-consult-file))))
+    (with-selected-window (split-window-vertically -10)
+      (switch-to-buffer (get-buffer-create "*prolog*"))
+      (prolog-mode-variables)
+      (prolog-ensure-process))
+    (when buffer-file-name
+      (prolog-consult-file)))
   (defun my-prolog-consult-dwim ()
     (interactive)
     (if (use-region-p)
@@ -4065,16 +4101,20 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-lazy '(lmntal-mode lmntal-slimcode-mode) "lmntal-mode"
   :prepare (progn
              (push '("\\.lmn$" . lmntal-mode) auto-mode-alist)
+             (push '("\\.cslmn" . lmntal-mode) auto-mode-alist)
              (push '("\\.il$" . lmntal-slimcode-mode) auto-mode-alist))
 
-  (setq lmntal-home-directory           "~/Documents/LMNtal/lmntal/lmntal-compiler/"
-        lmntal-slim-executable          "../slim/bin/slim"
-        lmntal-mc-use-dot               (! (executable-find "dot"))
-        lmntal-slimcode-ildoc-directory my-lmntal-ildoc-directory)
+  (setq lmntal-home-directory  "~/Documents/LMNtal/lmntal/lmntal-compiler/"
+        lmntal-slim-executable "../slim/bin/slim"
+        lmntal-mc-use-dot      (! (executable-find "dot")))
 
   (setup-hook 'lmntal-trace-mode-hook 'my-kindly-view-mode)
   (setup-hook 'lmntal-mc-mode-hook 'my-kindly-view-mode)
   (setup-hook 'lmntal-slimcode-help-hook 'my-kindly-view-mode)
+
+  ;; highlight CSLMNtal keywords
+  (font-lock-add-keywords
+   'lmntal-mode '(("\\_<\\(typedef\\|define\\|defop\\)\\_>" . font-lock-function-name-face)))
 
   (setup-after "popwin"
     (push '("*SLIMcode-help*") popwin:special-display-config))
@@ -4126,18 +4166,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (push 'lmntal-slimcode-mode mark-hacks-auto-indent-inhibit-modes))
   )
 
-(setup-lazy '(cslmntal-mode) "cslmntal-mode"
-  :prepare (push '("\\.cslmn$" . cslmntal-mode) auto-mode-alist)
-  (setup-after "auto-complete"
-    (push 'cslmntal-mode ac-modes)))
-
-;;       + hydla-mode
-
-(setup-lazy '(hydla-mode) "hydla-mode"
-  :prepare (push '("\\.hydla$" . hydla-mode) auto-mode-alist)
-  (setup-after "auto-complete"
-    (push 'hydla-mode ac-modes)))
-
 ;;     + esolangs
 ;;       + zombie-mode
 
@@ -4148,7 +4176,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;       + ahk-mode
 
 (setup-lazy '(ahk-mode) "ahk-mode"
-  :prepare (push '("\\.ahk$" . ahk-mode) auto-mode-alist)
+  :prepare (progn
+             (push '("\\.ahk$" . ahk-mode) auto-mode-alist)
+             ;; the default value of ahk-path-exe-installed is invalid
+             ;; on non-w32 systems.
+             (unless (eq (window-system) 'w32)
+               (defvar ahk-path-exe-installed nil)))
   (setup-after "mark-hacks"
     (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes))
   (setup-after "auto-complete"
@@ -4622,37 +4655,42 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
             (dired up-dir)
             (dired-goto-file current-dir)))))
 
-  (defun my-dired-do-convert-coding-system ()
-    "Convert file (s) in specified coding system."
-    (interactive)
-    (let ((coding
-           (read-coding-system
-            (format "Coding system for converting file (s) (default, %s): "
-                    buffer-file-coding-system)
-            buffer-file-coding-system)))
-      (check-coding-system coding)
-      (dired-map-over-marks-check
-       (lambda ()
-         (let ((file (dired-get-filename))
-               (coding-system-for-write coding))
-           (condition-case err
-               (with-temp-buffer
-                 (insert-file-contents file)
-                 (write-region (point-min) (point-max) file))
-             (error (dired-log "convert coding system error for %s:\n%s\n" file err)
-                    err))))
-       nil 'convert-coding-system t)))
+  (setup-lazy
+    '(my-dired-do-convert-coding-system
+      my-dired-do-insert-subdirs) "dired-aux"
 
-  (defun my-dired-do-insert-subdirs ()
-    (interactive)
-    (dired-map-over-marks-check
-     (lambda ()
-       (let ((dirname (dired-get-filename)))
-         (condition-case err
-             (progn (dired-insert-subdir dirname) nil)
-           (error (dired-log "failed to insert %s:\n%s\n" dirname err)
-                  err))))
-     nil 'insert-subdir t))
+      (defun my-dired-do-convert-coding-system ()
+        "Convert file (s) in specified coding system."
+        (interactive)
+        (let ((coding
+               (read-coding-system
+                (format "Coding system for converting file (s) (default, %s): "
+                        buffer-file-coding-system)
+                buffer-file-coding-system)))
+          (check-coding-system coding)
+          (dired-map-over-marks-check
+           (lambda ()
+             (let ((file (dired-get-filename))
+                   (coding-system-for-write coding))
+               (condition-case err
+                   (with-temp-buffer
+                     (insert-file-contents file)
+                     (write-region (point-min) (point-max) file))
+                 (error (dired-log "convert coding system error for %s:\n%s\n" file err)
+                        err))))
+           nil 'convert-coding-system t)))
+
+      (defun my-dired-do-insert-subdirs ()
+        (interactive)
+        (dired-map-over-marks-check
+         (lambda ()
+           (let ((dirname (dired-get-filename)))
+             (condition-case err
+                 (progn (dired-insert-subdir dirname) nil)
+               (error (dired-log "failed to insert %s:\n%s\n" dirname err)
+                      err))))
+         nil 'insert-subdir t))
+      )
 
   ;; taken from uenox-dired.el
   (defun my-dired-winstart ()
@@ -4743,16 +4781,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   :prepare (progn (setup-in-idle "howm")
                   (push '("\\.howm$" . org-mode) auto-mode-alist))
 
-  ;;   + | calendar settings
-
-  (require 'calendar)
-
-  (setup "japanese-holidays"
-    (setq mark-holidays-in-calendar t
-          calendar-holidays
-          (append japanese-holidays local-holidays other-holidays))
-    (add-hook 'calendar-today-visible-hook 'calendar-mark-today))
-
   ;;   + | settings
 
   (setq howm-directory                       my-howm-directory
@@ -4778,6 +4806,21 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (set-face-background 'howm-reminder-today-face nil)
   (set-face-background 'howm-reminder-tomorrow-face nil)
 
+  ;;   + | utilities
+
+  (defun my-howm-menu-reminder ()
+    "like `howm-menu-reminder' but if howm-menu is already
+displayed, use substring of the buffer."
+    (if (null (get-buffer "*howmM:%menu%*"))
+        (howm-menu-reminder)
+      (with-current-buffer "*howmM:%menu%*"
+        (save-excursion
+          (save-restriction
+            (widen)
+            (goto-char (point-min))
+            (search-forward (cdar howm-menu-reminder-separators))
+            (buffer-substring-no-properties (match-beginning 0) (point-max)))))))
+
   ;;   + | dropbox -> howm
 
   (setup-hook 'howm-menu-hook
@@ -4792,7 +4835,13 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                 (beginning-of-buffer)
                 (cond ((not (y-or-n-p (format "import %s ?" file)))
                        (howm-remember-discard)
-                       (rename-file abs-path (concat my-howm-import-directory "-" file)))
+                       (let* ((newname-base (concat my-howm-import-directory "-" file))
+                              (newname newname-base)
+                              (n 0))
+                         (while (file-exists-p newname)
+                           (setq n       (1+ n)
+                                 newname (concat newname-base "_" (number-to-string n))))
+                         (rename-file abs-path newname)))
                       (t
                        (let ((howm-template (concat "* " (howm-reminder-today)
                                                     "- " file "\n\n%cursor")))
@@ -4804,29 +4853,29 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   ;;   + | howm -> dropbox
 
-  (defun my-howm-export-file (target)
-    (with-temp-file target
-      ;; dropbox App compatibility
-      (set-buffer-file-coding-system 'utf-8)
-      (insert (format "* Howm Schedule %s ~ %s *\n\n"
-                      (howm-reminder-today)
-                      (howm-reminder-today howm-menu-schedule-days))
-              ;; calender of the next two months
-              (let* ((date (calendar-current-date))
-                     (month (calendar-extract-month date))
-                     (year (calendar-extract-year date)))
-                (concat
-                 (with-temp-buffer
-                   (calendar-generate-month month year 0)
-                   (buffer-substring-no-properties (point-min) (point-max)))
-                 "\n\n"
-                 (with-temp-buffer
-                   (calendar-increment-month month year 1)
-                   (calendar-generate-month month year 0)
-                   (buffer-substring-no-properties (point-min) (point-max)))))
-              "\n"
-              (howm-menu-reminder))
-      (message "successfully exported")))
+  (setup-lazy '(my-howm-export-file) "calendar"
+    (defun my-howm-export-file (target)
+      (with-temp-file target
+        (set-buffer-file-coding-system 'utf-8) ; Dropbox App compatibility
+        (insert (format "* Howm Schedule %s ~ %s *\n\n"
+                        (howm-reminder-today)
+                        (howm-reminder-today howm-menu-schedule-days))
+                ;; calendar of the next two months
+                (let* ((date (calendar-current-date))
+                       (month (calendar-extract-month date))
+                       (year (calendar-extract-year date)))
+                  (concat
+                   (with-temp-buffer
+                     (calendar-generate-month month year 0)
+                     (buffer-substring-no-properties (point-min) (point-max)))
+                   "\n\n"
+                   (with-temp-buffer
+                     (calendar-increment-month month year 1)
+                     (calendar-generate-month month year 0)
+                     (buffer-substring-no-properties (point-min) (point-max)))))
+                "\n"
+                (my-howm-menu-reminder))
+        (message "successfully exported"))))
 
   (defun my-howm-generate-vevent (y m d dd body)
     (concat "BEGIN:VEVENT\n"
@@ -4839,7 +4888,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (defun my-howm-export-ics (target)
     (let ((lst nil))
       (with-temp-buffer
-        (insert-string (howm-menu-reminder))
+        (insert-string (my-howm-menu-reminder))
         (goto-char 1)
         (while (search-forward-regexp
                 "\\[\\([0-9]+\\)-\\([0-9]+\\)-\\([0-9]+\\)\\][@!]\\([0-9]+\\)? \\(.+\\)$"
@@ -4871,6 +4920,66 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
           (insert (apply 'my-howm-generate-vevent elem)))
         (insert "END:VCALENDAR"))))
 
+  ;;   + | howm-calendar
+
+  (setup-lazy '(my-howm-calendar) "calendar"
+
+    (defvar my-howm-calendar-highlight-face 'font-lock-keyword-face)
+
+    (defvar my-howm-calendar-keymap
+      (let ((kmap (make-sparse-keymap)))
+        (set-keymap-parent kmap calendar-mode-map)
+        (define-key kmap [remap calendar-exit] 'my-howm-calendar-exit)
+        (define-key kmap (kbd "RET") 'my-howm-calendar-insert-date)
+        (define-key kmap (kbd "C-g") 'my-howm-calendar-exit)
+        kmap))
+
+    ;; reference | http://www.bookshelf.jp/soft/meadow_38.html#SEC563
+    (defun my-howm-calendar-insert-date ()
+      (interactive)
+      (let ((day nil)
+            (calendar-date-display-form
+             '("[" year "-" (format "%02d" (string-to-int month))
+               "-" (format "%02d" (string-to-int day)) "]")))
+        (setq day (calendar-date-string
+                   (calendar-cursor-to-date t)))
+        (calendar-exit t)
+        (insert day)))
+
+    (defun my-howm-calendar-exit ()
+      "like `calendar-exit' but kills the calendar buffer."
+      (interactive)
+      (calendar-exit t))
+
+    (defun my-howm-calendar ()
+      (interactive)
+      (calendar)
+      (use-local-map my-howm-calendar-keymap)
+      ;; mark howm reminders
+      (let (matches marker-fn)
+        (with-temp-buffer
+          (insert (my-howm-menu-reminder))
+          (goto-char 1)
+          (while (search-forward-regexp
+                  ;; marked with `@' or `!' but does not starts with `('
+                  "\\[\\([0-9]+\\)-\\([0-9]+\\)-\\([0-9]+\\)\\][@!]\\([0-9]+\\)? [^(]"
+                  nil t)
+            (let ((m (read (match-string 2)))                ; month
+                  (d (read (match-string 3)))                ; date
+                  (y (read (match-string 1))))               ; year
+              (dotimes (dd (read (or (match-string 4) "1"))) ; duration
+                (cl-destructuring-bind (_ __ ___ d m y . ____)
+                    (decode-time (encode-time 0 0 0 (+ d dd) m y))
+                  (push (list m d y) matches))))))
+        (setq marker-fn
+              `(lambda ()
+                 (dolist (match ',matches)
+                   (when (calendar-date-is-visible-p match)
+                     (calendar-mark-visible-date match my-howm-calendar-highlight-face)))))
+        (add-hook 'calendar-move-hook marker-fn nil t)
+        (funcall marker-fn)))
+    )
+
   ;;   + | commands
 
   (defvar my-howm-saved-window-configuration nil)
@@ -4901,8 +5010,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (defun my-howm-kill-buffer ()
     "save and kill this howm buffer"
     (interactive)
-    (when (and (buffer-file-name)
-               (string-match "\\.howm" (buffer-file-name)))
+    (when (and buffer-file-name (string-match "\\.howm" buffer-file-name))
       (let ((buf (buffer-name)))
         (save-buffer)
         ;; codes below are added to avoid
@@ -4911,24 +5019,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         (when (string= (buffer-name) buf) (kill-buffer))
         ;; - reflesh menu
         (howm-menu-refresh))))
-
-  ;; reference | http://www.bookshelf.jp/soft/meadow_38.html#SEC563
-  (defun my-howm-insert-date-from-calendar ()
-    (interactive)
-    (let ((day nil)
-          (calendar-date-display-form
-           '("[" year "-" (format "%02d" (string-to-int month))
-             "-" (format "%02d" (string-to-int day)) "]")))
-      (setq day (calendar-date-string
-                 (calendar-cursor-to-date t)))
-      (calendar-exit)
-      (insert day)))
-  (defun my-howm-insert-date-with-calendar ()
-    (interactive)
-    (calendar))
-  (setup-keybinds calendar-mode-map
-    "RET" 'my-howm-insert-date-from-calendar
-    "C-g" 'calendar-exit)
 
   ;; redefine howm-action-lock-date to allow from~to style input
   (defun howm-action-lock-interpret-input (str)
@@ -4967,7 +5057,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-keybinds howm-mode-map
     "C-x C-s" 'my-howm-kill-buffer
     "C-c C-d" 'howm-insert-date
-    "C-c C-c" 'my-howm-insert-date-with-calendar)
+    "C-c C-c" 'my-howm-calendar)
   (setup-keybinds howm-menu-mode-map
     "q"       'my-howm-exit)
   (setup-keybinds howm-remember-mode-map
@@ -5033,9 +5123,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (defvar-local my-palette-available-p nil)
 (setup-after "scratch-palette"
   (defun my-update-palette-status ()
-    (let ((fname (scratch-palette--palette-file-name)))
-      (when (and fname (file-exists-p fname))
-        (setq my-palette-available-p t))))
+    (when (and buffer-file-name
+               (file-exists-p (scratch-palette--file-name buffer-file-name)))
+      (setq my-palette-available-p t)))
   (defadvice scratch-palette-kill (after my-update-palette-status activate)
     (my-update-palette-status))
   (setup-hook 'find-file-hook 'my-update-palette-status)
@@ -5087,8 +5177,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
              (propertize (format "%02d" (mc/num-cursors)) 'face 'mode-line-mc-face)
            (! (propertize "00" 'face 'mode-line-bright-face))))
         (dirname
-         (propertize (let* ((file (buffer-file-name))
-                            (dir (if file (file-name-directory file) "")))
+         (propertize (let ((dir (if (not buffer-file-name) ""
+                                  (file-name-directory buffer-file-name))))
                        (my-shorten-directory dir 20)) 'face 'mode-line-dark-face))
         (filename
          (! (propertize "%b" 'face 'mode-line-highlight-face)))
@@ -5221,31 +5311,31 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (eval-and-compile          ; we want theme applied also during compile
   (setup-include "solarized-definitions"
 
-    (defun create-solarized-based-theme
+    (defmacro create-solarized-based-theme
       (name mode description darkest-base brightest-base
             type-yellow warning-orange error-red visited-magenta
             link-violet identifier-blue string-cyan keyword-green)
       (declare (indent 2))
-      (let ((solarized-colors
-             `((base03  ,darkest-base)
-               (base02  ,(my-make-color darkest-base nil nil brightest-base 3))
-               (base01  ,(my-make-color darkest-base nil nil brightest-base 35))
-               (base00  ,(my-make-color darkest-base nil nil brightest-base 40))
-               (base0   ,(my-make-color darkest-base nil nil brightest-base 52))
-               (base1   ,(my-make-color darkest-base nil nil brightest-base 58))
-               (base2   ,(my-make-color darkest-base nil nil brightest-base 97 ;; 94
-                                        ))
-               (base3   ,brightest-base)
-               (yellow  ,type-yellow)
-               (orange  ,warning-orange)
-               (red     ,error-red)
-               (magenta ,visited-magenta)
-               (violet  ,link-violet)
-               (blue    ,identifier-blue)
-               (cyan    ,string-cyan)
-               (green   ,keyword-green))))
-        (set-frame-parameter nil 'background-mode mode)
-        (create-solarized-theme name description (solarized-color-definitions))))
+      `(let ((solarized-colors
+              '((base03  ,darkest-base)
+                (base02  ,(my-make-color darkest-base nil nil brightest-base 3))
+                (base01  ,(my-make-color darkest-base nil nil brightest-base 35))
+                (base00  ,(my-make-color darkest-base nil nil brightest-base 40))
+                (base0   ,(my-make-color darkest-base nil nil brightest-base 52))
+                (base1   ,(my-make-color darkest-base nil nil brightest-base 58))
+                (base2   ,(my-make-color darkest-base nil nil brightest-base 97 ;; 94
+                                         ))
+                (base3   ,brightest-base)
+                (yellow  ,type-yellow)
+                (orange  ,warning-orange)
+                (red     ,error-red)
+                (magenta ,visited-magenta)
+                (violet  ,link-violet)
+                (blue    ,identifier-blue)
+                (cyan    ,string-cyan)
+                (green   ,keyword-green))))
+         (set-frame-parameter nil 'background-mode ',mode)
+         (create-solarized-theme ,name ,description (solarized-color-definitions))))
 
     ;; ;; the solarized-dark theme
     ;; (set-frame-parameter nil 'background-mode 'dark)
@@ -5259,14 +5349,14 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
     ;; ;; "jellybeans" based theme
     ;; ;; reference | https://github.com/nanotech/jellybeans.vim
-    ;; (create-solarized-based-theme 'solarized-jellybeans 'dark
+    ;; (create-solarized-based-theme solarized-jellybeans dark
     ;;   "solarized-based theme with `jellybeans' inspired color-palette."
     ;;   "#202020" "#ffffff" "#ffb964" "#8fbfdc" "#a04040"
     ;;   "#b05080" "#805090" "#fad08a" "#99ad6a" "#8fbfdc")
 
     ;; ;; "mesa" based theme
     ;; ;; reference | http://emacsfodder.github.io/blog/mesa-theme/
-    ;; (create-solarized-based-theme 'solarized-mesa 'light
+    ;; (create-solarized-based-theme solarized-mesa light
     ;;   "solarized-based theme with `mesa' inspired color-palette."
     ;;   "#000000" "#faf5ee" "#3388dd" "#ac3d1a" "#dd2222"
     ;;   "#8b008b" "#00b7f0" "#1388a2" "#104e8b" "#00688b")
@@ -5274,7 +5364,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;; "kagamine len" inspired theme
     ;; reference | http://vocaloidcolorpalette.tumblr.com/
     ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
-    (create-solarized-based-theme 'lenlen 'light
+    (create-solarized-based-theme lenlen light
       "solarized-based theme with kagamine len inspired color-palette."
       "#291e03" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
       "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
@@ -5532,6 +5622,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "M-b"     '("ido" ido-switch-buffer switch-to-buffer)
   "C-x C-w" '("ido" ido-write-file write-file)
   "C-x C-s" 'save-buffer
+  "C-x C-x" 'my-rename-current-buffer-file
   "C-x C-b" 'list-buffers
   "C-x C-k" 'kill-this-buffer
   "C-x C-e" 'set-buffer-file-coding-system
@@ -5543,7 +5634,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "M-0" 'next-multiframe-window
   "M-1" 'delete-other-windows
   "M-2" 'my-split-window
-  "M-3" 'balance-windows
+  "M-3" 'my-resize-window
   "M-4" 'follow-delete-other-windows-and-split
   "M-8" 'my-transpose-window-buffers
   "M-9" 'previous-multiframe-window
@@ -5753,8 +5844,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
   (key-chord-define-global "fj" 'my-transpose-chars)
   (key-chord-define-global "hh" 'my-capitalize-word-dwim)
-  (key-chord-define-global "jj" 'my-upcase-previous-word)
-  (key-chord-define-global "kk" 'my-downcase-previous-word)
+  (key-chord-define-global "jj" 'my-downcase-previous-word)
+  (key-chord-define-global "kk" 'my-upcase-previous-word)
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "jk" 'iy-go-to-char)
     (key-chord-define-global "df" 'iy-go-to-char-backward))
