@@ -49,8 +49,8 @@
 ;;
 ;; - fj : transpose-chars
 ;; - hh : capitalize word
-;; - kk : downcase word
-;; - jj : upcase word
+;; - kk : upcase word
+;; - jj : downcase word
 ;;
 ;; - df : iy-go-to-char-backward
 ;; - jk : iy-go-to-char
@@ -118,7 +118,10 @@
     "Path to clojure.jar executable.")
   (defconst my-migemo-dictionary
     (when (boundp 'my-migemo-dictionary) my-migemo-dictionary)
-    "Dictionary file for migemo."))
+    "Dictionary file for migemo.")
+  (defconst my-lingr-account
+    (when (boundp 'my-lingr-account) my-lingr-account)
+    "My Lingr account."))
 
 ;;   + path to library files
 
@@ -181,6 +184,9 @@
 
 (defconst my-ispell-repl (! (concat my-dat-directory "ispell-repl"))
   "File name of personal ispell replacement dictionary.")
+
+(defconst my-lingr-log-file (! (concat my-dat-directory "lingr"))
+  "File to save `symon-lingr' log in.")
 
 ;; Howm Datas
 
@@ -620,25 +626,24 @@
   (setq eldoc-idle-delay                0.1
         eldoc-echo-area-use-multiline-p nil))
 
-(setup-lazy '(ispell-region) "ispell"
-  (setq ispell-personal-dictionary my-ispell-dictionary
+(setup-lazy '(my-turn-on-flyspell) "flyspell-lazy"
+  :prepare (add-hook 'find-file-hook 'my-turn-on-flyspell t)
+
+  (require 'flyspell)
+  (ispell-change-dictionary "english")
+  (flyspell-lazy-mode 1)
+
+  ;; do not spell-check non-ascii characters
+  (add-to-list 'ispell-skip-region-alist '("[^\000-\377]"))
+
+  (setq flyspell-mark-duplications-flag   nil
+        flyspell-duplicate-distance       0
+        flyspell-lazy-idle-seconds        1
+        flyspell-lazy-window-idle-seconds 1.5
+        ispell-personal-dictionary        my-ispell-dictionary
         ispell-extra-args
         `("--sug-mode=ultra"
           ,(concat "--repl=" (expand-file-name my-ispell-repl))))
-  (ispell-change-dictionary "english")
-  ;; do not spell-check non-ascii characters
-  (add-to-list 'ispell-skip-region-alist '("[^\000-\377]")))
-
-(setup-lazy '(my-turn-on-flyspell) "flyspell"
-  ;; *FIXME* flyspell seems buggy on Windows
-  ;; :prepare (add-hook 'find-file-hook 'my-turn-on-flyspell t)
-
-  (require 'ispell)
-
-  (setq flyspell-mark-duplications-flag nil
-        flyspell-duplicate-distance     0
-        flyspell-large-region           0
-        flyspell-delay                  0.1)
 
   (defun my-turn-on-flyspell ()
     (interactive)
@@ -649,53 +654,11 @@
           (flyspell-mode)
         (flyspell-prog-mode))))
 
-  ;; force spell checking the visible portion
-  ;; *FIXME* NOT EFFICIENT
-  (run-with-idle-timer
-   0.5 t
-   (lambda ()
-     (when (and (boundp 'flyspell-mode) flyspell-mode)
-       (let* ((beg (window-start))
-              (end (window-end))
-              ;; sorted list of invisible overlays ((BEG END) (BEG END) ...)
-              (ovs (sort (delq nil
-                               (mapcar (lambda (ov)
-                                         (when (overlay-get ov 'invisible)
-                                           (cons (overlay-start ov) (overlay-end ov))))
-                                       (overlays-in beg end)))
-                         (lambda (a b) (< (car a) (car b)))))
-              tmp)
-         (while (and beg (< beg end)) ; we can safely set "beg" nil and the loop breaks
-           (while (and ovs (<= (cdar ovs) beg)) ; remove overlays we've already skipped over
-             (setq ovs (cdr ovs)))
-           (cond ((get-text-property beg 'flyspelled) ; skip spell-checked region
-                  (setq beg (next-single-property-change beg 'flyspelled nil end)))
-                 ((get-text-property beg 'invisible) ; skip invisible region
-                  (setq beg (next-single-property-change beg 'invisible nil end)))
-                 ((and ovs (<= (caar ovs) beg) (< beg (cdar ovs))) ; skip invisible overlays
-                  (setq beg (cdar ovs)))
-                 (t                  ; not spell-checked nor invisible
-                  (setq tmp (delq nil
-                                  (list (next-single-property-change beg 'flyspelled nil end)
-                                        (next-single-property-change beg 'invisible nil end)
-                                        (caar ovs))))
-                  (setq tmp (when tmp (apply 'min tmp)))
-                  (flyspell-region beg (or tmp end))
-                  (with-silent-modifications
-                    (put-text-property beg (or tmp end) 'flyspelled t))
-                  (setq beg tmp))))))))
-
-  (setup-keybinds flyspell-mode-map
-    '("C-;" "C-," "C-." "C-M-i") nil
-    "C-c C-i" 'flyspell-correct-word-before-point)
-
-  ;; correct words with pop-up UI
+  ;; overwrite "flyspell-emacs-popup" to use popup.el
   ;; Reference | EmacsWiki - Flyspell
   (setup-after "popup"
-    ;; advice "flyspell-emacs-popup" to use popup.el
-    (defadvice flyspell-emacs-popup (around my-flyspell-use-popup activate)
-      (let* ((poss (ad-get-arg 1))
-             (corrects (if flyspell-sort-corrections
+    (defun flyspell-emacs-popup (event poss word)
+      (let* ((corrects (if flyspell-sort-corrections
                            (sort (car (cdr (cdr poss))) 'string<)
                          (car (cdr (cdr poss)))))
              (cor-menu (if (consp corrects)
@@ -720,8 +683,11 @@
              (menu (mapcar
                     (lambda (arg) (if (consp arg) (car arg) arg))
                     base-menu)))
-        (setq ad-return-value
-              (cadr (assoc (popup-menu* menu :scroll-bar t) base-menu))))))
+        (cadr (assoc (popup-menu* menu :scroll-bar t) base-menu)))))
+
+  (setup-keybinds flyspell-mode-map
+    '("C-;" "C-," "C-." "C-M-i") nil
+    "C-c C-i" 'flyspell-correct-word-before-point)
 
   ;; apply workaround for auto-complete
   (setup-after "auto-complete"
@@ -742,25 +708,24 @@
                              '(2 "_NET_WM_STATE_MAXIMIZED_HORZ" 0))))
   (setup-hook 'window-setup-hook 'maximize-frame))
 
-(!-
- (setup "popwin"
-   (setq popwin:special-display-config
-         '(("ChangeLog")
-           ("*howm-remember*")
-           ("*Buffer List*")
-           ("*Kill Ring*")
-           ("*Help*")
-           ("*info*")
-           ("*Warnings*")
-           ("*Shell Command Output*")
-           ("*All*")
-           ;; if *Compile-Log* is selected immediately, it fails!!
-           ("*Compile-Log*" :noselect t) ; ???
-           ("*compilation*"              ;; :noselect t
-            )                            ; ???
-           ("*Completions*" :noselect t)
-           ("*Backtrace*" :noselect t)))
-   (popwin-mode 1)))
+(setup "popwin"
+  (setq popwin:special-display-config
+        '(("ChangeLog")
+          ("*howm-remember*")
+          ("*Buffer List*")
+          ("*Kill Ring*")
+          ("*Help*")
+          ("*info*")
+          ("*Warnings*")
+          ("*Shell Command Output*")
+          ("*All*")
+          ;; if *Compile-Log* is selected immediately, it fails!!
+          ("*Compile-Log*" :noselect t) ; ???
+          ("*compilation*"              ;; :noselect t
+           )                            ; ???
+          ("*Completions*" :noselect t)
+          ("*Backtrace*" :noselect t)))
+  (popwin-mode 1))
 
 (!-
  (setup "smooth-scrolling"
@@ -900,10 +865,78 @@ unary operators which can also be binary."
 
 (!-
  (setup "symon"
-   (setq symon-sparkline-ascent (!if my-home-system-p 97 100))
-   (symon-mode)))
+   (setq symon-sparkline-ascent (!if my-home-system-p 97 100)
+         symon-monitors         '(symon-windows-cpu-monitor
+                                  symon-windows-network-rx-monitor
+                                  symon-windows-network-tx-monitor))
+   (symon-mode 1)
+   (when my-lingr-account
+     (setup-in-idle "symon-lingr")
+     (setup-after "symon-lingr"
+       (setup-after "popwin"
+         (push '("*symon-lingr*") popwin:special-display-config))
+       (setq symon-lingr-user-name (car my-lingr-account)
+             symon-lingr-password  (cdr my-lingr-account)
+             symon-lingr-log-file  my-lingr-log-file
+             symon-lingr-app-key   "pvCm1t"
+             symon-monitors        '(symon-windows-cpu-monitor
+                                     symon-windows-network-rx-monitor
+                                     symon-windows-network-tx-monitor
+                                     symon-lingr-monitor))
+       (symon-mode -1)
+       (symon-mode 1)))))
 
 ;; + | Commands
+;;   + web browser [eww]
+
+(setup-lazy '(eww) "eww"
+
+  ;; disable images by default
+  ;; Reference | http://rubikitch.com/2014/11/25/eww-image/
+  (setq shr-put-image-function 'my-eww-insert-alt)
+  (defun my-eww-insert-alt (_ alt &optional __) (insert alt))
+  (defun my-eww-enable-images ()
+    "Enable images in this eww buffer."
+    (interactive)
+    (let ((shr-put-image-function 'shr-put-image))
+      (eww-reload)))
+
+  ;; disable colors by default
+  ;; Reference | http://rubikitch.com/2014/11/19/eww-nocolor/
+  (defvar my-eww-enable-colors nil)
+  (defadvice shr-colorize-region (around my-eww-colorize-ad activate)
+    (when my-eww-enable-colors ad-do-it))
+  (defadvice eww-colorize-region (around my-eww-colorize-ad activate)
+    (when my-eww-enable-colors ad-do-it))
+  (defun my-eww-enable-colors ()
+    "Enable colors in this eww buffer."
+    (interactive)
+    (let ((my-eww-enable-colors t))
+      (eww-reload)))
+
+  ;; Backward Compatibility (<= 24.3)
+  ;; Reference | https://lists.gnu.org/archive/html/emacs-diffs/2013-06/msg00410.html
+  (unless (fboundp 'add-face-text-property)
+    (defun add-face-text-property (beg end face &optional appendp object)
+      "Combine FACE BEG and END."
+      (let ((b beg))
+        (while (< b end)
+          (let ((oldval (get-text-property b 'face)))
+            (put-text-property
+             b (setq b (next-single-property-change b 'face nil end))
+             'face (cond ((null oldval)
+                          face)
+                         ((and (consp oldval)
+                               (not (keywordp (car oldval))))
+                          (if appendp
+                              (nconc oldval (list face))
+                            (cons face oldval)))
+                         (t
+                          (if appendp
+                              (list oldval face)
+                            (list face oldval))))))))))
+  )
+
 ;;   + english <-> japanese dictionary [sdic]
 
 (setup-after "sdic"
@@ -956,6 +989,13 @@ unary operators which can also be binary."
   ;; taken from "ido-hacks"
   (put 'elp-instrument-package 'ido 'ignore)
   (setq completing-read-function 'my-completing-read-with-ido))
+
+;; advice some functions to use the normal `completing-read'
+(dolist (fn '(read-buffer-file-coding-system insert-char))
+  (eval
+   `(defadvice ,fn (around my-fix-completing-read activate)
+      (let ((completing-read-function 'completing-read-default))
+        ad-do-it))))
 
 ;;     + ido interface for recentf
 
@@ -1445,11 +1485,11 @@ unary operators which can also be binary."
   (let* ((back-list (save-excursion
                       (and (search-backward-regexp "\\s)" nil t)
                            (point))))
-         (back-list (and back-list (- (point) back-list)))
+         (back-list (and back-list (- back-list (point))))
          (back-str (save-excursion
                      (and (search-backward-regexp "\\s\"" nil t)
                           (point))))
-         (back-str (and back-str (- (point) back-str)))
+         (back-str (and back-str (- back-str (point))))
          (for-list (save-excursion
                      (and (search-forward-regexp "\\s(" nil t)
                           (point))))
@@ -1457,18 +1497,11 @@ unary operators which can also be binary."
          (for-str (save-excursion
                     (and (search-forward-regexp "\\s\"" nil t)
                          (point))))
-         (for-str (and for-str (- for-str (point)))))
-    (cl-case (cdar (sort `((,back-list . back-list)
-                           (,back-str . back-str)
-                           (,for-list . for-list)
-                           (,for-str . for-str))
-                         (lambda (a b)
-                           (when (and (car a) (car b))
-                             (< (car a) (car b))))))
-      ((back-list) (backward-char back-list))
-      ((back-str) (backward-char back-str))
-      ((for-list) (forward-char for-list))
-      ((for-str) (forward-char for-str)))))
+         (for-str (and for-str (- for-str (point))))
+         (diff (car (sort (list back-list back-str for-list for-str)
+                          (lambda (a b)
+                            (or (not (numberp b)) (< (abs a) (abs b))))))))
+    (if (numberp diff) (forward-char diff) (error "Cannot go down."))))
 
 (defun my-copy-sexp ()
   (interactive)
@@ -2042,7 +2075,7 @@ unary operators which can also be binary."
 
 ;;   + | jokes
 
-;; jokes sǝʞoɾ
+;; Emacs sɔɐɯƎ
 (!-
  (defun my-flip-char (char)
    (cl-case char
@@ -2334,6 +2367,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 (setup-lazy '(simple-demo-set-up) "simple-demo")
 
+(setup-lazy '(htmlize-buffer htmlize-file) "htmlize")
+
 ;; + | Modes
 ;;   + text modes
 ;;     + text-mode
@@ -2346,8 +2381,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "mark-hacks"
     (push 'text-mode mark-hacks-auto-indent-inhibit-modes))
   (setup-expecting "phi-search-migemo"
-    (define-key text-mode-map [remap phi-search] 'phi-search-migemo)
-    (define-key text-mode-map [remap phi-search-backward] 'phi-search-migemo-backward))
+    (setup-keybinds text-mode-map
+      [remap phi-search]          'phi-search-migemo
+      [remap phi-search-backward] 'phi-search-migemo-backward))
   (setup-keybinds text-mode-map "C-M-i" nil))
 
 ;;     + org-mode [htmlize]
@@ -2377,8 +2413,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
           smart-compile-alist))
 
   (setup-expecting "phi-search-migemo"
-    (define-key org-mode-map [remap phi-search] 'phi-search-migemo)
-    (define-key org-mode-map [remap phi-search-backward] 'phi-search-migemo-backward))
+    (setup-keybinds org-mode-map
+      [remap phi-search]          'phi-search-migemo
+      [remap phi-search-backward] 'phi-search-migemo-backward))
 
   (setup-after "org-exp"
 
@@ -2413,12 +2450,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       ;; use htmlize in "org-export-as-html"
       (setup-lazy '(htmlize-buffer) "htmlize"
         :prepare (setup-after "org" (setup "htmlize")))
-
-      ;; web-mode workaround
-      (setup-expecting "web-mode"
-        (defadvice org-export-as-html (around my-web-mode-workaround activate)
-          (let ((auto-mode-alist (cons '("\.html$" . html-mode) auto-mode-alist)))
-            ad-do-it)))
 
       ;; electric-spacing workaround
       (setup-after "electric-spacing"
@@ -2485,8 +2516,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "mark-hacks"
     (push 'latex-mode mark-hacks-auto-indent-inhibit-modes))
   (setup-expecting "phi-search-migemo"
-    (define-key latex-mode-map [remap phi-search] 'phi-search-migemo)
-    (define-key latex-mode-map [remap phi-search-backward] 'phi-search-migemo-backward))
+    (setup-keybinds latex-mode-map
+      [remap phi-search]          'phi-search-migemo
+      [remap phi-search-backward] 'phi-search-migemo-backward))
   (setup-after "auto-complete"
     (setup "auto-complete-latex"
       (setq ac-l-dict-directory my-latex-dictionary-directory)
@@ -2506,192 +2538,14 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "mark-hacks"
     (push 'gfm-mode mark-hacks-auto-indent-inhibit-modes))
   (setup-expecting "phi-search-migemo"
-    (define-key gfm-mode-map [remap phi-search] 'phi-search-migemo)
-    (define-key gfm-mode-map [remap phi-search-backward] 'phi-search-migemo-backward))
+    (setup-keybinds gfm-mode-map
+      [remap phi-search]          'phi-search-migemo
+      [remap phi-search-backward] 'phi-search-migemo-backward))
   (setup-keybinds gfm-mode-map
     '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
     "TAB" 'markdown-cycle))
 
 ;;   + prog modes
-;;     + web-mode
-
-(setup-lazy '(web-mode) "web-mode"
-  :prepare (push (! `(,(format "\\.%s$"
-                               (regexp-opt
-                                '("html" "css" "xml"
-                                  ;; "phtml" "tpl" "php" "gsp" "jsp"
-                                  ;; "aspx" "ascx" "erb" "mustache" "djhtml"
-                                  ;; "js" "jsx"
-                                  )))
-                      . web-mode)) auto-mode-alist)
-
-  (setq web-mode-code-indent-offset 4
-        web-mode-css-indent-offset  4
-        web-mode-style-padding      2
-        web-mode-script-padding     2
-        web-mode-block-padding      2)
-
-  (defun my-web-forward-sexp (n)
-    (interactive "p")
-    (if (< n 0)
-        (my-web-backward-sexp (- n))
-      (let ((origpos (point)))
-        (dotimes (_ n)
-          (skip-chars-forward "\s\t\n")
-          (unless (eobp)
-            (let ((pos (point)))
-              (cond ((eq (get-text-property pos 'face)
-                         'web-mode-html-tag-bracket-face)
-                     ;; we're looking at a tag delimiter
-                     (cond ((= (char-after pos) ?<)
-                            ;; we're looking at the tag: |<foo>
-                            (web-mode-navigate)
-                            (if (< (point) pos)
-                                ;; we've moved BACKWARD with "web-mode-navigate"
-                                ;; (the tag we're looking at was the ender of the element)
-                                ;; <foo>brabrabra|</foo> -> |<foo>brabrabra</foo>
-                                (signal 'scan-error
-                                        (list "Containing expression ends prematurely"
-                                              pos
-                                              (prog1 (1+ (web-mode-tag-end-position pos))
-                                                (goto-char origpos))))
-                              ;; we've successfully moved FORWARD, or haven't moved
-                              ;; |<foo>brabrabra</foo> -> <foo>brabrabra|</foo>
-                              ;;                 |<br> -> |<br>
-                              (web-mode-tag-end)))
-                           (t
-                            ;; we're looking up the end of the tag: <foo|>
-                            (signal 'scan-error
-                                    (list "Containing expression ends prematurely"
-                                          pos (1+ pos))))))
-                    ((get-text-property pos 'block-beg)
-                     ;; we're looking at a block
-                     (web-mode-block-end))
-                    ((and (not (string= (web-mode-language-at-pos) "html"))
-                          (eq (get-text-property pos 'face)
-                              'web-mode-block-delimiter-face))
-                     ;; we're looking at the end of the block
-                     ;; <?php foo |?>
-                     (signal 'scan-error
-                             (list "Containing expression ends prematurely"
-                                   pos
-                                   (prog1 (1+ (web-mode-block-end-position))
-                                     (goto-char origpos)))))
-                    (t
-                     ;; otherwise, do the normal "forward-sexp"
-                     (let ((forward-sexp-function nil))
-                       (forward-sexp))
-                     (unless (looking-back "\\s)")
-                       (let ((delim
-                              (or (text-property-any
-                                   pos (point) 'face 'web-mode-block-delimiter-face)
-                                  (text-property-any
-                                   pos (point) 'face 'web-mode-html-tag-bracket-face))))
-                         (when delim
-                           ;; we've skipped over a block/tag delimiter
-                           ;; brabrabra|:<br> -> brabrabra:<br|>
-                           (goto-char delim)
-                           (skip-chars-backward "\s\t\n"))))))))))))
-
-  (defun my-web-backward-sexp (n)
-    (interactive "p")
-    (if (< n 0) (my-web-forward-sexp (- n))
-      (let ((origpos (point)))
-        (dotimes (_ n)
-          (skip-chars-backward "\s\t\n")
-          (unless (bobp)
-            (let ((pos (point)))
-              (cond ((eq (get-text-property (1- pos) 'face)
-                         'web-mode-html-tag-bracket-face)
-                     ;; we're looking back a tag delimiter
-                     (cond ((= (char-before pos) ?>)
-                            ;; we're looking back the tag ender: <foo>|
-                            (backward-char 1)
-                            (web-mode-navigate)
-                            (if (< pos (point))
-                                ;; we've moved FORWARD
-                                ;; <foo|>brabrabra</foo> -> <foo>brabrabra|</foo>
-                                (signal 'scan-error
-                                        (list "Containing expression ends prematurely"
-                                              (prog1 (web-mode-tag-beginning-position (1- pos))
-                                                (goto-char origpos))
-                                              pos))
-                              (web-mode-tag-beginning)))
-                           (t
-                            ;; we're looking back the beginning of the tag: <|foo>
-                            (signal 'scan-error
-                                    (list "Containing expression ends prematurely"
-                                          (1- pos) pos)))))
-                    ((get-text-property (1- pos) 'block-end)
-                     ;; we're looking back the block-end
-                     (backward-char 1)
-                     (web-mode-block-beginning))
-                    ((and (not (string= (web-mode-language-at-pos pos) "html"))
-                          (eq (get-text-property (1- pos) 'face)
-                              'web-mode-block-delimiter-face))
-                     ;; we're looking back the beginning of the block
-                     ;; <?php| foo ?>
-                     (signal 'scan-error
-                             (list "Containing expression ends prematurely"
-                                   (prog1 (web-mode-block-beginning-position)
-                                     (goto-char origpos))
-                                   pos)))
-                    (t
-                     (let ((forward-sexp-function nil))
-                       (backward-sexp))
-                     (unless (looking-at "\\s(")
-                       (let ((delim
-                              (or (text-property-any
-                                   (point) pos 'face 'web-mode-block-delimiter-face)
-                                  (text-property-any
-                                   (point) pos 'face 'web-mode-html-tag-bracket-face))))
-                         (when delim
-                           (goto-char
-                            (next-single-property-change delim 'face)))))))))))))
-
-  (setup-hook 'web-mode-hook
-    (setq-local forward-sexp-function 'my-web-forward-sexp))
-
-  (setup-keybinds web-mode-map
-    [remap comment-dwim]  'web-mode-comment-or-uncomment
-    "C-c C-'"             'web-mode-element-close)
-
-  (setup-after "auto-complete"
-    (setup "auto-complete-config"
-      (setq web-mode-ac-sources-alist
-            '(("javascript" . (ac-source-words-in-same-mode-buffers))
-              ("php" . (ac-source-words-in-same-mode-buffers))
-              ("css" . (ac-source-css-property ac-source-words-in-same-mode-buffers))
-              ("html" . (ac-source-words-in-same-mode-buffers))))
-      (push 'web-mode ac-modes)))
-
-  (setup-after "smart-compile"
-    (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
-
-  (setup-expecting "key-combo"
-    ;; does not work ?
-    (defun my-sgml-sp-or-smart-lt ()
-      "smart insertion of brackets for sgml languages"
-      (interactive)
-      (if (use-region-p)
-          (let ((beg (region-beginning)) ; wrap with <>
-                (end (region-end)))
-            (deactivate-mark)
-            (save-excursion
-              (goto-char beg)
-              (insert "<")
-              (goto-char (+ 1 end))
-              (insert ">")))
-        (insert "<>")                     ; insert <`!!'>
-        (backward-char)))
-    (setup-hook 'web-mode-hook
-      (key-combo-mode 1)
-      (key-combo-define-local (kbd "<") '(my-sgml-sp-or-smart-lt "&lt;" "<"))
-      (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
-      (key-combo-define-local (kbd ">") '("&gt;" ">"))
-      (key-combo-define-local (kbd "&") '("&amp;" "&"))))
-  )
-
 ;;     + generic
 
 (setup-lazy
@@ -2970,6 +2824,16 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-c C-s" 'my-run-clojure-other-window
     "C-c C-l" 'clojure-load-file)
   )
+
+;;       + egison-mode
+
+(setup-lazy '(egison-mode) "egison-mode"
+  :prepare (push '("\\.egi$" . egison-mode) auto-mode-alist)
+  (setup-after "auto-complete"
+    (push 'egison-mode ac-modes))
+  (setup-expecting "rainbow-delimiters"
+    (setup-hook 'egison-mode-hook 'rainbow-delimiters-mode))
+  (setup-keybinds egison-mode-map "C-j" nil))
 
 ;;       + racket-mode
 
@@ -3586,12 +3450,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'c-mode-hook 'flycheck-mode)
     (setup-hook 'c++-mode-hook 'flycheck-mode))
   (setup-after "flycheck"
-    ;; C/C++ checkers using gcc/g++
-    ;; reference | https://github.com/jedrz/.emacs.d/blob/master/setup-flycheck.el
     (defun my-flycheck-use-c99-p ()
       (save-excursion
         (goto-char (point-min))
         (search-forward-regexp "__STDC_VERSION__[^\n]*1999" 500 t)))
+    ;; C/C++ checker powered by gcc/g++
+    ;; reference | https://github.com/jedrz/.emacs.d/blob/master/setup-flycheck.el
     (flycheck-define-checker c-gcc
       "A C checker using gcc"
       :command ("gcc" "-fsyntax-only" "-ansi" "-pedantic"
@@ -4586,6 +4450,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "5"       'dired-do-query-replace-regexp         ; '%'
     "7"       'dired-do-async-shell-command          ;
     "8"       'dired-mark-executables                ; '*'
+    "-"       'my-dired-do-count-lines               ;
     "="       'dired-diff                            ;
     "q"       'kill-this-buffer                      ; 'Q'uit
     "w"       'wdired-change-to-wdired-mode          ; 'W'dired
@@ -4657,7 +4522,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (setup-lazy
     '(my-dired-do-convert-coding-system
-      my-dired-do-insert-subdirs) "dired-aux"
+      my-dired-do-insert-subdirs
+      my-dired-do-count-lines) "dired-aux" ; dired-map-over-marks-check
 
       (defun my-dired-do-convert-coding-system ()
         "Convert file (s) in specified coding system."
@@ -4675,7 +4541,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                (condition-case err
                    (with-temp-buffer
                      (insert-file-contents file)
-                     (write-region (point-min) (point-max) file))
+                     (write-region (point-min) (point-max) file)
+                     nil)
                  (error (dired-log "convert coding system error for %s:\n%s\n" file err)
                         err))))
            nil 'convert-coding-system t)))
@@ -4690,6 +4557,31 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                (error (dired-log "failed to insert %s:\n%s\n" dirname err)
                       err))))
          nil 'insert-subdir t))
+
+      (defun my-dired-do-count-lines ()
+        (interactive)
+        (let ((files 0) (lines 0) (comments 0))
+          (dired-map-over-marks-check
+           (lambda ()
+             (let ((file (dired-get-filename)))
+               (with-temp-buffer
+                 (insert-file-contents file)
+                 (goto-char (point-min))
+                 (let ((buffer-file-name file))
+                   (ignore-errors (set-auto-mode)))
+                 (setq lines (+ (count-lines (point-min) (point-max)) lines)
+                       files (1+ files))
+                 (while (ignore-errors
+                          (let* ((beg (goto-char (comment-search-forward (point-max))))
+                                 (beg-okay (looking-back "^[\s\t]*")))
+                            (forward-comment 1)
+                            (when (and beg-okay (looking-at "^[\s\t]*\\|[\s\t]*$"))
+                              (setq comments (+ (count-lines beg (point)) comments))))
+                          t)))
+               nil))
+           nil 'count-lines t)
+          (message "%d lines (including %d comment lines) in %s files."
+                   lines comments files)))
       )
 
   ;; taken from uenox-dired.el
@@ -4827,7 +4719,7 @@ displayed, use substring of the buffer."
     (when my-howm-import-directory
       (let ((imported-flag nil))
         (dolist (file (directory-files my-howm-import-directory))
-          (unless (string-match "^-" file)
+          (unless (string-match "^[#-]\\|~$" file)
             (let ((abs-path (concat my-howm-import-directory file)))
               (when (file-regular-p abs-path)
                 (howm-remember)
@@ -5055,14 +4947,20 @@ displayed, use substring of the buffer."
   ;;   + | keybinds
 
   (setup-keybinds howm-mode-map
-    "C-x C-s" 'my-howm-kill-buffer
-    "C-c C-d" 'howm-insert-date
-    "C-c C-c" 'my-howm-calendar)
+    "C-x C-s"                   'my-howm-kill-buffer
+    "C-c C-d"                   'howm-insert-date
+    "C-c C-c"                   'my-howm-calendar
+    [remap phi-search]          'phi-search-migemo
+    [remap phi-search-backward] 'phi-search-migemo-backward)
   (setup-keybinds howm-menu-mode-map
-    "q"       'my-howm-exit)
+    "q"                         'my-howm-exit
+    [remap phi-search]          'phi-search-migemo
+    [remap phi-search-backward] 'phi-search-migemo-backward)
   (setup-keybinds howm-remember-mode-map
-    "C-g"     'howm-remember-discard
-    "C-x C-s" 'howm-remember-submit)
+    "C-g"                       'howm-remember-discard
+    "C-x C-s"                   'howm-remember-submit
+    [remap phi-search]          'phi-search-migemo
+    [remap phi-search-backward] 'phi-search-migemo-backward)
 
   ;;   + | (sentinel)
   )
@@ -5215,7 +5113,8 @@ displayed, use substring of the buffer."
                        'face 'mode-line-warning-face)))
         (battery
          (let* ((index (/ (car my-battery-status) 10))
-                (str (nth index '("₀!" "₁_" "₂▁" "₃▂" "₄▃" "₅▄" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█")))
+
+                (str (nth index '("₀_" "₁▁" "₂▂" "₃▃" "₄▄" "₅▅" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█")))
                 (color (nth index my-mode-line-battery-indicator-colors)))
            (if (cdr my-battery-status)
                (propertize str 'face 'mode-line-dark-face)
@@ -5635,7 +5534,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "M-1" 'delete-other-windows
   "M-2" 'my-split-window
   "M-3" 'my-resize-window
-  "M-4" 'follow-delete-other-windows-and-split
   "M-8" 'my-transpose-window-buffers
   "M-9" 'previous-multiframe-window
   "M-o" 'my-toggle-transparency
@@ -5844,8 +5742,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
   (key-chord-define-global "fj" 'my-transpose-chars)
   (key-chord-define-global "hh" 'my-capitalize-word-dwim)
-  (key-chord-define-global "jj" 'my-downcase-previous-word)
-  (key-chord-define-global "kk" 'my-upcase-previous-word)
+  (key-chord-define-global "jj" 'my-upcase-previous-word)
+  (key-chord-define-global "kk" 'my-downcase-previous-word)
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "jk" 'iy-go-to-char)
     (key-chord-define-global "df" 'iy-go-to-char-backward))
