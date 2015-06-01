@@ -2525,6 +2525,141 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (push 'latex-mode ac-modes)
       (setup-hook 'latex-mode-hook 'ac-l-setup))))
 
+;;     + html-mode, css-mode
+
+(setup-lazy '(html-mode) "sgml-mode"
+  :prepare (push '("\\.html?$" . html-mode) auto-mode-alist)
+
+  (defun my-html-forward-sexp (n)
+    (interactive "p")
+    (if (< n 0)
+        (my-html-backward-sexp (- n))
+      (let ((origpos (point)))
+        (dotimes (_ n)
+          (skip-chars-forward "\s\t\n")
+          (unless (eobp)
+            (let ((pos (point)))
+              (cond ((looking-at "</")  ; looking at a close-tag
+                     (signal 'scan-error
+                             (list "Containing expression ends prematurely"
+                                   pos
+                                   (prog1 (save-excursion
+                                            (sgml-skip-tag-forward 1)
+                                            (point))
+                                     (goto-char origpos)))))
+                    ((= (char-after) ?<) ; looking at an open-tag
+                     (sgml-skip-tag-forward 1))
+                    ((= (char-after) ?>) ; looking at a tag-close
+                     (signal 'scan-error
+                             (list "Containing expression ends prematurely"
+                                   pos (1+ pos))))
+                    (t                  ; otherwise
+                     (let ((forward-sexp-function nil))
+                       (forward-sexp))
+                     (unless (looking-back "\\s)")
+                       (let ((delim (save-excursion
+                                      (when (search-backward-regexp "[<>]" pos t)
+                                        (point)))))
+                         ;; we've skipped over a block/tag delimiter
+                         ;; brabrabra|:<br> -> brabrabra:<br|>
+                         (when delim
+                           (goto-char delim)
+                           (skip-chars-backward "\s\t\n"))))))))))))
+
+  (defun my-html-backward-sexp (n)
+    (interactive "p")
+    (if (< n 0)
+        (my-html-forward-sexp (- n))
+      (let ((origpos (point)))
+        (dotimes (_ n)
+          (skip-chars-backward "\s\t\n")
+          (unless (bobp)
+            (let ((pos (point)))
+              (cond ((= (char-before) ?>) ; looking back a tag-close
+                     (sgml-skip-tag-backward 1)
+                     (when (save-excursion
+                             (sgml-skip-tag-forward 1)
+                             (> (point) pos))
+                       ;; we were looking back an open-tag
+                       (signal 'scan-error
+                               (list "Containing expression ends prematurely"
+                                     pos
+                                     (prog1 (point)
+                                       (goto-char origpos))))))
+                    ((= (char-before) ?<) ; looking back a tag-open
+                     (signal 'scan-error
+                             (list "Containing expression ends prematurely"
+                                   pos (1- pos))))
+                    (t                  ; otherwise
+                     (let ((forward-sexp-function nil))
+                       (forward-sexp -1))
+                     (unless (looking-back "\\s)")
+                       (let ((delim (save-excursion
+                                      (when (search-backward-regexp "\\s(" pos t)
+                                        (point)))))
+                         ;; we've skipped over a block/tag delimiter
+                         ;; brabrabra|:<br> -> brabrabra:<br|>
+                         (when delim
+                           (goto-char delim)
+                           (skip-chars-backward "\s\t\n"))))))))))))
+
+  (setup-hook 'html-mode-hook
+    (setq-local forward-sexp-function 'my-html-forward-sexp))
+
+  (setup-keybinds html-mode-map
+    "C-c C-'" 'sgml-close-tag
+    "<f1> s" 'sgml-tag-help)
+
+  (setup-after "auto-complete"
+    (push html-mode ac-modes))
+
+  (setup-after "smart-compile"
+    (push '(html-mode . (browse-url-of-buffer)) smart-compile-alist))
+
+  (setup-expecting "key-combo"
+    ;; does not work ?
+    (defun my-sgml-sp-or-smart-lt ()
+      "smart insertion of brackets for sgml languages"
+      (interactive)
+      (if (use-region-p)
+          (let ((beg (region-beginning)) ; wrap with <>
+                (end (region-end)))
+            (deactivate-mark)
+            (save-excursion
+              (goto-char beg)
+              (insert "<")
+              (goto-char (+ 1 end))
+              (insert ">")))
+        (insert "<>")                     ; insert <`!!'>
+        (backward-char)))
+    (setup-hook 'html-mode-hook
+      (key-combo-mode 1)
+      (key-combo-define-local (kbd "<") '(my-sgml-sp-or-smart-lt "&lt;" "<"))
+      (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
+      (key-combo-define-local (kbd ">") '("&gt;" ">"))
+      (key-combo-define-local (kbd "&") '("&amp;" "&"))))
+  )
+
+(setup-lazy '(css-mode) "css-mode"
+  :prepare (push '("\\.css$" . css-mode) auto-mode-alist)
+  (setup-after "auto-complete"
+    (setup "auto-complete-config"
+      (setup-hook 'css-mode-hook
+        (setq ac-sources '(ac-source-css-property
+                           ac-source-words-in-same-mode-buffers)))
+      (push 'css-mode ac-modes)))
+  (setup-expecting "key-combo"
+    (setup-hook 'css-mode-hook
+      (key-combo-mode 1)
+      (key-combo-define-local (kbd "+") " + ")
+      (key-combo-define-local (kbd ">") " > ")
+      (key-combo-define-local (kbd "~") " ~ ")
+      ;; doesn't work ... (why?)
+      ;; (key-combo-define-local (kbd "^=") " ^= ")
+      (key-combo-define-local (kbd "$=") " $= ")
+      (key-combo-define-local (kbd "*=") " *= ")
+      (key-combo-define-local (kbd "=") " = "))))
+
 ;;     + gfm-mode [markdown-mode]
 
 (setup-lazy '(gfm-mode) "markdown-mode"
