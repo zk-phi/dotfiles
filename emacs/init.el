@@ -935,6 +935,45 @@ unary operators which can also be binary."
                           (if appendp
                               (list oldval face)
                             (list face oldval))))))))))
+
+  ;; disable key-chord
+  (setup-after "key-chord"
+    (setup-hook 'eww-mode-hook
+      (setq-local key-chord-mode nil)
+      (setq-local input-method-function nil)))
+
+  ;; disable hl-line
+  (setup-after "hl-line"
+    (setup-hook 'eww-mode-hook
+      (setq-local global-hl-line-mode nil)))
+
+  (setup-keybinds eww-mode-map
+    ;; fundamental
+    "q"   'quit-window
+    "r"   'eww-reload
+    ;; navigation
+    "p"   'shr-previous-link
+    "n"   'shr-next-link
+    "h"   'eww-back-url
+    "j"   '("pager" pager-row-down next-line)
+    "k"   '("pager" pager-row-up previous-line)
+    "C-f" '("pager" pager-page-down scroll-up-command)
+    "C-b" '("pager" pager-page-up scroll-down-command)
+    " "   '("pager" pager-page-down scroll-up-command)
+    "DEL" '("pager" pager-page-up scroll-down-command)
+    "l"   'eww-forward-url
+    "f"   '("ace-link" ace-link-eww)
+    "g"   'beginning-of-buffer
+    ;; prettify
+    "i"   'my-eww-enable-images
+    "c"   'my-eww-enable-colors
+    ;; others
+    "d"   'eww-download
+    "w"   'eww-copy-page-url
+    "x"   'eww-browse-with-external-browser
+    "v"   'eww-view-source
+    "C"   'url-cookie-list
+    "H"   'eww-list-histories)
   )
 
 ;;   + english <-> japanese dictionary [sdic]
@@ -2361,7 +2400,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-lazy '(spray-mode) "spray"
   (setq spray-wpm 400))
 
-(setup-lazy '(ace-link-help ace-link-info) "ace-link")
+(setup-lazy '(ace-link-help ace-link-info ace-link-eww) "ace-link")
 
 (setup-lazy '(mf/mirror-region-in-multifile) "multifiles")
 
