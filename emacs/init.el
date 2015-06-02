@@ -155,6 +155,10 @@
     "~/.emacs.d/lib/ditaa.jar")
   "/path/to/ditaa.jar")
 
+(defconst my-eww-download-directory
+  "~/.emacs.d/dat/eww_download/"
+  "Directory to download files in.")
+
 ;;   + path to data files
 
 ;; Directory
@@ -891,6 +895,18 @@ unary operators which can also be binary."
 
 (setup-lazy '(eww) "eww"
 
+  (setq eww-search-prefix      "http://google.com/search?q="
+        eww-download-directory my-eww-download-directory
+        eww-header-line-format nil)
+
+  ;; highlight search keyword
+  (defadvice eww-render (after my-highlight-search-keyword activate)
+    (when (and eww-current-url
+               (string-match
+                (concat "^" (regexp-quote eww-search-prefix) "\\([^&]*\\)\\(&\\|$\\)")
+                eww-current-url))
+      (highlight-regexp (regexp-quote (match-string 1 eww-current-url)))))
+
   ;; disable images by default
   ;; Reference | http://rubikitch.com/2014/11/25/eww-image/
   (setq shr-put-image-function 'my-eww-insert-alt)
@@ -898,8 +914,8 @@ unary operators which can also be binary."
   (defun my-eww-enable-images ()
     "Enable images in this eww buffer."
     (interactive)
-    (let ((shr-put-image-function 'shr-put-image))
-      (eww-reload)))
+    (setq-local shr-put-image-function 'shr-put-image)
+    (eww-reload))
 
   ;; disable colors by default
   ;; Reference | http://rubikitch.com/2014/11/19/eww-nocolor/
@@ -911,8 +927,8 @@ unary operators which can also be binary."
   (defun my-eww-enable-colors ()
     "Enable colors in this eww buffer."
     (interactive)
-    (let ((my-eww-enable-colors t))
-      (eww-reload)))
+    (setq-local my-eww-enable-colors t)
+    (eww-reload))
 
   ;; Backward Compatibility (<= 24.3)
   ;; Reference | https://lists.gnu.org/archive/html/emacs-diffs/2013-06/msg00410.html
@@ -935,6 +951,12 @@ unary operators which can also be binary."
                           (if appendp
                               (list oldval face)
                             (list face oldval))))))))))
+
+  ;; disable sublimity-attractive-centering
+  (setup-after "sublimity-attractive"
+    (setup-hook 'eww-mode-hook
+      (setq-local sublimity-attractive-centering-width nil)
+      (set-window-margins (selected-window) nil nil)))
 
   ;; disable key-chord
   (setup-after "key-chord"
