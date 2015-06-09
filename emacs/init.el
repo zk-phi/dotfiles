@@ -155,10 +155,6 @@
     "~/.emacs.d/lib/ditaa.jar")
   "/path/to/ditaa.jar")
 
-(defconst my-eww-download-directory
-  "~/.emacs.d/dat/eww_download/"
-  "Directory to download files in.")
-
 ;;   + path to data files
 
 ;; Directory
@@ -171,6 +167,10 @@
 (eval-when-compile
   (unless (file-exists-p my-dat-directory)
     (make-directory my-dat-directory)))
+
+(defconst my-eww-download-directory
+  "~/.emacs.d/dat/eww_download/"
+  "Directory to download files in.")
 
 ;; Common History Datas
 
@@ -267,6 +267,21 @@
               lst    (cdr lst)))
       (when lst (setq res (concat ".../" res)))
       res)))
+
+(defun my-read-font-family ()
+  (completing-read "Font Family: " (cl-remove-duplicates (font-family-list)) nil t))
+
+(defun my-set-fontset-font (family targets &optional rescale-rate add)
+  "TARGETS can be a list of either charset-scripts (listed in
+charset-script-alist), charsets (listed in charset-list), or a
+cons of two integers."
+  (let ((font-spec (font-spec :family family)))
+    (when rescale-rate
+      (push (cons font-spec rescale-rate) face-font-rescale-alist))
+    (unless (consp targets)
+      (setq targets (list targets)))
+    (dolist (target targets)
+      (set-fontset-font t target font-spec nil add))))
 
 ;; + | System
 ;;   + *scratch* utilities
@@ -490,9 +505,10 @@
 ;; font settings
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
 (!when my-home-system-p
-  (set-face-attribute 'default nil :family "Source Code Pro" :height 90)
-  (set-fontset-font t 'unicode (font-spec :family "VL ゴシック" :height 90))
-  ;; (push '("VL ゴシック.*" . 1.2) face-font-rescale-alist)
+  (set-face-attribute 'default nil :family "Source Code Pro" :height 85) ; base
+  (my-set-fontset-font "Arial Unicode MS" 'unicode) ; unicode fallback
+  (my-set-fontset-font "Noto Sans CJK JP Regular" 'unicode nil 'prepend) ; unicode
+  (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend) ; japanese
   )
 
 ;; settings for the byte-compiler
@@ -713,7 +729,8 @@
   (setup-hook 'window-setup-hook 'maximize-frame))
 
 (setup "popwin"
-  (setq popwin:special-display-config
+  (setq popwin:reuse-window nil
+        popwin:special-display-config
         '(("ChangeLog")
           ("*howm-remember*")
           ("*Buffer List*")
@@ -723,12 +740,10 @@
           ("*Warnings*")
           ("*Shell Command Output*")
           ("*All*")
-          ;; if *Compile-Log* is selected immediately, it fails!!
-          ("*Compile-Log*" :noselect t) ; ???
-          ("*compilation*"              ;; :noselect t
-           )                            ; ???
-          ("*Completions*" :noselect t)
-          ("*Backtrace*" :noselect t)))
+          ("*Compile-Log*" :noselect t) ; when selected compilation may fail ?
+          ("*compilation*" :noselect t)
+          ("*Backtrace*")
+          ("*Completions*" :noselect t)))
   (popwin-mode 1))
 
 (!-
@@ -895,27 +910,9 @@ unary operators which can also be binary."
 
 (setup-lazy '(eww) "eww"
 
-  (setq eww-search-prefix      "http://google.com/search?q="
+  (setq eww-search-prefix      "http://search.yahoo.co.jp/search?p="
         eww-download-directory my-eww-download-directory
         eww-header-line-format nil)
-
-  ;; highlight search keyword
-  (defadvice eww-render (after my-highlight-search-keyword activate)
-    (when (and eww-current-url
-               (string-match
-                (concat "^" (regexp-quote eww-search-prefix) "\\([^&]*\\)\\(&\\|$\\)")
-                eww-current-url))
-      (highlight-regexp (regexp-quote (match-string 1 eww-current-url)))))
-
-  ;; disable images by default
-  ;; Reference | http://rubikitch.com/2014/11/25/eww-image/
-  (setq shr-put-image-function 'my-eww-insert-alt)
-  (defun my-eww-insert-alt (_ alt &optional __) (insert alt))
-  (defun my-eww-enable-images ()
-    "Enable images in this eww buffer."
-    (interactive)
-    (setq-local shr-put-image-function 'shr-put-image)
-    (eww-reload))
 
   ;; disable colors by default
   ;; Reference | http://rubikitch.com/2014/11/19/eww-nocolor/
@@ -986,9 +983,7 @@ unary operators which can also be binary."
     "l"   'eww-forward-url
     "f"   '("ace-link" ace-link-eww)
     "g"   'beginning-of-buffer
-    ;; prettify
-    "i"   'my-eww-enable-images
-    "c"   'my-eww-enable-colors
+    "G"   'end-of-buffer
     ;; others
     "d"   'eww-download
     "w"   'eww-copy-page-url
@@ -1561,7 +1556,8 @@ unary operators which can also be binary."
          (for-str (and for-str (- for-str (point))))
          (diff (car (sort (list back-list back-str for-list for-str)
                           (lambda (a b)
-                            (or (not (numberp b)) (< (abs a) (abs b))))))))
+                            (or (not (numberp b))
+                                (and (numberp a) (< (abs a) (abs b)))))))))
     (if (numberp diff) (forward-char diff) (error "Cannot go down."))))
 
 (defun my-copy-sexp ()
@@ -2429,6 +2425,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-lazy '(simple-demo-set-up) "simple-demo")
 
 (setup-lazy '(htmlize-buffer htmlize-file) "htmlize")
+
+(setup-lazy '(togetherly-client-start togetherly-server-start) "togetherly")
 
 ;; + | Modes
 ;;   + text modes
@@ -3790,6 +3788,17 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-m" 'promela-indent-newline-indent)
   )
 
+;;       + scad-mode
+
+;; "scad-mode.el" provides "scad" feature (!!!)
+;; So it's not good idea to specify "scad-mode" here.
+(setup-lazy '(scad-mode) "scad-preview"
+  (setup-keybinds scad-mode-map
+    "C-c C-p" 'scad-preview-mode
+    "C-c C-r" 'scad-preview-rotate
+    "C-c C-c" 'scad-preview-export
+    "<f5>"    'scad-preview-refresh))
+
 ;;       + arduino-mode
 
 (setup-lazy '(arduino-mode) "arduino-mode"
@@ -5017,10 +5026,10 @@ displayed, use substring of the buffer."
     (defvar my-howm-calendar-keymap
       (let ((kmap (make-sparse-keymap)))
         (set-keymap-parent kmap calendar-mode-map)
-        (define-key kmap [remap calendar-exit] 'my-howm-calendar-exit)
-        (define-key kmap (kbd "RET") 'my-howm-calendar-insert-date)
-        (define-key kmap (kbd "C-g") 'my-howm-calendar-exit)
-        kmap))
+        (setup-keybinds kmap
+          [remap calendar-exit] 'my-howm-calendar-exit
+          "RET"                 'my-howm-calendar-insert-date
+          "C-g"                 'my-howm-calendar-exit)))
 
     ;; reference | http://www.bookshelf.jp/soft/meadow_38.html#SEC563
     (defun my-howm-calendar-insert-date ()
@@ -5338,12 +5347,13 @@ displayed, use substring of the buffer."
 
 ;; reference | http://d.hatena.ne.jp/nitro_idiot/20130215/1360931962
 (setup-lazy '(my-kindly-view-mode) "vi"
-  (defvar my-kindly-view-mode-map (copy-keymap vi-com-map))
-  (setup-keybinds my-kindly-view-mode-map
-    '("j" "C-n")   '("pager" pager-row-down vi-next-line)
-    '("k" "C-p")   '("pager" pager-row-up previous-line)
-    "h"            'backward-char
-    "l"            'forward-char)
+  (defvar my-kindly-view-mode-map
+    (let ((kmap (copy-keymap vi-com-map)))
+      (setup-keybinds kmap
+        '("j" "C-n")   '("pager" pager-row-down vi-next-line)
+        '("k" "C-p")   '("pager" pager-row-up previous-line)
+        "h"            'backward-char
+        "l"            'forward-char)))
   (defvar my-kindly-unsupported-minor-modes
     '(indent-guide-mode phi-autopair-mode)
     "list of minor-modes that must be turned-off temporarily.")
