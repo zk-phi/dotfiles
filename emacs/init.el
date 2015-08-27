@@ -121,7 +121,16 @@
     "Dictionary file for migemo.")
   (defconst my-lingr-account
     (when (boundp 'my-lingr-account) my-lingr-account)
-    "My Lingr account."))
+    "My Lingr account.")
+  (defconst my-tramp-proxies
+    (when (boundp 'my-tramp-proxies) my-tramp-proxies)
+    "My tramp proxies.")
+  (defconst my-lmntal-home-directory
+    (when (boundp 'my-lmntal-home-directory) my-lmntal-home-directory)
+    "The LMNTAL_HOME Path.")
+  (defconst my-tramp-abbrevs
+    (when (boundp 'my-tramp-abbrevs) my-tramp-abbrevs)
+    "Abbreviation table for remote hosts."))
 
 ;;   + path to library files
 
@@ -155,6 +164,11 @@
     "~/.emacs.d/lib/ditaa.jar")
   "/path/to/ditaa.jar")
 
+(defconst my-ftp-executable
+  (!when (file-exists-p "~/.emacs.d/lib/ftp.exe")
+    "~/.emacs.d/lib/ftp.exe")
+  "/path/to/ftp")
+
 ;;   + path to data files
 
 ;; Directory
@@ -174,22 +188,28 @@
 
 ;; Common History Datas
 
-(defconst my-ac-history-file (! (concat my-dat-directory "ac-comphist"))
+(defconst my-ac-history-file
+  (! (concat my-dat-directory "ac-comphist"))
   "File to save auto-complete history.")
 
-(defconst my-smex-save-file (! (concat my-dat-directory "smex"))
+(defconst my-smex-save-file
+  (! (concat my-dat-directory "smex"))
   "File to save smex history.")
 
-(defconst my-mc-list-file (! (concat my-dat-directory "mc-list"))
+(defconst my-mc-list-file
+  (! (concat my-dat-directory "mc-list"))
   "File to save the list of multiple-cursors compatible commands.")
 
-(defconst my-ispell-dictionary (! (concat my-dat-directory "ispell-dict"))
+(defconst my-ispell-dictionary
+  (! (concat my-dat-directory "ispell-dict"))
   "File name of personal ispell dictionary.")
 
-(defconst my-ispell-repl (! (concat my-dat-directory "ispell-repl"))
+(defconst my-ispell-repl
+  (! (concat my-dat-directory "ispell-repl"))
   "File name of personal ispell replacement dictionary.")
 
-(defconst my-lingr-log-file (! (concat my-dat-directory "lingr"))
+(defconst my-lingr-log-file
+  (! (concat my-dat-directory "lingr"))
   "File to save `symon-lingr' log in.")
 
 ;; Howm Datas
@@ -228,6 +248,10 @@
   (! (concat my-dat-directory "backups_" system-name "/"))
   "Directory to save backup files.")
 
+(defconst my-scratch-pop-directory
+  (! (concat my-dat-directory "scratch_pop_" system-name "/"))
+  "File to save scratch.")
+
 (defconst my-ido-save-file
   (! (concat my-dat-directory "ido_" system-name))
   "File to save ido history.")
@@ -240,9 +264,9 @@
   (! (concat my-dat-directory "save-place_" system-name))
   "File to save save-place datas.")
 
-(defconst my-scratch-file
-  (! (concat my-dat-directory "scratch_" system-name))
-  "File to save scratch.")
+(defconst my-tramp-file
+  (! (concat my-dat-directory "tramp_" system-name))
+  "File to save tramp settings.")
 
 ;; + | Utilities
 
@@ -272,19 +296,27 @@
   (completing-read "Font Family: " (cl-remove-duplicates (font-family-list)) nil t))
 
 (defun my-set-fontset-font (family targets &optional rescale-rate add)
-  "TARGETS can be a list of either charset-scripts (listed in
-charset-script-alist), charsets (listed in charset-list), or a
+  "TARGETS can be a, or a list of, either charset-scripts (listed
+in charset-script-alist), charsets (listed in charset-list), or a
 cons of two integers."
   (let ((font-spec (font-spec :family family)))
     (when rescale-rate
       (push (cons font-spec rescale-rate) face-font-rescale-alist))
-    (unless (consp targets)
+    (unless (and (consp targets) (listp (cdr targets)))
       (setq targets (list targets)))
     (dolist (target targets)
       (set-fontset-font t target font-spec nil add))))
 
 ;; + | System
-;;   + *scratch* utilities
+;;   + *scratch* utilities [scratch-pop]
+;;   + | backup/popup scratches
+
+(setup "scratch-pop"
+  (setq scratch-pop-backup-directory my-scratch-pop-directory)
+  (setup-hook 'after-init-hook
+    (scratch-pop-restore-scratches 1))
+  (setup-hook 'kill-emacs-hook 'scratch-pop-backup-scratches))
+
 ;;   + | make *scratch* persistent
 
 ;; reference | http://www.bookshelf.jp/soft/meadow_29.html#SEC392
@@ -313,26 +345,6 @@ cons of two integers."
   (unless (get-buffer "*scratch*")
     (generate-new-buffer "*scratch*")
     (my-clean-scratch)))
-
-;;   + | save *scratch* across sessions
-
-(!-
- (setup-hook 'kill-emacs-hook
-   (with-current-buffer "*scratch*"
-     (widen)
-     (let ((str (buffer-substring-no-properties (point-min) (point-max)))
-           (mode major-mode))
-       (with-temp-buffer
-         (insert
-          "(with-current-buffer \"*scratch*\""
-          "(insert " (prin1-to-string str) ")"
-          (when mode
-            (concat "(setq initial-major-mode '" (prin1-to-string mode) ")")) ")")
-         (write-region (point-min) (point-max) my-scratch-file))))))
-
-(setup-hook 'after-init-hook
-  (when (file-exists-p my-scratch-file)
-    (load my-scratch-file)))
 
 ;;   + hooks for save/open
 
@@ -371,54 +383,6 @@ cons of two integers."
              (y-or-n-p "Switch to root ? "))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
-;;   + yasnippet settings [yasnippet]
-
-(setup-lazy '(yas-expand) "yasnippet"
-  :prepare (setup-in-idle "yasnippet")
-
-  (setq yas-triggers-in-field t
-        yas-fallback-behavior '(apply my-dabbrev-expand . nil)
-        yas-snippet-dirs      (list my-snippets-directory)
-        yas-verbosity         3)
-
-  ;; let fallback-behavior return-nil while expanding snippets
-  (setup-hook 'yas-before-expand-snippet-hook
-    (setq yas-fallback-behavior 'return-nil))
-  (setup-hook 'yas-after-exit-snippet-hook
-    (setq yas-fallback-behavior '(apply my-dabbrev-expand . nil)))
-
-  (yas-reload-all)
-  (yas-global-mode 1)
-
-  ;; use ido interface to select alternatives
-  (setup-expecting "ido"
-    (custom-set-variables '(yas-prompt-functions '(yas-ido-prompt))))
-
-  (setup-keybinds yas-minor-mode-map '("TAB" "<tab>") nil)
-
-  ;; keybinds in snippets
-  ;; reference | https://github.com/magnars/.emacs.d/
-  (defun my-yas/goto-end-of-active-field ()
-    (interactive)
-    (let* ((snippet (car (yas--snippets-at-point)))
-           (pos (yas--field-end (yas--snippet-active-field snippet))))
-      (if (= (point) pos)
-          (move-end-of-line 1)
-        (goto-char pos))))
-  (defun my-yas/goto-start-of-active-field ()
-    (interactive)
-    (let* ((snippet (car (yas--snippets-at-point)))
-           (pos (yas--field-start (yas--snippet-active-field snippet))))
-      (if (= (point) pos)
-          (move-beginning-of-line 1)
-        (goto-char pos))))
-  (setup-keybinds yas-keymap
-    '("TAB" "<tab>")                           nil
-    '("<oem-pa1>" "<muhenkan>" "<nonconvert>") 'yas-next-field-or-maybe-expand
-    "C-j"                                      'my-yas/goto-start-of-active-field
-    "C-e"                                      'my-yas/goto-end-of-active-field)
-  )
-
 ;;   + Misc: core
 ;;   + | system
 
@@ -427,7 +391,8 @@ cons of two integers."
 (setq frame-title-format                    "%b - Emacs"
       completion-ignore-case                t
       read-file-name-completion-ignore-case t
-      gc-cons-threshold                     20000000
+      gc-cons-threshold                     (! (* 128 1024 1024))
+      gc-cons-percentage                    0.5
       message-log-max                       1000
       enable-local-variables                :safe
       echo-keystrokes                       0.1
@@ -505,9 +470,11 @@ cons of two integers."
 ;; font settings
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
 (!when my-home-system-p
-  (set-face-attribute 'default nil :family "Source Code Pro" :height 85) ; base
-  (my-set-fontset-font "Arial Unicode MS" 'unicode) ; unicode fallback
-  (my-set-fontset-font "Noto Sans CJK JP Regular" 'unicode nil 'prepend) ; unicode
+  (set-face-attribute 'default nil :family "Source Code Pro" :height 90) ; base
+  (my-set-fontset-font "Unifont" 'unicode) ; unicode fallback 2
+  (my-set-fontset-font "Arial Unicode MS" 'unicode nil 'prepend) ; unicode fallback
+  (my-set-fontset-font "Symbola" 'unicode nil 'prepend) ; unicode symbols
+  (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend) ; unicode
   (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend) ; japanese
   )
 
@@ -640,6 +607,9 @@ cons of two integers."
     (message "Old undohists deleted."))
   (run-with-idle-timer 30 nil 'my-delete-old-undohists))
 
+(setup-after "newcomment"
+  (setq comment-empty-lines t))
+
 ;;   + | assistants
 
 (setup-lazy '(turn-on-eldoc-mode) "eldoc"
@@ -669,7 +639,8 @@ cons of two integers."
     (interactive)
     (when (and (boundp 'flyspell-mode)
                (not flyspell-mode)
-               (not buffer-read-only))
+               (not buffer-read-only)
+               (not (string-match "^\\*.*\\*$" (buffer-name))))
       (if (derived-mode-p 'text-mode)
           (flyspell-mode)
         (flyspell-prog-mode))))
@@ -713,6 +684,45 @@ cons of two integers."
   (setup-after "auto-complete"
     '(ac-flyspell-workaround))
   )
+
+;;   + | network
+
+;; tramp settings
+(setup-after "tramp"
+  (setq tramp-persistency-file-name my-tramp-file
+        tramp-default-proxies-alist (nconc my-tramp-proxies tramp-default-proxies-alist)))
+(setup-expecting "tramp"
+  (define-abbrev-table 'my-tramp-abbrev-table my-tramp-abbrevs)
+  (setup-hook 'minibuffer-setup-hook
+    (abbrev-mode 1)
+    (setq local-abbrev-table my-tramp-abbrev-table)))
+
+;; use SSH over fakecygpty on Windows
+(!when (executable-find "fakecygpty")
+  (setup-after "em-alias"
+    (eshell/alias "ssh" "fakecygpty ssh $*"))
+  (setup-after "tramp"
+    ;; reference | http://www.emacswiki.org/emacs/SshWithNTEmacs
+    (push '("cygssh"
+            (tramp-login-program "fakecygpty ssh")
+            (tramp-login-args (("-l" "%u")
+                               ("-p" "%p")
+                               ("-e" "none")
+                               ("%h")))
+            (tramp-async-args (("-q")))
+            (tramp-remote-shell "/bin/sh")
+            (tramp-remote-shell-args ("-c"))
+            (tramp-gw-args (("-o" "GlobalKnownHostsFile=/dev/null")
+                            ("-o" "UserKnownHostsFile=/dev/null")
+                            ("-o" "StrictHostKeyChecking=no")))
+            (tramp-default-port 22))
+          tramp-methods)
+    (setq tramp-default-method "cygssh")))
+
+;; ftp settings
+(setup-after "ange-ftp"
+  (when my-ftp-executable
+    (setq ange-ftp-ftp-program-name my-ftp-executable)))
 
 ;;   + Misc: plug-ins
 ;;   + | buffers / windows
@@ -809,7 +819,11 @@ cons of two integers."
                               ac-source-words-in-same-mode-buffers))
    (push my-dictionary-directory ac-dictionary-directories)
    (global-auto-complete-mode)
-   (setup-keybinds ac-completing-map "S-<tab>" 'ac-previous)))
+   (setup-keybinds ac-completing-map "S-<tab>" 'ac-previous)
+   ;; do not complete remote file names
+   (defadvice ac-filename-candidate (around my-disable-ac-for-remote-files activate)
+     (unless (file-remote-p ac-prefix)
+       ad-do-it))))
 
 (setup-lazy '(guess-style-guess-all) "guess-style"
   :prepare (setup-hook 'find-file-hook
@@ -844,9 +858,7 @@ unary operators which can also be binary."
 
 (setup-lazy '(flycheck-mode) "flycheck"
   (setq flycheck-display-errors-delay 0.1
-        flycheck-highlighting-mode    'lines)
-  (setup "flycheck-pos-tip"
-    (setq flycheck-display-errors-function 'flycheck-pos-tip-error-messages)))
+        flycheck-highlighting-mode    'lines))
 
 ;; org-like folding via outline-mode
 (setup "outline"
@@ -1063,7 +1075,7 @@ unary operators which can also be binary."
   (setq recentf-max-saved-items 500
         recentf-auto-cleanup    10
         recentf-exclude         '("/[^/]*\\<tmp\\>[^/]*/" "/[^/]*\\<backup\\>[^/]*/"
-                                  "~$" "^#[^#]*#$" "/ssh:" "/sudo:" "/GitHub/" "\\.emacs\\.d/dat/"
+                                  "~$" "^#[^#]*#$" "^/[^/]*:" "/GitHub/" "\\.emacs\\.d/dat/"
                                   "/undohist/" "\\.elc$" "\\.howm$" "\\.dat$"))
   ;; auto-save recentf-list / delayed cleanup
   ;; reference | http://d.hatena.ne.jp/tomoya/20110217/1297928222
@@ -1431,6 +1443,54 @@ unary operators which can also be binary."
       [kanji]   'isearch-toggle-input-method))
   ;; do not use lax-whitespace (for Emacs>=24)
   (setq isearch-lax-whitespace nil))
+
+;;   + yasnippet settings [yasnippet]
+
+(setup-lazy '(yas-expand) "yasnippet"
+  :prepare (setup-in-idle "yasnippet")
+
+  (setq yas-triggers-in-field t
+        yas-fallback-behavior '(apply my-dabbrev-expand . nil)
+        yas-snippet-dirs      (list my-snippets-directory)
+        yas-verbosity         3)
+
+  ;; let fallback-behavior return-nil while expanding snippets
+  (setup-hook 'yas-before-expand-snippet-hook
+    (setq yas-fallback-behavior 'return-nil))
+  (setup-hook 'yas-after-exit-snippet-hook
+    (setq yas-fallback-behavior '(apply my-dabbrev-expand . nil)))
+
+  (yas-reload-all)
+  (yas-global-mode 1)
+
+  ;; use ido interface to select alternatives
+  (setup-expecting "ido"
+    (custom-set-variables '(yas-prompt-functions '(yas-ido-prompt))))
+
+  (setup-keybinds yas-minor-mode-map '("TAB" "<tab>") nil)
+
+  ;; keybinds in snippets
+  ;; reference | https://github.com/magnars/.emacs.d/
+  (defun my-yas/goto-end-of-active-field ()
+    (interactive)
+    (let* ((snippet (car (yas--snippets-at-point)))
+           (pos (yas--field-end (yas--snippet-active-field snippet))))
+      (if (= (point) pos)
+          (move-end-of-line 1)
+        (goto-char pos))))
+  (defun my-yas/goto-start-of-active-field ()
+    (interactive)
+    (let* ((snippet (car (yas--snippets-at-point)))
+           (pos (yas--field-start (yas--snippet-active-field snippet))))
+      (if (= (point) pos)
+          (move-beginning-of-line 1)
+        (goto-char pos))))
+  (setup-keybinds yas-keymap
+    '("TAB" "<tab>")                           nil
+    '("<oem-pa1>" "<muhenkan>" "<nonconvert>") 'yas-next-field-or-maybe-expand
+    "C-j"                                      'my-yas/goto-start-of-active-field
+    "C-e"                                      'my-yas/goto-end-of-active-field)
+  )
 
 ;;   + multiple-cursors [multiple-cursors]
 
@@ -1952,21 +2012,11 @@ unary operators which can also be binary."
   "Jump to the next empty line."
   (interactive)
   (when (eobp) (signal 'end-of-buffer "end of buffer"))
-  (let ((type (car (memq (get-text-property (point) 'face)
-                         '(font-lock-doc-face
-                           font-lock-string-face
-                           font-lock-comment-face
-                           markdown-pre-face
-                           org-block)))))
+  (let ((type (get-text-property (point) 'face)))
     (skip-chars-forward "\s\t\n")
     (condition-case nil
         (while (and (search-forward-regexp "\n[\s\t]*$")
-                    (let ((face (car (memq (get-text-property (point) 'face)
-                                           '(font-lock-doc-face
-                                             font-lock-string-face
-                                             font-lock-comment-face
-                                             markdown-pre-face
-                                             org-block)))))
+                    (let ((face (get-text-property (point) 'face)))
                       (and face (not (eq face type))))))
       (error (goto-char (point-max))))))
 
@@ -1974,21 +2024,11 @@ unary operators which can also be binary."
   "Jump to the previous empty line."
   (interactive)
   (when (bobp) (signal 'beginning-of-buffer "beginning of buffer"))
-  (let ((type (car (memq (get-text-property (point) 'face)
-                         '(font-lock-doc-face
-                           font-lock-string-face
-                           font-lock-comment-face
-                           markdown-pre-face
-                           org-block)))))
+  (let ((type (get-text-property (point) 'face)))
     (skip-chars-backward "\s\t\n")
     (condition-case nil
         (while (and (search-backward-regexp "^[\s\t]*\n")
-                    (let ((face (car (memq (get-text-property (point) 'face)
-                                           '(font-lock-doc-face
-                                             font-lock-string-face
-                                             font-lock-comment-face
-                                             markdown-pre-face
-                                             org-block)))))
+                    (let ((face (get-text-property (point) 'face)))
                       (and face (not (eq face type))))))
       (error (goto-char (point-min))))))
 
@@ -2185,10 +2225,9 @@ unary operators which can also be binary."
 (defun my-toggle-transparency ()
   "Toggle transparency."
   (interactive)
-  (let ((current-alpha
-         (or (cdr (assoc 'alpha (frame-parameters))) 100)))
-    (set-frame-parameter nil 'alpha
-                         (if (= current-alpha 100) 66 100))))
+  (let* ((current-alpha (or (cdr (assoc 'alpha (frame-parameters))) 100))
+         (new-alpha (cl-case current-alpha ((100) 83) ((83) 66) (t 100))))
+    (set-frame-parameter nil 'alpha new-alpha)))
 
 ;; URL encode / decode region
 (defun my-url-decode-region (beg end)
@@ -2340,9 +2379,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         shell-pop-internal-mode-func   '(lambda () (eshell))
         shell-pop-window-height        19))
 
-;; autoload scratch-pop
-(setup-lazy '(scratch-pop) "scratch-pop")
-
 ;;   + | trace changes
 
 ;; tree-like undo history browser
@@ -2414,6 +2450,17 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     anything-register
     anything-manage-advice) "anything-config")
 
+;; start a HTTPd for this directory
+(setup-lazy '(my-start-httpd) "simple-httpd"
+  (defun my-start-httpd ()
+    (interactive)
+    (httpd-stop)
+    (let* ((root (read-directory-name "Root Directory: " nil nil t))
+           (port (read-number "Port: " 8080)))
+      (setq httpd-root root
+            httpd-port port)
+      (httpd-start))))
+
 ;; Spritz-like speed reading mode
 (setup-lazy '(spray-mode) "spray"
   (setq spray-wpm 400))
@@ -2430,9 +2477,25 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;; + | Modes
 ;;   + text modes
-;;     + text-mode
+;;     + (common)
+
+(define-minor-mode my-auto-kutoten-mode
+  "Auto 句読点 mode。"
+  :init-value nil
+  :global nil
+  :keymap (let ((kmap (make-sparse-keymap)))
+            (define-key kmap "、" "，")
+            (define-key kmap "。" "．")
+            kmap)
+  (when (and my-auto-kutoten-mode
+             (save-excursion
+               (goto-char (point-min))
+               (not (and (search-forward "，" nil t)
+                         (search-forward "．" nil t)))))
+    (my-auto-kutoten-mode -1)))
 
 (setup-after "text-mode"
+  (setup-hook 'text-mode-hook 'my-auto-kutoten-mode)
   (setup-expecting "electric-spacing"
     (setup-hook 'text-mode-hook 'electric-spacing-mode))
   (setup-expecting "jaword"
@@ -2458,33 +2521,20 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         org-ditaa-jar-path (when my-ditaa-jar-file
                              (expand-file-name my-ditaa-jar-file)))
 
-  (setup-expecting "electric-spacing"
-    (setup-hook 'org-mode-hook 'electric-spacing-mode))
-
-  (setup-expecting "jaword"
-    (setup-hook 'org-mode-hook 'jaword-mode))
-
-  (setup-after "mark-hacks"
-    (push 'org-mode mark-hacks-auto-indent-inhibit-modes))
-
   (setup-after "smart-compile"
     (push '(org-mode . (org-export-as-html-and-open nil))
           smart-compile-alist))
 
-  (setup-expecting "phi-search-migemo"
-    (setup-keybinds org-mode-map
-      [remap phi-search]          'phi-search-migemo
-      [remap phi-search-backward] 'phi-search-migemo-backward))
-
   (setup-after "org-exp"
 
-    (setq org-export-time-stamp-file          nil
-          org-export-email-info               nil
-          org-export-creator-info             t
-          org-export-author-info              nil
+    (setq org-export-with-section-numbers     nil
+          org-export-with-toc                 nil
           org-export-mark-todo-in-toc         t
-          org-export-table-remove-empty-lines nil
-          org-export-babel-evaluate           nil)
+          org-export-email-info               nil
+          org-export-author-info              nil
+          org-export-creator-info             nil
+          org-export-time-stamp-file          nil
+          org-export-table-remove-empty-lines nil)
 
     ;; Remove newlines between Japanese letters before exporting.
     ;; reference | http://qiita.com/kawabata@github/items/1b56ec8284942ff2646b
@@ -2496,19 +2546,30 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
              (replace-match "\\1\\2\\3"))
         (goto-char (point-at-bol))))
 
+    ;; babel
+    (setup-after "ob-exp"
+      (setq org-export-babel-evaluate nil))
+
     (setup-after "org-html"
 
-      ;; use "worg-classic" stylesheet
-      ;; *FIXME* write your own stylesheet
-      (setq org-export-html-style-default "<link rel=\"stylesheet\" type=\"text/css\"
- href=\"http://orgmode.org/worg/style/worg-classic.css\">")
-
-      ;; do not fix "*.org" to "*.html"
-      (setq org-export-html-link-org-files-as-html nil)
+      (setq org-export-html-link-org-files-as-html nil
+            org-export-html-validation-link        nil
+            org-export-html-style-include-scripts  nil
+            org-export-html-style-include-default  nil
+            org-export-html-mathjax-options
+            '((path  "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML")
+              (scale "100")
+              (align "center")
+              (indent "2em")
+              (mathml nil)))
 
       ;; use htmlize in "org-export-as-html"
       (setup-lazy '(htmlize-buffer) "htmlize"
-        :prepare (setup-after "org" (setup "htmlize")))
+        :prepare (setup-after "org" (setup "htmlize"))
+        (setq org-export-html-style-extra
+              (format "<style>pre { background-color: %s; color: %s; }</style>"
+                      (face-background 'default)
+                      (face-foreground 'default))))
 
       ;; electric-spacing workaround
       (setup-after "electric-spacing"
@@ -2560,24 +2621,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (outline-minor-mode 1)
     (setq-local outline-regexp "\\\\\\(sub\\)*section\\>")
     (setq-local outline-level (lambda () (- (outline-level) 7))))
-  (setup-hook 'latex-mode-hook 'turn-on-auto-fill)
   (setup-keybinds latex-mode-map
-    "、" "，"
-    "。" "．"
     "C-c C-'" 'latex-close-block
     '("C-j" "C-M-i" "<C-return>") nil)
   (setup-lazy '(magic-latex-buffer) "magic-latex-buffer"
-    :prepare (setup-hook 'latex-mode-hook 'magic-latex-buffer))
-  (setup-expecting "electric-spacing"
-    (setup-hook 'latex-mode-hook 'electric-spacing-mode))
-  (setup-expecting "jaword"
-    (setup-hook 'latex-mode-hook 'jaword-mode))
-  (setup-after "mark-hacks"
-    (push 'latex-mode mark-hacks-auto-indent-inhibit-modes))
-  (setup-expecting "phi-search-migemo"
-    (setup-keybinds latex-mode-map
-      [remap phi-search]          'phi-search-migemo
-      [remap phi-search-backward] 'phi-search-migemo-backward))
+    :prepare (setup-hook 'latex-mode-hook 'magic-latex-buffer)
+    (setq magic-latex-enable-block-align t))
   (setup-after "auto-complete"
     (setup "auto-complete-latex"
       (setq ac-l-dict-directory my-latex-dictionary-directory)
@@ -2635,7 +2684,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
           (unless (bobp)
             (let ((pos (point)))
               (cond ((= (char-before) ?>) ; looking back a tag-close
-                     (sgml-skip-tag-backward 1)
+                     (while (progn
+                              (sgml-skip-tag-backward 1)
+                              (and (not (bobp)) (looking-at "<!"))))
                      (when (save-excursion
                              (sgml-skip-tag-forward 1)
                              (> (point) pos))
@@ -2661,6 +2712,10 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                          (when delim
                            (goto-char delim)
                            (skip-chars-backward "\s\t\n"))))))))))))
+
+  (defadvice sgml-indent-line (around my-fix-sgml-indent-line activate)
+    (let ((forward-sexp-function nil))
+      ad-do-it))
 
   (setup-hook 'html-mode-hook
     (setq-local forward-sexp-function 'my-html-forward-sexp))
@@ -2725,16 +2780,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   :prepare (progn
              (push '("\\.md$" . gfm-mode) auto-mode-alist)
              (push '("\\.markdown$" . gfm-mode) auto-mode-alist))
-  (setup-expecting "electric-spacing"
-    (setup-hook 'gfm-mode-hook 'electric-spacing-mode))
-  (setup-expecting "jaword"
-    (setup-hook 'gfm-mode-hook 'jaword-mode))
-  (setup-after "mark-hacks"
-    (push 'gfm-mode mark-hacks-auto-indent-inhibit-modes))
-  (setup-expecting "phi-search-migemo"
-    (setup-keybinds gfm-mode-map
-      [remap phi-search]          'phi-search-migemo
-      [remap phi-search-backward] 'phi-search-migemo-backward))
   (setup-keybinds gfm-mode-map
     '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
     "TAB" 'markdown-cycle))
@@ -4173,9 +4218,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
              (push '("\\.cslmn" . lmntal-mode) auto-mode-alist)
              (push '("\\.il$" . lmntal-slimcode-mode) auto-mode-alist))
 
-  (setq lmntal-home-directory  "~/Documents/LMNtal/lmntal/lmntal-compiler/"
-        lmntal-slim-executable "../slim/bin/slim"
-        lmntal-mc-use-dot      (! (executable-find "dot")))
+  (setq lmntal-home-directory my-lmntal-home-directory
+        lmntal-mc-use-dot     (! (executable-find "dot")))
 
   (setup-hook 'lmntal-trace-mode-hook 'my-kindly-view-mode)
   (setup-hook 'lmntal-mc-mode-hook 'my-kindly-view-mode)
@@ -4634,7 +4678,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (defadvice dired-k--inside-git-repository-p (around my-fix-dired-k activate)
       (setq ad-return-value nil))
     (setup-hook 'dired-mode-hook
-      (run-with-idle-timer 0 nil 'dired-k--highlight)))
+      (unless (file-remote-p default-directory)
+        (run-with-idle-timer 0 nil 'dired-k--highlight))))
 
   (setup-lazy '(phi-search-dired) "phi-search-dired")
   (setup-lazy '(dired-explore) "dired-explore")
@@ -4937,7 +4982,7 @@ displayed, use substring of the buffer."
                               (n 0))
                          (while (file-exists-p newname)
                            (setq n       (1+ n)
-                                 newname (concat newname-base "_" (number-to-string n))))
+                                 newname (concat newname-base "_" (number-to-string n) ".txt")))
                          (rename-file abs-path newname)))
                       (t
                        (let ((howm-template (concat "* " (howm-reminder-today)
@@ -5303,8 +5348,7 @@ displayed, use substring of the buffer."
                  (if (listp mode-name) (cadr mode-name) mode-name)
                  'face 'mode-line-bright-face))))
         (process
-         (when mode-line-process
-           (propertize (car mode-line-process) 'face 'mode-line-highlight-face)))
+         (propertize (format-mode-line mode-line-process) 'face 'mode-line-highlight-face))
         (encoding
          (propertize (format "(%c%c)"
                              (coding-system-mnemonic buffer-file-coding-system)
@@ -5317,8 +5361,7 @@ displayed, use substring of the buffer."
                         "%M:%S" (time-subtract (current-time) my-ramen-start-time))
                        'face 'mode-line-warning-face)))
         (battery
-         (let* ((index (/ (car my-battery-status) 10))
-
+         (let* ((index (/ (floor (car my-battery-status)) 10))
                 (str (nth index '("₀_" "₁▁" "₂▂" "₃▃" "₄▄" "₅▅" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█")))
                 (color (nth index my-mode-line-battery-indicator-colors)))
            (if (cdr my-battery-status)
@@ -5475,6 +5518,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
       "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
 
     ))
+
+(set-face-attribute 'italic nil :slant 'italic :underline nil)
 
 ;;   + | modeline
 
