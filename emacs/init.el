@@ -471,6 +471,7 @@ cons of two integers."
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
 (!when my-home-system-p
   (set-face-attribute 'default nil :family "Source Code Pro" :height 90) ; base
+  ;; (set-face-attribute 'default nil :family "Source Code Pro" :height 75) ; base
   (my-set-fontset-font "Unifont" 'unicode) ; unicode fallback 2
   (my-set-fontset-font "Arial Unicode MS" 'unicode nil 'prepend) ; unicode fallback
   (my-set-fontset-font "Symbola" 'unicode nil 'prepend) ; unicode symbols
@@ -560,7 +561,10 @@ cons of two integers."
 
 ;; setting for compilation result buffer
 (setup-after "compile"
-  (setq compilation-scroll-output t)
+  (setq compilation-scroll-output  'first-error
+        compilation-ask-about-save nil)
+  (setup-after "popwin"
+    (push '("*compilation*" :noselect t) popwin:special-display-config))
   (setup-keybinds compilation-shell-minor-mode-map
     '("C-M-p" "C-M-n" "C-M-p" "C-M-p") nil))
 
@@ -617,7 +621,7 @@ cons of two integers."
         eldoc-echo-area-use-multiline-p nil))
 
 (setup-lazy '(my-turn-on-flyspell) "flyspell-lazy"
-  :prepare (add-hook 'find-file-hook 'my-turn-on-flyspell t)
+  ;; :prepare (add-hook 'find-file-hook 'my-turn-on-flyspell t)
 
   (require 'flyspell)
   (ispell-change-dictionary "english")
@@ -727,6 +731,10 @@ cons of two integers."
 ;;   + Misc: plug-ins
 ;;   + | buffers / windows
 
+(!-
+ (setup "smooth-scrolling"
+   (setq smooth-scroll-margin 3)))
+
 ;; maximize frame on setup
 (setup-include "maxframe"
   (!when (string= window-system "x")
@@ -741,24 +749,12 @@ cons of two integers."
 (setup "popwin"
   (setq popwin:reuse-window nil
         popwin:special-display-config
-        '(("ChangeLog")
-          ("*howm-remember*")
-          ("*Buffer List*")
-          ("*Kill Ring*")
-          ("*Help*")
-          ("*info*")
-          ("*Warnings*")
+        '(("*Warnings*")
           ("*Shell Command Output*")
-          ("*All*")
           ("*Compile-Log*" :noselect t) ; when selected compilation may fail ?
-          ("*compilation*" :noselect t)
           ("*Backtrace*")
           ("*Completions*" :noselect t)))
   (popwin-mode 1))
-
-(!-
- (setup "smooth-scrolling"
-   (setq smooth-scroll-margin 3)))
 
 ;;   + | mark / region
 
@@ -857,6 +853,7 @@ unary operators which can also be binary."
 ;;   + | assistants
 
 (setup-lazy '(flycheck-mode) "flycheck"
+  ;; :prepare (add-hook 'prog-mode-hook 'flycheck-mode)
   (setq flycheck-display-errors-delay 0.1
         flycheck-highlighting-mode    'lines))
 
@@ -1630,6 +1627,11 @@ unary operators which can also be binary."
   (interactive)
   (transpose-sexps -1))
 
+(defun my-comment-sexp ()
+  (interactive)
+  (my-mark-sexp)
+  (comment-or-uncomment-region (region-beginning) (region-end)))
+
 (defun my-up-list ()
   "handy version of up-list for interactive use"
   (interactive)
@@ -1692,7 +1694,6 @@ unary operators which can also be binary."
     paredit-splice-sexp-killing-backward
     paredit-split-sexp
     paredit-join-sexps
-    paredit-comment-dwim
     paredit-meta-doublequote) "paredit"
 
     (defun my-paredit-kill ()
@@ -2203,6 +2204,17 @@ unary operators which can also be binary."
      (goto-char beg)
      (insert-rectangle rect))))
 
+;; biyo~~n
+(defun biyonbiyon ()
+  (interactive)
+  (run-with-timer
+   0 0.1
+   '(lambda ()
+      (set-frame-size
+       (selected-frame)
+       (floor (* 20 (+ (sin (* 2 (float-time))) 2)))
+       (floor (* 10 (+ (cos (* 2 (float-time))) 2)))))))
+
 ;;   + | others
 
 ;; reference | http://github.com/milkypostman/dotemacs/init.el
@@ -2281,6 +2293,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;; add change-lod entry
 (setup-lazy '(my-add-change-log-entry) "add-log"
+  (setup-after "popwin"
+    (push '("ChangeLog") popwin:special-display-config))
   (defun my-change-log-save-and-kill ()
     (interactive)
     (save-buffer)
@@ -2362,7 +2376,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;; autoload anything-show-kill-ring
 (setup-lazy '(anything-show-kill-ring) "anything-config"
-  :prepare (setup-in-idle "anything-config"))
+  :prepare (setup-in-idle "anything-config")
+  (setup-after "popwin"
+    (push '("*Kill Ring*") popwin:special-display-config)))
 
 ;;   + | pop-up windows
 
@@ -2556,6 +2572,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
             org-export-html-validation-link        nil
             org-export-html-style-include-scripts  nil
             org-export-html-style-include-default  nil
+            org-export-html-inline-image-extensions
+            '("png" "jpeg" "jpg" "gif" "svg" "bmp")
             org-export-html-mathjax-options
             '((path  "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML")
               (scale "100")
@@ -2638,87 +2656,87 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-lazy '(html-mode) "sgml-mode"
   :prepare (push '("\\.html?$" . html-mode) auto-mode-alist)
 
-  (defun my-html-forward-sexp (n)
-    (interactive "p")
-    (if (< n 0)
-        (my-html-backward-sexp (- n))
-      (let ((origpos (point)))
-        (dotimes (_ n)
-          (skip-chars-forward "\s\t\n")
-          (unless (eobp)
-            (let ((pos (point)))
-              (cond ((looking-at "</")  ; looking at a close-tag
-                     (signal 'scan-error
-                             (list "Containing expression ends prematurely"
-                                   pos
-                                   (prog1 (save-excursion
-                                            (sgml-skip-tag-forward 1)
-                                            (point))
-                                     (goto-char origpos)))))
-                    ((= (char-after) ?<) ; looking at an open-tag
-                     (sgml-skip-tag-forward 1))
-                    ((= (char-after) ?>) ; looking at a tag-close
-                     (signal 'scan-error
-                             (list "Containing expression ends prematurely"
-                                   pos (1+ pos))))
-                    (t                  ; otherwise
-                     (let ((forward-sexp-function nil))
-                       (forward-sexp))
-                     (unless (looking-back "\\s)")
-                       (let ((delim (save-excursion
-                                      (when (search-backward-regexp "[<>]" pos t)
-                                        (point)))))
-                         ;; we've skipped over a block/tag delimiter
-                         ;; brabrabra|:<br> -> brabrabra:<br|>
-                         (when delim
-                           (goto-char delim)
-                           (skip-chars-backward "\s\t\n"))))))))))))
+  ;; (defun my-html-forward-sexp (n)
+  ;;   (interactive "p")
+  ;;   (if (< n 0)
+  ;;       (my-html-backward-sexp (- n))
+  ;;     (let ((origpos (point)))
+  ;;       (dotimes (_ n)
+  ;;         (skip-chars-forward "\s\t\n")
+  ;;         (unless (eobp)
+  ;;           (let ((pos (point)))
+  ;;             (cond ((looking-at "</")  ; looking at a close-tag
+  ;;                    (signal 'scan-error
+  ;;                            (list "Containing expression ends prematurely"
+  ;;                                  pos
+  ;;                                  (prog1 (save-excursion
+  ;;                                           (sgml-skip-tag-forward 1)
+  ;;                                           (point))
+  ;;                                    (goto-char origpos)))))
+  ;;                   ((= (char-after) ?<) ; looking at an open-tag
+  ;;                    (sgml-skip-tag-forward 1))
+  ;;                   ((= (char-after) ?>) ; looking at a tag-close
+  ;;                    (signal 'scan-error
+  ;;                            (list "Containing expression ends prematurely"
+  ;;                                  pos (1+ pos))))
+  ;;                   (t                  ; otherwise
+  ;;                    (let ((forward-sexp-function nil))
+  ;;                      (forward-sexp))
+  ;;                    (unless (looking-back "\\s)")
+  ;;                      (let ((delim (save-excursion
+  ;;                                     (when (search-backward-regexp "[<>]" pos t)
+  ;;                                       (point)))))
+  ;;                        ;; we've skipped over a block/tag delimiter
+  ;;                        ;; brabrabra|:<br> -> brabrabra:<br|>
+  ;;                        (when delim
+  ;;                          (goto-char delim)
+  ;;                          (skip-chars-backward "\s\t\n"))))))))))))
 
-  (defun my-html-backward-sexp (n)
-    (interactive "p")
-    (if (< n 0)
-        (my-html-forward-sexp (- n))
-      (let ((origpos (point)))
-        (dotimes (_ n)
-          (skip-chars-backward "\s\t\n")
-          (unless (bobp)
-            (let ((pos (point)))
-              (cond ((= (char-before) ?>) ; looking back a tag-close
-                     (while (progn
-                              (sgml-skip-tag-backward 1)
-                              (and (not (bobp)) (looking-at "<!"))))
-                     (when (save-excursion
-                             (sgml-skip-tag-forward 1)
-                             (> (point) pos))
-                       ;; we were looking back an open-tag
-                       (signal 'scan-error
-                               (list "Containing expression ends prematurely"
-                                     pos
-                                     (prog1 (point)
-                                       (goto-char origpos))))))
-                    ((= (char-before) ?<) ; looking back a tag-open
-                     (signal 'scan-error
-                             (list "Containing expression ends prematurely"
-                                   pos (1- pos))))
-                    (t                  ; otherwise
-                     (let ((forward-sexp-function nil))
-                       (forward-sexp -1))
-                     (unless (looking-back "\\s)")
-                       (let ((delim (save-excursion
-                                      (when (search-backward-regexp "\\s(" pos t)
-                                        (point)))))
-                         ;; we've skipped over a block/tag delimiter
-                         ;; brabrabra|:<br> -> brabrabra:<br|>
-                         (when delim
-                           (goto-char delim)
-                           (skip-chars-backward "\s\t\n"))))))))))))
+  ;; (defun my-html-backward-sexp (n)
+  ;;   (interactive "p")
+  ;;   (if (< n 0)
+  ;;       (my-html-forward-sexp (- n))
+  ;;     (let ((origpos (point)))
+  ;;       (dotimes (_ n)
+  ;;         (skip-chars-backward "\s\t\n")
+  ;;         (unless (bobp)
+  ;;           (let ((pos (point)))
+  ;;             (cond ((= (char-before) ?>) ; looking back a tag-close
+  ;;                    (while (progn
+  ;;                             (sgml-skip-tag-backward 1)
+  ;;                             (and (not (bobp)) (looking-at "<!"))))
+  ;;                    (when (save-excursion
+  ;;                            (sgml-skip-tag-forward 1)
+  ;;                            (> (point) pos))
+  ;;                      ;; we were looking back an open-tag
+  ;;                      (signal 'scan-error
+  ;;                              (list "Containing expression ends prematurely"
+  ;;                                    pos
+  ;;                                    (prog1 (point)
+  ;;                                      (goto-char origpos))))))
+  ;;                   ((= (char-before) ?<) ; looking back a tag-open
+  ;;                    (signal 'scan-error
+  ;;                            (list "Containing expression ends prematurely"
+  ;;                                  pos (1- pos))))
+  ;;                   (t                  ; otherwise
+  ;;                    (let ((forward-sexp-function nil))
+  ;;                      (forward-sexp -1))
+  ;;                    (unless (looking-back "\\s)")
+  ;;                      (let ((delim (save-excursion
+  ;;                                     (when (search-backward-regexp "\\s(" pos t)
+  ;;                                       (point)))))
+  ;;                        ;; we've skipped over a block/tag delimiter
+  ;;                        ;; brabrabra|:<br> -> brabrabra:<br|>
+  ;;                        (when delim
+  ;;                          (goto-char delim)
+  ;;                          (skip-chars-backward "\s\t\n"))))))))))))
 
-  (defadvice sgml-indent-line (around my-fix-sgml-indent-line activate)
-    (let ((forward-sexp-function nil))
-      ad-do-it))
+  ;; (defadvice sgml-indent-line (around my-fix-sgml-indent-line activate)
+  ;;   (let ((forward-sexp-function nil))
+  ;;     ad-do-it))
 
-  (setup-hook 'html-mode-hook
-    (setq-local forward-sexp-function 'my-html-forward-sexp))
+  ;; (setup-hook 'html-mode-hook
+  ;;   (setq-local forward-sexp-function 'my-html-forward-sexp))
 
   (setup-keybinds html-mode-map
     "C-c C-'" 'sgml-close-tag
@@ -2965,16 +2983,15 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   ;; hooks seems not working ...
   (defadvice gauche-mode (after gauche-run-hooks activate)
-    (when (eq major-mode 'gauche-mode)
-      (run-hooks 'gauche-mode-hook)))
+    (run-hooks 'gauche-mode-hook))
 
   ;; why "|" is whitespace in gauche-mode ?
   (modify-syntax-entry ?\| "_ 23b" gauche-mode-syntax-table)
 
-  ;; use "-i" option to launch gosh process
   (setup-hook 'gauche-mode-hook
-    (setq scheme-program-name "gosh -i")
-    (my-lisp-install-toggle-commands))
+    (my-lisp-install-toggle-commands)
+    ;; use "-i" option to launch gosh process
+    (setq scheme-program-name "gosh -i"))
 
   ;; use auto-complete and eldoc in gauche-mode buffers
   (setup "scheme-complete"
@@ -2985,16 +3002,14 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-after "auto-complete"
       (push 'gauche-mode ac-modes)
       (defvar my-ac-source-scheme-complete
-        '((candidates . (all-completions
-                         ac-target (apply 'append (scheme-current-env))))))
+        '((candidates . (all-completions ac-target (apply 'append (scheme-current-env))))))
       (setup-hook 'gauche-mode-hook
         (make-local-variable 'ac-sources)
         (add-to-list 'ac-sources 'my-ac-source-scheme-complete t)))
     (setup-expecting "eldoc"
       (setup-hook 'gauche-mode-hook
         (turn-on-eldoc-mode)
-        (setq-local eldoc-documentation-function
-                    'scheme-get-current-symbol-info))))
+        (setq-local eldoc-documentation-function 'scheme-get-current-symbol-info))))
 
   (setup-expecting "rainbow-delimiters"
     (setup-hook 'gauche-mode-hook 'rainbow-delimiters-mode)
@@ -3089,10 +3104,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "auto-complete"
     (push 'racket-mode ac-modes))
 
-  (setup-expecting "flycheck"
-    (setup-hook 'racket-mode-hook 'flycheck-mode))
-
-  (setup-after "rainbow-delimiters-mode"
+(setup-after "rainbow-delimiters-mode"
     (setup-hook 'racket-mode-hook 'rainbow-delimiters-mode))
 
   (setup-expecting "key-combo"
@@ -3685,9 +3697,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       ;; triary operation
       (key-combo-define-local (kbd "?") '( " ? `!!' : " "?"))))
 
-  (setup-expecting "flycheck"
-    (setup-hook 'c-mode-hook 'flycheck-mode)
-    (setup-hook 'c++-mode-hook 'flycheck-mode))
   (setup-after "flycheck"
     (defun my-flycheck-use-c99-p ()
       (save-excursion
@@ -3774,6 +3783,18 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     '("," "C-d" "C-M-a" "C-M-e"
       "M-e" "M-j" "C-M-h" "C-M-j" "DEL") nil)
   )
+
+;;       + Javascript
+
+(setup-after "js"
+  (setup-after "auto-complete"
+    (push 'js-mode ac-modes))
+  (setup "jquery-doc"
+    (setup-hook 'js-mode-hook 'jquery-doc-setup)
+    (setup-after "popwin"
+      (push '("^\\*jQuery doc" :regexp t) popwin:special-display-config))
+    (setup-keybinds js-mode-map
+      "<f1> s" 'jquery-doc)))
 
 ;;       + promela-mode
 
@@ -3917,9 +3938,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (push '(haskell-mode . "ghc -Wall -fwarn-missing-import-lists %f")
           smart-compile-alist))
 
-  (setup-expecting "flycheck"
-    (setup-hook 'haskell-mode-hook 'flycheck-mode))
-
   (setup-expecting "key-combo"
     (defun my-install-haskell-smartchr ()
       (key-combo-mode 1)
@@ -4013,9 +4031,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (setup-after "auto-complete"
     (push 'scala-mode ac-modes))
-
-  (setup-expecting "flycheck"
-    (setup-hook 'scala-mode-hook 'flycheck-mode))
   )
 
 ;;       + coq-mode (proof-general)
@@ -4079,9 +4094,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         (key-combo-define-local (kbd "*") " * ")
         (key-combo-define-local (kbd "/") " / ")))
 
-    (setup-expecting "flycheck"
-      (setup-hook 'coq-mode-hook 'flycheck-mode))
-
     (setup-keybinds coq-mode-map
       "C-m"     'reindent-then-newline-and-indent
       "C-c C-n" 'proof-assert-next-command-interactive
@@ -4144,9 +4156,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (setup-after "auto-complete"
     (push 'tuareg-mode ac-modes))
-
-  (setup-expecting "flycheck"
-    (setup-hook 'tuareg-mode-hook 'flycheck-mode))
   )
 
 ;;     + declarative
@@ -4168,6 +4177,19 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     ;; toplevel
     (key-combo-define-local (kbd ":-") " :- ")
     (key-combo-define-local (kbd "|") '(my-prolog-smart-pipes))
+    ;; cmp
+    (key-combo-define-local (kbd "=") " = ")
+    (key-combo-define-local (kbd "!=") " \\= ")
+    (key-combo-define-local (kbd "\\=") " \\= ")
+    (key-combo-define-local (kbd "<") " < ")
+    (key-combo-define-local (kbd ">") " > ")
+    (key-combo-define-local (kbd "=<") " =< ")
+    (key-combo-define-local (kbd "<=") " =< ")
+    (key-combo-define-local (kbd ">=") " >= ")
+    (key-combo-define-local (kbd "=\\=") " =\\= ")
+    (key-combo-define-local (kbd "!==") " =\\= ")
+    (key-combo-define-local (kbd "=:=") " =:= ")
+    (key-combo-define-local (kbd "==") " =:= ")
     ;; arithmetic
     (key-combo-define-local (kbd "+") `(,(my-unary "+")))
     (key-combo-define-local (kbd "-") `(,(my-unary "-")))
@@ -4177,9 +4199,11 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 (setup-expecting "prolog"
   (push '("\\.swi$" . prolog-mode) auto-mode-alist)
-  (push '("\\.pro$" . prolog-mode) auto-mode-alist))
+  (push '("\\.pro$" . prolog-mode) auto-mode-alist)
+  (push '("\\.pl$" . prolog-mode) auto-mode-alist)) ; I don't write perl scripts for now.
 
 (setup-after "prolog"
+
   (setup-keybinds prolog-mode-map
     "C-c C-l" 'prolog-consult-file
     "C-c C-e" 'my-prolog-consult-dwim
@@ -4190,6 +4214,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "C-M-h" "C-M-n" "C-M-p"
       "C-M-h" "C-M-e" "C-M-a"
       "C-M-c" "C-M-n" "C-M-n") nil)
+
   (defun my-run-prolog-other-window ()
     (interactive)
     (with-selected-window (split-window-vertically -10)
@@ -4198,17 +4223,52 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (prolog-ensure-process))
     (when buffer-file-name
       (prolog-consult-file)))
+
   (defun my-prolog-consult-dwim ()
     (interactive)
     (if (use-region-p)
         (prolog-consult-region (region-beginning) (region-end))
       (prolog-consult-predicate)))
+
   (setup-after "auto-complete"
     (push 'prolog-mode ac-modes))
+
   (setup-expecting "key-combo"
     (setup-hook 'prolog-mode-hook
       (my-install-prolog-common-smartchr)
-      (key-combo-define-local (kbd "/") " / "))))
+      ;; control
+      (key-combo-define-local (kbd "->") " -> ")
+      (key-combo-define-local (kbd "--") " -- ") ; to make --> work
+      (key-combo-define-local (kbd "-->") " --> ")
+      (key-combo-define-local (kbd "?-") " ?- ")
+      (key-combo-define-local (kbd ";") "; ")
+      (key-combo-define-local (kbd "*-") " *- ") ; to make *-> work
+      (key-combo-define-local (kbd "*->") " *-> ")
+      (key-combo-define-local (kbd ":=") " := ")
+      ;; cmp
+      (key-combo-define-local (kbd "===") " == ")
+      (key-combo-define-local (kbd "!===") " \\== ")
+      (key-combo-define-local (kbd "@=") " =@= ")
+      (key-combo-define-local (kbd "=@=") " =@= ")
+      (key-combo-define-local (kbd "@!=") " \\=@= ")
+      (key-combo-define-local (kbd "\\=@=") " \\=@= ")
+      (key-combo-define-local (kbd "@<") " @< ")
+      (key-combo-define-local (kbd "@>") " @> ")
+      (key-combo-define-local (kbd "@<=") " @=< ")
+      (key-combo-define-local (kbd "@=<") " @=< ")
+      (key-combo-define-local (kbd "@>=") " @>= ")
+      (key-combo-define-local (kbd ":") " : ")
+      (key-combo-define-local (kbd ":<") " >:< ")
+      (key-combo-define-local (kbd ">:<") " >:< ")
+      ;; ops
+      (key-combo-define-local (kbd "/\\") " /\\ ")
+      (key-combo-define-local (kbd "\\/") " \\/ ")
+      (key-combo-define-local (kbd "<<") " << ")
+      (key-combo-define-local (kbd ">>") " >> ")
+      (key-combo-define-local (kbd "**") " ** ")
+      (key-combo-define-local (kbd "^") " ^ ")
+      (key-combo-define-local (kbd "/") " / ")
+      (key-combo-define-local (kbd "//") " // "))))
 
 ;;       + (cs)lmntal-mode
 
@@ -4247,23 +4307,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (my-install-prolog-common-smartchr)
       ;; membrane or binary
       (key-combo-define-local (kbd "/") '(my-lmntal-smart-slashes))
-      ;; comments, periods
+      ;; comments
       (key-combo-define-local (kbd "//") "// ")
       ;; (key-combo-define-local (kbd "/*") "/*\n`!!'\n*/")
-      ;; eq neq
-      (key-combo-define-local (kbd "=") " = ")
-      (key-combo-define-local (kbd "!=") " \\= ")
-      (key-combo-define-local (kbd "\\=") " \\= ")
-      ;; cmpint
-      (key-combo-define-local (kbd "=:=") " =:= ")
-      (key-combo-define-local (kbd "==") " =:= ")
-      (key-combo-define-local (kbd "=\\=") " =\\= ")
-      (key-combo-define-local (kbd "!==") " =\\= ")
-      (key-combo-define-local (kbd "<") " < ")
-      (key-combo-define-local (kbd ">") " > ")
-      (key-combo-define-local (kbd "=<") " =< ")
-      (key-combo-define-local (kbd "<=") " =< ")
-      (key-combo-define-local (kbd ">=") " >= ")
       ;; cmpfloat
       (key-combo-define-local (kbd "=:=.") " =:=. ")
       (key-combo-define-local (kbd "==.") " =:=. ")
@@ -4280,6 +4326,11 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   )
 
 ;;     + esolangs
+;;       + bfbuilder-mode
+
+(setup-lazy '(bfbuilder-mode) "bfbuilder"
+  :prepare (push '("\\.bf" . bfbuilder-mode) auto-mode-alist))
+
 ;;       + zombie-mode
 
 (setup-lazy '(zombie-mode) "zombie"
@@ -4314,12 +4365,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                   auto-mode-alist))
   (setup-after "auto-complete"
     (push 'dos-mode ac-modes)))
-
-;;       + makefile-mode
-
-(setup-after "makefile-mode"
-  (setup-expecting "flycheck"
-    (setup-hook 'makefile-mode-hook 'flycheck-mode)))
 
 ;;   + hexl-mode
 
@@ -4568,6 +4613,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'debugger-mode-hook 'my-kindly-view-mode)))
 
 (setup-after "help-mode"
+  (setup-after "popwin"
+    (push '("*Help*") popwin:special-display-config))
   (setup-expecting "vi"
     (setup-hook 'help-mode-hook 'my-kindly-view-mode)
     (setup-keybinds help-mode-map
@@ -4581,6 +4628,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'sdic-mode-hook 'my-kindly-view-mode)))
 
 (setup-after "info"
+  (setup-after "popwin"
+    (push '("*info*") popwin:special-display-config))
   (setup-expecting "vi"
     ;; "Info-mode-map" does not work ?
     (setup-hook 'Info-mode-hook 'my-kindly-view-mode)
@@ -4595,52 +4644,33 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "f"        '("ace-link" ace-link-info)
       '("g" "n") nil)))
 
-;;   + others
-;;     + fundamental-mode
+;;   + tabulated
+;;     + common
 
-(setup-after "fundamental-mode"
-  (setup-after "mark-hacks"
-    (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes)))
+(defvar my-listy-mode-common-hook)
 
-;;     + vi-mode
+;; disable key-chord in listy modes
+(setup-after "key-chord"
+  (setup-hook 'my-listy-mode-common-hook
+    (setq-local key-chord-mode nil)
+    (setq-local input-method-function nil)))
 
-(setup-after "vi"
+(setup-expecting "stripe-buffer"
+  (setup-hook 'my-listy-mode-common-hook 'my-stripe-buffer))
 
-  ;; undo-tree integration
-  (setup-expecting "undo-tree"
-    (setup-keybinds vi-com-map
-      "C-r" 'undo-tree-redo
-      "u"   'undo-tree-undo))
+(setup-hook 'my-listy-mode-common-hook
+  (local-set-key (kbd "j") 'next-line)
+  (local-set-key (kbd "k") 'previous-line))
 
-  ;; vi-like paren-matching
-  (setup-after "paren"
-    (defadvice show-paren-function (around vi-show-paren activate)
-      (if (and (eq major-mode 'vi-mode)
-               (looking-back "\\s)"))
-          (save-excursion (forward-char) ad-do-it)
-        ad-do-it)))
+(setup-after "tabulated-list"
+  (setup-hook 'tabulated-list-mode-hook
+    (run-hooks 'my-listy-mode-common-hook))
+  (setup-keybinds tabulated-list-mode-map
+    "," 'tabulated-list-sort))
 
-  ;; make cursor "box" while in vi-mode
-  (defadvice vi-mode (after make-cursor-box-while-vi activate)
-    (setq cursor-type 'box))
-  (defadvice vi-goto-insert-state (after make-cursor-box-while-vi activate)
-    (setq cursor-type 'bar))
+;;     + dired [find-dired-lisp] [phi-search-dired] [dired-explore]
 
-  ;; disable key-chord
-  (setup-after "key-chord"
-    (defadvice vi-mode (after disable-key-chord activate)
-      (setq-local key-chord-mode nil)
-      (setq-local input-method-function nil))
-    (defadvice vi-goto-insert-state (after disable-key-chord activate)
-      (kill-local-variable 'key-chord-mode)
-      (kill-local-variable 'input-method-function)))
-
-  ;; keybinds
-  (setup-keybinds vi-com-map "v" 'set-mark-command)
-  )
-
-;;     + dired [dired-k] [find-dired-lisp] [phi-search-dired] [dired-explore]
-
+;; NOTE: dired is not a submode of tabulated-list-mode
 (setup-lazy '(my-dired-default-directory) "dired"
 
   ;; settings
@@ -4654,32 +4684,23 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         dired-keep-marker-hardlink nil
         dired-keep-marker-rename   t)
 
+  ;; run common hook for listy buffers
+  ;; (dired is not a submode of tabulated-list)
+  (setup-hook 'dired-mode-hook
+    (run-hooks 'my-listy-mode-common-hook))
+
   ;; add "[Dired]" prefix to buffer names
   (setup-hook 'dired-mode-hook
     (rename-buffer (concat "[Dired]" (buffer-name)) t)
     ;; use '*' instead of 'D'
     (add-hook 'post-command-hook
-              (lambda ()
-                (dired-change-marks ?D dired-marker-char)) nil t))
+              (lambda () (dired-change-marks ?D dired-marker-char)) nil t))
 
   ;; plugins
-
-  ;; disable key-chord
-  (setup-after "key-chord"
-    (setup-hook 'dired-mode-hook
-      (setq-local key-chord-mode nil)
-      (setq-local input-method-function nil)))
 
   (setup "find-dired-lisp"
     (require 'find-dired)               ; dependency (find-ls-option)
     (setup-keybinds dired-mode-map "f" 'find-dired-lisp))
-
-  (setup "dired-k"
-    (defadvice dired-k--inside-git-repository-p (around my-fix-dired-k activate)
-      (setq ad-return-value nil))
-    (setup-hook 'dired-mode-hook
-      (unless (file-remote-p default-directory)
-        (run-with-idle-timer 0 nil 'dired-k--highlight))))
 
   (setup-lazy '(phi-search-dired) "phi-search-dired")
   (setup-lazy '(dired-explore) "dired-explore")
@@ -4770,6 +4791,16 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
             (dired up-dir)
             (dired-goto-file current-dir)))))
 
+  ;; taken from uenox-dired.el
+  (defun my-dired-winstart ()
+    "win-start the current line's file."
+    (interactive)
+    (if (eq system-type 'windows-nt)
+        (let ((file (dired-get-filename)))
+          (w32-shell-execute "open" file)
+          (message "win-started %s" file))
+      (error "works only on Windows")))
+
   (setup-lazy
     '(my-dired-do-convert-coding-system
       my-dired-do-insert-subdirs
@@ -4833,39 +4864,102 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
           (message "%d lines (including %d comment lines) in %s files."
                    lines comments files)))
       )
-
-  ;; taken from uenox-dired.el
-  (defun my-dired-winstart ()
-    "win-start the current line's file."
-    (interactive)
-    (if (eq system-type 'windows-nt)
-        (let ((file (dired-get-filename)))
-          (w32-shell-execute "open" file)
-          (message "win-started %s" file))
-      (error "works only on Windows")))
   )
 
 ;;     + Buffer-menu
 
 (setup-after "buff-menu"
-  (setup-hook 'Buffer-menu-mode-hook
-    ;; disable key-chord
-    (setq-local key-chord-mode nil)
-    (setq-local input-method-function nil))
+  (setup-after "popwin"
+    (push '("*Buffer List*") popwin:special-display-config))
   (setup-keybinds Buffer-menu-mode-map
     "RET" 'Buffer-menu-select
     "SPC" 'Buffer-menu-delete
-    "j" 'next-line
-    "k" 'previous-line
-    "l" 'Buffer-menu-select
-    "o" 'Buffer-menu-other-window
-    "v" 'Buffer-menu-view
-    "s" 'Buffer-menu-save
-    "d" 'Buffer-menu-execute
-    "u" 'Buffer-menu-unmark
-    "5" 'Buffer-menu-toggle-read-only
-    "b" 'Buffer-menu-bury
-    "f" 'Buffer-menu-toggle-files-only))
+    "l"   'Buffer-menu-select
+    "o"   'Buffer-menu-other-window
+    "v"   'Buffer-menu-view
+    "d"   'Buffer-menu-execute
+    "f"   'Buffer-menu-toggle-files-only))
+
+;;     + proced
+
+(setup-after "proced"
+
+  (setq proced-tree-flag t)
+
+  ;; proced-mode is not a submode of tabulated-list-mode
+  (setup-hook 'proced-mode-hook
+    (run-hooks 'my-listy-mode-common-hook))
+
+  (setup-after "popwin"
+    (push '("*Proced*") popwin:special-display-config))
+
+  (setup-keybinds proced-mode-map
+    "SPC" 'proced-mark
+    "DEL" 'proced-unmark-backward
+    "u"   'proced-unmark-all
+    "t"   'proced-toggle-marks
+    "C"   'proced-mark-children
+    "P"   'proced-mark-parents
+    "/"   'proced-filter-interactive
+    ","   'proced-sort-interactive
+    "d"   'proced-send-signal
+    "r"   'proced-renice
+    "j"   'next-line
+    "k"   'previous-line))
+
+;;     + list-environment [list-environment]
+
+(setup-lazy '(list-environment) "list-environment"
+  (setup-after "popwin"
+    (push '("*Process-Environment*") popwin:special-display-config))
+  (setup-keybinds list-environment-mode
+    "s" 'list-environment-setenv
+    "n" 'list-environment-addenv
+    "d" 'list-environment-clear))
+
+;;   + others
+;;     + fundamental-mode
+
+(setup-after "fundamental-mode"
+  (setup-after "mark-hacks"
+    (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes)))
+
+;;     + vi-mode
+
+(setup-after "vi"
+
+  ;; undo-tree integration
+  (setup-expecting "undo-tree"
+    (setup-keybinds vi-com-map
+      "C-r" 'undo-tree-redo
+      "u"   'undo-tree-undo))
+
+  ;; vi-like paren-matching
+  (setup-after "paren"
+    (defadvice show-paren-function (around vi-show-paren activate)
+      (if (and (eq major-mode 'vi-mode)
+               (looking-back "\\s)"))
+          (save-excursion (forward-char) ad-do-it)
+        ad-do-it)))
+
+  ;; make cursor "box" while in vi-mode
+  (defadvice vi-mode (after make-cursor-box-while-vi activate)
+    (setq cursor-type 'box))
+  (defadvice vi-goto-insert-state (after make-cursor-box-while-vi activate)
+    (setq cursor-type 'bar))
+
+  ;; disable key-chord
+  (setup-after "key-chord"
+    (defadvice vi-mode (after disable-key-chord activate)
+      (setq-local key-chord-mode nil)
+      (setq-local input-method-function nil))
+    (defadvice vi-goto-insert-state (after disable-key-chord activate)
+      (kill-local-variable 'key-chord-mode)
+      (kill-local-variable 'input-method-function)))
+
+  ;; keybinds
+  (setup-keybinds vi-com-map "v" 'set-mark-command)
+  )
 
 ;;     + eshell
 
@@ -4947,6 +5041,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (set-face-background 'howm-reminder-today-face nil)
   (set-face-background 'howm-reminder-tomorrow-face nil)
+
+  (setup-after "popwin"
+    (push '("*howm-remember*") popwin:special-display-config))
 
   ;;   + | utilities
 
@@ -5237,7 +5334,7 @@ displayed, use substring of the buffer."
 
 (defvar my-mode-line-battery-indicator-colors
   ;; (mapcar (lambda (c) (apply 'color-rgb-to-hex c))
-  ;;         (color-gradient '(1 .2 .1) '(.4 .9 .2) 11))
+  ;;         (color-gradient '(1.0 0.2 0.1) '(0.4 0.9 0.2) 11))
   '("#f2411b" "#e5501d" "#d85f1f" "#cb6e22" "#bf7d24" "#b28c26"
     "#a59b28" "#98aa2a" "#8cb82c" "#7fc72e" "#72d630"))
 
@@ -5456,7 +5553,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
 ;;   + | colorscheme [solarized-definitions]
 
-(eval-and-compile          ; we want theme applied also during compile
+(eval-and-compile          ; we want the theme applied also during compile
   (setup-include "solarized-definitions"
 
     (defmacro create-solarized-based-theme
@@ -5517,9 +5614,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
       "#291e03" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
       "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
 
+    (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
-
-(set-face-attribute 'italic nil :slant 'italic :underline nil)
 
 ;;   + | modeline
 
@@ -5621,6 +5717,16 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
                       :foreground (car my-mode-line-background)
                       :background 'unspecified))
 
+;;   + | stripe-buffer
+
+(setup-after "stripe-buffer"
+  (set-face-background 'stripe-highlight
+                       (! (my-make-color (face-background 'default) 5 -10)))
+  (set-face-attribute 'stripe-hl-line nil
+                      :foreground 'unspecified
+                      :background 'unspecified
+                      :inherit 'region))
+
 ;;   + | lmntal-mode
 
 (setup-after "lmntal-mode"
@@ -5691,14 +5797,20 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
      (lambda () (highlight-parentheses-mode 1)))
    (global-highlight-parentheses-mode 1)))
 
-(setup-lazy '(rainbow-delimiters-mode) "rainbow-delimiters")
-
 (!-
  (setup "highlight-stages"
    (setq highlight-stages-highlight-real-quote t)
    (highlight-stages-global-mode 1)))
 
+(setup-lazy '(rainbow-delimiters-mode) "rainbow-delimiters")
+
 (setup-lazy '(rainbow-mode) "rainbow-mode")
+
+(setup-lazy '(my-stripe-buffer) "stripe-buffer"
+  (defun my-stripe-buffer ()
+    (stripe-buffer-mode 1)
+    (setq-local face-remapping-alist
+                (cons '(hl-line . stripe-hl-line) face-remapping-alist))))
 
 ;; make GUI modern
 (setup-include "sublimity"
@@ -5708,7 +5820,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
           sublimity-scroll-drift-length 3))
   (setup-include "sublimity-attractive"
     (setup-hook 'after-init-hook
-      (setq sublimity-attractive-centering-width 94)
+      (setq sublimity-attractive-centering-width 100)
       (sublimity-attractive-hide-bars)
       (sublimity-attractive-hide-fringes))))
 
@@ -5918,7 +6030,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "M-C"          '("paredit" paredit-convolute-sexp)
   "M-\""         '("paredit" paredit-meta-doublequote)
   "M-T"          'my-transpose-sexps
-  "M-:"          '("paredit" paredit-comment-dwim comment-dwim)
+  "M-:"          'my-comment-sexp
   "<oem-pa1>"    '("yasnippet" yas-expand my-dabbrev-expand)
   "<muhenkan>"   '("yasnippet" yas-expand my-dabbrev-expand)
   "<nonconvert>" '("yasnippet" yas-expand my-dabbrev-expand))
@@ -5984,7 +6096,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "C-x C-a"   '("multifiles" mf/mirror-region-in-multifile)
   "C-x C-l"   'my-add-change-log-entry
   "C-x C-t"   'toggle-truncate-lines
-  "C-x C-p"   'read-only-mode
+  "C-x C-p"   'proced
+  "C-x C-v"   'list-environment
   "C-x C-,"   '("download-region" download-region-as-url))
 
 ;;   + keychord
