@@ -273,7 +273,19 @@
 (defvar my-lispy-modes
   '(lisp-mode emacs-lisp-mode scheme-mode
               lisp-interaction-mode gauche-mode
-              clojure-mode racket-mode))
+              clojure-mode racket-mode egison-mode))
+(setup-hook 'change-major-mode-after-body-hook
+  (when (apply 'derived-mode-p my-lispy-modes)
+    (run-hooks 'my-lispy-mode-common-hook)))
+
+(defvar my-listy-modes
+  '(tabulated-list-mode dired-mode proced-mode))
+(setup-hook 'change-major-mode-after-body-hook
+  (when (apply 'derived-mode-p my-listy-modes)
+    (run-hooks 'my-listy-mode-common-hook)))
+
+(defvar my-web-modes
+  '(js-mode css-mode html-mode))
 
 (defun my-shorten-directory (dir len)
   (if (null dir) ""
@@ -391,8 +403,8 @@ cons of two integers."
 (setq frame-title-format                    "%b - Emacs"
       completion-ignore-case                t
       read-file-name-completion-ignore-case t
-      gc-cons-threshold                     (! (* 128 1024 1024))
-      gc-cons-percentage                    0.5
+      ;; gc-cons-threshold                     (! (* 128 1024 1024))
+      ;; gc-cons-percentage                    0.5
       message-log-max                       1000
       enable-local-variables                :safe
       echo-keystrokes                       0.1
@@ -816,6 +828,14 @@ cons of two integers."
    (push my-dictionary-directory ac-dictionary-directories)
    (global-auto-complete-mode)
    (setup-keybinds ac-completing-map "S-<tab>" 'ac-previous)
+   ;; complete words in web mode buffers
+   (ac-define-source my-words-in-web-mode-buffers
+     '((init . ac-update-word-index)
+       (candidates . (ac-word-candidates
+                      (lambda (buf)
+                        (cl-some (lambda (mode)
+                                   (with-current-buffer buf (derived-mode-p mode)))
+                                 my-web-modes))))))
    ;; do not complete remote file names
    (defadvice ac-filename-candidate (around my-disable-ac-for-remote-files activate)
      (unless (file-remote-p ac-prefix)
@@ -891,28 +911,28 @@ unary operators which can also be binary."
 
 ;;   + | others
 
-(!-
- (setup "symon"
-   (setq symon-sparkline-ascent (!if my-home-system-p 97 100)
-         symon-monitors         '(symon-windows-cpu-monitor
-                                  symon-windows-network-rx-monitor
-                                  symon-windows-network-tx-monitor))
-   (symon-mode 1)
-   (when my-lingr-account
-     (setup-in-idle "symon-lingr")
-     (setup-after "symon-lingr"
-       (setup-after "popwin"
-         (push '("*symon-lingr*") popwin:special-display-config))
-       (setq symon-lingr-user-name (car my-lingr-account)
-             symon-lingr-password  (cdr my-lingr-account)
-             symon-lingr-log-file  my-lingr-log-file
-             symon-lingr-app-key   "pvCm1t"
-             symon-monitors        '(symon-windows-cpu-monitor
-                                     symon-windows-network-rx-monitor
-                                     symon-windows-network-tx-monitor
-                                     symon-lingr-monitor))
-       (symon-mode -1)
-       (symon-mode 1)))))
+;; (!-
+;;  (setup "symon"
+;;    (setq symon-sparkline-ascent (!if my-home-system-p 97 100)
+;;          symon-monitors         '(symon-windows-cpu-monitor
+;;                                   symon-windows-network-rx-monitor
+;;                                   symon-windows-network-tx-monitor))
+;;    (symon-mode 1)
+;;    (when my-lingr-account
+;;      (setup-in-idle "symon-lingr")
+;;      (setup-after "symon-lingr"
+;;        (setup-after "popwin"
+;;          (push '("*symon-lingr*") popwin:special-display-config))
+;;        (setq symon-lingr-user-name (car my-lingr-account)
+;;              symon-lingr-password  (cdr my-lingr-account)
+;;              symon-lingr-log-file  my-lingr-log-file
+;;              symon-lingr-app-key   "pvCm1t"
+;;              symon-monitors        '(symon-windows-cpu-monitor
+;;                                      symon-windows-network-rx-monitor
+;;                                      symon-windows-network-tx-monitor
+;;                                      symon-lingr-monitor))
+;;        (symon-mode -1)
+;;        (symon-mode 1)))))
 
 ;; + | Commands
 ;;   + web browser [eww]
@@ -2651,85 +2671,85 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (push 'latex-mode ac-modes)
       (setup-hook 'latex-mode-hook 'ac-l-setup))))
 
-;;     + html-mode, css-mode
+;;     + html-mode
 
 (setup-lazy '(html-mode) "sgml-mode"
   :prepare (push '("\\.html?$" . html-mode) auto-mode-alist)
 
-  ;; (defun my-html-forward-sexp (n)
-  ;;   (interactive "p")
-  ;;   (if (< n 0)
-  ;;       (my-html-backward-sexp (- n))
-  ;;     (let ((origpos (point)))
-  ;;       (dotimes (_ n)
-  ;;         (skip-chars-forward "\s\t\n")
-  ;;         (unless (eobp)
-  ;;           (let ((pos (point)))
-  ;;             (cond ((looking-at "</")  ; looking at a close-tag
-  ;;                    (signal 'scan-error
-  ;;                            (list "Containing expression ends prematurely"
-  ;;                                  pos
-  ;;                                  (prog1 (save-excursion
-  ;;                                           (sgml-skip-tag-forward 1)
-  ;;                                           (point))
-  ;;                                    (goto-char origpos)))))
-  ;;                   ((= (char-after) ?<) ; looking at an open-tag
-  ;;                    (sgml-skip-tag-forward 1))
-  ;;                   ((= (char-after) ?>) ; looking at a tag-close
-  ;;                    (signal 'scan-error
-  ;;                            (list "Containing expression ends prematurely"
-  ;;                                  pos (1+ pos))))
-  ;;                   (t                  ; otherwise
-  ;;                    (let ((forward-sexp-function nil))
-  ;;                      (forward-sexp))
-  ;;                    (unless (looking-back "\\s)")
-  ;;                      (let ((delim (save-excursion
-  ;;                                     (when (search-backward-regexp "[<>]" pos t)
-  ;;                                       (point)))))
-  ;;                        ;; we've skipped over a block/tag delimiter
-  ;;                        ;; brabrabra|:<br> -> brabrabra:<br|>
-  ;;                        (when delim
-  ;;                          (goto-char delim)
-  ;;                          (skip-chars-backward "\s\t\n"))))))))))))
+  (defun my-html-forward-sexp (n)
+    (interactive "p")
+    (if (< n 0)
+        (my-html-backward-sexp (- n))
+      (let ((origpos (point)))
+        (dotimes (_ n)
+          (skip-chars-forward "\s\t\n")
+          (unless (eobp)
+            (let ((pos (point)))
+              (cond ((looking-at "</")  ; looking at a close-tag
+                     (signal 'scan-error
+                             (list "Containing expression ends prematurely"
+                                   pos
+                                   (prog1 (save-excursion
+                                            (sgml-skip-tag-forward 1)
+                                            (point))
+                                     (goto-char origpos)))))
+                    ((= (char-after) ?<) ; looking at an open-tag
+                     (sgml-skip-tag-forward 1))
+                    ((= (char-after) ?>) ; looking at a tag-close
+                     (signal 'scan-error
+                             (list "Containing expression ends prematurely"
+                                   pos (1+ pos))))
+                    (t                  ; otherwise
+                     (let ((forward-sexp-function nil))
+                       (forward-sexp))
+                     (unless (looking-back "\\s)")
+                       (let ((delim (save-excursion
+                                      (when (search-backward-regexp "[<>]" pos t)
+                                        (point)))))
+                         ;; we've skipped over a block/tag delimiter
+                         ;; brabrabra|:<br> -> brabrabra:<br|>
+                         (when delim
+                           (goto-char delim)
+                           (skip-chars-backward "\s\t\n"))))))))))))
 
-  ;; (defun my-html-backward-sexp (n)
-  ;;   (interactive "p")
-  ;;   (if (< n 0)
-  ;;       (my-html-forward-sexp (- n))
-  ;;     (let ((origpos (point)))
-  ;;       (dotimes (_ n)
-  ;;         (skip-chars-backward "\s\t\n")
-  ;;         (unless (bobp)
-  ;;           (let ((pos (point)))
-  ;;             (cond ((= (char-before) ?>) ; looking back a tag-close
-  ;;                    (while (progn
-  ;;                             (sgml-skip-tag-backward 1)
-  ;;                             (and (not (bobp)) (looking-at "<!"))))
-  ;;                    (when (save-excursion
-  ;;                            (sgml-skip-tag-forward 1)
-  ;;                            (> (point) pos))
-  ;;                      ;; we were looking back an open-tag
-  ;;                      (signal 'scan-error
-  ;;                              (list "Containing expression ends prematurely"
-  ;;                                    pos
-  ;;                                    (prog1 (point)
-  ;;                                      (goto-char origpos))))))
-  ;;                   ((= (char-before) ?<) ; looking back a tag-open
-  ;;                    (signal 'scan-error
-  ;;                            (list "Containing expression ends prematurely"
-  ;;                                  pos (1- pos))))
-  ;;                   (t                  ; otherwise
-  ;;                    (let ((forward-sexp-function nil))
-  ;;                      (forward-sexp -1))
-  ;;                    (unless (looking-back "\\s)")
-  ;;                      (let ((delim (save-excursion
-  ;;                                     (when (search-backward-regexp "\\s(" pos t)
-  ;;                                       (point)))))
-  ;;                        ;; we've skipped over a block/tag delimiter
-  ;;                        ;; brabrabra|:<br> -> brabrabra:<br|>
-  ;;                        (when delim
-  ;;                          (goto-char delim)
-  ;;                          (skip-chars-backward "\s\t\n"))))))))))))
+  (defun my-html-backward-sexp (n)
+    (interactive "p")
+    (if (< n 0)
+        (my-html-forward-sexp (- n))
+      (let ((origpos (point)))
+        (dotimes (_ n)
+          (skip-chars-backward "\s\t\n")
+          (unless (bobp)
+            (let ((pos (point)))
+              (cond ((= (char-before) ?>) ; looking back a tag-close
+                     (while (progn
+                              (sgml-skip-tag-backward 1)
+                              (and (not (bobp)) (looking-at "<!"))))
+                     (when (save-excursion
+                             (sgml-skip-tag-forward 1)
+                             (> (point) pos))
+                       ;; we were looking back an open-tag
+                       (signal 'scan-error
+                               (list "Containing expression ends prematurely"
+                                     pos
+                                     (prog1 (point)
+                                       (goto-char origpos))))))
+                    ((= (char-before) ?<) ; looking back a tag-open
+                     (signal 'scan-error
+                             (list "Containing expression ends prematurely"
+                                   pos (1- pos))))
+                    (t                  ; otherwise
+                     (let ((forward-sexp-function nil))
+                       (forward-sexp -1))
+                     (unless (looking-back "\\s)")
+                       (let ((delim (save-excursion
+                                      (when (search-backward-regexp "\\s(" pos t)
+                                        (point)))))
+                         ;; we've skipped over a block/tag delimiter
+                         ;; brabrabra|:<br> -> brabrabra:<br|>
+                         (when delim
+                           (goto-char delim)
+                           (skip-chars-backward "\s\t\n"))))))))))))
 
   ;; (defadvice sgml-indent-line (around my-fix-sgml-indent-line activate)
   ;;   (let ((forward-sexp-function nil))
@@ -2739,11 +2759,15 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   ;;   (setq-local forward-sexp-function 'my-html-forward-sexp))
 
   (setup-keybinds html-mode-map
+    "C-M-e"   'my-html-forward-sexp
+    "C-M-j"   'my-html-backward-sexp
     "C-c C-'" 'sgml-close-tag
-    "<f1> s" 'sgml-tag-help)
+    "<f1> s"  'sgml-tag-help)
 
   (setup-after "auto-complete"
-    (push html-mode ac-modes))
+    (push 'html-mode ac-modes)
+    (setup-hook 'html-mode-hook
+      (setq ac-sources '(ac-source-my-words-in-web-mode-buffers))))
 
   (setup-after "smart-compile"
     (push '(html-mode . (browse-url-of-buffer)) smart-compile-alist))
@@ -2772,13 +2796,20 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "&") '("&amp;" "&"))))
   )
 
+;;     + css-mode
+
 (setup-lazy '(css-mode) "css-mode"
   :prepare (push '("\\.css$" . css-mode) auto-mode-alist)
   (setup-after "auto-complete"
     (setup "auto-complete-config"
+      (ac-define-source my-css-propname
+        '((candidates . (mapcar 'car ac-css-property-alist))
+          (cache . t)
+          (prefix . "\\(^[\s\t]\\|;\\)[\s\t]*")))
       (setup-hook 'css-mode-hook
         (setq ac-sources '(ac-source-css-property
-                           ac-source-words-in-same-mode-buffers)))
+                           ac-source-my-css-propname
+                           ac-source-my-words-in-web-mode-buffers)))
       (push 'css-mode ac-modes)))
   (setup-expecting "key-combo"
     (setup-hook 'css-mode-hook
@@ -2881,6 +2912,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;     + lispy
 ;;       + (common)
 
+;; toggle commands
+
 (defun my-lisp-toggle-exp (exprs)
   (save-excursion
     (when (nth 3 (syntax-ppss (point)))
@@ -2913,37 +2946,74 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (interactive)
   (my-lisp-toggle-exp '(("'" . "`") ("`" . "'"))))
 
-(defun my-lisp-install-toggle-commands ()
+(setup-hook 'my-lispy-mode-common-hook
   (local-set-key (kbd "C-c C-'") 'my-lisp-toggle-quote)
   (local-set-key (kbd "C-c C-8") 'my-lisp-toggle-let))
+
+;; plugins
 
 (setup-expecting "key-combo"
   (defun my-lisp-smart-dot ()
     (interactive)
     (insert (if (looking-back "[0-9]") "." " . ")))
-  (defun my-install-lisp-common-smartchr ()
+  (setup-hook 'my-lispy-mode-common-hook
     (key-combo-mode 1)
     (key-combo-define-local (kbd ".") '(my-lisp-smart-dot "."))
     (key-combo-define-local (kbd ";") ";; ")))
 
+(setup-expecting "rainbow-delimiters"
+  (setup-hook 'my-lispy-mode-common-hook 'rainbow-delimiters-mode))
+
 ;;       + lisp-mode
 
 (setup-after "lisp-mode"
-  (setup-hook 'lisp-mode-hook 'my-lisp-install-toggle-commands)
-  (setup-expecting "rainbow-delimiters"
-    (setup-hook 'lisp-mode-hook 'rainbow-delimiters-mode))
+
   (setup-after "auto-complete"
     (push 'lisp-mode ac-modes))
-  (setup-expecting "key-combo"
-    (setup-hook 'lisp-mode-hook 'my-install-lisp-common-smartchr))
-  (setup-keybinds lisp-mode-map '("M-TAB" "C-j") nil))
+
+  (setup "cldoc"
+    (setup-hook 'lisp-mode-hook
+      (turn-on-cldoc-mode)))
+
+  (setup-lazy '(my-run-lisp-other-window my-lisp-send-dwim my-lisp-load) "inf-lisp"
+
+    (setq inferior-lisp-program "sbcl")
+
+    (defun my-run-lisp-other-window ()
+      (interactive)
+      (with-selected-window (split-window-vertically -10)
+        (switch-to-buffer (get-buffer-create "*inferior-lisp*"))
+        (run-lisp inferior-lisp-program))
+      (when buffer-file-name
+        (my-lisp-load)))
+
+    (defun my-lisp-send-dwim ()
+      (interactive)
+      (if (use-region-p)
+          (lisp-eval-region (region-beginning) (region-end))
+        (lisp-eval-last-sexp)))
+
+    (defun my-lisp-load (&optional file)
+      (interactive)
+      (let ((file (or file
+                      (expand-file-name buffer-file-name)
+                      (read-file-name "Load file: "))))
+        (with-temp-buffer
+          (lisp-eval-string (format "(load \"%s\")" file)))))
+    )
+
+  (setup-keybinds lisp-mode-map
+    '("M-TAB" "C-j") nil
+    "C-c C-s" 'my-run-lisp-other-window
+    "C-c C-e" 'my-lisp-send-dwim
+    "C-c C-l" 'my-lisp-load)
+  )
 
 ;;       + emacs-lisp-mode [outlined-elisp] [cl-lib-hl]
 
 (setup-after "lisp-mode"
   (font-lock-add-keywords
    'emacs-lisp-mode '(("(\\(defvar-local\\)" 1 font-lock-keyword-face)))
-  (setup-hook 'emacs-lisp-mode-hook 'my-lisp-install-toggle-commands)
   (setup-keybinds emacs-lisp-mode-map '("M-TAB" "C-j") nil)
   (setup-expecting "eldoc"
     (setup-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode))
@@ -2954,22 +3024,18 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                    (emacs-lisp-mode . (emacs-lisp-byte-compile)))
                  smart-compile-alist)))
   (setup-after "auto-complete"
-    (defun my-ac-install-elisp-sources ()
+    (push 'emacs-lisp-mode ac-modes)
+    (setup-hook 'emacs-lisp-mode-hook
       ;; ac-source-symbols is very nice but seems buggy
       (setq ac-sources '(ac-source-filename
                          ac-source-words-in-same-mode-buffers
                          ac-source-dictionary
                          ac-source-functions
                          ac-source-variables
-                         ac-source-features)))
-    (push 'emacs-lisp-mode ac-modes)
-    (setup-hook 'emacs-lisp-mode-hook 'my-ac-install-elisp-sources))
+                         ac-source-features))))
   (setup-expecting "key-combo"
     (setup-hook 'emacs-lisp-mode-hook
-      (my-install-lisp-common-smartchr)
       (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
-  (setup-expecting "rainbow-delimiters"
-    (setup-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode))
   (setup-expecting "rainbow-mode"
     (setup-hook 'emacs-lisp-mode-hook 'rainbow-mode))
   (setup-include "cl-lib-highlight"
@@ -2988,9 +3054,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   ;; why "|" is whitespace in gauche-mode ?
   (modify-syntax-entry ?\| "_ 23b" gauche-mode-syntax-table)
 
+  ;; use "-i" option to launch gosh process
   (setup-hook 'gauche-mode-hook
-    (my-lisp-install-toggle-commands)
-    ;; use "-i" option to launch gosh process
     (setq scheme-program-name "gosh -i"))
 
   ;; use auto-complete and eldoc in gauche-mode buffers
@@ -3011,13 +3076,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         (turn-on-eldoc-mode)
         (setq-local eldoc-documentation-function 'scheme-get-current-symbol-info))))
 
-  (setup-expecting "rainbow-delimiters"
-    (setup-hook 'gauche-mode-hook 'rainbow-delimiters-mode)
+  (setup-after "rainbow-delimiters"
     (push '(gauche-mode . rainbow-delimiters-escaped-char-predicate-lisp)
           rainbow-delimiters-escaped-char-predicate-list))
-
-  (setup-expecting "key-combo"
-    (setup-hook 'gauche-mode-hook 'my-install-lisp-common-smartchr))
 
   ;; run scheme REPL in another window
   (defun my-run-scheme-other-window ()
@@ -3050,13 +3111,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setq clojure-inf-lisp-command (when my-clojure-jar-file
                                    (concat "java -jar " my-clojure-jar-file)))
 
-  (setup-hook 'clojure-mode-hook 'my-lisp-install-toggle-commands)
-
   (setup-after "auto-complete"
     (push 'clojure-mode ac-modes))
-
-  (setup-expecting "rainbow-delimiters"
-    (setup-hook 'clojure-mode-hook 'rainbow-delimiters-mode))
 
   (defun my-run-clojure-other-window ()
     (interactive)
@@ -3085,8 +3141,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   :prepare (push '("\\.egi$" . egison-mode) auto-mode-alist)
   (setup-after "auto-complete"
     (push 'egison-mode ac-modes))
-  (setup-expecting "rainbow-delimiters"
-    (setup-hook 'egison-mode-hook 'rainbow-delimiters-mode))
   (setup-keybinds egison-mode-map "C-j" nil))
 
 ;;       + racket-mode
@@ -3099,16 +3153,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (defadvice racket-mode (after my-racket-run-hooks activate)
     (run-hooks 'racket-mode-hook))
 
-  (setup-hook 'racket-mode-hook 'my-lisp-install-toggle-commands)
-
   (setup-after "auto-complete"
     (push 'racket-mode ac-modes))
-
-(setup-after "rainbow-delimiters-mode"
-    (setup-hook 'racket-mode-hook 'rainbow-delimiters-mode))
-
-  (setup-expecting "key-combo"
-    (setup-hook 'racket-mode-hook 'my-install-lisp-common-smartchr))
 
   (defun my-run-racket-other-window ()
     (interactive)
@@ -3160,6 +3206,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "RET" ")" "]" "}" "C-c C-p" "M-C-y" "<f1>"
       "C-c C-h" "C-c C-d" "C-c C-f" "C-c C-U") nil
       "C-c C-e" 'my-racket-send-dwim
+      "C-c C-l" 'my-racket-load
       "C-c C-m" 'my-racket-expand-dwim
       "C-c C-s" 'my-run-racket-other-window
       "C-c C-p" 'racket-cycle-paren-shapes
@@ -3788,7 +3835,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 (setup-after "js"
   (setup-after "auto-complete"
-    (push 'js-mode ac-modes))
+    (push 'js-mode ac-modes)
+    (setup-hook 'js-mode-hook
+      (setq ac-sources '(ac-source-my-words-in-web-mode-buffers))))
   (setup "jquery-doc"
     (setup-hook 'js-mode-hook 'jquery-doc-setup)
     (setup-after "popwin"
@@ -3912,7 +3961,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (with-selected-window (split-window-vertically -10)
       (switch-to-buffer
        (process-buffer (inferior-haskell-process nil))))
-    (inferior-haskell-load-file))
+    (when buffer-file-name
+      (inferior-haskell-load-file)))
 
   (defun my-haskell-send-decl-dwim ()
     (interactive)
@@ -4647,8 +4697,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;   + tabulated
 ;;     + common
 
-(defvar my-listy-mode-common-hook)
-
 ;; disable key-chord in listy modes
 (setup-after "key-chord"
   (setup-hook 'my-listy-mode-common-hook
@@ -4663,8 +4711,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (local-set-key (kbd "k") 'previous-line))
 
 (setup-after "tabulated-list"
-  (setup-hook 'tabulated-list-mode-hook
-    (run-hooks 'my-listy-mode-common-hook))
   (setup-keybinds tabulated-list-mode-map
     "," 'tabulated-list-sort))
 
@@ -4683,11 +4729,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         dired-keep-marker-symlink  nil
         dired-keep-marker-hardlink nil
         dired-keep-marker-rename   t)
-
-  ;; run common hook for listy buffers
-  ;; (dired is not a submode of tabulated-list)
-  (setup-hook 'dired-mode-hook
-    (run-hooks 'my-listy-mode-common-hook))
 
   ;; add "[Dired]" prefix to buffer names
   (setup-hook 'dired-mode-hook
@@ -4841,24 +4882,30 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
       (defun my-dired-do-count-lines ()
         (interactive)
-        (let ((files 0) (lines 0) (comments 0))
+        (let ((files 0) (lines 0) (comments 0)
+              (count-fn
+               (lambda (file)
+                 (unless (string-match "\\(?:^\\|/\\)\\.\\.?$" file)
+                   (if (file-directory-p file)
+                       (mapc count-fn (directory-files file t))
+                     (with-temp-buffer
+                       (insert-file-contents file)
+                       (goto-char (point-min))
+                       (let ((buffer-file-name file))
+                         (ignore-errors (set-auto-mode)))
+                       (setq lines (+ (count-lines (point-min) (point-max)) lines)
+                             files (1+ files))
+                       (while (ignore-errors
+                                (let* ((beg (goto-char (comment-search-forward (point-max))))
+                                       (beg-okay (looking-back "^[\s\t]*")))
+                                  (forward-comment 1)
+                                  (when (and beg-okay (looking-at "^[\s\t]*\\|[\s\t]*$"))
+                                    (setq comments (+ (count-lines beg (point)) comments))))
+                                t))))))))
           (dired-map-over-marks-check
            (lambda ()
              (let ((file (dired-get-filename)))
-               (with-temp-buffer
-                 (insert-file-contents file)
-                 (goto-char (point-min))
-                 (let ((buffer-file-name file))
-                   (ignore-errors (set-auto-mode)))
-                 (setq lines (+ (count-lines (point-min) (point-max)) lines)
-                       files (1+ files))
-                 (while (ignore-errors
-                          (let* ((beg (goto-char (comment-search-forward (point-max))))
-                                 (beg-okay (looking-back "^[\s\t]*")))
-                            (forward-comment 1)
-                            (when (and beg-okay (looking-at "^[\s\t]*\\|[\s\t]*$"))
-                              (setq comments (+ (count-lines beg (point)) comments))))
-                          t)))
+               (funcall count-fn file)
                nil))
            nil 'count-lines t)
           (message "%d lines (including %d comment lines) in %s files."
@@ -4885,10 +4932,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-after "proced"
 
   (setq proced-tree-flag t)
-
-  ;; proced-mode is not a submode of tabulated-list-mode
-  (setup-hook 'proced-mode-hook
-    (run-hooks 'my-listy-mode-common-hook))
 
   (setup-after "popwin"
     (push '("*Proced*") popwin:special-display-config))
@@ -5606,13 +5649,34 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#000000" "#faf5ee" "#3388dd" "#ac3d1a" "#dd2222"
     ;;   "#8b008b" "#00b7f0" "#1388a2" "#104e8b" "#00688b")
 
-    ;; "kagamine len" inspired theme
-    ;; reference | http://vocaloidcolorpalette.tumblr.com/
-    ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
-    (create-solarized-based-theme lenlen light
-      "solarized-based theme with kagamine len inspired color-palette."
-      "#291e03" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
-      "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
+    ;; ;; "tron" based theme
+    ;; ;; reference | https://github.com/ivanmarcin/emacs-tron-theme/
+    ;; (create-solarized-based-theme solarized-tron dark
+    ;;   "solarized-based theme with `tron' inspired color-palette."
+    ;;   "#000000" "#b0c7d4" "#74abbe" "orange" "red"
+    ;;   "magenta" "violet" "#ec9346" "#e8b778" "#a4cee5")
+
+    ;; ;; "majapahit" based theme
+    ;; ;; reference | https://gitlab.com/franksn/majapahit-theme/
+    ;; (create-solarized-based-theme solarized-majapahit dark
+    ;;   "solarized-based theme with `majapahit' inspired color-palette."
+    ;;   "#2A1F1B" "#e0d9c6" "#768d82" "#d99481" "#bb4e62"
+    ;;   "#db6b7e" "#8e6a60" "#adb78d" "#849f98" "#d4576f")
+
+    ;; "planet" based theme
+    ;; reference | https://github.com/cmack/emacs-planet-theme/
+    (create-solarized-based-theme solarized-planet dark
+      "solarized-based theme with `planet' inspired color-palette."
+      "#192129" "#d2dde8" "#e9b96e" "#ff8683" "#fe5450"
+      "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
+
+    ;; ;; "kagamine len" inspired theme
+    ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
+    ;; ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
+    ;; (create-solarized-based-theme lenlen light
+    ;;   "solarized-based theme with kagamine len inspired color-palette."
+    ;;   "#291e03" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
+    ;;   "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
@@ -5620,21 +5684,21 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 ;;   + | modeline
 
 (setq my-mode-line-background
-      (! (cons (my-make-color (face-background 'mode-line) 8 -25)
-               (my-make-color (face-background 'mode-line) 8 -25 "red" 20))))
+      (! (cons (my-make-color (face-background 'mode-line) 8 -15)
+               (my-make-color (face-background 'mode-line) 8 -15 "red" 20))))
 
 (set-face-attribute
  'mode-line nil
  :foreground    (! (my-make-color (face-foreground 'default) 6 -1))
  :background    (car my-mode-line-background)
  :inverse-video nil
- :box           `(:line-width 1 :color ,(car my-mode-line-background)))
+ :box `(:line-width 1 :color ,(car my-mode-line-background)))
 (set-face-attribute
  'mode-line-inactive nil
  :foreground    (! (my-make-color (face-foreground 'default) -16 2))
  :background    (! (face-background 'mode-line))
  :inverse-video nil
- :box           (! `(:line-width 1 :color ,(face-background 'mode-line))))
+ :box (! `(:line-width 1 :color ,(face-background 'mode-line))))
 
 (set-face-attribute
  'mode-line-dark-face nil
@@ -5654,8 +5718,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
 (set-face-attribute
  'mode-line-modified-face nil
- :foreground (! (face-foreground 'term-color-magenta))
- :box        (! `(:line-width 1 :color ,(face-foreground 'term-color-magenta))))
+ :foreground (! (face-foreground 'term-color-red))
+ :box        (! `(:line-width 1 :color ,(face-foreground 'term-color-red))))
 (set-face-attribute
  'mode-line-read-only-face nil
  :foreground (! (face-foreground 'term-color-blue))
@@ -5699,7 +5763,21 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (setup-after "highlight-parentheses"
   (hl-paren-set 'hl-paren-colors nil)
   (hl-paren-set 'hl-paren-background-colors
-                (list (car my-mode-line-background))))
+                (! (list (my-make-color (face-background 'default) 12 -20)))))
+
+;;   + | highlight-stages
+
+(setup-after "highlight-stages"
+  (set-face-background 'highlight-stages-negative-level-face
+                       (! (my-make-color (face-background 'default) -3.5)))
+  (set-face-background 'highlight-stages-level-1-face
+                       (! (my-make-color (face-background 'default) 3.5)))
+  (set-face-background 'highlight-stages-level-2-face
+                       (! (my-make-color (face-background 'default) 7)))
+  (set-face-background 'highlight-stages-level-3-face
+                       (! (my-make-color (face-background 'default) 10.5)))
+  (set-face-background 'highlight-stages-higher-level-face
+                       (! (my-make-color (face-background 'default) 14))))
 
 ;;   + | paren
 
@@ -5731,7 +5809,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
 (setup-after "lmntal-mode"
   (set-face-background 'lmntal-link-name-face
-                       (! (face-background 'mode-line))))
+                       (! (my-make-color (face-background 'default) 3.5 -10))))
 
 ;;   + | phi-search
 
@@ -5744,8 +5822,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 ;;   + | indent-guide
 
 (setup-after "indent-guide"
-  (set-face-foreground 'indent-guide-face
-                       (! (face-foreground 'font-lock-comment-face))))
+  ;; (setq indent-guide-line-color (! (face-foreground 'font-lock-comment-face)))
+  (set-face-foreground 'indent-guide-face (! (face-foreground 'font-lock-comment-face))))
 
 ;;   + | flyspell
 
@@ -5788,7 +5866,15 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
 (!-
  (setup "indent-guide"
+   ;; (when my-home-system-p
+   ;;   (setq indent-guide-char-height      14
+   ;;         indent-guide-line-dash-length 3))
    (indent-guide-global-mode)))
+;; (!-
+;;  (setup "indent-guide2"
+;;    (setq indent-guide2-line-char ?|
+;;          indent-guide2-line-enable-xpm nil)
+;;    (indent-guide2-global-mode)))
 
 (!-
  (setup "highlight-parentheses"
