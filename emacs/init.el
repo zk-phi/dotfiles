@@ -5881,11 +5881,15 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
    (define-globalized-minor-mode global-highlight-parentheses-mode
      highlight-parentheses-mode
      (lambda () (highlight-parentheses-mode 1)))
+   (defadvice hl-paren-create-overlays (after my-prior-hl-paren-overlays activate)
+     (dolist (ov hl-paren-overlays)
+       (overlay-put ov 'priority 2)))
    (global-highlight-parentheses-mode 1)))
 
 (!-
  (setup "highlight-stages"
-   (setq highlight-stages-highlight-real-quote t)
+   (setq highlight-stages-highlight-real-quote t
+         highlight-stages-highlight-priority   2)
    (highlight-stages-global-mode 1)))
 
 (setup-lazy '(rainbow-delimiters-mode) "rainbow-delimiters")
