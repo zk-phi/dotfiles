@@ -52,9 +52,10 @@
 ;; - kk : upcase word
 ;; - jj : downcase word
 ;;
+;; - jl : yas-expand
+;; - sf : yas-expand
 ;; - df : iy-go-to-char-backward
 ;; - jk : iy-go-to-char
-;; - jl : ace-jump-mode
 
 ;; specials
 ;;
@@ -130,7 +131,10 @@
     "The LMNTAL_HOME Path.")
   (defconst my-tramp-abbrevs
     (when (boundp 'my-tramp-abbrevs) my-tramp-abbrevs)
-    "Abbreviation table for remote hosts."))
+    "Abbreviation table for remote hosts.")
+  (defconst my-secret-words
+    (when (boundp 'my-secret-words) my-secret-words)
+    "List of secret words to be hidden."))
 
 ;;   + path to library files
 
@@ -284,14 +288,20 @@
   (when (apply 'derived-mode-p my-listy-modes)
     (run-hooks 'my-listy-mode-common-hook)))
 
+(defvar my-css-modes
+  '(css-mode scss-mode))
+(setup-hook 'change-major-mode-after-body-hook
+  (when (apply 'derived-mode-p my-css-modes)
+    (run-hooks 'my-css-mode-common-hook)))
+
 (defvar my-web-modes
-  '(js-mode css-mode html-mode))
+  '(js-mode css-mode html-mode web-mode))
 
 (defun my-shorten-directory (dir len)
   (if (null dir) ""
     (let ((lst (mapcar (lambda (s)
-                         (if (> (length s) 10)
-                             (cons 10 (concat (substring s 0 9) "…"))
+                         (if (> (length s) 5)
+                             (cons 5 (concat (substring s 0 4) "-"))
                            (cons (length s) s)))
                        (reverse (split-string (abbreviate-file-name dir) "/"))))
           (reslen 0)
@@ -301,7 +311,7 @@
         (setq res    (concat (cdar lst) "/" res)
               reslen (+ reslen (caar lst) 1)
               lst    (cdr lst)))
-      (when lst (setq res (concat ".../" res)))
+      (when lst (setq res (concat "…/" res)))
       res)))
 
 (defun my-read-font-family ()
@@ -426,7 +436,8 @@ cons of two integers."
       yank-excluded-properties              t
       delete-trailing-lines                 t
       ;; files.el
-      magic-mode-alist                      nil)
+      magic-mode-alist                      nil
+      interpreter-mode-alist                nil)
 
 (setq-default indent-tabs-mode      nil
               tab-width             4
@@ -481,7 +492,9 @@ cons of two integers."
 
 ;; font settings
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
-(!when my-home-system-p
+(!when (cl-every (lambda (f) (member f (font-family-list)))
+                 '("Source Code Pro" "Unifont" ;; "Arial Unicode MS"
+                   "Symbola" "VLゴシック phi" "さわらびゴシック phi"))
   (set-face-attribute 'default nil :family "Source Code Pro" :height 90) ; base
   ;; (set-face-attribute 'default nil :family "Source Code Pro" :height 75) ; base
   (my-set-fontset-font "Unifont" 'unicode) ; unicode fallback 2
@@ -806,10 +819,14 @@ cons of two integers."
   (nconc phi-autopair-lispy-modes my-lispy-modes)
   (phi-autopair-global-mode 1))
 
+(setup-lazy '(electric-align-mode) "electric-align"
+  :prepare (setup-hook 'prog-mode-hook 'electric-align-mode)
+  (setq electric-align-shortcut-commands '(my-smart-comma)))
+
 (setup-lazy '(electric-spacing-mode) "electric-spacing"
   (setq electric-spacing-regexp-pairs
-        '(("\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH" . "[\\\\{[(<$0-9A-Za-z]")
-          ("[]\\\\})>$0-9A-Za-z]" . "\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH"))))
+        '(("\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH" . "[\\\\{[($0-9A-Za-z]")
+          ("[]\\\\})$0-9A-Za-z]" . "\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH"))))
 
 (setup-lazy '(jaword-mode) "jaword")
 
@@ -836,6 +853,14 @@ cons of two integers."
                         (cl-some (lambda (mode)
                                    (with-current-buffer buf (derived-mode-p mode)))
                                  my-web-modes))))))
+   ;; complete property names in CSS-like languages
+   (setup-after "auto-complete-config"
+     (ac-define-source my-css-propname
+       '((candidates . (mapcar 'car ac-css-property-alist))
+         (cache . 1)
+         (prefix . "\\(?:^\\|;\\)[\s\t]*\\([^\s\t]*\\)")))
+     (defadvice ac-css-prefix (around my-disable-ac-after-semicolon activate)
+       (unless (= (char-before) ?\;) ad-do-it)))
    ;; do not complete remote file names
    (defadvice ac-filename-candidate (around my-disable-ac-for-remote-files activate)
      (unless (file-remote-p ac-prefix)
@@ -864,7 +889,7 @@ unary operators which can also be binary."
   `(lambda ()
      (interactive)
      (if (and (looking-back "[])\"a-zA-Z0-9_] *")
-              (not (looking-back "return *")))
+              (not (looking-back "\\(return\\|my\\|our\\) *")))
          (let ((back (unless (looking-back " ") " "))
                (forward (unless (looking-at " ") " ")))
            (insert (concat back ,str forward)))
@@ -911,28 +936,24 @@ unary operators which can also be binary."
 
 ;;   + | others
 
-;; (!-
-;;  (setup "symon"
-;;    (setq symon-sparkline-ascent (!if my-home-system-p 97 100)
-;;          symon-monitors         '(symon-windows-cpu-monitor
-;;                                   symon-windows-network-rx-monitor
-;;                                   symon-windows-network-tx-monitor))
-;;    (symon-mode 1)
-;;    (when my-lingr-account
-;;      (setup-in-idle "symon-lingr")
-;;      (setup-after "symon-lingr"
-;;        (setup-after "popwin"
-;;          (push '("*symon-lingr*") popwin:special-display-config))
-;;        (setq symon-lingr-user-name (car my-lingr-account)
-;;              symon-lingr-password  (cdr my-lingr-account)
-;;              symon-lingr-log-file  my-lingr-log-file
-;;              symon-lingr-app-key   "pvCm1t"
-;;              symon-monitors        '(symon-windows-cpu-monitor
-;;                                      symon-windows-network-rx-monitor
-;;                                      symon-windows-network-tx-monitor
-;;                                      symon-lingr-monitor))
-;;        (symon-mode -1)
-;;        (symon-mode 1)))))
+(!-
+ (setup "symon"
+   (setq symon-sparkline-ascent (!if my-home-system-p 97 100))
+   (symon-mode 1)
+   ;; (when my-lingr-account
+   ;;   (setup-in-idle "symon-lingr")
+   ;;   (setup-after "symon-lingr"
+   ;;     (setup-after "popwin"
+   ;;       (push '("*symon-lingr*") popwin:special-display-config))
+   ;;     (setq symon-lingr-user-name (car my-lingr-account)
+   ;;           symon-lingr-password  (cdr my-lingr-account)
+   ;;           symon-lingr-log-file  my-lingr-log-file
+   ;;           symon-lingr-app-key   "pvCm1t")
+   ;;     (add-to-list 'symon-monitors 'symon-lingr-monitor t)
+   ;;     ;; restart symon
+   ;;     (symon-mode -1)
+   ;;     (symon-mode 1)))
+   ))
 
 ;; + | Commands
 ;;   + web browser [eww]
@@ -1866,6 +1887,14 @@ unary operators which can also be binary."
         (dolist (key keys) (define-key m key def))))
     (set-temporary-overlay-map m t)))
 
+(defun my-kill-this-buffer (&optional force)
+  (interactive "P")
+  (if (not force)
+      (kill-this-buffer)
+    (let ((kill-buffer-query-functions nil)
+          (kill-buffer-hook nil))
+      (kill-this-buffer))))
+
 ;; resize windows
 ;; reference | http://d.hatena.ne.jp/mooz/touch/20100119/p1
 (defun my-resize-window ()
@@ -2008,6 +2037,8 @@ unary operators which can also be binary."
 
 ;;   + | jump around
 
+;; linewise motion
+
 (defun my-next-line (n)
   (interactive "p")
   (call-interactively 'next-line)
@@ -2029,6 +2060,11 @@ unary operators which can also be binary."
     (setq this-command command)
     (funcall command)))
 
+;; blank-line-delimited navigation
+
+(defvar my-next-blank-line-skip-faces
+  '(font-lock-string-face font-lock-comment-face font-lock-comment-delimiter-face))
+
 (defun my-next-blank-line ()
   "Jump to the next empty line."
   (interactive)
@@ -2038,7 +2074,8 @@ unary operators which can also be binary."
     (condition-case nil
         (while (and (search-forward-regexp "\n[\s\t]*$")
                     (let ((face (get-text-property (point) 'face)))
-                      (and face (not (eq face type))))))
+                      (and (memq face my-next-blank-line-skip-faces)
+                           (not (eq face type))))))
       (error (goto-char (point-max))))))
 
 (defun my-previous-blank-line ()
@@ -2050,18 +2087,24 @@ unary operators which can also be binary."
     (condition-case nil
         (while (and (search-backward-regexp "^[\s\t]*\n")
                     (let ((face (get-text-property (point) 'face)))
-                      (and face (not (eq face type))))))
+                      (and (memq face my-next-blank-line-skip-faces)
+                           (not (eq face type))))))
       (error (goto-char (point-min))))))
 
 ;; jump-back!
+
 (setup-include "ring")
+
 (defvar-local my-jump-back!--marker-ring nil)
+
 (defun my-jump-back!--ring-update ()
   (let ((marker (point-marker)))
     (unless my-jump-back!--marker-ring
       (setq my-jump-back!--marker-ring (make-ring 30)))
     (ring-insert my-jump-back!--marker-ring marker)))
+
 (run-with-idle-timer 1 t 'my-jump-back!--ring-update)
+
 (setup-lazy '(my-jump-back!) "edmacro"
   (defun my-jump-back! ()
     (interactive)
@@ -2258,7 +2301,7 @@ unary operators which can also be binary."
   "Toggle transparency."
   (interactive)
   (let* ((current-alpha (or (cdr (assoc 'alpha (frame-parameters))) 100))
-         (new-alpha (cl-case current-alpha ((100) 83) ((83) 66) (t 100))))
+         (new-alpha (cl-case current-alpha ((100) 91) ((91) 78) ((78) 66) (t 100))))
     (set-frame-parameter nil 'alpha new-alpha)))
 
 ;; URL encode / decode region
@@ -2330,7 +2373,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-g"     'my-change-log-save-and-kill))
 
 ;; run "diff" from emacs
-(setup-lazy '(ediff) "ediff")
+(setup-lazy '(ediff) "ediff"
+  (setq ediff-split-window-function 'split-window-horizontally))
 
 ;;   + | assistants
 
@@ -2355,10 +2399,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;;   + Misc: plug-ins
 ;;   + | jump around
-
-;; "hit-a-hint"-like jump command
-(setup-lazy '(ace-jump-word-mode) "ace-jump-mode"
-  (add-hook 'ace-jump-mode-end-hook 'my-recenter))
 
 ;; "f"-like jump command
 (setup-lazy '(iy-go-to-char iy-go-to-char-backward) "iy-go-to-char")
@@ -2554,6 +2594,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setq org-startup-folded             t
         org-startup-indented           t
         org-startup-with-inline-images t
+        org-src-fontify-natively       t
+        org-src-tab-acts-natively      t
         org-ditaa-jar-path (when my-ditaa-jar-file
                              (expand-file-name my-ditaa-jar-file)))
 
@@ -2605,7 +2647,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (setup-lazy '(htmlize-buffer) "htmlize"
         :prepare (setup-after "org" (setup "htmlize"))
         (setq org-export-html-style-extra
-              (format "<style>pre { background-color: %s; color: %s; }</style>"
+              (format "<style>pre.src { background-color: %s; color: %s; }</style>"
                       (face-background 'default)
                       (face-foreground 'default))))
 
@@ -2655,7 +2697,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (push "BVerbatim" tex-verbatim-environments)
   (push "lstlisting" tex-verbatim-environments)
   (setup-hook 'latex-mode-hook
-    (auto-fill-mode 1)
     (outline-minor-mode 1)
     (setq-local outline-regexp "\\\\\\(sub\\)*section\\>")
     (setq-local outline-level (lambda () (- (outline-level) 7))))
@@ -2664,113 +2705,74 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     '("C-j" "C-M-i" "<C-return>") nil)
   (setup-lazy '(magic-latex-buffer) "magic-latex-buffer"
     :prepare (setup-hook 'latex-mode-hook 'magic-latex-buffer)
-    (setq magic-latex-enable-block-align t))
+    (setq magic-latex-enable-inline-image nil))
   (setup-after "auto-complete"
     (setup "auto-complete-latex"
       (setq ac-l-dict-directory my-latex-dictionary-directory)
       (push 'latex-mode ac-modes)
       (setup-hook 'latex-mode-hook 'ac-l-setup))))
 
-;;     + html-mode
+;;     + web-mode
 
-(setup-lazy '(html-mode) "sgml-mode"
-  :prepare (push '("\\.html?$" . html-mode) auto-mode-alist)
+(setup-lazy '(web-mode) "web-mode"
+  :prepare (progn
+             (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
+             (push '("\\.jsx$" . web-mode) auto-mode-alist))
 
-  (defun my-html-forward-sexp (n)
-    (interactive "p")
-    (if (< n 0)
-        (my-html-backward-sexp (- n))
-      (let ((origpos (point)))
-        (dotimes (_ n)
-          (skip-chars-forward "\s\t\n")
-          (unless (eobp)
-            (let ((pos (point)))
-              (cond ((looking-at "</")  ; looking at a close-tag
-                     (signal 'scan-error
-                             (list "Containing expression ends prematurely"
-                                   pos
-                                   (prog1 (save-excursion
-                                            (sgml-skip-tag-forward 1)
-                                            (point))
-                                     (goto-char origpos)))))
-                    ((= (char-after) ?<) ; looking at an open-tag
-                     (sgml-skip-tag-forward 1))
-                    ((= (char-after) ?>) ; looking at a tag-close
-                     (signal 'scan-error
-                             (list "Containing expression ends prematurely"
-                                   pos (1+ pos))))
-                    (t                  ; otherwise
-                     (let ((forward-sexp-function nil))
-                       (forward-sexp))
-                     (unless (looking-back "\\s)")
-                       (let ((delim (save-excursion
-                                      (when (search-backward-regexp "[<>]" pos t)
-                                        (point)))))
-                         ;; we've skipped over a block/tag delimiter
-                         ;; brabrabra|:<br> -> brabrabra:<br|>
-                         (when delim
-                           (goto-char delim)
-                           (skip-chars-backward "\s\t\n"))))))))))))
+  (setup-keybinds web-mode-map
+    "C-c '" 'web-mode-element-close
+    "C-;"   'web-mode-comment-or-uncomment
+    "M-;" nil)
 
-  (defun my-html-backward-sexp (n)
-    (interactive "p")
-    (if (< n 0)
-        (my-html-forward-sexp (- n))
-      (let ((origpos (point)))
-        (dotimes (_ n)
-          (skip-chars-backward "\s\t\n")
-          (unless (bobp)
-            (let ((pos (point)))
-              (cond ((= (char-before) ?>) ; looking back a tag-close
-                     (while (progn
-                              (sgml-skip-tag-backward 1)
-                              (and (not (bobp)) (looking-at "<!"))))
-                     (when (save-excursion
-                             (sgml-skip-tag-forward 1)
-                             (> (point) pos))
-                       ;; we were looking back an open-tag
-                       (signal 'scan-error
-                               (list "Containing expression ends prematurely"
-                                     pos
-                                     (prog1 (point)
-                                       (goto-char origpos))))))
-                    ((= (char-before) ?<) ; looking back a tag-open
-                     (signal 'scan-error
-                             (list "Containing expression ends prematurely"
-                                   pos (1- pos))))
-                    (t                  ; otherwise
-                     (let ((forward-sexp-function nil))
-                       (forward-sexp -1))
-                     (unless (looking-back "\\s)")
-                       (let ((delim (save-excursion
-                                      (when (search-backward-regexp "\\s(" pos t)
-                                        (point)))))
-                         ;; we've skipped over a block/tag delimiter
-                         ;; brabrabra|:<br> -> brabrabra:<br|>
-                         (when delim
-                           (goto-char delim)
-                           (skip-chars-backward "\s\t\n"))))))))))))
+  (setq web-mode-script-padding                   nil
+        web-mode-style-padding                    nil
+        web-mode-markup-indent-offset             2
+        web-mode-css-indent-offset                4
+        web-mode-code-indent-offset               4
+        web-mode-enable-control-block-indentation nil
+        web-mode-enable-auto-quoting              nil)
 
-  ;; (defadvice sgml-indent-line (around my-fix-sgml-indent-line activate)
-  ;;   (let ((forward-sexp-function nil))
-  ;;     ad-do-it))
+  ;; JSX syntax highlight
+  (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
+  (setq web-mode-javascript-font-lock-keywords
+        (nconc
+         '(;; labels
+           ("case[\s\t]+\\([^:]+[^:\s\t]\\)[\s\t]*:" 1 'web-mode-constant-face)
+           ;; hash-keys
+           ("\\([A-z0-9_]+\\)[\s\t]*:" 1 'web-mode-hash-key-face)
+           ;; method decls / lambda expressions
+           ("\\(?:\\(function\\)\\|\\([A-z0-9_]+\\)\\)[\s\t]*\\((\\)[A-z0-9_\s\t,]*)[\s\t\n]*{"
+            (1 'web-mode-keyword-face nil t)
+            (2 'web-mode-function-name-face nil t)
+            ("\\([A-z0-9_]+\\)\\(?:[\s\t]*=[^,)]*\\)?[,)]"
+             (goto-char (match-end 3)) nil (1 'web-mode-variable-name-face)))
+           ;; import stmt
+           ("\\(import\\)[\s\t]*\\([{A-z0-9_*]\\(?:[A-z0-9_,*\s\t]*[A-z0-9_}]\\)?\\)[\s\t]*\\(from\\)"
+            (1 'web-mode-keyword-face)
+            (2 'web-mode-variable-name-face)
+            (3 'web-mode-keyword-face)))
+         web-mode-javascript-font-lock-keywords))
 
-  ;; (setup-hook 'html-mode-hook
-  ;;   (setq-local forward-sexp-function 'my-html-forward-sexp))
+  (setup "sgml-mode"
+    (setup-keybinds web-mode-map
+      "<f1> s"  'sgml-tag-help))
 
-  (setup-keybinds html-mode-map
-    "C-M-e"   'my-html-forward-sexp
-    "C-M-j"   'my-html-backward-sexp
-    "C-c C-'" 'sgml-close-tag
-    "<f1> s"  'sgml-tag-help)
+  (setup-expecting "rainbow-mode"
+    (setup-hook 'web-mode-hook 'rainbow-mode))
 
   (setup-after "auto-complete"
-    (push 'html-mode ac-modes)
-    (setup-hook 'html-mode-hook
-      (setq ac-sources '(ac-source-my-words-in-web-mode-buffers))))
+    (setup "auto-complete-config"
+      (setq web-mode-ac-sources-alist
+            '(("javascript" . (ac-source-my-words-in-web-mode-buffers))
+              ("jsx"        . (ac-source-my-words-in-web-mode-buffers))
+              ("html"       . (ac-source-my-words-in-web-mode-buffers))
+              ("css"        . (;; ac-source-my-css-propname
+                               ac-source-css-property
+                               ac-source-my-words-in-web-mode-buffers))))
+      (push 'web-mode ac-modes)))
 
   (setup-after "smart-compile"
-    (push '(html-mode . (browse-url-of-buffer)) smart-compile-alist))
+    (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
 
   (setup-expecting "key-combo"
     ;; does not work ?
@@ -2788,40 +2790,43 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
               (insert ">")))
         (insert "<>")                     ; insert <`!!'>
         (backward-char)))
-    (setup-hook 'html-mode-hook
+    (setup-hook 'web-mode-hook
       (key-combo-mode 1)
       (key-combo-define-local (kbd "<") '(my-sgml-sp-or-smart-lt "&lt;" "<"))
-      (key-combo-define-local (kbd "<!") "<!-- `!!' -->")
+      (key-combo-define-local (kbd "<!") "<!DOCTYPE `!!'>")
       (key-combo-define-local (kbd ">") '("&gt;" ">"))
       (key-combo-define-local (kbd "&") '("&amp;" "&"))))
   )
 
-;;     + css-mode
+;;     + css-like languages
 
+;; common settings
+(setup-after "auto-complete"
+  (setup "auto-complete-config"
+    (setup-hook 'my-css-mode-common-hook
+      (setq ac-sources '(;; ac-source-my-css-propname
+                         ac-source-css-property
+                         ac-source-my-words-in-web-mode-buffers)))
+    (setq ac-modes (append my-css-modes ac-modes))))
+(setup-expecting "key-combo"
+  (setup-hook 'my-css-mode-common-hook
+    (key-combo-mode 1)
+    (key-combo-define-local (kbd "+") " + ")
+    (key-combo-define-local (kbd ">") " > ")
+    (key-combo-define-local (kbd "~") " ~ ")
+    ;; doesn't work ... (why?)
+    ;; (key-combo-define-local (kbd "^=") " ^= ")
+    (key-combo-define-local (kbd "$=") " $= ")
+    (key-combo-define-local (kbd "*=") " *= ")
+    (key-combo-define-local (kbd "=") " = ")))
+
+;; css
 (setup-lazy '(css-mode) "css-mode"
-  :prepare (push '("\\.css$" . css-mode) auto-mode-alist)
-  (setup-after "auto-complete"
-    (setup "auto-complete-config"
-      (ac-define-source my-css-propname
-        '((candidates . (mapcar 'car ac-css-property-alist))
-          (cache . t)
-          (prefix . "\\(^[\s\t]\\|;\\)[\s\t]*")))
-      (setup-hook 'css-mode-hook
-        (setq ac-sources '(ac-source-css-property
-                           ac-source-my-css-propname
-                           ac-source-my-words-in-web-mode-buffers)))
-      (push 'css-mode ac-modes)))
-  (setup-expecting "key-combo"
-    (setup-hook 'css-mode-hook
-      (key-combo-mode 1)
-      (key-combo-define-local (kbd "+") " + ")
-      (key-combo-define-local (kbd ">") " > ")
-      (key-combo-define-local (kbd "~") " ~ ")
-      ;; doesn't work ... (why?)
-      ;; (key-combo-define-local (kbd "^=") " ^= ")
-      (key-combo-define-local (kbd "$=") " $= ")
-      (key-combo-define-local (kbd "*=") " *= ")
-      (key-combo-define-local (kbd "=") " = "))))
+  :prepare (push '("\\.css$" . css-mode) auto-mode-alist))
+
+;; scss
+(setup-lazy '(scss-mode) "scss-mode"
+  :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist))
 
 ;;     + gfm-mode [markdown-mode]
 
@@ -2946,9 +2951,24 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (interactive)
   (my-lisp-toggle-exp '(("'" . "`") ("`" . "'"))))
 
+(defun my-lisp-toggle-bracket ()
+  "toggle () and []"
+  (interactive)
+  (save-excursion
+    (backward-up-list)
+    (let ((beg (point))
+          (newparen (if (= (char-after) ?\() '("[" . "]") '("(" .  ")"))))
+      (forward-sexp)
+      (delete-char -1)
+      (insert (cdr newparen))
+      (goto-char beg)
+      (delete-char 1)
+      (insert (car newparen)))))
+
 (setup-hook 'my-lispy-mode-common-hook
   (local-set-key (kbd "C-c C-'") 'my-lisp-toggle-quote)
-  (local-set-key (kbd "C-c C-8") 'my-lisp-toggle-let))
+  (local-set-key (kbd "C-c C-8") 'my-lisp-toggle-let)
+  (local-set-key (kbd "C-c C-9") 'my-lisp-toggle-bracket))
 
 ;; plugins
 
@@ -3221,6 +3241,10 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;;         + (prelude)
 
 (setup-after "cc-mode"
+
+  ;;       + settings
+
+  (setup-keybinds c-mode-base-map "/" nil)
 
   ;;       + coding style
 
@@ -3588,8 +3612,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (c-add-style "phi" my-c-style)
 
   (setup-hook 'c-mode-common-hook
-    (setq c-auto-newline t)
-    (c-set-style "phi"))
+    (setq c-auto-newline t))
 
   ;;       + key-combo
 
@@ -3679,6 +3702,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       '("," "C-d" "C-M-a" "C-M-e"
         "M-e" "M-j" "C-M-h" "C-M-j" "DEL") nil))
 
+  (setup-hook 'c-mode-hook
+    (c-set-style "phi"))
+
   (setup-after "auto-complete"
     (push 'c-mode ac-modes)
     (push 'c++-mode ac-modes)
@@ -3752,34 +3778,34 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     ;; C/C++ checker powered by gcc/g++
     ;; reference | https://github.com/jedrz/.emacs.d/blob/master/setup-flycheck.el
     (flycheck-define-checker c-gcc
-      "A C checker using gcc"
-      :command ("gcc" "-fsyntax-only" "-ansi" "-pedantic"
-                "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
-      :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
-                                " warning: " (message) line-end)
-                       (error line-start (file-name) ":" line ":" column ":"
-                              " error: " (message) line-end))
-      :modes 'c-mode
-      :predicate (lambda () (not (my-flycheck-use-c99-p))))
+                             "A C checker using gcc"
+                             :command ("gcc" "-fsyntax-only" "-ansi" "-pedantic"
+                                       "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+                             :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
+                                                       " warning: " (message) line-end)
+                                              (error line-start (file-name) ":" line ":" column ":"
+                                                     " error: " (message) line-end))
+                             :modes 'c-mode
+                             :predicate (lambda () (not (my-flycheck-use-c99-p))))
     (flycheck-define-checker c99-gcc
-      "A C checker using gcc -std=c99"
-      :command ("gcc" "-fsyntax-only" "-std=c99" "-pedantic"
-                "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
-      :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
-                                " warning: " (message) line-end)
-                       (error line-start (file-name) ":" line ":" column ":"
-                              " error: " (message) line-end))
-      :modes 'c-mode
-      :predicate my-flycheck-use-c99-p)
+                             "A C checker using gcc -std=c99"
+                             :command ("gcc" "-fsyntax-only" "-std=c99" "-pedantic"
+                                       "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+                             :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
+                                                       " warning: " (message) line-end)
+                                              (error line-start (file-name) ":" line ":" column ":"
+                                                     " error: " (message) line-end))
+                             :modes 'c-mode
+                             :predicate my-flycheck-use-c99-p)
     (flycheck-define-checker c++-g++
-      "A C checker using g++"
-      :command ("g++" "-fsyntax-only" "-std=c++11" "-pedantic"
-                "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
-      :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
-                                " warning: " (message) line-end)
-                       (error line-start (file-name) ":" line ":" column ":"
-                              " error: " (message) line-end))
-      :modes 'c++-mode)
+                             "A C checker using g++"
+                             :command ("g++" "-fsyntax-only" "-std=c++11" "-pedantic"
+                                       "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+                             :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
+                                                       " warning: " (message) line-end)
+                                              (error line-start (file-name) ":" line ":" column ":"
+                                                     " error: " (message) line-end))
+                             :modes 'c++-mode)
     (add-to-list 'flycheck-checkers 'c-gcc)
     (add-to-list 'flycheck-checkers 'c++-g++)
     (add-to-list 'flycheck-checkers 'c99-gcc))
@@ -3791,6 +3817,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   ;; add some modifications for the coding style
   (setup-hook 'java-mode-hook
+    (c-set-style "phi")
     (setq c-hanging-braces-alist
           '((defun-open after) (defun-close before after)
             (class-open after) (class-close before after)
@@ -3831,6 +3858,60 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "M-e" "M-j" "C-M-h" "C-M-j" "DEL") nil)
   )
 
+;;       + PHP
+
+;; *NOTE* PHP mode derives C mode
+(setup-lazy '(php-mode) "php-mode"
+  :prepare (push '("\\.php$" . php-mode) auto-mode-alist)
+
+  (setup-hook 'php-mode-hook
+    (c-set-style "php"))
+
+  (setup-keybinds php-mode-map
+    "C-M-h" nil
+    "<tab>" nil)
+
+  (setup-expecting "key-combo"
+    (setup-hook 'php-mode-hook
+      (key-combo-define-local (kbd "<?") "<?php\n")))
+  )
+
+;;       + SCAD
+
+;; *NOTE* "scad-mode.el" provides "scad" feature (!!!)
+;; So it's not good idea to specify "scad-mode" here.
+(setup-lazy '(scad-mode) "scad-preview"
+  (setup-keybinds scad-mode-map
+    "C-c C-p" 'scad-preview-mode
+    "C-c C-r" 'scad-preview-rotate
+    "C-c C-c" 'scad-preview-export
+    "<f5>"    'scad-preview-refresh))
+
+;;       + Arduino
+
+(setup-lazy '(arduino-mode) "arduino-mode"
+  :prepare (progn (push '("\\.ino$" . arduino-mode) auto-mode-alist)
+                  (push '("\\.pde$" . arduino-mode) auto-mode-alist))
+  ;; if arduino-mk is installed, use it to upload programs
+  (when (file-exists-p "/usr/share/arduino/Arduino.mk")
+    (defvar my-arduino-port "/dev/ttyACM0")
+    (defvar my-arduino-board-type "uno")
+    (defun my-arduino-compile-and-upload ()
+      (interactive)
+      (setenv "BOARD_TAG" my-arduino-board-type)
+      (setenv "MONITOR_PORT" my-arduino-port)
+      (compile "make --makefile=/usr/share/arduino/Arduino.mk upload"))
+    (setup-after "smart-compile"
+      (push '(arduino-mode . (my-arduino-compile-and-upload))
+            smart-compile-alist))))
+
+;;       + flex/bison
+
+(setup-lazy '(bison-mode) "bison-mode"
+  :prepare (progn (push '("\\.ll?$" . bison-mode) auto-mode-alist)
+                  (push '("\\.yy?$" . bison-mode) auto-mode-alist)))
+
+;;     + other procedual
 ;;       + Javascript
 
 (setup-after "js"
@@ -3845,7 +3926,126 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-keybinds js-mode-map
       "<f1> s" 'jquery-doc)))
 
-;;       + promela-mode
+;;       + Perl-like
+
+(setup-lazy '(cperl-mode) "cperl-mode"
+  :prepare (push '("\\.\\(?:t\\|p[lm]\\|psgi\\)$" . cperl-mode) auto-mode-alist)
+
+  ;; setup indent style and electricity
+  (setq cperl-indent-level               4
+        cperl-continued-statement-offset 4
+        cperl-close-paren-offset         -4
+        cperl-lineup-step                1
+        cperl-indent-parens-as-block     t
+        cperl-auto-newline               t
+        cperl-electric-keywords          t)
+
+  ;; disable auto-fix features
+  (setq cperl-break-one-line-blocks-when-indent nil
+        cperl-fix-hanging-brace-when-indent     nil
+        cperl-merge-trailing-else               nil
+        cperl-indent-region-fix-constructs      nil)
+
+  ;; setup syntax highlight
+  (setq cperl-font-lock                            t
+        cperl-highlight-variables-indiscriminately t
+        cperl-invalid-face                         'default)
+  (copy-face 'font-lock-type-face 'cperl-scope-face)
+  (copy-face 'default 'cperl-hash-key-face)
+  (font-lock-add-keywords
+   'cperl-mode '(("\\_<\\(?:local\\|our\\|my\\)\\_>" . 'cperl-scope-face)))
+  (font-lock-add-keywords
+   'cperl-mode
+   '(("[\[ \t{,(]\\(-?[a-zA-Z0-9_:]+\\)[ \t]*=>" 1 'cperl-hash-key-face t)
+     ("\\([]}\\\\%@>*&]\\|\\$[a-zA-Z0-9_:]*\\)[ \t]*{[ \t]*\\(-?[a-zA-Z0-9_:]+\\)[ \t]*}"
+      (2 'cperl-hash-key-face t)
+      ("\\=[ \t]*{[ \t]*\\(-?[a-zA-Z0-9_:]+\\)[ \t]*}" nil nil (1 'cperl-hash-key-face t))))
+   t)
+
+  (setup-keybinds cperl-mode-map
+    "C-c C-l" 'cperl-lineup
+    '("{" "[" "(" "<" "}" "]" ")" "C-j" "DEL" "C-M-q" "C-M-\\" "C-M-|") nil)
+
+  (setup-expecting "key-combo"
+    (setup-hook 'cperl-mode-hook
+      (key-combo-mode 1)
+      ;; arithmetic
+      (key-combo-define-local (kbd "+") `(,(my-unary "+") "++"))
+      (key-combo-define-local (kbd "-") `(,(my-unary "-") "--"))
+      (key-combo-define-local (kbd "*") `(,(my-unary "*") " ** "))
+      (key-combo-define-local (kbd "^") " ^ ")
+      (key-combo-define-local (kbd "%") `(,(my-unary "%") " % "))
+      (key-combo-define-local (kbd "/") '(" / " " // "))
+      (key-combo-define-local (kbd "&") '(" & " " && "))
+      (key-combo-define-local (kbd "|") '(" | " " || "))
+      (key-combo-define-local (kbd ".") '(" . " " .. " " ... "))
+      ;; comparison
+      (key-combo-define-local (kbd "=") '(" = " " == "))
+      (key-combo-define-local (kbd ">") '(" > " " >> "))
+      (key-combo-define-local (kbd "<") '(" < " " << "))
+      (key-combo-define-local (kbd "<=") " <= ")
+      (key-combo-define-local (kbd ">=") " >= ")
+      (key-combo-define-local (kbd "<=>") " <=> ") ; not working
+      (key-combo-define-local (kbd "!=") " != ")
+      (key-combo-define-local (kbd "=~") " =~ ")
+      (key-combo-define-local (kbd "~=") " =~ ")
+      (key-combo-define-local (kbd "!~") " !~ ")
+      ;; substitution
+      (key-combo-define-local (kbd "**=") " **= ")
+      (key-combo-define-local (kbd ".=") " .= ")
+      (key-combo-define-local (kbd "/=") " /= ")
+      (key-combo-define-local (kbd "//=") " //= ")
+      (key-combo-define-local (kbd "%=") " %= ")
+      (key-combo-define-local (kbd "&=") " &= ")
+      (key-combo-define-local (kbd "|=") " |= ")
+      (key-combo-define-local (kbd "^=") " ^= ")
+      (key-combo-define-local (kbd "<<=") " <<= ")
+      (key-combo-define-local (kbd ">>=") " >>= ")
+      (key-combo-define-local (kbd "&&=") " &&= ")
+      (key-combo-define-local (kbd "||=") " ||= ")
+      (key-combo-define-local (kbd "+=") " += ")
+      (key-combo-define-local (kbd "-=") " -= ")
+      (key-combo-define-local (kbd "*=") " *= ")
+      ;; other
+      (key-combo-define-local (kbd "->") "->")
+      (key-combo-define-local (kbd "=>") " => ")
+      (key-combo-define-local (kbd "qw") "qw/`!!'/")
+      (key-combo-define-local (kbd "?") " ? `!!' : ")))
+  )
+
+(setup-lazy '(ruby-mode) "ruby-mode"
+  :prepare (push '("\\(?:\\.r[bu]\\|Rakefile\\|Gemfile\\)$" . ruby-mode) auto-mode-alist)
+
+  (setq ruby-insert-encoding-magic-comment nil
+        ruby-deep-indent-paren-style       nil)
+
+  ;; fix that the poor close-paren indentation
+  ;; reference | http://blog.willnet.in/entry/2012/06/16/212313
+  (defadvice ruby-indent-line (after my-unindent-closing-paren activate)
+    (let ((column (current-column)) indent offset)
+      (save-excursion
+        (back-to-indentation)
+        (let ((state (syntax-ppss)))
+          (setq offset (- column (current-column)))
+          (when (and (eq (char-after) ?\)) (not (zerop (car state))))
+            (goto-char (cadr state))
+            (setq indent (current-indentation)))))
+      (when indent
+        (indent-line-to indent)
+        (when (> offset 0) (forward-char offset)))))
+
+  (setup-keybinds ruby-mode-map
+    [remap backward-sexp] 'ruby-backward-sexp
+    [remap forward-sexp]  'ruby-forward-sexp
+    "C-c ["               'ruby-toggle-block
+    "C-m"                 'reindent-then-newline-and-indent
+    '("M-C-b" "M-C-f" "M-C-p" "M-C-n" "M-C-q" "C-c {") nil)
+
+  (setup "ruby-end"
+    (setq ruby-end-insert-newline nil))
+  )
+
+;;       + Promela
 
 (setup-lazy '(promela-mode) "promela-mode"
   :prepare (progn (push '("\\.pml$" . promela-mode) auto-mode-alist)
@@ -3876,7 +4076,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (insert ";")
     (unless (string-match "}" (buffer-substring (point) (point-at-eol)))
       (promela-indent-newline-indent)))
-
+  ;;
   (defun my-promela-smart-colons ()
     "insert two colons followed by a space, and reindent"
     (interactive)
@@ -3903,43 +4103,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-m" 'promela-indent-newline-indent)
   )
 
-;;       + scad-mode
-
-;; "scad-mode.el" provides "scad" feature (!!!)
-;; So it's not good idea to specify "scad-mode" here.
-(setup-lazy '(scad-mode) "scad-preview"
-  (setup-keybinds scad-mode-map
-    "C-c C-p" 'scad-preview-mode
-    "C-c C-r" 'scad-preview-rotate
-    "C-c C-c" 'scad-preview-export
-    "<f5>"    'scad-preview-refresh))
-
-;;       + arduino-mode
-
-(setup-lazy '(arduino-mode) "arduino-mode"
-  :prepare (progn (push '("\\.ino$" . arduino-mode) auto-mode-alist)
-                  (push '("\\.pde$" . arduino-mode) auto-mode-alist))
-  ;; if arduino-mk is installed, use it to upload programs
-  (when (file-exists-p "/usr/share/arduino/Arduino.mk")
-    (defvar my-arduino-port "/dev/ttyACM0")
-    (defvar my-arduino-board-type "uno")
-    (defun my-arduino-compile-and-upload ()
-      (interactive)
-      (setenv "BOARD_TAG" my-arduino-board-type)
-      (setenv "MONITOR_PORT" my-arduino-port)
-      (compile "make --makefile=/usr/share/arduino/Arduino.mk upload"))
-    (setup-after "smart-compile"
-      (push '(arduino-mode . (my-arduino-compile-and-upload))
-            smart-compile-alist))))
-
-;;       + flex/bison-mode
-
-(setup-lazy '(bison-mode) "bison-mode"
-  :prepare (progn (push '("\\.ll?$" . bison-mode) auto-mode-alist)
-                  (push '("\\.yy?$" . bison-mode) auto-mode-alist)))
-
 ;;     + functional
-;;       + haskell-mode
+;;       + Haskell
 
 (setup-lazy '(haskell-mode literate-haskell-mode) "haskell-mode"
   :prepare (progn (push '("\\.hs$" . haskell-mode) auto-mode-alist)
@@ -4008,7 +4173,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd ">=") " >= ")
       ;; operation
       (key-combo-define-local (kbd "+") `(,(my-unary "+") " ++ " " +++ "))
-      (key-combo-define-local (kbd "-") `(,(my-unary "-")))
+      (key-combo-define-local (kbd "-") (my-unary "-"))
       (key-combo-define-local (kbd "*") '(" * " " ** "))
       (key-combo-define-local (kbd "/") '(" / " " // "))
       (key-combo-define-local (kbd "%") " % ")
@@ -4043,7 +4208,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'literate-haskell-mode-hook 'my-install-haskell-smartchr))
   )
 
-;;       + scala-mode
+;;       + Scala
 
 (setup-lazy '(scala-mode) "scala-mode"
   :prepare (push '("\\.scala$" . scala-mode) auto-mode-alist)
@@ -4083,7 +4248,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (push 'scala-mode ac-modes))
   )
 
-;;       + coq-mode (proof-general)
+;;       + Coq (proof-general)
 
 (setup-lazy '(coq-mode) "proof-site"
   :prepare (push '("\\.v$" . coq-mode) auto-mode-alist)
@@ -4139,8 +4304,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         (key-combo-define-local (kbd "<=") " <= ")
         (key-combo-define-local (kbd ">") " > ")
         (key-combo-define-local (kbd ">=") " >= ")
-        (key-combo-define-local (kbd "+") `(,(my-unary "+")))
-        (key-combo-define-local (kbd "-") `(,(my-unary "-")))
+        (key-combo-define-local (kbd "+") (my-unary "+"))
+        (key-combo-define-local (kbd "-") (my-unary "-"))
         (key-combo-define-local (kbd "*") " * ")
         (key-combo-define-local (kbd "/") " / ")))
 
@@ -4155,7 +4320,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     )
   )
 
-;;       + tuareg (OCaml)
+;;       + OCaml (tuareg)
 
 (setup-lazy '(tuareg-mode) "tuareg"
   :prepare (push '("\\.ml[iylp]?$" . tuareg-mode) auto-mode-alist)
@@ -4241,18 +4406,15 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (key-combo-define-local (kbd "=:=") " =:= ")
     (key-combo-define-local (kbd "==") " =:= ")
     ;; arithmetic
-    (key-combo-define-local (kbd "+") `(,(my-unary "+")))
-    (key-combo-define-local (kbd "-") `(,(my-unary "-")))
+    (key-combo-define-local (kbd "+") (my-unary "+"))
+    (key-combo-define-local (kbd "-") (my-unary "-"))
     (key-combo-define-local (kbd "*") " * ")))
 
-;;       + prolog-mode
+;;       + Prolog
 
-(setup-expecting "prolog"
-  (push '("\\.swi$" . prolog-mode) auto-mode-alist)
-  (push '("\\.pro$" . prolog-mode) auto-mode-alist)
-  (push '("\\.pl$" . prolog-mode) auto-mode-alist)) ; I don't write perl scripts for now.
 
-(setup-after "prolog"
+(setup-lazy '(prolog-mode) "prolog"
+  :prepare (push '("\\.\\(?:pro\\|swi\\)$" . prolog-mode) auto-mode-alist)
 
   (setup-keybinds prolog-mode-map
     "C-c C-l" 'prolog-consult-file
@@ -4320,7 +4482,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "/") " / ")
       (key-combo-define-local (kbd "//") " // "))))
 
-;;       + (cs)lmntal-mode
+;;       + (CS)LMNtal
 
 (setup-lazy '(lmntal-mode lmntal-slimcode-mode) "lmntal-mode"
   :prepare (progn
@@ -4376,18 +4538,18 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   )
 
 ;;     + esolangs
-;;       + bfbuilder-mode
+;;       + Brainfuck
 
 (setup-lazy '(bfbuilder-mode) "bfbuilder"
   :prepare (push '("\\.bf" . bfbuilder-mode) auto-mode-alist))
 
-;;       + zombie-mode
+;;       + ZOMBIE
 
 (setup-lazy '(zombie-mode) "zombie"
   :prepare (push '("\\.zombie$" . zombie-mode) auto-mode-alist))
 
 ;;     + other PLs
-;;       + ahk-mode
+;;       + AHK
 
 (setup-lazy '(ahk-mode) "ahk-mode"
   :prepare (progn
@@ -4404,7 +4566,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-hook 'ahk-mode-hook
     (setup-keybinds ahk-mode-map '("C-j" "C-h") nil)))
 
-;;       + dos-mode
+;;       + DOS
 
 (setup-lazy '(dos-mode) "dos"
   :prepare (setq auto-mode-alist
@@ -4793,6 +4955,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-c C-g" 'dired-do-chgrp                        ; 'C'hange-'G'rp
     "C-c C-s" 'dired-do-symlink                      ; 'C'reate-'S'ymlink
     "C-c C-h" 'dired-do-hardlink                     ; 'C'reate-'H'ardlink
+    "C-M-u"   nil
     '("!" "@" "#" "$" "%" "^" "&" "*" "(" ")" "_" "+" "{" "}" ":" "\"" "|" "<"
       ">" "?" "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P"
       "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z") '("dired-explore" dired-explore))
@@ -5115,23 +5278,28 @@ displayed, use substring of the buffer."
                 (howm-remember)
                 (insert-file-contents abs-path)
                 (beginning-of-buffer)
-                (cond ((not (y-or-n-p (format "import %s ?" file)))
-                       (howm-remember-discard)
-                       (let* ((newname-base (concat my-howm-import-directory "-" file))
-                              (newname newname-base)
-                              (n 0))
-                         (while (file-exists-p newname)
-                           (setq n       (1+ n)
-                                 newname (concat newname-base "_" (number-to-string n) ".txt")))
-                         (rename-file abs-path newname)))
-                      (t
-                       (let ((howm-template (concat "* " (howm-reminder-today)
-                                                    "- " file "\n\n%cursor")))
-                         (howm-remember-submit)
-                         (delete-file abs-path)
-                         (setq imported-flag t))))))))
+                (cl-case (read-char-choice (format "import %s (y, n or x)? " file) '(?y ?n ?x))
+                  ((?y)
+                   (let ((howm-template (concat "* " (howm-reminder-today)
+                                                "- " file "\n\n%cursor")))
+                     (howm-remember-submit)
+                     (delete-file abs-path)
+                     (setq imported-flag t)))
+                  ((?n)
+                   (howm-remember-discard))
+                  ((?x)
+                   (howm-remember-discard)
+                   (let* ((newname-base (concat my-howm-import-directory "-" file))
+                          (newname newname-base)
+                          (n 0))
+                     (while (file-exists-p newname)
+                       (setq n       (1+ n)
+                             newname (concat newname-base "_" (number-to-string n) ".txt")))
+                     (rename-file abs-path newname))))))))
         ;; force update
-        (when imported-flag (howm-menu-refresh)))))
+        (when imported-flag
+          (let ((my-howm-import-directory nil))
+            (howm-menu-refresh))))))
 
   ;;   + | howm -> dropbox
 
@@ -5363,6 +5531,7 @@ displayed, use substring of the buffer."
             mode-line-dark-face
             mode-line-highlight-face
             mode-line-special-mode-face
+            mode-line-git-branch-face
             mode-line-warning-face
             mode-line-modified-face
             mode-line-read-only-face
@@ -5400,12 +5569,13 @@ displayed, use substring of the buffer."
 (defun my-update-battery-status ()
   (let* ((stat (funcall battery-status-function))
          (percentile (read (cdr (assoc ?p stat))))
-         (charging (string= (cdr (assoc ?L stat)) "on-line"))
+         (charging (member (cdr (assoc ?L stat)) '("AC" "on-line")))
          (last-stat my-battery-status))
-    (setq my-battery-status (cons percentile charging))
-    (unless (equal last-stat my-battery-status)
-      (force-mode-line-update))))
-(run-with-timer 0 5 'my-update-battery-status)
+    (when (numberp percentile)
+      (setq my-battery-status (cons percentile charging))
+      (unless (equal last-stat my-battery-status)
+        (force-mode-line-update)))))
+(run-with-timer 0 60 'my-update-battery-status)
 
 ;; scratch-palette status
 (defvar-local my-palette-available-p nil)
@@ -5437,6 +5607,24 @@ displayed, use substring of the buffer."
     (if (vectorp eol-type) ?-
       (cl-case eol-type
         ((0) ?u) ((1) ?d) ((2) ?m) (else ?-)))))
+
+(defvar-local my-current-branch-name nil)
+(setup-hook 'find-file-hook
+  (let* ((project-root
+          (and buffer-file-name
+               (locate-dominating-file buffer-file-name ".git")))
+         (head-path
+          (and project-root
+               (concat project-root "/.git/HEAD")))
+         str)
+    (when (and head-path (file-exists-p head-path))
+      (setq str
+            (with-temp-buffer
+              (insert-file-contents head-path)
+              (goto-char (point-min))
+              (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
+              (match-string 1)))
+      (setq my-current-branch-name (if (> (length str) 3) (substring str 0 3) str)))))
 
 (defun my-generate-mode-line-format ()
   (let ((VBAR
@@ -5470,6 +5658,10 @@ displayed, use substring of the buffer."
                        (my-shorten-directory dir 20)) 'face 'mode-line-dark-face))
         (filename
          (! (propertize "%b" 'face 'mode-line-highlight-face)))
+        (branch
+         (and my-current-branch-name
+              (propertize (concat "/" my-current-branch-name)
+                          'face 'mode-line-git-branch-face)))
         (palette
          (when my-palette-available-p
            (! (propertize " :p" 'face 'mode-line-palette-face))))
@@ -5510,7 +5702,7 @@ displayed, use substring of the buffer."
     (let* ((lstr
             (concat linum VBAR colnum-or-region VBAR
                     i-narrowed i-readonly i-modified i-mc VBAR
-                    dirname filename palette recur))
+                    dirname filename branch palette recur))
            (rstr
             (concat VBAR mode process " " encoding VBAR time " " battery))
            (lmargin
@@ -5562,6 +5754,49 @@ displayed, use substring of the buffer."
                 (cons (cons 'my-kindly-view-mode (current-local-map)) minor-mode-map-alist))
     ;; and kindly-view-mode-map as the major-mode bindings
     (use-local-map my-kindly-view-mode-map)))
+
+;;   + "secret-words" minor-mode
+
+(defvar my-secret-words nil)
+
+(defun my-secret-words--jit-hider (b e)
+  (save-excursion
+    (remove-overlays b e 'category 'my-secret-words)
+    (dolist (word my-secret-words)
+      (goto-char b)
+      (while (search-forward-regexp word e t)
+        (let* ((b (match-beginning 0))
+               (e (match-end 0))
+               (ov (make-overlay b e)))
+          (overlay-put ov 'category 'my-secret-words)
+          (overlay-put ov 'display (make-string (- e b) ?*)))))))
+
+(defun my-secret-words--post-command ()
+  (let ((ovs (overlays-at (point)))
+        (message-log-max nil))
+    (dolist (ov ovs)
+      (when (eq (overlay-get ov 'category) 'my-secret-words)
+        (message (buffer-substring (overlay-start ov) (overlay-end ov)))))))
+
+(define-minor-mode my-secret-words-mode
+  "Minor mode to hide secret words in the buffer."
+  :init-value nil
+  :global nil
+  :lighter "Secr"
+  (cond (my-secret-words-mode
+         (jit-lock-mode 1)
+         (jit-lock-register 'my-secret-words--jit-hider)
+         (add-hook 'post-command-hook 'my-secret-words--post-command nil t))
+        (t
+         (remove-hook 'post-command-hook 'my-secret-words--post-command t)
+         (jit-lock-unregister 'my-secret-words--jit-hider)
+         (remove-overlays (point-min) (point-max) 'category 'my-secret-words))))
+
+(define-globalized-minor-mode my-global-secret-words-mode
+  my-secret-words-mode
+  (lambda () (my-secret-words-mode 1)))
+
+(my-global-secret-words-mode 1)
 
 ;;   + colorscheme
 ;;   + | util
@@ -5663,12 +5898,12 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#2A1F1B" "#e0d9c6" "#768d82" "#d99481" "#bb4e62"
     ;;   "#db6b7e" "#8e6a60" "#adb78d" "#849f98" "#d4576f")
 
-    ;; "planet" based theme
-    ;; reference | https://github.com/cmack/emacs-planet-theme/
-    (create-solarized-based-theme solarized-planet dark
-      "solarized-based theme with `planet' inspired color-palette."
-      "#192129" "#d2dde8" "#e9b96e" "#ff8683" "#fe5450"
-      "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
+    ;; ;; "planet" based theme
+    ;; ;; reference | https://github.com/cmack/emacs-planet-theme/
+    ;; (create-solarized-based-theme solarized-planet dark
+    ;;   "solarized-based theme with `planet' inspired color-palette."
+    ;;   "#192129" "#d2dde8" "#e9b96e" "#ff8683" "#fe5450"
+    ;;   "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
 
     ;; ;; "kagamine len" inspired theme
     ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
@@ -5677,6 +5912,13 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "solarized-based theme with kagamine len inspired color-palette."
     ;;   "#291e03" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
     ;;   "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
+
+    ;; "reykjavik" based theme
+    ;; reference | https://github.com/mswift42/reykjavik-theme/
+    (create-solarized-based-theme reykjavik dark
+      "solarized-based theme with `reykjavik' inspired color-palette."
+      "#112328" "#dadada" "#c1d2b1" "#e86310" "#e81050"
+      "#c4cbee" "#a3d6cc" "#f1c1bd" "#e6c2db" "#a3d4e8")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
@@ -5696,9 +5938,9 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (set-face-attribute
  'mode-line-inactive nil
  :foreground    (! (my-make-color (face-foreground 'default) -16 2))
- :background    (! (face-background 'mode-line))
+ :background    (my-make-color (car my-mode-line-background) -6)
  :inverse-video nil
- :box (! `(:line-width 1 :color ,(face-background 'mode-line))))
+ :box `(:line-width 1 :color ,(my-make-color (car my-mode-line-background) -6)))
 
 (set-face-attribute
  'mode-line-dark-face nil
@@ -5714,6 +5956,10 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (set-face-attribute
  'mode-line-special-mode-face nil
  :foreground (! (face-foreground 'term-color-cyan))
+ :weight     'bold)
+(set-face-attribute
+ 'mode-line-git-branch-face nil
+ :foreground (! (face-foreground 'default))
  :weight     'bold)
 
 (set-face-attribute
@@ -5738,16 +5984,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
  :foreground (! (face-foreground 'term-color-cyan))
  :bold       t)
 
-;;   + | ace-jump-mode
-
-(setup-after "ace-jump-mode"
-  (set-face-foreground 'ace-jump-face-foreground
-                       (! (if (eq (frame-parameter nil 'background-mode) 'light)
-                              "#000000"
-                            "#ffffff")))
-  (set-face-foreground 'ace-jump-face-background
-                       (! (face-foreground 'font-lock-comment-face))))
-
 ;;   + | font-lock
 
 ;; highlight regexp symbols
@@ -5769,15 +6005,15 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
 (setup-after "highlight-stages"
   (set-face-background 'highlight-stages-negative-level-face
-                       (! (my-make-color (face-background 'default) -3.5)))
+                       (! (my-make-color (face-background 'default) -4)))
   (set-face-background 'highlight-stages-level-1-face
-                       (! (my-make-color (face-background 'default) 3.5)))
+                       (! (my-make-color (face-background 'default) 4)))
   (set-face-background 'highlight-stages-level-2-face
-                       (! (my-make-color (face-background 'default) 7)))
+                       (! (my-make-color (face-background 'default) 8)))
   (set-face-background 'highlight-stages-level-3-face
-                       (! (my-make-color (face-background 'default) 10.5)))
+                       (! (my-make-color (face-background 'default) 12)))
   (set-face-background 'highlight-stages-higher-level-face
-                       (! (my-make-color (face-background 'default) 14))))
+                       (! (my-make-color (face-background 'default) 16))))
 
 ;;   + | paren
 
@@ -5805,6 +6041,32 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
                       :background 'unspecified
                       :inherit 'region))
 
+;;   + | web-mode
+
+(setup-after "web-mode"
+  (set-face-attribute
+   'web-mode-function-call-face nil
+   :inherit 'unspecified))
+
+;;   + | cperl-mode
+
+(setup-after "cperl-mode"
+  (set-face-attribute
+   'cperl-hash-face nil
+   :weight 'unspecified :slant 'italic :underline t
+   :background 'unspecified :foreground (face-foreground 'font-lock-variable-name-face))
+  (set-face-attribute
+   'cperl-array-face nil
+   :background 'unspecified :weight 'unspecified :slant 'italic :underline t
+   :foreground (face-foreground 'font-lock-variable-name-face))
+  (set-face-attribute
+   'cperl-nonoverridable-face nil
+   :weight 'unspecified :slant 'unspecified :underline nil
+   :foreground (face-foreground 'font-lock-keyword-face))
+  (set-face-attribute
+   'cperl-hash-key-face nil
+   :foreground (! (my-make-color (face-foreground 'default) 30))))
+
 ;;   + | lmntal-mode
 
 (setup-after "lmntal-mode"
@@ -5815,9 +6077,9 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
 (setup-after "phi-search-core"
   (set-face-background 'phi-search-match-face
-                       (car my-mode-line-background))
+                       (! (my-make-color (face-background 'mode-line) 15 -15)))
   (set-face-background 'phi-search-selection-face
-                       (cdr my-mode-line-background)))
+                       (! (my-make-color (face-background 'mode-line) 8 -15 "red" 40))))
 
 ;;   + | indent-guide
 
@@ -5899,8 +6161,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (setup-lazy '(my-stripe-buffer) "stripe-buffer"
   (defun my-stripe-buffer ()
     (stripe-buffer-mode 1)
-    (setq-local face-remapping-alist
-                (cons '(hl-line . stripe-hl-line) face-remapping-alist))))
+    (setq-local face-remapping-alist (cons '(hl-line . stripe-hl-line) face-remapping-alist))))
 
 ;; make GUI modern
 (setup-include "sublimity"
@@ -5976,7 +6237,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "C-x C-s" 'save-buffer
   "C-x C-x" 'my-rename-current-buffer-file
   "C-x C-b" 'list-buffers
-  "C-x C-k" 'kill-this-buffer
+  "C-x C-k" 'my-kill-this-buffer
   "C-x C-e" 'set-buffer-file-coding-system
   "C-x C-r" 'revert-buffer-with-coding-system)
 
@@ -6193,14 +6454,16 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 ;;   + keychord
 
 (setup-after "key-chord"
-
   (key-chord-define-global "fj" 'my-transpose-chars)
   (key-chord-define-global "hh" 'my-capitalize-word-dwim)
   (key-chord-define-global "jj" 'my-upcase-previous-word)
   (key-chord-define-global "kk" 'my-downcase-previous-word)
+  (setup-expecting "yasnippet"
+    (key-chord-define-global "sf" 'yas-expand)
+    (key-chord-define-global "jl" 'yas-expand))
+  (setup-after "yasnippet"
+    (key-chord-define yas-keymap "sf" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "jl" 'yas-next-field-or-maybe-expand))
   (setup-expecting "iy-go-to-char"
-    (key-chord-define-global "jk" 'iy-go-to-char)
-    (key-chord-define-global "df" 'iy-go-to-char-backward))
-  (setup-expecting "ace-jump-mode"
-    (key-chord-define-global "jl" 'ace-jump-word-mode))
-  )
+    (key-chord-define-global "df" 'iy-go-to-char-backward)
+    (key-chord-define-global "jk" 'iy-go-to-char)))
