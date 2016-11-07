@@ -1,4 +1,4 @@
-;; init.el (for Emacs 24.3) | 2012-2015 zk_phi
+;; init.el (for Emacs 24.3) | 2012- zk_phi
 
 (require 'setup)
 (setup-initialize)
