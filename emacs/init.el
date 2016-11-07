@@ -3912,7 +3912,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                   (push '("\\.yy?$" . bison-mode) auto-mode-alist)))
 
 ;;     + other procedual
-;;       + Javascript
+;;       + Javascript / Typescript
 
 (setup-after "js"
   (setup-after "auto-complete"
@@ -3925,6 +3925,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (push '("^\\*jQuery doc" :regexp t) popwin:special-display-config))
     (setup-keybinds js-mode-map
       "<f1> s" 'jquery-doc)))
+
+(setup-lazy '(typescript-mode) "typescript"
+  :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
 
 ;;       + Perl-like
 
