@@ -4482,7 +4482,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "/") " / ")
       (key-combo-define-local (kbd "//") " // "))))
 
-;;       + (CS)LMNtal
+;;       + LMNtal
 
 (setup-lazy '(lmntal-mode lmntal-slimcode-mode) "lmntal-mode"
   :prepare (progn
@@ -4497,7 +4497,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-hook 'lmntal-mc-mode-hook 'my-kindly-view-mode)
   (setup-hook 'lmntal-slimcode-help-hook 'my-kindly-view-mode)
 
-  ;; highlight CSLMNtal keywords
+  ;; highlight additional keywords
   (font-lock-add-keywords
    'lmntal-mode '(("\\_<\\(typedef\\|define\\|defop\\)\\_>" . font-lock-function-name-face)))
 
