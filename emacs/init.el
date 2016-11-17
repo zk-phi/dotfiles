@@ -2741,7 +2741,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
            ;; hash-keys
            ("\\([A-z0-9_]+\\)[\s\t]*:" 1 'web-mode-hash-key-face)
            ;; method decls / lambda expressions
-           ("\\(?:\\(function\\)\\|\\([A-z0-9_]+\\)\\)[\s\t]*\\((\\)[A-z0-9_\s\t,]*)[\s\t\n]*{"
+           ("\\(?:\\(function\\)\\|\\([A-z0-9_]+\\)\\)[\s\t]*\\((\\)[A-z0-9_\s\t,=]*)[\s\t\n]*{"
             (1 'web-mode-keyword-face nil t)
             (2 'web-mode-function-name-face nil t)
             ("\\([A-z0-9_]+\\)\\(?:[\s\t]*=[^,)]*\\)?[,)]"
