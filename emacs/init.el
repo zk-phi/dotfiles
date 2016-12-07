@@ -4997,7 +4997,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (cond ((eq system-type 'windows-nt)
              (w32-shell-execute "open" file))
             ((eq system-type 'darwin)
-             (shell-command (concat "open " file)))
+             (shell-command (concat "open '" file "'")))
             (t
              (error "unsupported system")))))
 
