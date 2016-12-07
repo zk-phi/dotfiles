@@ -3777,35 +3777,26 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
         (search-forward-regexp "__STDC_VERSION__[^\n]*1999" 500 t)))
     ;; C/C++ checker powered by gcc/g++
     ;; reference | https://github.com/jedrz/.emacs.d/blob/master/setup-flycheck.el
-    (flycheck-define-checker c-gcc
-                             "A C checker using gcc"
-                             :command ("gcc" "-fsyntax-only" "-ansi" "-pedantic"
-                                       "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
-                             :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
-                                                       " warning: " (message) line-end)
-                                              (error line-start (file-name) ":" line ":" column ":"
-                                                     " error: " (message) line-end))
-                             :modes 'c-mode
-                             :predicate (lambda () (not (my-flycheck-use-c99-p))))
-    (flycheck-define-checker c99-gcc
-                             "A C checker using gcc -std=c99"
-                             :command ("gcc" "-fsyntax-only" "-std=c99" "-pedantic"
-                                       "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
-                             :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
-                                                       " warning: " (message) line-end)
-                                              (error line-start (file-name) ":" line ":" column ":"
-                                                     " error: " (message) line-end))
-                             :modes 'c-mode
-                             :predicate my-flycheck-use-c99-p)
-    (flycheck-define-checker c++-g++
-                             "A C checker using g++"
-                             :command ("g++" "-fsyntax-only" "-std=c++11" "-pedantic"
-                                       "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
-                             :error-patterns ((warning line-start (file-name) ":" line ":" column ":"
-                                                       " warning: " (message) line-end)
-                                              (error line-start (file-name) ":" line ":" column ":"
-                                                     " error: " (message) line-end))
-                             :modes 'c++-mode)
+    (flycheck-define-checker
+     c-gcc "A C checker using gcc"
+     :command ("gcc" "-fsyntax-only" "-ansi" "-pedantic" "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+     :error-patterns ((warning line-start (file-name) ":" line ":" column ":" " warning: " (message) line-end)
+                      (error line-start (file-name) ":" line ":" column ":" " error: " (message) line-end))
+     :modes 'c-mode
+     :predicate (lambda () (not (my-flycheck-use-c99-p))))
+    (flycheck-define-checker
+     c99-gcc "A C checker using gcc -std=c99"
+     :command ("gcc" "-fsyntax-only" "-std=c99" "-pedantic" "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+     :error-patterns ((warning line-start (file-name) ":" line ":" column ":" " warning: " (message) line-end)
+                      (error line-start (file-name) ":" line ":" column ":" " error: " (message) line-end))
+     :modes 'c-mode
+     :predicate my-flycheck-use-c99-p)
+    (flycheck-define-checker
+     c++-g++ "A C checker using g++"
+     :command ("g++" "-fsyntax-only" "-std=c++11" "-pedantic" "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+     :error-patterns ((warning line-start (file-name) ":" line ":" column ":" " warning: " (message) line-end)
+                      (error line-start (file-name) ":" line ":" column ":" " error: " (message) line-end))
+     :modes 'c++-mode)
     (add-to-list 'flycheck-checkers 'c-gcc)
     (add-to-list 'flycheck-checkers 'c++-g++)
     (add-to-list 'flycheck-checkers 'c99-gcc))
@@ -5002,11 +4993,13 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (defun my-dired-winstart ()
     "win-start the current line's file."
     (interactive)
-    (if (eq system-type 'windows-nt)
-        (let ((file (dired-get-filename)))
-          (w32-shell-execute "open" file)
-          (message "win-started %s" file))
-      (error "works only on Windows")))
+    (let ((file (dired-get-filename)))
+      (cond ((eq system-type 'windows-nt)
+             (w32-shell-execute "open" file))
+            ((eq system-type 'darwin)
+             (shell-command (concat "open " file)))
+            (t
+             (error "unsupported system")))))
 
   (setup-lazy
     '(my-dired-do-convert-coding-system
