@@ -52,10 +52,10 @@
 ;; - kk : upcase word
 ;; - jj : downcase word
 ;;
-;; - jl : yas-expand
-;; - sf : yas-expand
-;; - df : iy-go-to-char-backward
-;; - jk : iy-go-to-char
+;; - sf : iy-go-to-char-backward
+;; - jl : iy-go-to-char
+;; - df : yas-expand
+;; - jk : yas-expand
 
 ;; specials
 ;;
@@ -2163,13 +2163,11 @@ unary operators which can also be binary."
 (defun my-transpose-chars ()
   (interactive)
   (let ((lst my-transpose-chars-list))
-    (while (and lst
-                (not (looking-back (caar lst))))
+    (while (and lst (not (looking-back (caar lst))))
       (setq lst (cdr lst)))
     (if lst
         (replace-match (cdar lst))
-      (transpose-chars -1)
-      (forward-char))))
+      (save-excursion (transpose-chars -1)))))
 
 (defun my-smart-comma ()
   "Insert comma maybe followed by a space."
@@ -6455,11 +6453,11 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (key-chord-define-global "jj" 'my-upcase-previous-word)
   (key-chord-define-global "kk" 'my-downcase-previous-word)
   (setup-expecting "yasnippet"
-    (key-chord-define-global "sf" 'yas-expand)
-    (key-chord-define-global "jl" 'yas-expand))
+    (key-chord-define-global "fd" 'yas-expand)
+    (key-chord-define-global "jk" 'yas-expand))
   (setup-after "yasnippet"
-    (key-chord-define yas-keymap "sf" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "jl" 'yas-next-field-or-maybe-expand))
+    (key-chord-define yas-keymap "fd" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "jk" 'yas-next-field-or-maybe-expand))
   (setup-expecting "iy-go-to-char"
-    (key-chord-define-global "df" 'iy-go-to-char-backward)
-    (key-chord-define-global "jk" 'iy-go-to-char)))
+    (key-chord-define-global "sf" 'iy-go-to-char-backward)
+    (key-chord-define-global "jl" 'iy-go-to-char)))
