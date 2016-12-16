@@ -1,0 +1,17 @@
+# name : skeleton
+# key : s
+# --
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="${1:UTF-8}">
+    <meta name="viewport" content="initial-scale=1.0">
+    <title>${2:Page Title}</title>
+  </head>
+
+  <body>
+    $0
+  </body>
+
+</html>

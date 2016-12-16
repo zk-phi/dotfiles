@@ -1,0 +1,8 @@
+# name : Main(Class)
+# key : main
+# --
+class Main{
+     public static void main(String args[]){
+          $0
+     }
+}

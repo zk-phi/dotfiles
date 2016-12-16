@@ -1,0 +1,10 @@
+# name : table_mysql
+# key : t
+# expand-env: ((yas/indent-line 'fixed))
+# --
+-- $1
+DROP TABLE IF EXISTS \`${2:table_name}\`;
+CREATE TABLE \`$2\` (
+  \`${3:id}\` $0
+  PRIMARY KEY (\`$3\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
