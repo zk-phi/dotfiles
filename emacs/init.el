@@ -5916,10 +5916,10 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
     ;; "monochrome" based theme
     ;; reference | https://github.com/fxn/monochrome-theme.el/
-    (create-solarized-based-theme solarized-mono dark
+    (create-solarized-based-theme chillized dark
       "solarized-based theme with `monochrome' inspired color-palette."
-      "#101010" "#c0c0c0" "#959595" "#a08560" "#a07070"
-      "#ffffff" "#ffffff" "#c0c0c0" "#708090" "#959595")
+      "#101010" "#d0d0d0" "#999999" "#a08560" "#a07070"
+      "#ffffff" "#ffffff" "#c0c0c0" "#708090" "#999999")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
@@ -6082,10 +6082,10 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (set-face-background 'phi-search-selection-face
                        (! (my-make-color (face-background 'mode-line) 8 -15 "red" 40))))
 
-;;   + | '
+;;   + | indent-guide
 
 (setup-after "indent-guide"
-  (set-face-background 'indent-guide-face (! (my-make-color (face-foreground 'default) -28)))
+  (set-face-background 'indent-guide-face (! (my-make-color (face-foreground 'default) -30)))
   (setq indent-guide-char " "))
 
 ;;   + | flyspell
