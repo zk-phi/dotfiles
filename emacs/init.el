@@ -6082,10 +6082,10 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (set-face-background 'phi-search-selection-face
                        (! (my-make-color (face-background 'mode-line) 8 -15 "red" 40))))
 
-;;   + | indent-guide
+;;   + | '
 
 (setup-after "indent-guide"
-  (set-face-background 'indent-guide-face (! (my-make-color (face-foreground 'default) -30)))
+  (set-face-background 'indent-guide-face (! (my-make-color (face-foreground 'default) -28)))
   (setq indent-guide-char " "))
 
 ;;   + | flyspell
