@@ -5918,8 +5918,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;; reference | https://github.com/fxn/monochrome-theme.el/
     (create-solarized-based-theme solarized-mono dark
       "solarized-based theme with `monochrome' inspired color-palette."
-      "#101010" "#c0c0c0" "#9d9d9d" "#a08560" "#a07070"
-      "#ffffff" "#ffffff" "#d0d0d0" "#708090" "#9d9d9d")
+      "#101010" "#c0c0c0" "#959595" "#a08560" "#a07070"
+      "#ffffff" "#ffffff" "#c0c0c0" "#708090" "#959595")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
