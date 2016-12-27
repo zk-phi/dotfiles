@@ -5907,12 +5907,19 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#291e03" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
     ;;   "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
 
-    ;; "reykjavik" based theme
-    ;; reference | https://github.com/mswift42/reykjavik-theme/
-    (create-solarized-based-theme reykjavik dark
-      "solarized-based theme with `reykjavik' inspired color-palette."
-      "#112328" "#dadada" "#c1d2b1" "#e86310" "#e81050"
-      "#c4cbee" "#a3d6cc" "#f1c1bd" "#e6c2db" "#a3d4e8")
+    ;; ;; "reykjavik" based theme
+    ;; ;; reference | https://github.com/mswift42/reykjavik-theme/
+    ;; (create-solarized-based-theme reykjavik dark
+    ;;   "solarized-based theme with `reykjavik' inspired color-palette."
+    ;;   "#112328" "#dadada" "#c1d2b1" "#e86310" "#e81050"
+    ;;   "#c4cbee" "#a3d6cc" "#f1c1bd" "#e6c2db" "#a3d4e8")
+
+    ;; "monochrome" based theme
+    ;; reference | https://github.com/fxn/monochrome-theme.el/
+    (create-solarized-based-theme solarized-mono dark
+      "solarized-based theme with `monochrome' inspired color-palette."
+      "#101010" "#c0c0c0" "#9d9d9d" "#908070" "#907080"
+      "#ffffff" "#ffffff" "#d0d0d0" "#708090" "#9d9d9d")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
@@ -6078,8 +6085,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 ;;   + | indent-guide
 
 (setup-after "indent-guide"
-  ;; (setq indent-guide-line-color (! (face-foreground 'font-lock-comment-face)))
-  (set-face-foreground 'indent-guide-face (! (face-foreground 'font-lock-comment-face))))
+  (set-face-background 'indent-guide-face (! (my-make-color (face-foreground 'default) -30)))
+  (setq indent-guide-char " "))
 
 ;;   + | flyspell
 
@@ -6122,9 +6129,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
 (!-
  (setup "indent-guide"
-   ;; (when my-home-system-p
-   ;;   (setq indent-guide-char-height      14
-   ;;         indent-guide-line-dash-length 3))
    (indent-guide-global-mode)))
 ;; (!-
 ;;  (setup "indent-guide2"
