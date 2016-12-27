@@ -5829,9 +5829,9 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (setup-include "solarized-definitions"
 
     (defmacro create-solarized-based-theme
-      (name mode description darkest-base brightest-base
-            type-yellow warning-orange error-red visited-magenta
-            link-violet identifier-blue string-cyan keyword-green)
+        (name mode description darkest-base brightest-base
+              type-yellow warning-orange error-red visited-magenta
+              link-violet identifier-blue string-cyan keyword-green)
       (declare (indent 2))
       `(let ((solarized-colors
               '((base03  ,darkest-base)
@@ -5918,8 +5918,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;; reference | https://github.com/fxn/monochrome-theme.el/
     (create-solarized-based-theme chillized dark
       "solarized-based theme with `monochrome' inspired color-palette."
-      "#101010" "#d0d0d0" "#999999" "#a08560" "#a07070"
-      "#ffffff" "#ffffff" "#c0c0c0" "#708090" "#999999")
+      "#101010" "#cacaca" "#989898" "#a08560" "#a07070"
+      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#708090" "#989898")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
