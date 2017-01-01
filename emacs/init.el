@@ -5612,12 +5612,11 @@ displayed, use substring of the buffer."
                (concat project-root "/.git/HEAD")))
          str)
     (when (and head-path (file-exists-p head-path))
-      (setq str
-            (with-temp-buffer
-              (insert-file-contents head-path)
-              (goto-char (point-min))
-              (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
-              (match-string 1)))
+      (with-temp-buffer
+        (insert-file-contents head-path)
+        (goto-char (point-min))
+        (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
+        (setq str (replace-regexp-in-string "[aeiouAEIOU]" "" (match-string 1))))
       (setq my-current-branch-name (if (> (length str) 3) (substring str 0 3) str)))))
 
 (defun my-generate-mode-line-format ()
