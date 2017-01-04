@@ -1,0 +1,22 @@
+[filter "lfs"]
+    smudge = git-lfs smudge %f
+    required = true
+    clean = git-lfs clean %f
+[alias]
+    restash = "!f(){ git stash show -p $1 | git apply --reverse; }; f"
+    undo = "!f() { git reset --hard $(git rev-parse --abbrev-ref HEAD)@{${1-1}}; }; f"
+    compare = "!f() { git diff ${1:-master}...${2:-HEAD}; }; f"
+    # typos
+    chekcout = checkout
+    hcekcout = checkout
+    hceckout = checkout
+    checkotu = checkout
+    stauts = status
+[diff]
+    compactionHeuristic = true
+[color]
+    ui = auto
+[pager]
+    log = diff-highlight | less
+    show = diff-highlight | less
+    diff = diff-highlight | less
