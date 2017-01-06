@@ -6,12 +6,14 @@
     restash = "!f(){ git stash show -p $1 | git apply --reverse; }; f"
     undo = "!f() { git reset --hard $(git rev-parse --abbrev-ref HEAD)@{${1-1}}; }; f"
     compare = "!f() { git diff ${1:-master}...${2:-HEAD}; }; f"
+    history = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
     # typos
     chekcout = checkout
     hcekcout = checkout
     hceckout = checkout
     checkotu = checkout
     stauts = status
+    hisotry = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
 [diff]
     compactionHeuristic = true
 [color]

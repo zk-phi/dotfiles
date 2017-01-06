@@ -60,9 +60,10 @@ ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}git:(%{$fg[red]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX=" %{$fg[blue]%})%{$reset_color%} "
 ZSH_THEME_GIT_PROMPT_DIRTY="☁️"
 ZSH_THEME_GIT_PROMPT_CLEAN="✨"
+ZSH_THEME_GIT_PROMPT_STASHED="📃 "
 local ret_status="%(?:%{$fg[white]%}（*'-'）? :%{$fg[red]%}（\`;w;）! )"
 SPROMPT="%{$fg[green]%}%{$suggest%}(*'~'%)? < %B%r%b %{$fg[green]%}かな? [n,y,a,e]:${reset_color} "
-PROMPT='%{$fg_bold[cyan]%}%c%{$reset_color%} $(git_prompt_info)${ret_status}%{$reset_color%}'
+PROMPT='%{$fg_bold[cyan]%}%c%{$reset_color%} $(git_prompt_info)$(git_prompt_status)${ret_status}%{$reset_color%}'
 
 # ------------------------------
 # aliases
@@ -75,6 +76,7 @@ alias sls=ls
 # git
 alias gti=git
 alias g=git
+alias igt=git
 
 # fuck
 alias fuck='eval $(thefuck $(fc -ln -1))'
