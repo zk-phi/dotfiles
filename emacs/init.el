@@ -5616,7 +5616,7 @@ displayed, use substring of the buffer."
         (insert-file-contents head-path)
         (goto-char (point-min))
         (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
-        (setq str (replace-regexp-in-string "[aeiouAEIOU]" "" (match-string 1))))
+        (setq str (replace-regexp-in-string "\\(.\\)[aeiouAEIOU]" "\\1" (match-string 1))))
       (setq my-current-branch-name (if (> (length str) 3) (substring str 0 3) str)))))
 
 (defun my-generate-mode-line-format ()
