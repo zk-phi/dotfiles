@@ -5839,8 +5839,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
                 (base00  ,(my-make-color darkest-base nil nil brightest-base 40))
                 (base0   ,(my-make-color darkest-base nil nil brightest-base 52))
                 (base1   ,(my-make-color darkest-base nil nil brightest-base 58))
-                (base2   ,(my-make-color darkest-base nil nil brightest-base 97 ;; 94
-                                         ))
+                ;; (base2   ,(my-make-color darkest-base nil nil brightest-base 94))
+                (base2   ,(my-make-color darkest-base nil nil brightest-base 97))
                 (base3   ,brightest-base)
                 (yellow  ,type-yellow)
                 (orange  ,warning-orange)
@@ -5917,8 +5917,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;; reference | https://github.com/fxn/monochrome-theme.el/
     (create-solarized-based-theme chillized dark
       "solarized-based theme with `monochrome' inspired color-palette."
-      "#101010" "#cacaca" "#989898" "#a08560" "#a07070"
-      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#708090" "#989898")
+      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#997c5e" "#aa6b6b"
+      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
@@ -5999,21 +5999,26 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (setup-after "highlight-parentheses"
   (hl-paren-set 'hl-paren-colors nil)
   (hl-paren-set 'hl-paren-background-colors
-                (! (list (my-make-color (face-background 'default) 12 -20)))))
+                (! (list (my-make-color (face-background 'default) 14 -20)))))
 
 ;;   + | highlight-stages
 
 (setup-after "highlight-stages"
-  (set-face-background 'highlight-stages-negative-level-face
-                       (! (my-make-color (face-background 'default) -4)))
-  (set-face-background 'highlight-stages-level-1-face
-                       (! (my-make-color (face-background 'default) 4)))
-  (set-face-background 'highlight-stages-level-2-face
-                       (! (my-make-color (face-background 'default) 8)))
-  (set-face-background 'highlight-stages-level-3-face
-                       (! (my-make-color (face-background 'default) 12)))
-  (set-face-background 'highlight-stages-higher-level-face
-                       (! (my-make-color (face-background 'default) 16))))
+  (set-face-attribute 'highlight-stages-negative-level-face nil
+                      :foreground (face-foreground 'default)
+                      :background (! (my-make-color (face-background 'default) -4)))
+  (set-face-attribute 'highlight-stages-level-1-face nil
+                      :foreground (face-foreground 'default)
+                      :background (! (my-make-color (face-background 'default) 4)))
+  (set-face-attribute 'highlight-stages-level-2-face nil
+                      :foreground (face-foreground 'default)
+                      :background (! (my-make-color (face-background 'default) 8)))
+  (set-face-attribute 'highlight-stages-level-3-face nil
+                      :foreground (face-foreground 'default)
+                      :background (! (my-make-color (face-background 'default) 12)))
+  (set-face-attribute 'highlight-stages-higher-level-fac nil
+                      :foreground (face-foreground 'default)
+                      :background (! (my-make-color (face-background 'default) 16))))
 
 ;;   + | paren
 
@@ -6084,7 +6089,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 ;;   + | indent-guide
 
 (setup-after "indent-guide"
-  (set-face-background 'indent-guide-face (! (my-make-color (face-foreground 'default) -30)))
+  (set-face-background 'indent-guide-face (! (my-make-color (face-foreground 'default) -31)))
   (setq indent-guide-char " "))
 
 ;;   + | flyspell
