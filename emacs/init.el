@@ -840,11 +840,17 @@ cons of two integers."
          ac-ignore-case    nil
          ac-auto-show-menu 0.8
          ac-disable-faces  nil)
-   (setq-default ac-sources '(ac-source-dictionary
-                              ac-source-words-in-same-mode-buffers))
    (push my-dictionary-directory ac-dictionary-directories)
    (global-auto-complete-mode)
    (setup-keybinds ac-completing-map "S-<tab>" 'ac-previous)
+   ;; complete buffer-file-name
+   (ac-define-source my-buffer-file-name
+     '((init . ac-update-word-index)
+       (candidates . (ac-word-candidates
+                      (lambda (buf)
+                        (when buffer-file-name
+                          (list (file-name-sans-extension
+                                 (file-name-nondirectory buffer-file-name)))))))))
    ;; complete words in web mode buffers
    (ac-define-source my-words-in-web-mode-buffers
      '((init . ac-update-word-index)
@@ -864,7 +870,11 @@ cons of two integers."
    ;; do not complete remote file names
    (defadvice ac-filename-candidate (around my-disable-ac-for-remote-files activate)
      (unless (file-remote-p ac-prefix)
-       ad-do-it))))
+       ad-do-it))
+   ;; setup default sources
+   (setq-default ac-sources '(ac-source-my-buffer-file-name
+                              ac-source-dictionary
+                              ac-source-words-in-same-mode-buffers))))
 
 (setup-lazy '(guess-style-guess-all) "guess-style"
   :prepare (setup-hook 'find-file-hook
@@ -2761,10 +2771,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "auto-complete"
     (setup "auto-complete-config"
       (setq web-mode-ac-sources-alist
-            '(("javascript" . (ac-source-my-words-in-web-mode-buffers))
-              ("jsx"        . (ac-source-my-words-in-web-mode-buffers))
+            '(("javascript" . (ac-source-my-buffer-file-name
+                               ac-source-my-words-in-web-mode-buffers))
+              ("jsx"        . (ac-source-my-buffer-file-name
+                               ac-source-my-words-in-web-mode-buffers))
               ("html"       . (ac-source-my-words-in-web-mode-buffers))
-              ("css"        . (;; ac-source-my-css-propname
+              ("css"        . (ac-source-my-css-propname
                                ac-source-css-property
                                ac-source-my-words-in-web-mode-buffers))))
       (push 'web-mode ac-modes)))
@@ -2802,7 +2814,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-after "auto-complete"
   (setup "auto-complete-config"
     (setup-hook 'my-css-mode-common-hook
-      (setq ac-sources '(;; ac-source-my-css-propname
+      (setq ac-sources '(ac-source-my-css-propname
                          ac-source-css-property
                          ac-source-my-words-in-web-mode-buffers)))
     (setq ac-modes (append my-css-modes ac-modes))))
@@ -3045,7 +3057,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (push 'emacs-lisp-mode ac-modes)
     (setup-hook 'emacs-lisp-mode-hook
       ;; ac-source-symbols is very nice but seems buggy
-      (setq ac-sources '(ac-source-filename
+      (setq ac-sources '(ac-source-my-buffer-file-name
+                         ac-source-filename
                          ac-source-words-in-same-mode-buffers
                          ac-source-dictionary
                          ac-source-functions
@@ -3682,7 +3695,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "auto-complete"
     (setup "ac-c-headers"
       (defun my-ac-install-c-sources ()
-        (setq ac-sources '(ac-source-c-headers
+        (setq ac-sources '(ac-source-my-buffer-file-name
+                           ac-source-c-headers
                            ac-source-words-in-same-mode-buffers
                            ac-source-dictionary
                            ac-source-c-header-symbols)))))
@@ -3907,7 +3921,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "auto-complete"
     (push 'js-mode ac-modes)
     (setup-hook 'js-mode-hook
-      (setq ac-sources '(ac-source-my-words-in-web-mode-buffers))))
+      (setq ac-sources '(ac-source-my-buffer-file-name
+                         ac-source-my-words-in-web-mode-buffers))))
   (setup "jquery-doc"
     (setup-hook 'js-mode-hook 'jquery-doc-setup)
     (setup-after "popwin"
@@ -6016,7 +6031,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (set-face-attribute 'highlight-stages-level-3-face nil
                       :foreground (face-foreground 'default)
                       :background (! (my-make-color (face-background 'default) 12)))
-  (set-face-attribute 'highlight-stages-higher-level-fac nil
+  (set-face-attribute 'highlight-stages-higher-level-face nil
                       :foreground (face-foreground 'default)
                       :background (! (my-make-color (face-background 'default) 16))))
 
