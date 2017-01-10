@@ -845,12 +845,9 @@ cons of two integers."
    (setup-keybinds ac-completing-map "S-<tab>" 'ac-previous)
    ;; complete buffer-file-name
    (ac-define-source my-buffer-file-name
-     '((init . ac-update-word-index)
-       (candidates . (ac-word-candidates
-                      (lambda (buf)
-                        (when buffer-file-name
-                          (list (file-name-sans-extension
-                                 (file-name-nondirectory buffer-file-name)))))))))
+     '((candidates . (when buffer-file-name
+                       (list (file-name-sans-extension
+                              (file-name-nondirectory buffer-file-name)))))))
    ;; complete words in web mode buffers
    (ac-define-source my-words-in-web-mode-buffers
      '((init . ac-update-word-index)
@@ -874,7 +871,8 @@ cons of two integers."
    ;; setup default sources
    (setq-default ac-sources '(ac-source-my-buffer-file-name
                               ac-source-dictionary
-                              ac-source-words-in-same-mode-buffers))))
+                              ac-source-words-in-same-mode-buffers
+                              ac-source-filename))))
 
 (setup-lazy '(guess-style-guess-all) "guess-style"
   :prepare (setup-hook 'find-file-hook
@@ -2774,7 +2772,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
             '(("javascript" . (ac-source-my-buffer-file-name
                                ac-source-my-words-in-web-mode-buffers))
               ("jsx"        . (ac-source-my-buffer-file-name
-                               ac-source-my-words-in-web-mode-buffers))
+                               ac-source-my-words-in-web-mode-buffers
+                               ac-source-filename))
               ("html"       . (ac-source-my-words-in-web-mode-buffers))
               ("css"        . (ac-source-my-css-propname
                                ac-source-css-property
@@ -5197,7 +5196,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "auto-complete"
     (setup-hook 'eshell-mode-hook
       (setq ac-sources '(ac-source-files-in-current-dir
-                         ac-source-words-in-same-mode-buffers))))
+                         ac-source-words-in-same-mode-buffers
+                         ac-source-filename))))
 
   ;; aliases
   ;; reference | http://www.emacswiki.org/cgi-bin/wiki?EshellFunctions
