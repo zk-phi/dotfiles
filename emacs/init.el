@@ -5835,7 +5835,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 ;; load "term" and "hl-line" during compile so that we can use
 ;; "(face-foreground 'term-color-red)"
 (eval-when-compile
-  (require 'term))
+  (require 'term)
+  (require 'hl-line))
 
 ;;   + | colorscheme [solarized-definitions]
 
@@ -5854,8 +5855,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
                 (base00  ,(my-make-color darkest-base nil nil brightest-base 40))
                 (base0   ,(my-make-color darkest-base nil nil brightest-base 52))
                 (base1   ,(my-make-color darkest-base nil nil brightest-base 58))
-                ;; (base2   ,(my-make-color darkest-base nil nil brightest-base 94))
-                (base2   ,(my-make-color darkest-base nil nil brightest-base 97))
+                (base2   ,(my-make-color darkest-base nil nil brightest-base (if (eq mode 'dark) 97 94)))
                 (base3   ,brightest-base)
                 (yellow  ,type-yellow)
                 (orange  ,warning-orange)
@@ -6021,19 +6021,19 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (setup-after "highlight-stages"
   (set-face-attribute 'highlight-stages-negative-level-face nil
                       :foreground (face-foreground 'default)
-                      :background (! (my-make-color (face-background 'default) -4)))
+                      :background (! (my-make-color (face-background 'default) -3)))
   (set-face-attribute 'highlight-stages-level-1-face nil
                       :foreground (face-foreground 'default)
-                      :background (! (my-make-color (face-background 'default) 4)))
+                      :background (! (my-make-color (face-background 'default) 3)))
   (set-face-attribute 'highlight-stages-level-2-face nil
                       :foreground (face-foreground 'default)
-                      :background (! (my-make-color (face-background 'default) 8)))
+                      :background (! (my-make-color (face-background 'default) 7)))
   (set-face-attribute 'highlight-stages-level-3-face nil
                       :foreground (face-foreground 'default)
-                      :background (! (my-make-color (face-background 'default) 12)))
+                      :background (! (my-make-color (face-background 'default) 11)))
   (set-face-attribute 'highlight-stages-higher-level-face nil
                       :foreground (face-foreground 'default)
-                      :background (! (my-make-color (face-background 'default) 16))))
+                      :background (! (my-make-color (face-background 'default) 15))))
 
 ;;   + | paren
 
@@ -6104,8 +6104,11 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 ;;   + | indent-guide
 
 (setup-after "indent-guide"
-  (set-face-background 'indent-guide-face (! (my-make-color (face-foreground 'default) -31)))
-  (setq indent-guide-char " "))
+  ;; (set-face-background 'indent-guide-face (! (my-make-color (face-background 'hl-line) 3)))
+  ;; (setq indent-guide-char " ")
+  (set-face-foreground 'indent-guide-face (! (my-make-color (face-foreground 'default) -20)))
+  (setq indent-guide-char "|")
+  )
 
 ;;   + | flyspell
 
