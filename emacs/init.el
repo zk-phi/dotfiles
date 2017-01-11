@@ -944,6 +944,9 @@ unary operators which can also be binary."
 
 ;;   + | others
 
+(setup "commentize-conflict"
+  (add-hook 'prog-mode-hook 'commentize-conflict-mode))
+
 (!-
  (setup "symon"
    (setq symon-sparkline-ascent (!if my-home-system-p 97 100))
@@ -1119,13 +1122,14 @@ unary operators which can also be binary."
 (setup-after "recentf"
   (recentf-mode 1)
   (setq recentf-max-saved-items 500
-        recentf-auto-cleanup    10
-        recentf-exclude         '("/[^/]*\\<tmp\\>[^/]*/" "/[^/]*\\<backup\\>[^/]*/"
-                                  "~$" "^#[^#]*#$" "^/[^/]*:" "/GitHub/" "\\.emacs\\.d/dat/"
-                                  "/undohist/" "\\.elc$" "\\.howm$" "\\.dat$"))
-  ;; auto-save recentf-list / delayed cleanup
-  ;; reference | http://d.hatena.ne.jp/tomoya/20110217/1297928222
-  (run-with-idle-timer 30 t 'recentf-save-list))
+        recentf-exclude '("/[^/]*\\<tmp\\>[^/]*/" "/[^/]*\\<backup\\>[^/]*/"
+                          "~$" "^#[^#]*#$" "^/[^/]*:" "/GitHub/" "\\.emacs\\.d/dat/"
+                          "/undohist/" "\\.elc$" "\\.howm$" "\\.dat$"))
+  ;; (setq recentf-auto-cleanup 10)
+  ;; ;; auto-save recentf-list / delayed cleanup
+  ;; ;; reference | http://d.hatena.ne.jp/tomoya/20110217/1297928222
+  ;; (run-with-idle-timer 30 t 'recentf-save-list)
+  )
 
 (setup-expecting "ido"
   (setup-lazy '(my-ido-recentf-open) "recentf"
