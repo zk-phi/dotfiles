@@ -5847,30 +5847,30 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (eval-and-compile          ; we want the theme applied also during compile
   (setup-include "solarized-definitions"
 
-    (defmacro create-solarized-based-theme
+    (defun create-solarized-based-theme
         (name mode description darkest-base brightest-base
               type-yellow warning-orange error-red visited-magenta
               link-violet identifier-blue string-cyan keyword-green)
       (declare (indent 2))
-      `(let ((solarized-colors
-              '((base03  ,darkest-base)
-                (base02  ,(my-make-color darkest-base nil nil brightest-base 3))
-                (base01  ,(my-make-color darkest-base nil nil brightest-base 35))
-                (base00  ,(my-make-color darkest-base nil nil brightest-base 40))
-                (base0   ,(my-make-color darkest-base nil nil brightest-base 52))
-                (base1   ,(my-make-color darkest-base nil nil brightest-base 58))
-                (base2   ,(my-make-color darkest-base nil nil brightest-base (if (eq mode 'dark) 97 94)))
-                (base3   ,brightest-base)
-                (yellow  ,type-yellow)
-                (orange  ,warning-orange)
-                (red     ,error-red)
-                (magenta ,visited-magenta)
-                (violet  ,link-violet)
-                (blue    ,identifier-blue)
-                (cyan    ,string-cyan)
-                (green   ,keyword-green))))
-         (set-frame-parameter nil 'background-mode ',mode)
-         (create-solarized-theme ,name ,description (solarized-color-definitions))))
+      (let ((solarized-colors
+             `((base03  ,darkest-base)
+               (base02  ,(my-make-color darkest-base nil nil brightest-base 3))
+               (base01  ,(my-make-color darkest-base nil nil brightest-base 35))
+               (base00  ,(my-make-color darkest-base nil nil brightest-base 40))
+               (base0   ,(my-make-color darkest-base nil nil brightest-base 52))
+               (base1   ,(my-make-color darkest-base nil nil brightest-base 58))
+               (base2   ,(my-make-color darkest-base nil nil brightest-base (if (eq mode 'dark) 97 94)))
+               (base3   ,brightest-base)
+               (yellow  ,type-yellow)
+               (orange  ,warning-orange)
+               (red     ,error-red)
+               (magenta ,visited-magenta)
+               (violet  ,link-violet)
+               (blue    ,identifier-blue)
+               (cyan    ,string-cyan)
+               (green   ,keyword-green))))
+        (set-frame-parameter nil 'background-mode mode)
+        (create-solarized-theme name description (solarized-color-definitions))))
 
     ;; ;; the solarized-dark theme
     ;; (set-frame-parameter nil 'background-mode 'dark)
@@ -5882,62 +5882,69 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;; (create-solarized-theme
     ;;  solarized solarized-description (solarized-color-definitions))
 
-    ;; ;; "jellybeans" based theme
+    ;; ;; "jellybeans" palette
     ;; ;; reference | https://github.com/nanotech/jellybeans.vim
-    ;; (create-solarized-based-theme solarized-jellybeans dark
+    ;; (create-solarized-based-theme 'solarized-jellybeans 'dark
     ;;   "solarized-based theme with `jellybeans' inspired color-palette."
     ;;   "#202020" "#ffffff" "#ffb964" "#8fbfdc" "#a04040"
     ;;   "#b05080" "#805090" "#fad08a" "#99ad6a" "#8fbfdc")
 
-    ;; ;; "mesa" based theme
+    ;; ;; "mesa" palette
     ;; ;; reference | http://emacsfodder.github.io/blog/mesa-theme/
-    ;; (create-solarized-based-theme solarized-mesa light
+    ;; (create-solarized-based-theme 'solarized-mesa 'light
     ;;   "solarized-based theme with `mesa' inspired color-palette."
     ;;   "#000000" "#faf5ee" "#3388dd" "#ac3d1a" "#dd2222"
     ;;   "#8b008b" "#00b7f0" "#1388a2" "#104e8b" "#00688b")
 
-    ;; ;; "tron" based theme
+    ;; ;; "tron" palette
     ;; ;; reference | https://github.com/ivanmarcin/emacs-tron-theme/
-    ;; (create-solarized-based-theme solarized-tron dark
+    ;; (create-solarized-based-theme 'solarized-tron 'dark
     ;;   "solarized-based theme with `tron' inspired color-palette."
-    ;;   "#000000" "#b0c7d4" "#74abbe" "orange" "red"
+    ;;   "#000000" "#e1eaee" "#74abbe" "orange" "red"
     ;;   "magenta" "violet" "#ec9346" "#e8b778" "#a4cee5")
 
-    ;; ;; "majapahit" based theme
+    ;; ;; "majapahit" palette
     ;; ;; reference | https://gitlab.com/franksn/majapahit-theme/
-    ;; (create-solarized-based-theme solarized-majapahit dark
+    ;; (create-solarized-based-theme 'solarized-majapahit 'dark
     ;;   "solarized-based theme with `majapahit' inspired color-palette."
     ;;   "#2A1F1B" "#e0d9c6" "#768d82" "#d99481" "#bb4e62"
     ;;   "#db6b7e" "#8e6a60" "#adb78d" "#849f98" "#d4576f")
 
-    ;; ;; "planet" based theme
+    ;; ;; "planet" palette
     ;; ;; reference | https://github.com/cmack/emacs-planet-theme/
-    ;; (create-solarized-based-theme solarized-planet dark
+    ;; (create-solarized-based-theme 'solarized-planet 'dark
     ;;   "solarized-based theme with `planet' inspired color-palette."
     ;;   "#192129" "#d2dde8" "#e9b96e" "#ff8683" "#fe5450"
     ;;   "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
 
-    ;; ;; "kagamine len" inspired theme
+    ;; ;; "kagamine len" inspired palette
     ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
     ;; ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
-    ;; (create-solarized-based-theme lenlen light
+    ;; (create-solarized-based-theme 'lenlen 'light
     ;;   "solarized-based theme with kagamine len inspired color-palette."
     ;;   "#291e03" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
     ;;   "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
 
-    ;; ;; "reykjavik" based theme
+    ;; ;; "reykjavik" palette
     ;; ;; reference | https://github.com/mswift42/reykjavik-theme/
-    ;; (create-solarized-based-theme reykjavik dark
+    ;; (create-solarized-based-theme 'solarized-reykjavik 'dark
     ;;   "solarized-based theme with `reykjavik' inspired color-palette."
     ;;   "#112328" "#dadada" "#c1d2b1" "#e86310" "#e81050"
     ;;   "#c4cbee" "#a3d6cc" "#f1c1bd" "#e6c2db" "#a3d4e8")
 
-    ;; "monochrome" based theme
-    ;; reference | https://github.com/fxn/monochrome-theme.el/
-    (create-solarized-based-theme chillized dark
-      "solarized-based theme with `monochrome' inspired color-palette."
-      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#997c5e" "#aa6b6b"
-      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
+    ;; ;; "monochrome" inspired palette
+    ;; ;; reference | https://github.com/fxn/monochrome-theme.el/
+    ;; (create-solarized-based-theme 'chillized 'dark
+    ;;   "solarized-based theme with `monochrome' inspired color-palette."
+    ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#997c5e" "#aa6b6b"
+    ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
+
+    ;; "monochrome" inspired palette with muted "Flat UI" colors
+    ;; reference | https://flatuicolors.com/ (brightness+12, saturation-20)
+    (create-solarized-based-theme 'solarized-monobright 'dark
+      "solarized-based theme with few muted Flat UI colors."
+      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#d99f6b" "#dd8a82"
+      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#e1c65c" "#9e9e9e")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
