@@ -272,6 +272,10 @@
   (! (concat my-dat-directory "tramp_" system-name))
   "File to save tramp settings.")
 
+(defconst my-ac-last-sessions-file
+  (! (concat my-dat-directory "ac-last-sessions_" system-name))
+  "File to save ac-last-sessions words.")
+
 ;; + | Utilities
 
 (defvar my-lispy-modes
@@ -864,6 +868,11 @@ cons of two integers."
          (prefix . "\\(?:^\\|;\\)[\s\t]*\\([^\s\t]*\\)")))
      (defadvice ac-css-prefix (around my-disable-ac-after-semicolon activate)
        (unless (= (char-before) ?\;) ad-do-it)))
+   ;; complete words in the last sessions
+   (setup "ac-last-sessions"
+     (setq ac-last-sessions-save-file my-ac-last-sessions-file)
+     (add-hook 'kill-emacs-hook 'ac-last-sessions-save-completions)
+     (!- (ac-last-sessions-load-completions)))
    ;; do not complete remote file names
    (defadvice ac-filename-candidate (around my-disable-ac-for-remote-files activate)
      (unless (file-remote-p ac-prefix)
@@ -871,6 +880,7 @@ cons of two integers."
    ;; setup default sources
    (setq-default ac-sources '(ac-source-my-buffer-file-name
                               ac-source-dictionary
+                              ac-source-last-sessions
                               ac-source-words-in-same-mode-buffers
                               ac-source-filename))))
 
@@ -2774,13 +2784,17 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup "auto-complete-config"
       (setq web-mode-ac-sources-alist
             '(("javascript" . (ac-source-my-buffer-file-name
+                               ac-source-last-sessions
                                ac-source-my-words-in-web-mode-buffers))
               ("jsx"        . (ac-source-my-buffer-file-name
+                               ac-source-last-sessions
                                ac-source-my-words-in-web-mode-buffers
                                ac-source-filename))
-              ("html"       . (ac-source-my-words-in-web-mode-buffers))
+              ("html"       . (ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))
               ("css"        . (ac-source-my-css-propname
                                ac-source-css-property
+                               ac-source-last-sessions
                                ac-source-my-words-in-web-mode-buffers))))
       (push 'web-mode ac-modes)))
 
@@ -2819,6 +2833,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'my-css-mode-common-hook
       (setq ac-sources '(ac-source-my-css-propname
                          ac-source-css-property
+                         ac-source-last-sessions
                          ac-source-my-words-in-web-mode-buffers)))
     (setq ac-modes (append my-css-modes ac-modes))))
 (setup-expecting "key-combo"
@@ -3062,6 +3077,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       ;; ac-source-symbols is very nice but seems buggy
       (setq ac-sources '(ac-source-my-buffer-file-name
                          ac-source-filename
+                         ac-source-last-sessions
                          ac-source-words-in-same-mode-buffers
                          ac-source-dictionary
                          ac-source-functions
@@ -3700,6 +3716,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (defun my-ac-install-c-sources ()
         (setq ac-sources '(ac-source-my-buffer-file-name
                            ac-source-c-headers
+                           ac-source-last-sessions
                            ac-source-words-in-same-mode-buffers
                            ac-source-dictionary
                            ac-source-c-header-symbols)))))
@@ -3925,6 +3942,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (push 'js-mode ac-modes)
     (setup-hook 'js-mode-hook
       (setq ac-sources '(ac-source-my-buffer-file-name
+                         ac-source-last-sessions
                          ac-source-my-words-in-web-mode-buffers))))
   (setup "jquery-doc"
     (setup-hook 'js-mode-hook 'jquery-doc-setup)
@@ -5200,6 +5218,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "auto-complete"
     (setup-hook 'eshell-mode-hook
       (setq ac-sources '(ac-source-files-in-current-dir
+                         ac-source-last-sessions
                          ac-source-words-in-same-mode-buffers
                          ac-source-filename))))
 
