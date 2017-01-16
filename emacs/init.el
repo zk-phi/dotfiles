@@ -461,7 +461,7 @@ cons of two integers."
   (setq locale-coding-system    'sjis
         file-name-coding-system 'sjis))
 
-;; un-disable some disabled commands
+;; unlock some disabled commands
 (!-
  (!foreach '(narrow-to-region
              dired-find-alternate-file
@@ -620,7 +620,7 @@ cons of two integers."
 (setup-include "undohist"
   (setq undohist-directory my-undohist-directory)
   (undohist-initialize)
-  ;; fix for Windows
+  ;; workaround for Windows
   (defun make-undohist-file-name (file)
     (when (string-match "\\(.\\):/?\\(.*\\)$" file)
       (setq file (concat "/drive_" (match-string 1 file) "/" (match-string 2 file))))
@@ -2462,6 +2462,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   :prepare (setup-in-idle "anything-config")
   (setup-after "popwin"
     (push '("*Kill Ring*") popwin:special-display-config)))
+
+;; completion via `git grep'
+(setup-lazy '(git-complete) "git-complete")
 
 ;;   + | pop-up windows
 
@@ -6185,11 +6188,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (!-
  (setup "indent-guide"
    (indent-guide-global-mode)))
-;; (!-
-;;  (setup "indent-guide2"
-;;    (setq indent-guide2-line-char ?|
-;;          indent-guide2-line-enable-xpm nil)
-;;    (indent-guide2-global-mode)))
 
 (!-
  (setup "highlight-parentheses"
@@ -6435,6 +6433,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "M-\""         '("paredit" paredit-meta-doublequote)
   "M-T"          'my-transpose-sexps
   "M-:"          'my-comment-sexp
+  "C-c C-c"      '("git-complete" git-complete)
   "<oem-pa1>"    '("yasnippet" yas-expand my-dabbrev-expand)
   "<muhenkan>"   '("yasnippet" yas-expand my-dabbrev-expand)
   "<nonconvert>" '("yasnippet" yas-expand my-dabbrev-expand))
