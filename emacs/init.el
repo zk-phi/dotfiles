@@ -2085,7 +2085,10 @@ unary operators which can also be binary."
 ;; blank-line-delimited navigation
 
 (defvar my-next-blank-line-skip-faces
-  '(font-lock-string-face font-lock-comment-face font-lock-comment-delimiter-face))
+  '(font-lock-string-face
+    font-lock-comment-face
+    font-lock-comment-delimiter-face
+    font-lock-doc-face))
 
 (defun my-next-blank-line ()
   "Jump to the next empty line."
