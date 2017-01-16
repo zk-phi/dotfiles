@@ -5958,12 +5958,12 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#997c5e" "#aa6b6b"
     ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
 
-    ;; "monochrome" inspired palette with muted "Flat UI" colors
-    ;; reference | https://flatuicolors.com/ (brightness+12, saturation-20)
-    (create-solarized-based-theme 'solarized-monobright 'dark
-      "solarized-based theme with few muted Flat UI colors."
-      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#d99f6b" "#dd8a82"
-      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#e1c65c" "#9e9e9e")
+    ;; "monochrome" inspired theme with "jellybeans" colors
+    ;; reference | https://github.com/fxn/monochrome-theme.el/
+    (create-solarized-based-theme 'chillized 'dark
+      "solarized-based theme with `monochrome' inspired color-palette."
+      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#649d8a" "#ff8683"
+      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#e9b96e" "#9e9e9e")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
