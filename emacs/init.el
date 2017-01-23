@@ -2500,13 +2500,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;;   + | assistants
 
-;; autoload pcre2el
-(setup-lazy '(rxt-explain) "pcre2el"
-  :prepare (defun describe-regexp () (interactive) (rxt-explain))
-  (setup-after "rainbow-delimiters"
-    (setup-hook 'rxt-help-mode-hook
-      (rainbow-delimiters-mode -1))))
-
 ;; autoload RPN calc
 (setup-lazy '(rpn-calc) "rpn-calc")
 
@@ -5149,16 +5142,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "j"   'next-line
     "k"   'previous-line))
 
-;;     + list-environment [list-environment]
-
-(setup-lazy '(list-environment) "list-environment"
-  (setup-after "popwin"
-    (push '("*Process-Environment*") popwin:special-display-config))
-  (setup-keybinds list-environment-mode
-    "s" 'list-environment-setenv
-    "n" 'list-environment-addenv
-    "d" 'list-environment-clear))
-
 ;;   + others
 ;;     + fundamental-mode
 
@@ -6473,7 +6456,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "<f1> a"    'describe-face
   "<f1> x"    'describe-syntax
   "<f1> s"    'info-lookup-symbol
-  "<f1> r"    '("pcre2el" describe-regexp)
   "<f1> w"    '("sdic" sdic-describe-word))
 
 ;;   + | others
@@ -6500,7 +6482,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "C-x C-l"   'my-add-change-log-entry
   "C-x C-t"   'toggle-truncate-lines
   "C-x C-p"   'proced
-  "C-x C-v"   'list-environment
   "C-x C-,"   '("download-region" download-region-as-url))
 
 ;;   + keychord
