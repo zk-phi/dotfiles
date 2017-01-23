@@ -2464,7 +2464,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (push '("*Kill Ring*") popwin:special-display-config)))
 
 ;; completion via `git grep'
-(setup-lazy '(git-complete) "git-complete")
+(setup-lazy '(git-complete) "git-complete"
+  :prepare (setup-in-idle "git-complete"))
 
 ;;   + | pop-up windows
 
