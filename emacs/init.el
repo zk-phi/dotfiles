@@ -2572,7 +2572,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-lazy '(togetherly-client-start togetherly-server-start) "togetherly")
 
 ;; + | Modes
-;;   + text modes
+;;   + markup modes
 ;;     + (common)
 
 (define-minor-mode my-auto-kutoten-mode
@@ -2731,130 +2731,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (setq ac-l-dict-directory my-latex-dictionary-directory)
       (push 'latex-mode ac-modes)
       (setup-hook 'latex-mode-hook 'ac-l-setup))))
-
-;;     + web-mode
-
-(setup-lazy '(web-mode) "web-mode"
-  :prepare (progn
-             (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
-             (push '("\\.jsx$" . web-mode) auto-mode-alist))
-
-  (setup-keybinds web-mode-map
-    "C-c '" 'web-mode-element-close
-    "C-;"   'web-mode-comment-or-uncomment
-    "M-;" nil)
-
-  (setq web-mode-script-padding                   nil
-        web-mode-style-padding                    nil
-        web-mode-markup-indent-offset             2
-        web-mode-css-indent-offset                4
-        web-mode-code-indent-offset               4
-        web-mode-enable-control-block-indentation nil
-        web-mode-enable-auto-quoting              nil)
-
-  ;; JSX syntax highlight
-  (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
-  (setq web-mode-javascript-font-lock-keywords
-        (nconc
-         '(;; labels
-           ("case[\s\t]+\\([^:]+[^:\s\t]\\)[\s\t]*:" 1 'web-mode-constant-face)
-           ;; hash-keys
-           ("\\([A-z0-9_]+\\)[\s\t]*:" 1 'web-mode-hash-key-face)
-           ;; method decls / lambda expressions
-           ("\\(?:\\(function\\)\\|\\([A-z0-9_]+\\)\\)[\s\t]*\\((\\)[A-z0-9_\s\t,=]*)[\s\t\n]*{"
-            (1 'web-mode-keyword-face nil t)
-            (2 'web-mode-function-name-face nil t)
-            ("\\([A-z0-9_]+\\)\\(?:[\s\t]*=[^,)]*\\)?[,)]"
-             (goto-char (match-end 3)) nil (1 'web-mode-variable-name-face)))
-           ;; import stmt
-           ("\\(import\\)[\s\t]*\\([{A-z0-9_*]\\(?:[A-z0-9_,*\s\t]*[A-z0-9_}]\\)?\\)[\s\t]*\\(from\\)"
-            (1 'web-mode-keyword-face)
-            (2 'web-mode-variable-name-face)
-            (3 'web-mode-keyword-face)))
-         web-mode-javascript-font-lock-keywords))
-
-  (setup "sgml-mode"
-    (setup-keybinds web-mode-map
-      "<f1> s"  'sgml-tag-help))
-
-  (setup-expecting "rainbow-mode"
-    (setup-hook 'web-mode-hook 'rainbow-mode))
-
-  (setup-after "auto-complete"
-    (setup "auto-complete-config"
-      (setq web-mode-ac-sources-alist
-            '(("javascript" . (ac-source-my-buffer-file-name
-                               ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))
-              ("jsx"        . (ac-source-my-buffer-file-name
-                               ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers
-                               ac-source-filename))
-              ("html"       . (ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))
-              ("css"        . (ac-source-my-css-propname
-                               ac-source-css-property
-                               ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))))
-      (push 'web-mode ac-modes)))
-
-  (setup-after "smart-compile"
-    (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
-
-  (setup-expecting "key-combo"
-    ;; does not work ?
-    (defun my-sgml-sp-or-smart-lt ()
-      "smart insertion of brackets for sgml languages"
-      (interactive)
-      (if (use-region-p)
-          (let ((beg (region-beginning)) ; wrap with <>
-                (end (region-end)))
-            (deactivate-mark)
-            (save-excursion
-              (goto-char beg)
-              (insert "<")
-              (goto-char (+ 1 end))
-              (insert ">")))
-        (insert "<>")                     ; insert <`!!'>
-        (backward-char)))
-    (setup-hook 'web-mode-hook
-      (key-combo-mode 1)
-      (key-combo-define-local (kbd "<") '(my-sgml-sp-or-smart-lt "&lt;" "<"))
-      (key-combo-define-local (kbd "<!") "<!DOCTYPE `!!'>")
-      (key-combo-define-local (kbd ">") '("&gt;" ">"))
-      (key-combo-define-local (kbd "&") '("&amp;" "&"))))
-  )
-
-;;     + css-like languages
-
-;; common settings
-(setup-after "auto-complete"
-  (setup "auto-complete-config"
-    (setup-hook 'my-css-mode-common-hook
-      (setq ac-sources '(ac-source-my-css-propname
-                         ac-source-css-property
-                         ac-source-last-sessions
-                         ac-source-my-words-in-web-mode-buffers)))
-    (setq ac-modes (append my-css-modes ac-modes))))
-(setup-expecting "key-combo"
-  (setup-hook 'my-css-mode-common-hook
-    (key-combo-mode 1)
-    (key-combo-define-local (kbd "+") " + ")
-    (key-combo-define-local (kbd ">") " > ")
-    (key-combo-define-local (kbd "~") " ~ ")
-    ;; doesn't work ... (why?)
-    ;; (key-combo-define-local (kbd "^=") " ^= ")
-    (key-combo-define-local (kbd "$=") " $= ")
-    (key-combo-define-local (kbd "*=") " *= ")
-    (key-combo-define-local (kbd "=") " = ")))
-
-;; css
-(setup-lazy '(css-mode) "css-mode"
-  :prepare (push '("\\.css$" . css-mode) auto-mode-alist))
-
-;; scss
-(setup-lazy '(scss-mode) "scss-mode"
-  :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist))
 
 ;;     + gfm-mode [markdown-mode]
 
@@ -3934,8 +3810,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   :prepare (progn (push '("\\.ll?$" . bison-mode) auto-mode-alist)
                   (push '("\\.yy?$" . bison-mode) auto-mode-alist)))
 
-;;     + other procedual
-;;       + Javascript / Typescript
+;;     + web
+;;       + js and family
 
 (setup-after "js"
   (setup-after "auto-complete"
@@ -3954,6 +3830,131 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-lazy '(typescript-mode) "typescript"
   :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
 
+;;       + css-like
+
+;; common settings
+(setup-after "auto-complete"
+  (setup "auto-complete-config"
+    (setup-hook 'my-css-mode-common-hook
+      (setq ac-sources '(ac-source-my-css-propname
+                         ac-source-css-property
+                         ac-source-last-sessions
+                         ac-source-my-words-in-web-mode-buffers)))
+    (setq ac-modes (append my-css-modes ac-modes))))
+(setup-expecting "key-combo"
+  (setup-hook 'my-css-mode-common-hook
+    (key-combo-mode 1)
+    (key-combo-define-local (kbd "+") " + ")
+    (key-combo-define-local (kbd ">") " > ")
+    (key-combo-define-local (kbd "~") " ~ ")
+    ;; doesn't work ... (why?)
+    ;; (key-combo-define-local (kbd "^=") " ^= ")
+    (key-combo-define-local (kbd "$=") " $= ")
+    (key-combo-define-local (kbd "*=") " *= ")
+    (key-combo-define-local (kbd "=") " = ")))
+
+;; css
+(setup-lazy '(css-mode) "css-mode"
+  :prepare (push '("\\.css$" . css-mode) auto-mode-alist))
+
+;; scss
+(setup-lazy '(scss-mode) "scss-mode"
+  :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist))
+
+;;       + web-mode
+
+(setup-lazy '(web-mode) "web-mode"
+  :prepare (progn
+             (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
+             (push '("\\.jsx$" . web-mode) auto-mode-alist))
+
+  (setup-keybinds web-mode-map
+    "C-c '" 'web-mode-element-close
+    "C-;"   'web-mode-comment-or-uncomment
+    "M-;" nil)
+
+  (setq web-mode-script-padding                   nil
+        web-mode-style-padding                    nil
+        web-mode-markup-indent-offset             2
+        web-mode-css-indent-offset                4
+        web-mode-code-indent-offset               4
+        web-mode-enable-control-block-indentation nil
+        web-mode-enable-auto-quoting              nil)
+
+  ;; JSX syntax highlight
+  (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
+  (setq web-mode-javascript-font-lock-keywords
+        (nconc
+         '(;; labels
+           ("case[\s\t]+\\([^:]+[^:\s\t]\\)[\s\t]*:" 1 'web-mode-constant-face)
+           ;; hash-keys
+           ("\\([A-z0-9_]+\\)[\s\t]*:" 1 'web-mode-hash-key-face)
+           ;; method decls / lambda expressions
+           ("\\(?:\\(function\\)\\|\\([A-z0-9_]+\\)\\)[\s\t]*\\((\\)[A-z0-9_\s\t,=]*)[\s\t\n]*{"
+            (1 'web-mode-keyword-face nil t)
+            (2 'web-mode-function-name-face nil t)
+            ("\\([A-z0-9_]+\\)\\(?:[\s\t]*=[^,)]*\\)?[,)]"
+             (goto-char (match-end 3)) nil (1 'web-mode-variable-name-face)))
+           ;; import stmt
+           ("\\(import\\)[\s\t]*\\([{A-z0-9_*]\\(?:[A-z0-9_,*\s\t]*[A-z0-9_}]\\)?\\)[\s\t]*\\(from\\)"
+            (1 'web-mode-keyword-face)
+            (2 'web-mode-variable-name-face)
+            (3 'web-mode-keyword-face)))
+         web-mode-javascript-font-lock-keywords))
+
+  (setup "sgml-mode"
+    (setup-keybinds web-mode-map
+      "<f1> s"  'sgml-tag-help))
+
+  (setup-expecting "rainbow-mode"
+    (setup-hook 'web-mode-hook 'rainbow-mode))
+
+  (setup-after "auto-complete"
+    (setup "auto-complete-config"
+      (setq web-mode-ac-sources-alist
+            '(("javascript" . (ac-source-my-buffer-file-name
+                               ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))
+              ("jsx"        . (ac-source-my-buffer-file-name
+                               ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers
+                               ac-source-filename))
+              ("html"       . (ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))
+              ("css"        . (ac-source-my-css-propname
+                               ac-source-css-property
+                               ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))))
+      (push 'web-mode ac-modes)))
+
+  (setup-after "smart-compile"
+    (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
+
+  (setup-expecting "key-combo"
+    ;; does not work ?
+    (defun my-sgml-sp-or-smart-lt ()
+      "smart insertion of brackets for sgml languages"
+      (interactive)
+      (if (use-region-p)
+          (let ((beg (region-beginning)) ; wrap with <>
+                (end (region-end)))
+            (deactivate-mark)
+            (save-excursion
+              (goto-char beg)
+              (insert "<")
+              (goto-char (+ 1 end))
+              (insert ">")))
+        (insert "<>")                     ; insert <`!!'>
+        (backward-char)))
+    (setup-hook 'web-mode-hook
+      (key-combo-mode 1)
+      (key-combo-define-local (kbd "<") '(my-sgml-sp-or-smart-lt "&lt;" "<"))
+      (key-combo-define-local (kbd "<!") "<!DOCTYPE `!!'>")
+      (key-combo-define-local (kbd ">") '("&gt;" ">"))
+      (key-combo-define-local (kbd "&") '("&amp;" "&"))))
+  )
+
+;;     + other procedual
 ;;       + Perl-like
 
 (setup-lazy '(cperl-mode) "cperl-mode"
@@ -5570,7 +5571,9 @@ displayed, use substring of the buffer."
   ;; (mapcar (lambda (c) (apply 'color-rgb-to-hex c))
   ;;         (color-gradient '(1.0 0.2 0.1) '(0.4 0.9 0.2) 11))
   '("#f2411b" "#e5501d" "#d85f1f" "#cb6e22" "#bf7d24" "#b28c26"
-    "#a59b28" "#98aa2a" "#8cb82c" "#7fc72e" "#72d630"))
+    "#a59b28" "#98aa2a" "#8cb82c" "#7fc72e" "#72d630" "#888888"))
+
+
 
 ;;   + | change color while recording macros
 
@@ -5714,8 +5717,8 @@ displayed, use substring of the buffer."
                         "%M:%S" (time-subtract (current-time) my-ramen-start-time))
                        'face 'mode-line-warning-face)))
         (battery
-         (let* ((index (/ (floor (car my-battery-status)) 10))
-                (str (nth index '("₀_" "₁▁" "₂▂" "₃▃" "₄▄" "₅▅" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█")))
+         (let* ((index (if my-battery-status (/ (floor (car my-battery-status)) 10) 11))
+                (str (nth index '("₀_" "₁▁" "₂▂" "₃▃" "₄▄" "₅▅" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█" "N/A")))
                 (color (nth index my-mode-line-battery-indicator-colors)))
            (if (cdr my-battery-status)
                (propertize str 'face 'mode-line-dark-face)
