@@ -43,7 +43,11 @@
 ;;       |MFile| Save|     |FFlat|     |OthrF|     |KilBf|CgLog|     |     |
 ;;          |     |Rname|Close|     |Bffrs|     |ExMcr|  DL |     |     |
 
-;;   + specials
+;;   + extra
+
+;; C-c
+;;
+;; - C-c C-c : git-complete
 
 ;; key-chord
 ;;
@@ -57,7 +61,7 @@
 ;; - df : yas-expand
 ;; - jk : yas-expand
 
-;; specials
+;; special keys
 ;;
 ;; -    <f1> : help prefix
 ;; -  M-<f4> : kill-emacs
@@ -611,6 +615,10 @@ cons of two integers."
         (append my-additional-include-directories cc-search-directories)))
 
 ;;   + | edit
+
+;; electric newline
+(setup-include "electric"
+  (electric-layout-mode 1))
 
 ;; delete selection on insert like modern applications
 (setup-include "delsel"
@@ -1846,6 +1854,11 @@ unary operators which can also be binary."
     (forward-line)
     (indent-according-to-mode)))
 
+;;         foo  |                    |
+;; foo          |              foo { |            foo
+;; |    -> |    | foo { | } ->     | | foo|bar -> |
+;; bar          |              }     |            bar
+;;         bar  |                    |
 ;; reference | https://github.com/milkypostman/dotemacs/init.el
 (defun my-new-line-between ()
   (interactive)
@@ -2707,7 +2720,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     '("M-a" "M-TAB" "C-," "C-a" "C-j" "M-e" ) nil)
   )
 
-;;     + latex-mode [phi-pretty-latex] [ac-latex]
+;;     + latex-mode [magic-latex-buffer] [ac-latex]
 
 (setup-expecting "tex-mode"
   (push '("\\.tex$" . latex-mode) auto-mode-alist))
@@ -3810,152 +3823,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   :prepare (progn (push '("\\.ll?$" . bison-mode) auto-mode-alist)
                   (push '("\\.yy?$" . bison-mode) auto-mode-alist)))
 
-;;     + web
-;;       + js and family
-
-(setup-after "js"
-  (setup-after "auto-complete"
-    (push 'js-mode ac-modes)
-    (setup-hook 'js-mode-hook
-      (setq ac-sources '(ac-source-my-buffer-file-name
-                         ac-source-last-sessions
-                         ac-source-my-words-in-web-mode-buffers))))
-  (setup "jquery-doc"
-    (setup-hook 'js-mode-hook 'jquery-doc-setup)
-    (setup-after "popwin"
-      (push '("^\\*jQuery doc" :regexp t) popwin:special-display-config))
-    (setup-keybinds js-mode-map
-      "<f1> s" 'jquery-doc)))
-
-(setup-lazy '(typescript-mode) "typescript"
-  :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
-
-;;       + css-like
-
-;; common settings
-(setup-after "auto-complete"
-  (setup "auto-complete-config"
-    (setup-hook 'my-css-mode-common-hook
-      (setq ac-sources '(ac-source-my-css-propname
-                         ac-source-css-property
-                         ac-source-last-sessions
-                         ac-source-my-words-in-web-mode-buffers)))
-    (setq ac-modes (append my-css-modes ac-modes))))
-(setup-expecting "key-combo"
-  (setup-hook 'my-css-mode-common-hook
-    (key-combo-mode 1)
-    (key-combo-define-local (kbd "+") " + ")
-    (key-combo-define-local (kbd ">") " > ")
-    (key-combo-define-local (kbd "~") " ~ ")
-    ;; doesn't work ... (why?)
-    ;; (key-combo-define-local (kbd "^=") " ^= ")
-    (key-combo-define-local (kbd "$=") " $= ")
-    (key-combo-define-local (kbd "*=") " *= ")
-    (key-combo-define-local (kbd "=") " = ")))
-
-;; css
-(setup-lazy '(css-mode) "css-mode"
-  :prepare (push '("\\.css$" . css-mode) auto-mode-alist))
-
-;; scss
-(setup-lazy '(scss-mode) "scss-mode"
-  :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist))
-
-;;       + web-mode
-
-(setup-lazy '(web-mode) "web-mode"
-  :prepare (progn
-             (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
-             (push '("\\.jsx$" . web-mode) auto-mode-alist))
-
-  (setup-keybinds web-mode-map
-    "C-c '" 'web-mode-element-close
-    "C-;"   'web-mode-comment-or-uncomment
-    "M-;" nil)
-
-  (setq web-mode-script-padding                   nil
-        web-mode-style-padding                    nil
-        web-mode-markup-indent-offset             2
-        web-mode-css-indent-offset                4
-        web-mode-code-indent-offset               4
-        web-mode-enable-control-block-indentation nil
-        web-mode-enable-auto-quoting              nil)
-
-  ;; JSX syntax highlight
-  (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
-  (setq web-mode-javascript-font-lock-keywords
-        (nconc
-         '(;; labels
-           ("case[\s\t]+\\([^:]+[^:\s\t]\\)[\s\t]*:" 1 'web-mode-constant-face)
-           ;; hash-keys
-           ("\\([A-z0-9_]+\\)[\s\t]*:" 1 'web-mode-hash-key-face)
-           ;; method decls / lambda expressions
-           ("\\(?:\\(function\\)\\|\\([A-z0-9_]+\\)\\)[\s\t]*\\((\\)[A-z0-9_\s\t,=]*)[\s\t\n]*{"
-            (1 'web-mode-keyword-face nil t)
-            (2 'web-mode-function-name-face nil t)
-            ("\\([A-z0-9_]+\\)\\(?:[\s\t]*=[^,)]*\\)?[,)]"
-             (goto-char (match-end 3)) nil (1 'web-mode-variable-name-face)))
-           ;; import stmt
-           ("\\(import\\)[\s\t]*\\([{A-z0-9_*]\\(?:[A-z0-9_,*\s\t]*[A-z0-9_}]\\)?\\)[\s\t]*\\(from\\)"
-            (1 'web-mode-keyword-face)
-            (2 'web-mode-variable-name-face)
-            (3 'web-mode-keyword-face)))
-         web-mode-javascript-font-lock-keywords))
-
-  (setup "sgml-mode"
-    (setup-keybinds web-mode-map
-      "<f1> s"  'sgml-tag-help))
-
-  (setup-expecting "rainbow-mode"
-    (setup-hook 'web-mode-hook 'rainbow-mode))
-
-  (setup-after "auto-complete"
-    (setup "auto-complete-config"
-      (setq web-mode-ac-sources-alist
-            '(("javascript" . (ac-source-my-buffer-file-name
-                               ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))
-              ("jsx"        . (ac-source-my-buffer-file-name
-                               ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers
-                               ac-source-filename))
-              ("html"       . (ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))
-              ("css"        . (ac-source-my-css-propname
-                               ac-source-css-property
-                               ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))))
-      (push 'web-mode ac-modes)))
-
-  (setup-after "smart-compile"
-    (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
-
-  (setup-expecting "key-combo"
-    ;; does not work ?
-    (defun my-sgml-sp-or-smart-lt ()
-      "smart insertion of brackets for sgml languages"
-      (interactive)
-      (if (use-region-p)
-          (let ((beg (region-beginning)) ; wrap with <>
-                (end (region-end)))
-            (deactivate-mark)
-            (save-excursion
-              (goto-char beg)
-              (insert "<")
-              (goto-char (+ 1 end))
-              (insert ">")))
-        (insert "<>")                     ; insert <`!!'>
-        (backward-char)))
-    (setup-hook 'web-mode-hook
-      (key-combo-mode 1)
-      (key-combo-define-local (kbd "<") '(my-sgml-sp-or-smart-lt "&lt;" "<"))
-      (key-combo-define-local (kbd "<!") "<!DOCTYPE `!!'>")
-      (key-combo-define-local (kbd ">") '("&gt;" ">"))
-      (key-combo-define-local (kbd "&") '("&amp;" "&"))))
-  )
-
-;;     + other procedual
-;;       + Perl-like
+;;     + perl-like
+;;       + perl (cperl-mode)
 
 (setup-lazy '(cperl-mode) "cperl-mode"
   :prepare (push '("\\.\\(?:t\\|p[lm]\\|psgi\\)$" . cperl-mode) auto-mode-alist)
@@ -4042,6 +3911,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "?") " ? `!!' : ")))
   )
 
+;;       + ruby
+
 (setup-lazy '(ruby-mode) "ruby-mode"
   :prepare (push '("\\(?:\\.r[bu]\\|Rakefile\\|Gemfile\\)$" . ruby-mode) auto-mode-alist)
 
@@ -4074,62 +3945,155 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setq ruby-end-insert-newline nil))
   )
 
-;;       + Promela
+;;     + web
+;;       + js and family
 
-(setup-lazy '(promela-mode) "promela-mode"
-  :prepare (progn (push '("\\.pml$" . promela-mode) auto-mode-alist)
-                  ;; workaround for emacs>=24
-                  (when (version<= "24" emacs-version)
-                    (defvar font-lock-defaults-alist nil)
-                    (make-obsolete-variable 'font-lock-defaults-alist
-                                            "(setq-local 'font-lock-defaults)"
-                                            "Emacs 24")))
+(setup-after "js"
+  (setup-after "auto-complete"
+    (push 'js-mode ac-modes)
+    (setup-hook 'js-mode-hook
+      (setq ac-sources '(ac-source-my-buffer-file-name
+                         ac-source-last-sessions
+                         ac-source-my-words-in-web-mode-buffers))))
+  (setup "jquery-doc"
+    (setup-hook 'js-mode-hook 'jquery-doc-setup)
+    (setup-after "popwin"
+      (push '("^\\*jQuery doc" :regexp t) popwin:special-display-config))
+    (setup-keybinds js-mode-map
+      "<f1> s" 'jquery-doc)))
 
-  (setq promela-selection-indent 0
-        promela-block-indent 4)
+(setup-lazy '(typescript-mode) "typescript"
+  :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
 
-  (set-face-attribute 'promela-fl-send-poll-face nil
-                      :foreground 'unspecified
-                      :background 'unspecified
-                      :inverse-video 'unspecified
-                      :bold t)
+;;       + css-like
 
-  (setup-hook 'promela-mode-hook
-    (setq-local font-lock-defaults promela-font-lock-defaults))
+;; common settings
+(setup-after "auto-complete"
+  (setup "auto-complete-config"
+    (setup-hook 'my-css-mode-common-hook
+      (setq ac-sources '(ac-source-my-css-propname
+                         ac-source-css-property
+                         ac-source-last-sessions
+                         ac-source-my-words-in-web-mode-buffers)))
+    (setq ac-modes (append my-css-modes ac-modes))))
+(setup-expecting "key-combo"
+  (setup-hook 'my-css-mode-common-hook
+    (key-combo-mode 1)
+    (key-combo-define-local (kbd "+") " + ")
+    (key-combo-define-local (kbd ">") " > ")
+    (key-combo-define-local (kbd "~") " ~ ")
+    ;; doesn't work ... (why?)
+    ;; (key-combo-define-local (kbd "^=") " ^= ")
+    (key-combo-define-local (kbd "$=") " $= ")
+    (key-combo-define-local (kbd "*=") " *= ")
+    (key-combo-define-local (kbd "=") " = ")))
+
+;; css
+(setup-lazy '(css-mode) "css-mode"
+  :prepare (push '("\\.css$" . css-mode) auto-mode-alist))
+
+;; scss
+(setup-lazy '(scss-mode) "scss-mode"
+  :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist))
+
+;;       + web-mode
+
+(setup-lazy '(web-mode) "web-mode"
+  :prepare (progn
+             (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
+             (push '("\\.jsx$" . web-mode) auto-mode-alist))
+
+  (defun my-web-mode-electric-semi ()
+    (interactive)
+    (if (string= (web-mode-language-at-pos) (member '("javascript" "jsx")))
+        (insert ";\n")
+      (insert ";")))
+
+  (setup-keybinds web-mode-map
+    ";"     'my-web-mode-electric-semi
+    "C-c '" 'web-mode-element-close
+    "C-;"   'web-mode-comment-or-uncomment
+    "M-;"   nil)
+
+  (setq web-mode-script-padding                   nil
+        web-mode-style-padding                    nil
+        web-mode-markup-indent-offset             2
+        web-mode-css-indent-offset                4
+        web-mode-code-indent-offset               4
+        web-mode-enable-control-block-indentation nil
+        web-mode-enable-auto-quoting              nil)
+
+  ;; JSX syntax highlight
+  (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
+  (setq web-mode-javascript-font-lock-keywords
+        (nconc
+         '(;; labels
+           ("case[\s\t]+\\([^:]+[^:\s\t]\\)[\s\t]*:" 1 'web-mode-constant-face)
+           ;; hash-keys
+           ("\\([A-z0-9_]+\\)[\s\t]*:" 1 'web-mode-hash-key-face)
+           ;; method decls / lambda expressions
+           ("\\(?:\\(function\\)\\|\\([A-z0-9_]+\\)\\)[\s\t]*\\((\\)[A-z0-9_\s\t,=]*)[\s\t\n]*{"
+            (1 'web-mode-keyword-face nil t)
+            (2 'web-mode-function-name-face nil t)
+            ("\\([A-z0-9_]+\\)\\(?:[\s\t]*=[^,)]*\\)?[,)]"
+             (goto-char (match-end 3)) nil (1 'web-mode-variable-name-face)))
+           ;; import stmt
+           ("\\(import\\)[\s\t]*\\([{A-z0-9_*]\\(?:[A-z0-9_,*\s\t]*[A-z0-9_}]\\)?\\)[\s\t]*\\(from\\)"
+            (1 'web-mode-keyword-face)
+            (2 'web-mode-variable-name-face)
+            (3 'web-mode-keyword-face)))
+         web-mode-javascript-font-lock-keywords))
+
+  (setup "sgml-mode"
+    (setup-keybinds web-mode-map
+      "<f1> s"  'sgml-tag-help))
+
+  (setup-expecting "rainbow-mode"
+    (setup-hook 'web-mode-hook 'rainbow-mode))
 
   (setup-after "auto-complete"
-    (push 'promela-mode ac-modes))
+    (setup "auto-complete-config"
+      (setq web-mode-ac-sources-alist
+            '(("javascript" . (ac-source-my-buffer-file-name
+                               ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))
+              ("jsx"        . (ac-source-my-buffer-file-name
+                               ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers
+                               ac-source-filename))
+              ("html"       . (ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))
+              ("css"        . (ac-source-my-css-propname
+                               ac-source-css-property
+                               ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))))
+      (push 'web-mode ac-modes)))
 
-  (defun my-promela-electric-semi ()
-    (interactive)
-    (insert ";")
-    (unless (string-match "}" (buffer-substring (point) (point-at-eol)))
-      (promela-indent-newline-indent)))
-  ;;
-  (defun my-promela-smart-colons ()
-    "insert two colons followed by a space, and reindent"
-    (interactive)
-    (insert (concat "::"
-                    (if (looking-at " ") "" " ")))
-    (save-excursion (promela-indent-line)))
+  (setup-after "smart-compile"
+    (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
 
   (setup-expecting "key-combo"
-    (setup-hook 'promela-mode-hook
-      (my-install-c-common-smartchr)
-      ;; guards
-      (key-combo-define-local (kbd "->") " -> ")
-      (key-combo-define-local (kbd ":") '(":" my-promela-smart-colons))
-      ;; LTL
-      (key-combo-define-local (kbd "<>") "<>")
-      (key-combo-define-local (kbd "[]") "[]")
-      ;; does not work ...
-      ;; (key-combo-define-local (kbd "do") "do\n`!!'\nod")
-      ;; (key-combo-define-local (kbd "if") "if\n`!!'\nfi")
-      ))
-
-  (setup-keybinds promela-mode-map
-    ";"   'my-promela-electric-semi
-    "C-m" 'promela-indent-newline-indent)
+    ;; does not work ?
+    (defun my-sgml-sp-or-smart-lt ()
+      "smart insertion of brackets for sgml languages"
+      (interactive)
+      (if (use-region-p)
+          (let ((beg (region-beginning)) ; wrap with <>
+                (end (region-end)))
+            (deactivate-mark)
+            (save-excursion
+              (goto-char beg)
+              (insert "<")
+              (goto-char (+ 1 end))
+              (insert ">")))
+        (insert "<>")                     ; insert <`!!'>
+        (backward-char)))
+    (setup-hook 'web-mode-hook
+      (key-combo-mode 1)
+      (key-combo-define-local (kbd "<") '(my-sgml-sp-or-smart-lt "&lt;" "<"))
+      (key-combo-define-local (kbd "<!") "<!DOCTYPE `!!'>")
+      (key-combo-define-local (kbd ">") '("&gt;" ">"))
+      (key-combo-define-local (kbd "&") '("&amp;" "&"))))
   )
 
 ;;     + functional
@@ -4577,7 +4541,65 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-lazy '(zombie-mode) "zombie"
   :prepare (push '("\\.zombie$" . zombie-mode) auto-mode-alist))
 
-;;     + other PLs
+;;     + other
+;;       + Promela
+
+(setup-lazy '(promela-mode) "promela-mode"
+  :prepare (progn (push '("\\.pml$" . promela-mode) auto-mode-alist)
+                  ;; workaround for emacs>=24
+                  (when (version<= "24" emacs-version)
+                    (defvar font-lock-defaults-alist nil)
+                    (make-obsolete-variable 'font-lock-defaults-alist
+                                            "(setq-local 'font-lock-defaults)"
+                                            "Emacs 24")))
+
+  (setq promela-selection-indent 0
+        promela-block-indent 4)
+
+  (set-face-attribute 'promela-fl-send-poll-face nil
+                      :foreground 'unspecified
+                      :background 'unspecified
+                      :inverse-video 'unspecified
+                      :bold t)
+
+  (setup-hook 'promela-mode-hook
+    (setq-local font-lock-defaults promela-font-lock-defaults))
+
+  (setup-after "auto-complete"
+    (push 'promela-mode ac-modes))
+
+  (defun my-promela-electric-semi ()
+    (interactive)
+    (insert ";")
+    (unless (string-match "}" (buffer-substring (point) (point-at-eol)))
+      (promela-indent-newline-indent)))
+  ;;
+  (defun my-promela-smart-colons ()
+    "insert two colons followed by a space, and reindent"
+    (interactive)
+    (insert (concat "::"
+                    (if (looking-at " ") "" " ")))
+    (save-excursion (promela-indent-line)))
+
+  (setup-expecting "key-combo"
+    (setup-hook 'promela-mode-hook
+      (my-install-c-common-smartchr)
+      ;; guards
+      (key-combo-define-local (kbd "->") " -> ")
+      (key-combo-define-local (kbd ":") '(":" my-promela-smart-colons))
+      ;; LTL
+      (key-combo-define-local (kbd "<>") "<>")
+      (key-combo-define-local (kbd "[]") "[]")
+      ;; does not work ...
+      ;; (key-combo-define-local (kbd "do") "do\n`!!'\nod")
+      ;; (key-combo-define-local (kbd "if") "if\n`!!'\nfi")
+      ))
+
+  (setup-keybinds promela-mode-map
+    ";"   'my-promela-electric-semi
+    "C-m" 'promela-indent-newline-indent)
+  )
+
 ;;       + AHK
 
 (setup-lazy '(ahk-mode) "ahk-mode"
