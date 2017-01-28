@@ -457,7 +457,7 @@ cons of two integers."
               require-final-newline t)
 
 ;; use UTF-8 as the default coding system
-(prefer-coding-system 'utf-8)
+(prefer-coding-system 'utf-8-unix)
 
 ;; on Windows, use Shift-JIS for file names
 ;; reference | http://sakito.jp/emacs/emacsshell.html
@@ -5973,16 +5973,9 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#997c5e" "#aa6b6b"
     ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
 
-    ;; ;; "monochrome" inspired theme with "jellybeans" colors
-    ;; ;; reference | https://github.com/fxn/monochrome-theme.el/
-    ;; (create-solarized-based-theme 'chillized 'dark
-    ;;   "solarized-based theme with `monochrome' inspired color-palette."
-    ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#649d8a" "#ff8683"
-    ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#e9b96e" "#9e9e9e")
-
     ;; "monochrome" inspired theme with "jellybeans" colors
     ;; reference | https://github.com/fxn/monochrome-theme.el/
-    (create-solarized-based-theme 'chillized 'dark
+    (create-solarized-based-theme 'monojelly 'dark
       "solarized-based theme with `monochrome' inspired color-palette."
       "#1c1c1c" "#d8d8d8" "#9e9e9e" "#799d6a" "#cf6a4c"
       "#c0c0c0" "#c0c0c0" "#c0c0c0" "#fad07a" "#9e9e9e")
