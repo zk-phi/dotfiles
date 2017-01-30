@@ -4005,9 +4005,13 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (defun my-web-mode-electric-semi ()
     (interactive)
-    (if (string= (web-mode-language-at-pos) (member '("javascript" "jsx")))
-        (insert ";\n")
-      (insert ";")))
+    (cond ((and (member (web-mode-language-at-pos) '("javascript" "jsx"))
+                (looking-at "[\s\t]*$"))
+           (insert ";\n")
+           (funcall indent-line-function)
+           (back-to-indentation))
+          (t
+           (insert ";"))))
 
   (setup-keybinds web-mode-map
     ";"     'my-web-mode-electric-semi
