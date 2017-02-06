@@ -4003,7 +4003,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;; scss
 (setup-lazy '(scss-mode) "scss-mode"
-  :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist))
+  :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist)
+  (setup-hook 'scss-mode-hook
+    (setq-local css-indent-offset 2)))
 
 ;;       + web-mode
 
