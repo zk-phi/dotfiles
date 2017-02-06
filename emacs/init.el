@@ -337,6 +337,15 @@ cons of two integers."
     (dolist (target targets)
       (set-fontset-font t target font-spec nil add))))
 
+(defun my-generate-random-str (len)
+  (interactive (list (read-number "length : ")))
+  (let* ((chars (string-to-vector "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKMNLOPQRSTUVWXYZ_"))
+         (max (length chars))
+         (lst (make-list len nil))
+         (str (mapconcat (lambda (x) (char-to-string (aref chars (random max)))) lst ""))
+         (outputfn (if (called-interactively-p) 'print 'identity)))
+    (funcall outputfn str)))
+
 ;; + | System
 ;;   + *scratch* utilities [scratch-pop]
 ;;   + | backup/popup scratches
