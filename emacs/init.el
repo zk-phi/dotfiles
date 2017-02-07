@@ -322,6 +322,17 @@
       (when lst (setq res (concat "…/" res)))
       res)))
 
+(defun my-get-short-branch-name (file)
+  (let* ((project-root (locate-dominating-file file ".git"))
+         (head-path (and project-root (concat project-root "/.git/HEAD"))))
+    (when (and head-path (file-exists-p head-path))
+      (with-temp-buffer
+        (insert-file-contents head-path)
+        (goto-char (point-min))
+        (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
+        (let ((str (replace-regexp-in-string "\\(.\\)[aeiouAEIOU]" "\\1" (match-string 1))))
+          (if (> (length str) 3) (substring str 0 3) str))))))
+
 (defun my-read-font-family ()
   (completing-read "Font Family: " (cl-remove-duplicates (font-family-list)) nil t))
 
@@ -5230,10 +5241,11 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-after "eshell"
 
   (setq eshell-directory-name  my-eshell-directory
-        eshell-prompt-regexp   (concat "^" (regexp-opt
-                                            '("（*>w<）? " "（*'-'）? " "（`;w;）! ")))
+        eshell-prompt-regexp   (regexp-opt '("（*>w<）? " "（*'-'）? " "（`;w;）! "))
         eshell-prompt-function (lambda ()
-                                 (concat "\n" (my-shorten-directory (eshell/pwd) 30) "\n"
+                                 (concat "\n"
+                                         (my-shorten-directory (eshell/pwd) 30) " "
+                                         (my-get-short-branch-name (eshell/pwd)) "\n"
                                          (cond ((= (user-uid) 0) "（*>w<）? ")
                                                ((= eshell-last-command-status 0) "（*'-'）? ")
                                                (t "（`;w;）! ")))))
@@ -5672,20 +5684,8 @@ displayed, use substring of the buffer."
 
 (defvar-local my-current-branch-name nil)
 (setup-hook 'find-file-hook
-  (let* ((project-root
-          (and buffer-file-name
-               (locate-dominating-file buffer-file-name ".git")))
-         (head-path
-          (and project-root
-               (concat project-root "/.git/HEAD")))
-         str)
-    (when (and head-path (file-exists-p head-path))
-      (with-temp-buffer
-        (insert-file-contents head-path)
-        (goto-char (point-min))
-        (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
-        (setq str (replace-regexp-in-string "\\(.\\)[aeiouAEIOU]" "\\1" (match-string 1))))
-      (setq my-current-branch-name (if (> (length str) 3) (substring str 0 3) str)))))
+  (when buffer-file-name
+    (setq my-current-branch-name (my-get-short-branch-name buffer-file-name))))
 
 (defun my-generate-mode-line-format ()
   (let ((VBAR
