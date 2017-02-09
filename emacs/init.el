@@ -39,7 +39,7 @@
 
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|WUndo| Diff|     |     |
-;;    |     |Write|Encod|Revrt|Trnct|     |Untab|SpChk|     |RdOly|(ESC)|     |
+;;    |     |Write|Encod|Revrt|Trnct|     |Untab|SpChk|     |Bckup|(ESC)|     |
 ;;       |MFile| Save|     |FFlat|     |OthrF|     |KilBf|CgLog|     |     |
 ;;          |     |Rname|Close|     |Bffrs|     |ExMcr|  DL |     |     |
 
@@ -291,7 +291,7 @@
     (run-hooks 'my-lispy-mode-common-hook)))
 
 (defvar my-listy-modes
-  '(tabulated-list-mode dired-mode proced-mode))
+  '(tabulated-list-mode dired-mode))
 (setup-hook 'change-major-mode-after-body-hook
   (when (apply 'derived-mode-p my-listy-modes)
     (run-hooks 'my-listy-mode-common-hook)))
@@ -1367,8 +1367,7 @@ unary operators which can also be binary."
       (hilit-chg-set-face-on-change yas-snippet-beg yas-snippet-end 0)))
   )
 
-;;     + anything-jump
-;;     + | (prelude)
+  ;;   + anything settings
 
 (setup-lazy '(my-anything-jump) "anything"
 
@@ -2387,6 +2386,38 @@ unary operators which can also be binary."
     (insert (url-hexify-string str))))
 
 ;;   + Misc: built-ins
+;;   + | files
+
+(setup-lazy '(my-restore-from-backup) "diff"
+  (defun my--previous-backup (backup-file)
+    (when (string-match "~\\([0-9]+\\)~$" backup-file)
+      (let* ((version (string-to-int (match-string 1 backup-file)))
+             (previous (replace-match (int-to-string (1- version)) t t backup-file 1)))
+        (when (file-exists-p previous) previous))))
+  (defun my-restore-from-backup ()
+    (interactive)
+    (cond ((null buffer-file-name)
+           (error "Not a file buffer."))
+          ((buffer-modified-p)
+           (error "Buffer is modified."))
+          (t
+           (let ((original buffer-file-name)
+                 (buf (current-buffer))
+                 (backup (file-newest-backup buffer-file-name))
+                 selected-backup)
+             (while (and backup (null selected-backup))
+               (switch-to-buffer (diff-no-select backup original))
+               (cl-case (read-char-choice "Restore this backup [n,y,q] ? " '(?n ?y ?q))
+                 ((?n) (setq backup (my--previous-backup backup)))
+                 ((?y) (setq selected-backup backup))
+                 ((?q) (setq backup nil))))
+             (kill-buffer "*Diff*")
+             (switch-to-buffer buf)
+             (if (null selected-backup)
+                 (error "No more backups found.")
+               (erase-buffer)
+               (insert-file-contents selected-backup)))))))
+
 ;;   + | buffers / windows
 
 ;; turn-off follow-mode on delete-other-windows
@@ -5181,29 +5212,6 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "d"   'Buffer-menu-execute
     "f"   'Buffer-menu-toggle-files-only))
 
-;;     + proced
-
-(setup-after "proced"
-
-  (setq proced-tree-flag t)
-
-  (setup-after "popwin"
-    (push '("*Proced*") popwin:special-display-config))
-
-  (setup-keybinds proced-mode-map
-    "SPC" 'proced-mark
-    "DEL" 'proced-unmark-backward
-    "u"   'proced-unmark-all
-    "t"   'proced-toggle-marks
-    "C"   'proced-mark-children
-    "P"   'proced-mark-parents
-    "/"   'proced-filter-interactive
-    ","   'proced-sort-interactive
-    "d"   'proced-send-signal
-    "r"   'proced-renice
-    "j"   'next-line
-    "k"   'previous-line))
-
 ;;   + others
 ;;     + fundamental-mode
 
@@ -6534,7 +6542,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "C-x C-a"   '("multifiles" mf/mirror-region-in-multifile)
   "C-x C-l"   'my-add-change-log-entry
   "C-x C-t"   'toggle-truncate-lines
-  "C-x C-p"   'proced
+  "C-x C-p"   'my-restore-from-backup
   "C-x C-,"   '("download-region" download-region-as-url))
 
 ;;   + keychord
