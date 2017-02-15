@@ -2377,13 +2377,13 @@ unary operators which can also be binary."
   (interactive "r")
   (let ((str (buffer-substring beg end)))
     (delete-region beg end)
-    (insert (url-unhex-string str))))
+    (insert (decode-coding-string (url-unhex-string str) 'utf-8))))
 (defun my-url-encode-region (beg end)
   "Hexify region."
   (interactive "r")
   (let ((str (buffer-substring beg end)))
     (delete-region beg end)
-    (insert (url-hexify-string str))))
+    (insert (url-hexify-string (encode-coding-string str 'utf-8)))))
 
 ;;   + Misc: built-ins
 ;;   + | files
