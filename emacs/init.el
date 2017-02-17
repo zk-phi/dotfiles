@@ -6100,21 +6100,16 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 ;;   + | highlight-stages
 
 (setup-after "highlight-stages"
-  (set-face-attribute 'highlight-stages-negative-level-face nil
-                      :foreground (face-foreground 'default)
-                      :background (! (my-make-color (face-background 'default) -3)))
-  (set-face-attribute 'highlight-stages-level-1-face nil
-                      :foreground (face-foreground 'default)
-                      :background (! (my-make-color (face-background 'default) 3)))
-  (set-face-attribute 'highlight-stages-level-2-face nil
-                      :foreground (face-foreground 'default)
-                      :background (! (my-make-color (face-background 'default) 7)))
-  (set-face-attribute 'highlight-stages-level-3-face nil
-                      :foreground (face-foreground 'default)
-                      :background (! (my-make-color (face-background 'default) 11)))
-  (set-face-attribute 'highlight-stages-higher-level-face nil
-                      :foreground (face-foreground 'default)
-                      :background (! (my-make-color (face-background 'default) 15))))
+  (set-face-background 'highlight-stages-negative-level-face
+                       (! (my-make-color (face-background 'default) -3)))
+  (set-face-background 'highlight-stages-level-1-face
+                       (! (my-make-color (face-background 'default) 3)))
+  (set-face-background 'highlight-stages-level-2-face
+                       (! (my-make-color (face-background 'default) 7)))
+  (set-face-background 'highlight-stages-level-3-face
+                       (! (my-make-color (face-background 'default) 11)))
+  (set-face-background 'highlight-stages-higher-level-face
+                       (! (my-make-color (face-background 'default) 15))))
 
 ;;   + | paren
 
