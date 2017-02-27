@@ -15,6 +15,7 @@
     hceckout = checkout
     checkotu = checkout
     stauts = status
+    stahs = stash
     hisotry = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
 [diff]
     compactionHeuristic = true
