@@ -2822,6 +2822,12 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
     "TAB" 'markdown-cycle))
 
+;;   + configuration modes
+;;     + Dockerfile
+
+(setup-lazy '(dockerfile-mode) "dockerfile-mode"
+  :prepare (push '("Dockerfile$" . dockerfile-mode) auto-mode-alist))
+
 ;;   + prog modes
 ;;     + generic
 
