@@ -6018,12 +6018,17 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#9b744c" "#aa6b6b"
     ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
 
-    ;; "monochrome" inspired theme with "jellybeans" colors
-    ;; reference | https://github.com/fxn/monochrome-theme.el/
-    (create-solarized-based-theme 'monojelly 'dark
+    ;; "monochrome" inspired palette 2
+    (create-solarized-based-theme 'sakura 'dark
       "solarized-based theme with `monochrome' inspired color-palette."
-      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#799d6a" "#cf6a4c"
-      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#fad07a" "#9e9e9e")
+      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#719d77" "#b9687e"
+      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#e2b3c0" "#9e9e9e")
+
+    ;; ;; "monochrome" inspired theme with "planet" colors
+    ;; (create-solarized-based-theme 'monoplanet 'dark
+    ;;   "solarized-based theme with `monochrome' inspired color-palette."
+    ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#649d8a" "#ff8683"
+    ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#e0b776" "#9e9e9e")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
