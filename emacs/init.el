@@ -4081,13 +4081,15 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
   (defun my-web-mode-electric-semi ()
     (interactive)
-    (cond ((and (member (web-mode-language-at-pos) '("javascript" "jsx"))
-                (looking-at "[\s\t]*$"))
-           (insert ";\n")
-           (funcall indent-line-function)
-           (back-to-indentation))
-          (t
-           (insert ";"))))
+    (let ((lang (web-mode-language-at-pos)))
+      (cond ((and (or (string= lang "javascript")
+                      (and (string= lang "jsx") (not (web-mode-jsx-is-html))))
+                  (looking-at "[\s\t]*$"))
+             (insert ";\n")
+             (funcall indent-line-function)
+             (back-to-indentation))
+            (t
+             (insert ";")))))
 
   (setup-keybinds web-mode-map
     ";"     'my-web-mode-electric-semi
@@ -4152,28 +4154,17 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-after "smart-compile"
     (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
 
-  (setup-expecting "key-combo"
-    ;; does not work ?
-    (defun my-sgml-sp-or-smart-lt ()
-      "smart insertion of brackets for sgml languages"
-      (interactive)
-      (if (use-region-p)
-          (let ((beg (region-beginning)) ; wrap with <>
-                (end (region-end)))
-            (deactivate-mark)
-            (save-excursion
-              (goto-char beg)
-              (insert "<")
-              (goto-char (+ 1 end))
-              (insert ">")))
-        (insert "<>")                     ; insert <`!!'>
-        (backward-char)))
+  (setup "key-combo-web"
     (setup-hook 'web-mode-hook
       (key-combo-mode 1)
-      (key-combo-define-local (kbd "<") '(my-sgml-sp-or-smart-lt "&lt;" "<"))
-      (key-combo-define-local (kbd "<!") "<!DOCTYPE `!!'>")
-      (key-combo-define-local (kbd ">") '("&gt;" ">"))
-      (key-combo-define-local (kbd "&") '("&amp;" "&"))))
+      (key-combo-web-define "jsx" (kbd "<") '(" < " "<`!!'>"))
+      (key-combo-web-define "jsx" (kbd "&") '(" & " " && "))
+      (key-combo-web-define "jsx" (kbd "</") 'web-mode-element-close)
+      (key-combo-web-define "jsx-html" (kbd "<") '("<`!!'>" "<"))
+      (key-combo-web-define "html" (kbd "<") '("<`!!'>" "&lt;" "<"))
+      (key-combo-web-define "html" (kbd "<!") "<!DOCTYPE `!!'>")
+      (key-combo-web-define "html" (kbd ">") '("&gt;" ">"))
+      (key-combo-web-define "html" (kbd "&") '("&amp;" "&"))))
   )
 
 ;;     + functional
@@ -6022,8 +6013,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;; "monochrome" inspired palette 2
     (create-solarized-based-theme 'sakura 'dark
       "solarized-based theme with `monochrome' inspired color-palette."
-      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#719d77" "#b9687e"
-      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#e2b3c0" "#9e9e9e")
+      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#B0D391" "#FB9A85"
+      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
 
     ;; ;; "monochrome" inspired theme with "planet" colors
     ;; (create-solarized-based-theme 'monoplanet 'dark
