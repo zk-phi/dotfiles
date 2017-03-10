@@ -2515,7 +2515,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;; use "phi-search/replace" and "phi-search-mc" instead of "isearch"
 (setup-lazy '(phi-replace phi-replace-query) "phi-replace")
 (setup-lazy '(phi-search phi-search-backward) "phi-search"
-  (setq phi-search-case-sensitive 'guess)
+  (setq phi-search-case-sensitive   'guess
+        phi-search-overlay-priority 2)
   (setup-expecting "multiple-cursors"
     (setup-lazy
       '(phi-search-mc/mark-next phi-search-mc/mark-all) "phi-search-mc"
