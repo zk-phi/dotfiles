@@ -2653,260 +2653,10 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-lazy '(togetherly-client-start togetherly-server-start) "togetherly")
 
 ;; + | Modes
-;;   + markup modes
-;;     + (common)
-
-(define-minor-mode my-auto-kutoten-mode
-  "Auto 句読点 mode。"
-  :init-value nil
-  :global nil
-  :keymap (let ((kmap (make-sparse-keymap)))
-            (define-key kmap "、" "，")
-            (define-key kmap "。" "．")
-            kmap)
-  (when (and my-auto-kutoten-mode
-             (save-excursion
-               (goto-char (point-min))
-               (not (and (search-forward "，" nil t)
-                         (search-forward "．" nil t)))))
-    (my-auto-kutoten-mode -1)))
-
-(setup-after "text-mode"
-  (setup-hook 'text-mode-hook 'my-auto-kutoten-mode)
-  (setup-expecting "electric-spacing"
-    (setup-hook 'text-mode-hook 'electric-spacing-mode))
-  (setup-expecting "jaword"
-    (setup-hook 'text-mode-hook 'jaword-mode))
-  (setup-after "mark-hacks"
-    (push 'text-mode mark-hacks-auto-indent-inhibit-modes))
-  (setup-expecting "phi-search-migemo"
-    (setup-keybinds text-mode-map
-      [remap phi-search]          'phi-search-migemo
-      [remap phi-search-backward] 'phi-search-migemo-backward))
-  (setup-keybinds text-mode-map "C-M-i" nil))
-
-;;     + org-mode [htmlize]
-
-(setup-after "org"
-
-  (setup-hook 'org-mode-hook 'iimage-mode)
-  (setup-hook 'org-mode-hook 'turn-on-auto-fill)
-
-  (setq org-startup-folded             t
-        org-startup-indented           t
-        org-startup-with-inline-images t
-        org-src-fontify-natively       t
-        org-src-tab-acts-natively      t
-        org-ditaa-jar-path (when my-ditaa-jar-file
-                             (expand-file-name my-ditaa-jar-file)))
-
-  (setup-after "smart-compile"
-    (push '(org-mode . (org-export-as-html-and-open nil))
-          smart-compile-alist))
-
-  (setup-after "org-exp"
-
-    (setq org-export-with-section-numbers     nil
-          org-export-with-toc                 nil
-          org-export-mark-todo-in-toc         t
-          org-export-email-info               nil
-          org-export-author-info              nil
-          org-export-creator-info             nil
-          org-export-time-stamp-file          nil
-          org-export-table-remove-empty-lines nil)
-
-    ;; Remove newlines between Japanese letters before exporting.
-    ;; reference | http://qiita.com/kawabata@github/items/1b56ec8284942ff2646b
-    (setup-hook 'org-export-preprocess-hook
-      (goto-char (point-min))
-      (while (search-forward-regexp "^\\([^|#*\n].+\\)\\(.\\)\n *\\(.\\)" nil t)
-        (and (> (string-to-char (match-string 2)) #x2000)
-             (> (string-to-char (match-string 3)) #x2000)
-             (replace-match "\\1\\2\\3"))
-        (goto-char (point-at-bol))))
-
-    ;; babel
-    (setup-after "ob-exp"
-      (setq org-export-babel-evaluate nil))
-
-    (setup-after "org-html"
-
-      (setq org-export-html-link-org-files-as-html nil
-            org-export-html-validation-link        nil
-            org-export-html-style-include-scripts  nil
-            org-export-html-style-include-default  nil
-            org-export-html-inline-image-extensions
-            '("png" "jpeg" "jpg" "gif" "svg" "bmp")
-            org-export-html-mathjax-options
-            '((path  "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML")
-              (scale "100")
-              (align "center")
-              (indent "2em")
-              (mathml nil)))
-
-      ;; use htmlize in "org-export-as-html"
-      (setup-lazy '(htmlize-buffer) "htmlize"
-        :prepare (setup-after "org" (setup "htmlize"))
-        (setq org-export-html-style-extra
-              (format "<style>pre.src { background-color: %s; color: %s; }</style>"
-                      (face-background 'default)
-                      (face-foreground 'default))))
-
-      ;; electric-spacing workaround
-      (setup-after "electric-spacing"
-        (defadvice org-export-as-html (around my-electric-spacing-workaround activate)
-          (let ((electric-spacing-regexp-pairs nil))
-            ad-do-it)))
-      )
-    )
-
-  (defun my-org-edit-special ()
-    (interactive)
-    (condition-case nil
-        (org-edit-special)
-      (error
-       (let ((str (and (use-region-p)
-                       (buffer-substring (region-beginning) (region-end))))
-             (mode (read-from-minibuffer "mode ? ")))
-         (when str
-           (delete-region (region-beginning) (region-end)))
-         (insert "#+begin_src " mode "\n")
-         (save-excursion (insert "\n#+end_src" (if str "" "\n")))
-         (org-edit-src-code)
-         (when str
-           (insert str)
-           (org-edit-src-exit))))))
-
-  (setup-keybinds org-mode-map
-    "C-c '" 'my-org-edit-special
-    "M-RET" 'org-insert-heading
-    "TAB"   'org-cycle
-    "C-y"   'org-yank
-    "C-k"   'org-kill-line
-    "C-j"   'org-beginning-of-line
-    "C-e"   'org-end-of-line
-    '("M-a" "M-TAB" "C-," "C-a" "C-j" "M-e" ) nil)
-  )
-
-;;     + latex-mode [magic-latex-buffer] [ac-latex]
-
-(setup-expecting "tex-mode"
-  (push '("\\.tex$" . latex-mode) auto-mode-alist))
-
-(setup-after "tex-mode"
-  (push "Verbatim" tex-verbatim-environments)
-  (push "BVerbatim" tex-verbatim-environments)
-  (push "lstlisting" tex-verbatim-environments)
-  (setup-hook 'latex-mode-hook
-    (outline-minor-mode 1)
-    (setq-local outline-regexp "\\\\\\(sub\\)*section\\>")
-    (setq-local outline-level (lambda () (- (outline-level) 7))))
-  (setup-keybinds latex-mode-map
-    "C-c C-'" 'latex-close-block
-    '("C-j" "C-M-i" "<C-return>") nil)
-  (setup-lazy '(magic-latex-buffer) "magic-latex-buffer"
-    :prepare (setup-hook 'latex-mode-hook 'magic-latex-buffer)
-    (setq magic-latex-enable-inline-image nil))
-  (setup-after "auto-complete"
-    (setup "auto-complete-latex"
-      (setq ac-l-dict-directory my-latex-dictionary-directory)
-      (push 'latex-mode ac-modes)
-      (setup-hook 'latex-mode-hook 'ac-l-setup))))
-
-;;     + gfm-mode [markdown-mode]
-
-(setup-lazy '(gfm-mode) "markdown-mode"
-  :prepare (progn
-             (push '("\\.md$" . gfm-mode) auto-mode-alist)
-             (push '("\\.markdown$" . gfm-mode) auto-mode-alist))
-  (setup-keybinds gfm-mode-map
-    '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
-    "TAB" 'markdown-cycle))
-
-;;   + configuration modes
-;;     + Dockerfile
-
-(setup-lazy '(dockerfile-mode) "dockerfile-mode"
-  :prepare (push '("Dockerfile$" . dockerfile-mode) auto-mode-alist))
-
-;;   + prog modes
-;;     + generic
-
-(setup-lazy
-  '(apache-conf-generic-mode
-    apache-log-generic-mode
-    samba-generic-mode
-    fvwm-generic-mode
-    x-resource-generic-mode
-    xmodmap-generic-mode
-    hosts-generic-mode
-    inf-generic-mode
-    ini-generic-mode
-    reg-generic-mode
-    mailagent-rules-generic-mode
-    prototype-generic-mode
-    pkginfo-generic-mode
-    vrml-generic-mode
-    java-manifest-generic-mode
-    alias-generic-mode
-    rc-generic-mode
-    rul-generic-mode
-    mailrc-generic-mode
-    inetd-conf-generic-mode
-    etc-services-generic-mode
-    etc-passwd-generic-mode
-    etc-fstab-generic-mode
-    etc-sudoers-generic-mode
-    named-boot-generic-mode
-    resolve-conf-generic-mode
-    spice-generic-mode
-    ibis-generic-mode
-    astap-generic-mode) "generic-x"
-
-    (setq auto-mode-alist
-          (nconc
-           '(
-             ("\\(?:srm\\|httpd\\|access\\)\\.conf\\'" . apache-conf-generic-mode)
-             ("access_log\\'" . apache-log-generic-mode)
-             ("smb\\.conf\\'" . samba-generic-mode)
-             ("\\.fvwm2?rc\\'" . fvwm-generic-mode)
-             ("\\.X\\(?:defaults\\|resources\\|environment\\)\\'" . x-resource-generic-mode)
-             ("\\.ad\\'" . x-resource-generic-mode)
-             ("[xX]modmap\\(rc\\)?\\'" . xmodmap-generic-mode)
-             ("[hH][oO][sS][tT][sS]\\'" . hosts-generic-mode)
-             ("\\.[iI][nN][fF]\\'" . inf-generic-mode)
-             ("\\.[iI][nN][iI]\\'" . ini-generic-mode)
-             ("\\.[rR][eE][gG]\\'" . reg-generic-mode)
-             ("\\.rules\\'" . mailagent-rules-generic-mode)
-             ("prototype\\'" . prototype-generic-mode)
-             ("pkginfo\\'" . pkginfo-generic-mode)
-             ("\\.wrl\\'" . vrml-generic-mode)
-             ("[mM][aA][nN][iI][fF][eE][sS][tT]\\.[mM][fF]\\'" . java-manifest-generic-mode)
-             ("alias\\'" . alias-generic-mode)
-             ("\\.[rR][cC]\\'" . rc-generic-mode)
-             ("\\.[rR][uU][lL]\\'" . rul-generic-mode)
-             ("\\.mailrc\\'" . mailrc-generic-mode)
-             ("/etc/inetd.conf\\'" . inetd-conf-generic-mode)
-             ("/etc/services\\'" . etc-services-generic-mode)
-             ("/etc/group\\'" . etc-passwd-generic-mode)
-             ("/etc/[v]*fstab\\'" . etc-fstab-generic-mode)
-             ("/etc/sudoers\\'" . etc-sudoers-generic-mode)
-             ("/etc/named.boot\\'" . named-boot-generic-mode)
-             ("/etc/resolv[e]?.conf\\'" . resolve-conf-generic-mode)
-             ("\\.?:[sS][pP]\\(?:[iI]\\(?:[cC][eE]\\)?\\)?\\'" . spice-generic-mode)
-             ("\\.[iI][nN][cC]\\'" . spice-generic-mode)
-             ("\\.[iI][bB][sS]\\'" . ibis-generic-mode)
-             ("\\.[aA]\\(?:[pP]\\|[sS][xX]\\|[sS][tT][aA][pP]\\)\\'" . astap-generic-mode)
-             ("\\.[pP][sS][pP]\\'" . astap-generic-mode)
-             ("\\.[dD][eE][cC][kK]\\'" . astap-generic-mode)
-             ("\\.[gG][oO][dD][aA][tT][aA]" . astap-generic-mode)
-             ("/etc/\\(?:modules.conf\\|conf.modules\\)" . etc-modules-conf-generic-mode)
-             )
-           auto-mode-alist))
-    )
-
-;;     + lispy
-;;       + (common)
+;;   + language modes
+;;     + programming
+;;       + lispy
+;;         + (common)
 
 ;; toggle commands
 
@@ -2975,7 +2725,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 (setup-expecting "rainbow-delimiters"
   (setup-hook 'my-lispy-mode-common-hook 'rainbow-delimiters-mode))
 
-;;       + lisp-mode
+;;         + Common Lisp
 
 (setup-after "lisp-mode"
 
@@ -3020,7 +2770,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-c C-l" 'my-lisp-load)
   )
 
-;;       + emacs-lisp-mode [outlined-elisp] [cl-lib-hl]
+;;         + Emacs Lisp [outlined-elisp] [cl-lib-hl]
 
 (setup-after "lisp-mode"
   (font-lock-add-keywords
@@ -3055,7 +2805,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'emacs-lisp-mode-hook 'cl-lib-highlight-initialize)
     (setup-hook 'emacs-lisp-mode-hook 'cl-lib-highlight-warn-cl-initialize)))
 
-;;       + gauche-mode [scheme-complete]
+;;         + Gauche [scheme-complete]
 
 (setup-lazy '(gauche-mode) "gauche-mode"
   :prepare (push '("\\.scm$" . gauche-mode) auto-mode-alist)
@@ -3116,7 +2866,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-c C-l" 'scheme-load-file)
   )
 
-;;       + clojure-mode
+;;         + Clojure
 
 (setup-lazy '(clojure-mode) "clojure-mode"
   :prepare (progn (push '("\\.clj$" . clojure-mode) auto-mode-alist))
@@ -3148,7 +2898,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-c C-l" 'clojure-load-file)
   )
 
-;;       + egison-mode
+;;         + Egison
 
 (setup-lazy '(egison-mode) "egison-mode"
   :prepare (push '("\\.egi$" . egison-mode) auto-mode-alist)
@@ -3156,7 +2906,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (push 'egison-mode ac-modes))
   (setup-keybinds egison-mode-map "C-j" nil))
 
-;;       + racket-mode
+;;         + Racket
 
 (setup-lazy '(racket-mode) "racket-mode"
   :prepare (push '("\\.rkt$" . racket-mode) auto-mode-alist)
@@ -3229,17 +2979,17 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "<f1> s" 'racket-help)
   )
 
-;;     + c-like
-;;       + (common)
-;;         + (prelude)
+;;       + c-like
+;;         + (common)
+;;           + (prelude)
 
 (setup-after "cc-mode"
 
-  ;;       + settings
+  ;;         + settings
 
   (setup-keybinds c-mode-base-map "/" nil)
 
-  ;;       + coding style
+  ;;         + coding style
 
   ;; setup coding style for C-like languages
   ;; reference | http://www.cozmixng.org/webdav/kensuke/site-lisp/mode/my-c.el
@@ -3607,7 +3357,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-hook 'c-mode-common-hook
     (setq c-auto-newline t))
 
-  ;;       + key-combo
+  ;;         + key-combo
 
   (setup-expecting "key-combo"
     (defun my-c-smart-braces ()
@@ -3672,7 +3422,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "/*") "/* `!!' */")
       (key-combo-define-local (kbd "{") '(my-c-smart-braces "{ `!!' }"))))
 
-  ;;       + auto-complete
+  ;;         + auto-complete
 
   (setup-after "auto-complete"
     (setup "ac-c-headers"
@@ -3684,10 +3434,10 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                            ac-source-dictionary
                            ac-source-c-header-symbols)))))
 
-  ;;       + (sentinel)
+  ;;         + (sentinel)
   )
 
-;;       + C, C++, Objetive-C
+;;         + C, C++, Objetive-C
 
 (setup-after "cc-mode"
 
@@ -3797,7 +3547,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (add-to-list 'flycheck-checkers 'c99-gcc))
   )
 
-;;       + Java
+;;         + Java
 
 (setup-after "cc-mode"
 
@@ -3844,7 +3594,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       "M-e" "M-j" "C-M-h" "C-M-j" "DEL") nil)
   )
 
-;;       + PHP
+;;         + PHP
 
 ;; *NOTE* PHP mode derives C mode
 (setup-lazy '(php-mode) "php-mode"
@@ -3862,7 +3612,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "<?") "<?php\n")))
   )
 
-;;       + SCAD
+;;         + SCAD
 
 ;; *NOTE* "scad-mode.el" provides "scad" feature (!!!)
 ;; So it's not good idea to specify "scad-mode" here.
@@ -3873,7 +3623,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-c C-c" 'scad-preview-export
     "<f5>"    'scad-preview-refresh))
 
-;;       + Arduino
+;;         + Arduino
 
 (setup-lazy '(arduino-mode) "arduino-mode"
   :prepare (progn (push '("\\.ino$" . arduino-mode) auto-mode-alist)
@@ -3891,14 +3641,14 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (push '(arduino-mode . (my-arduino-compile-and-upload))
             smart-compile-alist))))
 
-;;       + flex/bison
+;;         + flex/bison
 
 (setup-lazy '(bison-mode) "bison-mode"
   :prepare (progn (push '("\\.ll?$" . bison-mode) auto-mode-alist)
                   (push '("\\.yy?$" . bison-mode) auto-mode-alist)))
 
-;;     + perl-like
-;;       + perl (cperl-mode)
+;;       + perl-like
+;;         + Perl (cperl-mode)
 
 (setup-lazy '(cperl-mode) "cperl-mode"
   :prepare (push '("\\.\\(?:t\\|p[lm]\\|psgi\\)$" . cperl-mode) auto-mode-alist)
@@ -3985,7 +3735,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "?") " ? `!!' : ")))
   )
 
-;;       + ruby
+;;         + Ruby
 
 (setup-lazy '(ruby-mode) "ruby-mode"
   :prepare (push '("\\(?:\\.r[bu]\\|Rakefile\\|Gemfile\\)$" . ruby-mode) auto-mode-alist)
@@ -4019,156 +3769,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setq ruby-end-insert-newline nil))
   )
 
-;;     + web
-;;       + js and family
-
-(setup-after "js"
-  (setup-after "auto-complete"
-    (push 'js-mode ac-modes)
-    (setup-hook 'js-mode-hook
-      (setq ac-sources '(ac-source-my-buffer-file-name
-                         ac-source-last-sessions
-                         ac-source-my-words-in-web-mode-buffers))))
-  (setup "jquery-doc"
-    (setup-hook 'js-mode-hook 'jquery-doc-setup)
-    (setup-after "popwin"
-      (push '("^\\*jQuery doc" :regexp t) popwin:special-display-config))
-    (setup-keybinds js-mode-map
-      "<f1> s" 'jquery-doc)))
-
-(setup-lazy '(typescript-mode) "typescript"
-  :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
-
-;;       + css-like
-
-;; common settings
-(setup-after "auto-complete"
-  (setup "auto-complete-config"
-    (setup-hook 'my-css-mode-common-hook
-      (setq ac-sources '(ac-source-my-css-propname
-                         ac-source-css-property
-                         ac-source-last-sessions
-                         ac-source-my-words-in-web-mode-buffers)))
-    (setq ac-modes (append my-css-modes ac-modes))))
-(setup-expecting "key-combo"
-  (setup-hook 'my-css-mode-common-hook
-    (key-combo-mode 1)
-    (key-combo-define-local (kbd "+") " + ")
-    (key-combo-define-local (kbd ">") " > ")
-    (key-combo-define-local (kbd "~") " ~ ")
-    ;; doesn't work ... (why?)
-    ;; (key-combo-define-local (kbd "^=") " ^= ")
-    (key-combo-define-local (kbd "$=") " $= ")
-    (key-combo-define-local (kbd "*=") " *= ")
-    (key-combo-define-local (kbd "=") " = ")))
-
-;; css
-(setup-lazy '(css-mode) "css-mode"
-  :prepare (push '("\\.css$" . css-mode) auto-mode-alist))
-
-;; scss
-(setup-lazy '(scss-mode) "scss-mode"
-  :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist)
-  (setup-hook 'scss-mode-hook
-    (setq-local css-indent-offset 2)))
-
-;;       + web-mode
-
-(setup-lazy '(web-mode) "web-mode"
-  :prepare (progn
-             (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
-             (push '("\\.jsx$" . web-mode) auto-mode-alist))
-
-  (defun my-web-mode-electric-semi ()
-    (interactive)
-    (let ((lang (web-mode-language-at-pos)))
-      (cond ((and (or (string= lang "javascript")
-                      (and (string= lang "jsx") (not (web-mode-jsx-is-html))))
-                  (looking-at "[\s\t]*$"))
-             (insert ";\n")
-             (funcall indent-line-function)
-             (back-to-indentation))
-            (t
-             (insert ";")))))
-
-  (setup-keybinds web-mode-map
-    ";"     'my-web-mode-electric-semi
-    "C-c '" 'web-mode-element-close
-    "C-;"   'web-mode-comment-or-uncomment
-    "M-;"   nil)
-
-  (setq web-mode-script-padding                   nil
-        web-mode-style-padding                    nil
-        web-mode-markup-indent-offset             2
-        web-mode-css-indent-offset                4
-        web-mode-code-indent-offset               4
-        web-mode-enable-control-block-indentation nil
-        web-mode-enable-auto-quoting              nil)
-
-  ;; JSX syntax highlight
-  (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
-  (setq web-mode-javascript-font-lock-keywords
-        (nconc
-         '(;; labels
-           ("case[\s\t]+\\([^:]+[^:\s\t]\\)[\s\t]*:" 1 'web-mode-constant-face)
-           ;; hash-keys
-           ("\\([A-z0-9_]+\\)[\s\t]*:" 1 'web-mode-hash-key-face)
-           ;; method decls / lambda expressions
-           ("\\(?:\\(function\\)\\|\\([A-z0-9_]+\\)\\)[\s\t]*\\((\\)[A-z0-9_\s\t,=/*]*)[\s\t\n]*{"
-            (1 'web-mode-keyword-face nil t)
-            (2 'web-mode-function-name-face nil t)
-            ("\\([A-z0-9_]+\\)\\(?:[^,]*\\)?[,)]"
-             (goto-char (match-end 3)) nil (1 'web-mode-variable-name-face)))
-           ;; import stmt
-           ("\\(import\\)[\s\t]*\\([{A-z0-9_*]\\(?:[A-z0-9_,*\s\t]*[A-z0-9_}]\\)?\\)[\s\t]*\\(from\\)"
-            (1 'web-mode-keyword-face)
-            (2 'web-mode-variable-name-face)
-            (3 'web-mode-keyword-face)))
-         web-mode-javascript-font-lock-keywords))
-
-  (setup "sgml-mode"
-    (setup-keybinds web-mode-map
-      "<f1> s"  'sgml-tag-help))
-
-  (setup-expecting "rainbow-mode"
-    (setup-hook 'web-mode-hook 'rainbow-mode))
-
-  (setup-after "auto-complete"
-    (setup "auto-complete-config"
-      (setq web-mode-ac-sources-alist
-            '(("javascript" . (ac-source-my-buffer-file-name
-                               ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))
-              ("jsx"        . (ac-source-my-buffer-file-name
-                               ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers
-                               ac-source-filename))
-              ("html"       . (ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))
-              ("css"        . (ac-source-my-css-propname
-                               ac-source-css-property
-                               ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))))
-      (push 'web-mode ac-modes)))
-
-  (setup-after "smart-compile"
-    (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
-
-  (setup "key-combo-web"
-    (setup-hook 'web-mode-hook
-      (key-combo-mode 1)
-      (key-combo-web-define "jsx" (kbd "<") '(" < " "<`!!'>"))
-      (key-combo-web-define "jsx" (kbd "&") '(" & " " && "))
-      (key-combo-web-define "jsx" (kbd "</") 'web-mode-element-close)
-      (key-combo-web-define "jsx-html" (kbd "<") '("<`!!'>" "<"))
-      (key-combo-web-define "html" (kbd "<") '("<`!!'>" "&lt;" "<"))
-      (key-combo-web-define "html" (kbd "<!") "<!DOCTYPE `!!'>")
-      (key-combo-web-define "html" (kbd ">") '("&gt;" ">"))
-      (key-combo-web-define "html" (kbd "&") '("&amp;" "&"))))
-  )
-
-;;     + functional
-;;       + Haskell
+;;       + functional
+;;         + Haskell
 
 (setup-lazy '(haskell-mode literate-haskell-mode) "haskell-mode"
   :prepare (progn (push '("\\.hs$" . haskell-mode) auto-mode-alist)
@@ -4272,7 +3874,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (setup-hook 'literate-haskell-mode-hook 'my-install-haskell-smartchr))
   )
 
-;;       + Scala
+;;         + Scala
 
 (setup-lazy '(scala-mode) "scala-mode"
   :prepare (push '("\\.scala$" . scala-mode) auto-mode-alist)
@@ -4312,7 +3914,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (push 'scala-mode ac-modes))
   )
 
-;;       + Coq (proof-general)
+;;         + Coq (proof-general)
 
 (setup-lazy '(coq-mode) "proof-site"
   :prepare (push '("\\.v$" . coq-mode) auto-mode-alist)
@@ -4384,7 +3986,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     )
   )
 
-;;       + OCaml (tuareg)
+;;         + OCaml (tuareg-mode)
 
 (setup-lazy '(tuareg-mode) "tuareg"
   :prepare (push '("\\.ml[iylp]?$" . tuareg-mode) auto-mode-alist)
@@ -4437,8 +4039,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (push 'tuareg-mode ac-modes))
   )
 
-;;     + declarative
-;;       + (common)
+;;       + declarative
+;;         + (common)
 
 (setup-expecting "key-combo"
   (defun my-prolog-smart-pipes ()
@@ -4474,8 +4076,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (key-combo-define-local (kbd "-") (my-unary "-"))
     (key-combo-define-local (kbd "*") " * ")))
 
-;;       + Prolog
-
+;;         + Prolog
 
 (setup-lazy '(prolog-mode) "prolog"
   :prepare (push '("\\.\\(?:pro\\|swi\\)$" . prolog-mode) auto-mode-alist)
@@ -4546,7 +4147,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "/") " / ")
       (key-combo-define-local (kbd "//") " // "))))
 
-;;       + LMNtal
+;;         + LMNtal
 
 (setup-lazy '(lmntal-mode lmntal-slimcode-mode) "lmntal-mode"
   :prepare (progn
@@ -4601,19 +4202,19 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     (push 'lmntal-slimcode-mode mark-hacks-auto-indent-inhibit-modes))
   )
 
-;;     + esolangs
-;;       + Brainfuck
+;;       + esolangs
+;;         + Brainfuck
 
 (setup-lazy '(bfbuilder-mode) "bfbuilder"
   :prepare (push '("\\.bf" . bfbuilder-mode) auto-mode-alist))
 
-;;       + ZOMBIE
+;;         + ZOMBIE
 
 (setup-lazy '(zombie-mode) "zombie"
   :prepare (push '("\\.zombie$" . zombie-mode) auto-mode-alist))
 
-;;     + other
-;;       + Promela
+;;       + other
+;;         + Promela
 
 (setup-lazy '(promela-mode) "promela-mode"
   :prepare (progn (push '("\\.pml$" . promela-mode) auto-mode-alist)
@@ -4671,7 +4272,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
     "C-m" 'promela-indent-newline-indent)
   )
 
-;;       + AHK
+;;         + AHK
 
 (setup-lazy '(ahk-mode) "ahk-mode"
   :prepare (progn
@@ -4688,7 +4289,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
   (setup-hook 'ahk-mode-hook
     (setup-keybinds ahk-mode-map '("C-j" "C-h") nil)))
 
-;;       + DOS
+;;         + DOS
 
 (setup-lazy '(dos-mode) "dos"
   :prepare (setq auto-mode-alist
@@ -4699,6 +4300,406 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
                   auto-mode-alist))
   (setup-after "auto-complete"
     (push 'dos-mode ac-modes)))
+
+;;     + web
+;;       + JS and family
+
+(setup-after "js"
+  (setup-after "auto-complete"
+    (push 'js-mode ac-modes)
+    (setup-hook 'js-mode-hook
+      (setq ac-sources '(ac-source-my-buffer-file-name
+                         ac-source-last-sessions
+                         ac-source-my-words-in-web-mode-buffers))))
+  (setup "jquery-doc"
+    (setup-hook 'js-mode-hook 'jquery-doc-setup)
+    (setup-after "popwin"
+      (push '("^\\*jQuery doc" :regexp t) popwin:special-display-config))
+    (setup-keybinds js-mode-map
+      "<f1> s" 'jquery-doc)))
+
+(setup-lazy '(typescript-mode) "typescript"
+  :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
+
+;;       + CSS and family
+
+;; common settings
+(setup-after "auto-complete"
+  (setup "auto-complete-config"
+    (setup-hook 'my-css-mode-common-hook
+      (setq ac-sources '(ac-source-my-css-propname
+                         ac-source-css-property
+                         ac-source-last-sessions
+                         ac-source-my-words-in-web-mode-buffers)))
+    (setq ac-modes (append my-css-modes ac-modes))))
+(setup-expecting "key-combo"
+  (setup-hook 'my-css-mode-common-hook
+    (key-combo-mode 1)
+    (key-combo-define-local (kbd "+") " + ")
+    (key-combo-define-local (kbd ">") " > ")
+    (key-combo-define-local (kbd "~") " ~ ")
+    ;; doesn't work ... (why?)
+    ;; (key-combo-define-local (kbd "^=") " ^= ")
+    (key-combo-define-local (kbd "$=") " $= ")
+    (key-combo-define-local (kbd "*=") " *= ")
+    (key-combo-define-local (kbd "=") " = ")))
+
+;; css
+(setup-lazy '(css-mode) "css-mode"
+  :prepare (push '("\\.css$" . css-mode) auto-mode-alist))
+
+;; scss
+(setup-lazy '(scss-mode) "scss-mode"
+  :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist)
+  (setup-hook 'scss-mode-hook
+    (setq-local css-indent-offset 2)))
+
+;;       + web-mode
+
+(setup-lazy '(web-mode) "web-mode"
+  :prepare (progn
+             (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
+             (push '("\\.jsx$" . web-mode) auto-mode-alist))
+
+  (defun my-web-mode-electric-semi ()
+    (interactive)
+    (let ((lang (web-mode-language-at-pos)))
+      (cond ((and (or (string= lang "javascript")
+                      (and (string= lang "jsx") (not (web-mode-jsx-is-html))))
+                  (looking-at "[\s\t]*$"))
+             (insert ";\n")
+             (funcall indent-line-function)
+             (back-to-indentation))
+            (t
+             (insert ";")))))
+
+  (setup-keybinds web-mode-map
+    ";"     'my-web-mode-electric-semi
+    "C-c '" 'web-mode-element-close
+    "C-;"   'web-mode-comment-or-uncomment
+    "M-;"   nil)
+
+  (setq web-mode-script-padding                   nil
+        web-mode-style-padding                    nil
+        web-mode-markup-indent-offset             2
+        web-mode-css-indent-offset                4
+        web-mode-code-indent-offset               4
+        web-mode-enable-control-block-indentation nil
+        web-mode-enable-auto-quoting              nil)
+
+  ;; JSX syntax highlight
+  (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
+  (setq web-mode-javascript-font-lock-keywords
+        (nconc
+         '(;; labels
+           ("case[\s\t]+\\([^:]+[^:\s\t]\\)[\s\t]*:" 1 'web-mode-constant-face)
+           ;; hash-keys
+           ("\\([A-z0-9_]+\\)[\s\t]*:" 1 'web-mode-hash-key-face)
+           ;; method decls / lambda expressions
+           ("\\(?:\\(function\\)\\|\\([A-z0-9_]+\\)\\)[\s\t]*\\((\\)[A-z0-9_\s\t,=/*]*)[\s\t\n]*{"
+            (1 'web-mode-keyword-face nil t)
+            (2 'web-mode-function-name-face nil t)
+            ("\\([A-z0-9_]+\\)\\(?:[^,]*\\)?[,)]"
+             (goto-char (match-end 3)) nil (1 'web-mode-variable-name-face)))
+           ;; import stmt
+           ("\\(import\\)[\s\t]*\\([{A-z0-9_*]\\(?:[A-z0-9_,*\s\t]*[A-z0-9_}]\\)?\\)[\s\t]*\\(from\\)"
+            (1 'web-mode-keyword-face)
+            (2 'web-mode-variable-name-face)
+            (3 'web-mode-keyword-face)))
+         web-mode-javascript-font-lock-keywords))
+
+  ;; port tag-help from sgml-mode
+  (setup "sgml-mode"
+    (setup-keybinds web-mode-map
+      "<f1> s"  'sgml-tag-help))
+
+  (setup-expecting "rainbow-mode"
+    (setup-hook 'web-mode-hook 'rainbow-mode))
+
+  (setup-after "auto-complete"
+    (setup "auto-complete-config"
+      (setq web-mode-ac-sources-alist
+            '(("javascript" . (ac-source-my-buffer-file-name
+                               ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))
+              ("jsx"        . (ac-source-my-buffer-file-name
+                               ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers
+                               ac-source-filename))
+              ("html"       . (ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))
+              ("css"        . (ac-source-my-css-propname
+                               ac-source-css-property
+                               ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))))
+      (push 'web-mode ac-modes)))
+
+  (setup-after "smart-compile"
+    (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
+
+  (setup "key-combo-web"
+    (setup-hook 'web-mode-hook
+      (key-combo-mode 1)
+      (key-combo-web-define "jsx" (kbd "<") '(" < " "<`!!'>"))
+      (key-combo-web-define "jsx" (kbd "&") '(" & " " && "))
+      (key-combo-web-define "jsx" (kbd "</") 'web-mode-element-close)
+      (key-combo-web-define "jsx-html" (kbd "<") '("<`!!'>" "<"))
+      (key-combo-web-define "html" (kbd "<") '("<`!!'>" "&lt;" "<"))
+      (key-combo-web-define "html" (kbd "<!") "<!DOCTYPE `!!'>")
+      (key-combo-web-define "html" (kbd ">") '("&gt;" ">"))
+      (key-combo-web-define "html" (kbd "&") '("&amp;" "&"))))
+  )
+
+;;     + configuration
+;;       + Dockerfile
+
+(setup-lazy '(dockerfile-mode) "dockerfile-mode"
+  :prepare (push '("Dockerfile$" . dockerfile-mode) auto-mode-alist))
+
+;;       + generic-mode
+
+(setup-lazy
+  '(apache-conf-generic-mode
+    apache-log-generic-mode
+    samba-generic-mode
+    fvwm-generic-mode
+    x-resource-generic-mode
+    xmodmap-generic-mode
+    hosts-generic-mode
+    inf-generic-mode
+    ini-generic-mode
+    reg-generic-mode
+    mailagent-rules-generic-mode
+    prototype-generic-mode
+    pkginfo-generic-mode
+    vrml-generic-mode
+    java-manifest-generic-mode
+    alias-generic-mode
+    rc-generic-mode
+    rul-generic-mode
+    mailrc-generic-mode
+    inetd-conf-generic-mode
+    etc-services-generic-mode
+    etc-passwd-generic-mode
+    etc-fstab-generic-mode
+    etc-sudoers-generic-mode
+    named-boot-generic-mode
+    resolve-conf-generic-mode
+    spice-generic-mode
+    ibis-generic-mode
+    astap-generic-mode) "generic-x"
+
+    (setq auto-mode-alist
+          (nconc
+           '(
+             ("\\(?:srm\\|httpd\\|access\\)\\.conf\\'" . apache-conf-generic-mode)
+             ("access_log\\'" . apache-log-generic-mode)
+             ("smb\\.conf\\'" . samba-generic-mode)
+             ("\\.fvwm2?rc\\'" . fvwm-generic-mode)
+             ("\\.X\\(?:defaults\\|resources\\|environment\\)\\'" . x-resource-generic-mode)
+             ("\\.ad\\'" . x-resource-generic-mode)
+             ("[xX]modmap\\(rc\\)?\\'" . xmodmap-generic-mode)
+             ("[hH][oO][sS][tT][sS]\\'" . hosts-generic-mode)
+             ("\\.[iI][nN][fF]\\'" . inf-generic-mode)
+             ("\\.[iI][nN][iI]\\'" . ini-generic-mode)
+             ("\\.[rR][eE][gG]\\'" . reg-generic-mode)
+             ("\\.rules\\'" . mailagent-rules-generic-mode)
+             ("prototype\\'" . prototype-generic-mode)
+             ("pkginfo\\'" . pkginfo-generic-mode)
+             ("\\.wrl\\'" . vrml-generic-mode)
+             ("[mM][aA][nN][iI][fF][eE][sS][tT]\\.[mM][fF]\\'" . java-manifest-generic-mode)
+             ("alias\\'" . alias-generic-mode)
+             ("\\.[rR][cC]\\'" . rc-generic-mode)
+             ("\\.[rR][uU][lL]\\'" . rul-generic-mode)
+             ("\\.mailrc\\'" . mailrc-generic-mode)
+             ("/etc/inetd.conf\\'" . inetd-conf-generic-mode)
+             ("/etc/services\\'" . etc-services-generic-mode)
+             ("/etc/group\\'" . etc-passwd-generic-mode)
+             ("/etc/[v]*fstab\\'" . etc-fstab-generic-mode)
+             ("/etc/sudoers\\'" . etc-sudoers-generic-mode)
+             ("/etc/named.boot\\'" . named-boot-generic-mode)
+             ("/etc/resolv[e]?.conf\\'" . resolve-conf-generic-mode)
+             ("\\.?:[sS][pP]\\(?:[iI]\\(?:[cC][eE]\\)?\\)?\\'" . spice-generic-mode)
+             ("\\.[iI][nN][cC]\\'" . spice-generic-mode)
+             ("\\.[iI][bB][sS]\\'" . ibis-generic-mode)
+             ("\\.[aA]\\(?:[pP]\\|[sS][xX]\\|[sS][tT][aA][pP]\\)\\'" . astap-generic-mode)
+             ("\\.[pP][sS][pP]\\'" . astap-generic-mode)
+             ("\\.[dD][eE][cC][kK]\\'" . astap-generic-mode)
+             ("\\.[gG][oO][dD][aA][tT][aA]" . astap-generic-mode)
+             ("/etc/\\(?:modules.conf\\|conf.modules\\)" . etc-modules-conf-generic-mode)
+             )
+           auto-mode-alist))
+    )
+
+;;     + other markup
+;;       + (common)
+
+(define-minor-mode my-auto-kutoten-mode
+  "Auto 句読点 mode。"
+  :init-value nil
+  :global nil
+  :keymap (let ((kmap (make-sparse-keymap)))
+            (define-key kmap "、" "，")
+            (define-key kmap "。" "．")
+            kmap)
+  (when (and my-auto-kutoten-mode
+             (save-excursion
+               (goto-char (point-min))
+               (not (and (search-forward "，" nil t)
+                         (search-forward "．" nil t)))))
+    (my-auto-kutoten-mode -1)))
+
+(setup-after "text-mode"
+  (setup-hook 'text-mode-hook 'my-auto-kutoten-mode)
+  (setup-expecting "electric-spacing"
+    (setup-hook 'text-mode-hook 'electric-spacing-mode))
+  (setup-expecting "jaword"
+    (setup-hook 'text-mode-hook 'jaword-mode))
+  (setup-after "mark-hacks"
+    (push 'text-mode mark-hacks-auto-indent-inhibit-modes))
+  (setup-expecting "phi-search-migemo"
+    (setup-keybinds text-mode-map
+      [remap phi-search]          'phi-search-migemo
+      [remap phi-search-backward] 'phi-search-migemo-backward))
+  (setup-keybinds text-mode-map "C-M-i" nil))
+
+;;       + org-mode [htmlize]
+
+(setup-after "org"
+
+  (setup-hook 'org-mode-hook 'iimage-mode)
+  (setup-hook 'org-mode-hook 'turn-on-auto-fill)
+
+  (setq org-startup-folded             t
+        org-startup-indented           t
+        org-startup-with-inline-images t
+        org-src-fontify-natively       t
+        org-src-tab-acts-natively      t
+        org-ditaa-jar-path (when my-ditaa-jar-file
+                             (expand-file-name my-ditaa-jar-file)))
+
+  (setup-after "smart-compile"
+    (push '(org-mode . (org-export-as-html-and-open nil))
+          smart-compile-alist))
+
+  (setup-after "org-exp"
+
+    (setq org-export-with-section-numbers     nil
+          org-export-with-toc                 nil
+          org-export-mark-todo-in-toc         t
+          org-export-email-info               nil
+          org-export-author-info              nil
+          org-export-creator-info             nil
+          org-export-time-stamp-file          nil
+          org-export-table-remove-empty-lines nil)
+
+    ;; Remove newlines between Japanese letters before exporting.
+    ;; reference | http://qiita.com/kawabata@github/items/1b56ec8284942ff2646b
+    (setup-hook 'org-export-preprocess-hook
+      (goto-char (point-min))
+      (while (search-forward-regexp "^\\([^|#*\n].+\\)\\(.\\)\n *\\(.\\)" nil t)
+        (and (> (string-to-char (match-string 2)) #x2000)
+             (> (string-to-char (match-string 3)) #x2000)
+             (replace-match "\\1\\2\\3"))
+        (goto-char (point-at-bol))))
+
+    ;; babel
+    (setup-after "ob-exp"
+      (setq org-export-babel-evaluate nil))
+
+    (setup-after "org-html"
+
+      (setq org-export-html-link-org-files-as-html nil
+            org-export-html-validation-link        nil
+            org-export-html-style-include-scripts  nil
+            org-export-html-style-include-default  nil
+            org-export-html-inline-image-extensions
+            '("png" "jpeg" "jpg" "gif" "svg" "bmp")
+            org-export-html-mathjax-options
+            '((path  "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML")
+              (scale "100")
+              (align "center")
+              (indent "2em")
+              (mathml nil)))
+
+      ;; use htmlize in "org-export-as-html"
+      (setup-lazy '(htmlize-buffer) "htmlize"
+        :prepare (setup-after "org" (setup "htmlize"))
+        (setq org-export-html-style-extra
+              (format "<style>pre.src { background-color: %s; color: %s; }</style>"
+                      (face-background 'default)
+                      (face-foreground 'default))))
+
+      ;; electric-spacing workaround
+      (setup-after "electric-spacing"
+        (defadvice org-export-as-html (around my-electric-spacing-workaround activate)
+          (let ((electric-spacing-regexp-pairs nil))
+            ad-do-it)))
+      )
+    )
+
+  (defun my-org-edit-special ()
+    (interactive)
+    (condition-case nil
+        (org-edit-special)
+      (error
+       (let ((str (and (use-region-p)
+                       (buffer-substring (region-beginning) (region-end))))
+             (mode (read-from-minibuffer "mode ? ")))
+         (when str
+           (delete-region (region-beginning) (region-end)))
+         (insert "#+begin_src " mode "\n")
+         (save-excursion (insert "\n#+end_src" (if str "" "\n")))
+         (org-edit-src-code)
+         (when str
+           (insert str)
+           (org-edit-src-exit))))))
+
+  (setup-keybinds org-mode-map
+    "C-c '" 'my-org-edit-special
+    "M-RET" 'org-insert-heading
+    "TAB"   'org-cycle
+    "C-y"   'org-yank
+    "C-k"   'org-kill-line
+    "C-j"   'org-beginning-of-line
+    "C-e"   'org-end-of-line
+    '("M-a" "M-TAB" "C-," "C-a" "C-j" "M-e" ) nil)
+  )
+
+;;       + latex-mode [magic-latex-buffer] [ac-latex]
+
+(setup-expecting "tex-mode"
+  (push '("\\.tex$" . latex-mode) auto-mode-alist))
+
+(setup-after "tex-mode"
+  (push "Verbatim" tex-verbatim-environments)
+  (push "BVerbatim" tex-verbatim-environments)
+  (push "lstlisting" tex-verbatim-environments)
+  (setup-hook 'latex-mode-hook
+    (outline-minor-mode 1)
+    (setq-local outline-regexp "\\\\\\(sub\\)*section\\>")
+    (setq-local outline-level (lambda () (- (outline-level) 7))))
+  (setup-keybinds latex-mode-map
+    "C-c C-'" 'latex-close-block
+    '("C-j" "C-M-i" "<C-return>") nil)
+  (setup-lazy '(magic-latex-buffer) "magic-latex-buffer"
+    :prepare (setup-hook 'latex-mode-hook 'magic-latex-buffer)
+    (setq magic-latex-enable-inline-image nil))
+  (setup-after "auto-complete"
+    (setup "auto-complete-latex"
+      (setq ac-l-dict-directory my-latex-dictionary-directory)
+      (push 'latex-mode ac-modes)
+      (setup-hook 'latex-mode-hook 'ac-l-setup))))
+
+;;       + gfm-mode [markdown-mode]
+
+(setup-lazy '(gfm-mode) "markdown-mode"
+  :prepare (progn
+             (push '("\\.md$" . gfm-mode) auto-mode-alist)
+             (push '("\\.markdown$" . gfm-mode) auto-mode-alist))
+  (setup-keybinds gfm-mode-map
+    '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
+    "TAB" 'markdown-cycle))
 
 ;;   + hexl-mode
 
