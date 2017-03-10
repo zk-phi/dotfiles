@@ -6012,8 +6012,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;; "monochrome" inspired palette 2
     (create-solarized-based-theme 'sakura 'dark
       "solarized-based theme with `monochrome' inspired color-palette."
-      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#719d77" "#b9687e"
-      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#e2b3c0" "#9e9e9e")
+      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#B0D391" "#FB9A85"
+      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
 
     ;; ;; "monochrome" inspired theme with "planet" colors
     ;; (create-solarized-based-theme 'monoplanet 'dark
