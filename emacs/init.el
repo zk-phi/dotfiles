@@ -5931,7 +5931,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
                (base00  ,(my-make-color darkest-base nil nil brightest-base 40))
                (base0   ,(my-make-color darkest-base nil nil brightest-base 52))
                (base1   ,(my-make-color darkest-base nil nil brightest-base 58))
-               (base2   ,(my-make-color darkest-base nil nil brightest-base (if (eq mode 'dark) 97 94)))
+               (base2   ,(my-make-color darkest-base nil nil brightest-base 97))
                (base3   ,brightest-base)
                (yellow  ,type-yellow)
                (orange  ,warning-orange)
