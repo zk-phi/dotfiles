@@ -6013,11 +6013,11 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#9b744c" "#aa6b6b"
     ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
 
-    ;; ;; "monochrome" inspired palette 2
-    ;; (create-solarized-based-theme 'sakura 'dark
-    ;;   "solarized-based theme with `monochrome' inspired color-palette."
-    ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#B0D391" "#FB9A85"
-    ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
+    ;; "monochrome" inspired palette 2
+    (create-solarized-based-theme 'sakura 'dark
+      "solarized-based theme with `monochrome' inspired color-palette."
+      "#1c1c1c" "#d8d8d8" "#9e9e9e" "#B0D391" "#FB9A85"
+      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
 
     ;; ;; "monochrome" inspired palette 3
     ;; (create-solarized-based-theme 'green 'dark
@@ -6025,11 +6025,11 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#000000" "#00da00" "#00c000" "#00b000" "#00ca00"
     ;;   "#00b000" "#00b000" "#00ca00" "#00df00" "#00c000")
 
-    ;; "monochrome" inspired palette 4
-    (create-solarized-based-theme 'pencil 'light
-      "solarized-based theme with `monochrome' inspired color-palette."
-      "#303030" "#fffef8" "#141414" "#141414" "#141414"
-      "#545454" "#545454" "#545454" "#343434" "#141414")
+    ;; ;; "monochrome" inspired palette 4
+    ;; (create-solarized-based-theme 'pencil 'light
+    ;;   "solarized-based theme with `monochrome' inspired color-palette."
+    ;;   "#303030" "#fffdf7" "#141414" "#141414" "#141414"
+    ;;   "#545454" "#545454" "#545454" "#343434" "#141414")
 
     ;; ;; "monochrome" inspired theme with "planet" colors
     ;; (create-solarized-based-theme 'monoplanet 'dark
