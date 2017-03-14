@@ -5945,14 +5945,16 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
         (create-solarized-theme name description (solarized-color-definitions))))
 
     ;; ;; the solarized-dark theme
-    ;; (set-frame-parameter nil 'background-mode 'dark)
-    ;; (create-solarized-theme
-    ;;  solarized solarized-description (solarized-color-definitions))
+    ;; (create-solarized-based-theme 'solarized-dark 'dark
+    ;;   "the solarized-dark theme"
+    ;;   "#002b36" "#fdf6e3" "#b58900" "#cb4b16" "#dc322f"
+    ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
 
     ;; ;; the solarized-light theme
-    ;; (set-frame-parameter nil 'background-mode 'light)
-    ;; (create-solarized-theme
-    ;;  solarized solarized-description (solarized-color-definitions))
+    ;; (create-solarized-based-theme 'solarized-light 'light
+    ;;   "the solarized-light theme"
+    ;;   "#002b36" "#fdf6e3" "#b58900" "#cb4b16" "#dc322f"
+    ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
 
     ;; ;; "jellybeans" palette
     ;; ;; reference | https://github.com/nanotech/jellybeans.vim
