@@ -6025,12 +6025,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#000000" "#00da00" "#00c000" "#00b000" "#00ca00"
     ;;   "#00b000" "#00b000" "#00ca00" "#00df00" "#00c000")
 
-    ;; ;; "monochrome" inspired palette 4
-    ;; (create-solarized-based-theme 'pencil 'light
-    ;;   "solarized-based theme with `monochrome' inspired color-palette."
-    ;;   "#303030" "#fffdf7" "#141414" "#141414" "#141414"
-    ;;   "#545454" "#545454" "#545454" "#343434" "#141414")
-
     ;; ;; "monochrome" inspired theme with "planet" colors
     ;; (create-solarized-based-theme 'monoplanet 'dark
     ;;   "solarized-based theme with `monochrome' inspired color-palette."
