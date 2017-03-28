@@ -2368,7 +2368,7 @@ unary operators which can also be binary."
   "Toggle transparency."
   (interactive)
   (let* ((current-alpha (or (cdr (assoc 'alpha (frame-parameters))) 100))
-         (new-alpha (cl-case current-alpha ((100) 91) ((91) 78) ((78) 66) (t 100))))
+         (new-alpha (cl-case current-alpha ((100) 96) ((96) 91) ((91) 78) ((78) 66) (t 100))))
     (set-frame-parameter nil 'alpha new-alpha)))
 
 ;; URL encode / decode region
