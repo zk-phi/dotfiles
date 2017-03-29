@@ -5919,6 +5919,31 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (eval-and-compile          ; we want the theme applied also during compile
   (setup-include "solarized-definitions"
 
+    (defun create-solarized-based-theme-2
+      (name mode description dark-base light-base
+            type-yellow warning-orange error-red visited-magenta
+            link-violet identifier-blue string-cyan keyword-green)
+      (declare (indent 2))
+      (set-frame-parameter nil 'background-mode mode)
+      (let ((solarized-colors
+             `((base03  ,(my-make-color dark-base nil nil light-base (if (eq mode 'dark) 0 -66.4)))
+               (base02  ,(my-make-color dark-base nil nil light-base (if (eq mode 'dark) 6 -61.4)))
+               (base01  ,(my-make-color dark-base nil nil light-base (if (eq mode 'dark) 68 -8)))
+               (base00  ,(my-make-color dark-base nil nil light-base (if (eq mode 'dark) 78 0)))
+               (base0   ,(my-make-color dark-base nil nil light-base (if (eq mode 'dark) 100 20)))
+               (base1   ,(my-make-color dark-base nil nil light-base (if (eq mode 'dark) 113 30)))
+               (base2   ,(my-make-color dark-base nil nil light-base (if (eq mode 'dark) 180 95)))
+               (base3   ,(my-make-color dark-base nil nil light-base (if (eq mode 'dark) 194 100)))
+               (yellow  ,type-yellow)
+               (orange  ,warning-orange)
+               (red     ,error-red)
+               (magenta ,visited-magenta)
+               (violet  ,link-violet)
+               (blue    ,identifier-blue)
+               (cyan    ,string-cyan)
+               (green   ,keyword-green))))
+        (create-solarized-theme name description (solarized-color-definitions))))
+
     (defun create-solarized-based-theme
         (name mode description darkest-base brightest-base
               type-yellow warning-orange error-red visited-magenta
@@ -5945,90 +5970,90 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
         (create-solarized-theme name description (solarized-color-definitions))))
 
     ;; ;; the solarized-dark theme
-    ;; (create-solarized-based-theme 'solarized-dark 'dark
+    ;; (create-solarized-based-theme-2 'solarized-dark 'dark
     ;;   "the solarized-dark theme"
-    ;;   "#002b36" "#fdf6e3" "#b58900" "#cb4b16" "#dc322f"
+    ;;   "#002b36" "#83948f" "#b58900" "#cb4b16" "#dc322f"
     ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
 
     ;; the solarized-light theme
-    (create-solarized-based-theme 'solarized-light 'light
+    (create-solarized-based-theme-2 'solarized-light 'light
       "the solarized-light theme"
-      "#002b36" "#fdf6e3" "#b58900" "#cb4b16" "#dc322f"
+      "#657c7b" "#fdf6e3" "#b58900" "#cb4b16" "#dc322f"
       "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
 
     ;; ;; "jellybeans" palette
     ;; ;; reference | https://github.com/nanotech/jellybeans.vim
-    ;; (create-solarized-based-theme 'solarized-jellybeans 'dark
+    ;; (create-solarized-based-theme-2 'solarized-jellybeans 'dark
     ;;   "solarized-based theme with `jellybeans' inspired color-palette."
-    ;;   "#202020" "#ffffff" "#ffb964" "#8fbfdc" "#a04040"
+    ;;   "#202020" "#939393" "#ffb964" "#8fbfdc" "#a04040"
     ;;   "#b05080" "#805090" "#fad08a" "#99ad6a" "#8fbfdc")
 
     ;; ;; "mesa" palette
     ;; ;; reference | http://emacsfodder.github.io/blog/mesa-theme/
-    ;; (create-solarized-based-theme 'solarized-mesa 'light
+    ;; (create-solarized-based-theme-2 'solarized-mesa 'light
     ;;   "solarized-based theme with `mesa' inspired color-palette."
-    ;;   "#000000" "#faf5ee" "#3388dd" "#ac3d1a" "#dd2222"
+    ;;   "#64625f" "#faf5ee" "#3388dd" "#ac3d1a" "#dd2222"
     ;;   "#8b008b" "#00b7f0" "#1388a2" "#104e8b" "#00688b")
 
     ;; ;; "tron" palette
     ;; ;; reference | https://github.com/ivanmarcin/emacs-tron-theme/
-    ;; (create-solarized-based-theme 'solarized-tron 'dark
+    ;; (create-solarized-based-theme-2 'solarized-tron 'dark
     ;;   "solarized-based theme with `tron' inspired color-palette."
-    ;;   "#000000" "#e1eaee" "#74abbe" "orange" "red"
+    ;;   "#000000" "#75797b" "#74abbe" "orange" "red"
     ;;   "magenta" "violet" "#ec9346" "#e8b778" "#a4cee5")
 
     ;; ;; "majapahit" palette
     ;; ;; reference | https://gitlab.com/franksn/majapahit-theme/
-    ;; (create-solarized-based-theme 'solarized-majapahit 'dark
+    ;; (create-solarized-based-theme-2 'solarized-majapahit 'dark
     ;;   "solarized-based theme with `majapahit' inspired color-palette."
-    ;;   "#2A1F1B" "#e0d9c6" "#768d82" "#d99481" "#bb4e62"
+    ;;   "#2A1F1B" "#887f73" "#768d82" "#d99481" "#bb4e62"
     ;;   "#db6b7e" "#8e6a60" "#adb78d" "#849f98" "#d4576f")
 
     ;; ;; "planet" palette
     ;; ;; reference | https://github.com/cmack/emacs-planet-theme/
-    ;; (create-solarized-based-theme 'solarized-planet 'dark
+    ;; (create-solarized-based-theme-2 'solarized-planet 'dark
     ;;   "solarized-based theme with `planet' inspired color-palette."
-    ;;   "#192129" "#d2dde8" "#e9b96e" "#ff8683" "#fe5450"
+    ;;   "#192129" "#79828c" "#e9b96e" "#ff8683" "#fe5450"
     ;;   "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
 
     ;; ;; "kagamine len" inspired palette
     ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
     ;; ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
-    ;; (create-solarized-based-theme 'lenlen 'light
+    ;; (create-solarized-based-theme-2 'lenlen 'light
     ;;   "solarized-based theme with kagamine len inspired color-palette."
-    ;;   "#291e03" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
+    ;;   "#7e7765" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
     ;;   "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
 
     ;; ;; "reykjavik" palette
     ;; ;; reference | https://github.com/mswift42/reykjavik-theme/
-    ;; (create-solarized-based-theme 'solarized-reykjavik 'dark
+    ;; (create-solarized-based-theme-2 'solarized-reykjavik 'dark
     ;;   "solarized-based theme with `reykjavik' inspired color-palette."
-    ;;   "#112328" "#dadada" "#c1d2b1" "#e86310" "#e81050"
+    ;;   "#112328" "#798284" "#c1d2b1" "#e86310" "#e81050"
     ;;   "#c4cbee" "#a3d6cc" "#f1c1bd" "#e6c2db" "#a3d4e8")
 
     ;; ;; "monochrome" inspired palette
     ;; ;; reference | https://github.com/fxn/monochrome-theme.el/
-    ;; (create-solarized-based-theme 'chillized 'dark
+    ;; (create-solarized-based-theme-2 'chillized 'dark
     ;;   "solarized-based theme with `monochrome' inspired color-palette."
-    ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#9b744c" "#aa6b6b"
+    ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#9b744c" "#aa6b6b"
     ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
 
     ;; ;; "monochrome" inspired palette 2
-    ;; (create-solarized-based-theme 'sakura 'dark
+    ;; (create-solarized-based-theme-2 'sakura 'dark
     ;;   "solarized-based theme with `monochrome' inspired color-palette."
-    ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#B0D391" "#FB9A85"
+    ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#B0D391" "#FB9A85"
     ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
 
     ;; ;; "monochrome" inspired palette 3
-    ;; (create-solarized-based-theme 'green 'dark
+    ;; (create-solarized-based-theme-2 'green 'dark
     ;;   "solarized-based theme with `monochrome' inspired color-palette."
-    ;;   "#000000" "#00da00" "#00c000" "#00b000" "#00ca00"
+    ;;   "#000000" "#007100" "#00c000" "#00b000" "#00ca00"
     ;;   "#00b000" "#00b000" "#00ca00" "#00df00" "#00c000")
 
     ;; ;; "monochrome" inspired theme with "planet" colors
-    ;; (create-solarized-based-theme 'monoplanet 'dark
+    ;; (create-solarized-based-theme-2 'monoplanet 'dark
     ;;   "solarized-based theme with `monochrome' inspired color-palette."
-    ;;   "#1c1c1c" "#d8d8d8" "#9e9e9e" "#649d8a" "#ff8683"
+    ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#649d8a" "#ff8683"
     ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#e0b776" "#9e9e9e")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
