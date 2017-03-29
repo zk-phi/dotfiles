@@ -5975,11 +5975,11 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#002b36" "#83948f" "#b58900" "#cb4b16" "#dc322f"
     ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
 
-    ;; the solarized-light theme
-    (create-solarized-based-theme-2 'solarized-light 'light
-      "the solarized-light theme"
-      "#657c7b" "#fdf6e3" "#b58900" "#cb4b16" "#dc322f"
-      "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
+    ;; ;; the solarized-light theme
+    ;; (create-solarized-based-theme-2 'solarized-light 'light
+    ;;   "the solarized-light theme"
+    ;;   "#657c7b" "#fdf6e3" "#b58900" "#cb4b16" "#dc322f"
+    ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
 
     ;; ;; "jellybeans" palette
     ;; ;; reference | https://github.com/nanotech/jellybeans.vim
@@ -6038,11 +6038,11 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#9b744c" "#aa6b6b"
     ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
 
-    ;; ;; "monochrome" inspired palette 2
-    ;; (create-solarized-based-theme-2 'sakura 'dark
-    ;;   "solarized-based theme with `monochrome' inspired color-palette."
-    ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#B0D391" "#FB9A85"
-    ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
+    ;; "monochrome" inspired palette 2
+    (create-solarized-based-theme-2 'sakura 'dark
+      "solarized-based theme with `monochrome' inspired color-palette."
+      "#1c1c1c" "#7d7d7d" "#9e9e9e" "#B0D391" "#FB9A85"
+      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
 
     ;; ;; "monochrome" inspired palette 3
     ;; (create-solarized-based-theme-2 'green 'dark
