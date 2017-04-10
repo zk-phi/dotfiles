@@ -5984,20 +5984,20 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#2A1F1B" "#887f73" "#768d82" "#d99481" "#bb4e62"
     ;;   "#db6b7e" "#8e6a60" "#adb78d" "#849f98" "#d4576f")
 
-    ;; ;; "planet" palette
-    ;; ;; reference | https://github.com/cmack/emacs-planet-theme/
-    ;; (create-solarized-based-theme 'solarized-planet 'dark
-    ;;   "solarized-based theme with `planet' inspired color-palette."
-    ;;   "#192129" "#79828c" "#e9b96e" "#ff8683" "#fe5450"
-    ;;   "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
+    ;; "planet" palette
+    ;; reference | https://github.com/cmack/emacs-planet-theme/
+    (create-solarized-based-theme 'solarized-planet 'dark
+      "solarized-based theme with `planet' inspired color-palette."
+      "#192129" "#79828c" "#e9b96e" "#ff8683" "#fe5450"
+      "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
 
-    ;; "kagamine len" inspired palette
-    ;; reference | http://vocaloidcolorpalette.tumblr.com/
-    ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
-    (create-solarized-based-theme 'lenlen 'light
-      "solarized-based theme with kagamine len inspired color-palette."
-      "#7e7765" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
-      "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
+    ;; ;; "kagamine len" inspired palette
+    ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
+    ;; ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
+    ;; (create-solarized-based-theme 'lenlen 'light
+    ;;   "solarized-based theme with kagamine len inspired color-palette."
+    ;;   "#7e7765" "#fffdf9" "#db8d2e" "#f77e96" "#f47166"
+    ;;   "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
 
     ;; ;; "reykjavik" palette
     ;; ;; reference | https://github.com/mswift42/reykjavik-theme/
