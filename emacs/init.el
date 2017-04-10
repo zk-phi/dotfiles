@@ -6136,10 +6136,10 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
 (setup-after "whitespace"
   (set-face-attribute 'whitespace-space nil
-                      :foreground (car my-mode-line-background)
+                      :foreground (! (my-make-color (face-foreground 'default) -10))
                       :background 'unspecified)
   (set-face-attribute 'whitespace-tab nil
-                      :foreground (car my-mode-line-background)
+                      :foreground (! (my-make-color (face-foreground 'default) -10 0 "orange" 10))
                       :background 'unspecified))
 
 ;;   + | stripe-buffer
