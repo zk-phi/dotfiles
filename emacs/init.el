@@ -13,7 +13,7 @@
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Undo|Zoom+|     |     |
 ;;    | Quot| Cut | End |Rplce|TrsWd| Yank| PgUp| Tab | Open| U p |(ESC)|     |
 ;;       |MCNxt|Serch|Delte|Right| Quit| B S | Home|KilLn|Centr|Comnt|     |
-;;          |     |  *  |  *  | PgDn| Left| Down|Retrn|ExpRg|     |     |
+;;          |     |  *  |  *  | PgDn| Left| Down|Retrn|ExpRg|GitCp|     |
 
 ;; C-M-_
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|Zoom-|     |     |
@@ -42,12 +42,6 @@
 ;;    |     |Write|Encod|Revrt|Trnct|     |Untab|SpChk|     |Bckup|(ESC)|     |
 ;;       |MFile| Save|     |FFlat|     |OthrF|     |KilBf|CgLog|     |     |
 ;;          |     |Rname|Close|     |Bffrs|     |ExMcr|  DL |     |     |
-
-;;   + extra
-
-;; C-c
-;;
-;; - C-c C-c : git-complete
 
 ;; key-chord
 ;;
@@ -6483,6 +6477,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (setup-keybinds nil
   "C-t"          'my-transpose-words
   "C-;"          'comment-dwim
+  "C-."          '("git-complete" git-complete)
   "C-M-t"        'my-transpose-lines
   "M-h"          'my-shrink-whitespaces
   "M-*"          '("paredit" paredit-forward-barf-sexp)
@@ -6497,7 +6492,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "M-\""         '("paredit" paredit-meta-doublequote)
   "M-T"          'my-transpose-sexps
   "M-:"          'my-comment-sexp
-  "C-c C-c"      '("git-complete" git-complete)
   "<oem-pa1>"    '("yasnippet" yas-expand my-dabbrev-expand)
   "<muhenkan>"   '("yasnippet" yas-expand my-dabbrev-expand)
   "<nonconvert>" '("yasnippet" yas-expand my-dabbrev-expand))
