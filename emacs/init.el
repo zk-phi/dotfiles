@@ -3693,7 +3693,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "-") `(,(my-unary "-") "--"))
       (key-combo-define-local (kbd "*") `(,(my-unary "*") " ** "))
       (key-combo-define-local (kbd "^") " ^ ")
-      (key-combo-define-local (kbd "%") `(,(my-unary "%") " % "))
+      (key-combo-define-local (kbd "%") `(" %" " % "))
       (key-combo-define-local (kbd "/") '(" / " " // "))
       (key-combo-define-local (kbd "&") '(" & " " && "))
       (key-combo-define-local (kbd "|") '(" | " " || "))
