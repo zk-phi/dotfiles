@@ -19,7 +19,7 @@
 ;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|Zoom-|     |     |
 ;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf| Fill|NLBet|BPgph|(ESC)|     |
 ;;       |MCAll|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|BKlLn| Top |     |     |
-;;          |     |     | Calc|EdBuf|BWord|NPgph|FwRet|MrkAl|     |     |
+;;          |     |     | Calc|EdBuf|BWord|NPgph|FwRet|MrkAl|Imprt|     |
 
 ;;   + Meta-
 
@@ -2541,6 +2541,9 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 ;; completion via `git grep'
 (setup-lazy '(git-complete) "git-complete"
   :prepare (setup-in-idle "git-complete"))
+
+;; insert import statement
+(setup-lazy '(include-anywhere) "include-anywhere")
 
 ;;   + | pop-up windows
 
@@ -6479,6 +6482,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "C-;"          'comment-dwim
   "C-."          '("git-complete" git-complete)
   "C-M-t"        'my-transpose-lines
+  "C-M-."        '("include-anywhere" include-anywhere)
   "M-h"          'my-shrink-whitespaces
   "M-*"          '("paredit" paredit-forward-barf-sexp)
   "M-("          '("paredit" my-paredit-wrap-round)
