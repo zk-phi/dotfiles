@@ -3,13 +3,16 @@
     required = true
     clean = git-lfs clean %f
 [alias]
+    # ---- patch/unpatch a commit
+    # -> 'git show $1 -p' doesn't work with stashes so we use diff here
     patch = "!f(){ git diff $1^ $1 | git apply; }; f"
-    intercept = "!f(){ git diff $1^ $1 | git apply --reverse; }; f"
-    # -> 'git show $1 -p | git apply' doesn't work with stashes
+    unpatch = "!f(){ git diff $1^ $1 | git apply --reverse; }; f"
+    # ---- reset current branch to the last commit we've checked out
     undo = "!f() { git reset $(git rev-parse --abbrev-ref HEAD)@{${1-1}}; }; f"
+    # ---- compare two branches excluding commits from other branches
     compare = "!f() { git diff ${1:-master}...${2:-HEAD}; }; f"
     history = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
-    # typos
+    # ---- fix typos
     chekcout = checkout
     hcekcout = checkout
     hceckout = checkout
