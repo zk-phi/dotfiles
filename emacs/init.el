@@ -324,7 +324,8 @@
         (insert-file-contents head-path)
         (goto-char (point-min))
         (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
-        (let ((str (replace-regexp-in-string "\\(.\\)[aeiouAEIOU]" "\\1" (match-string 1))))
+        (let ((str (replace-regexp-in-string
+                    "\\([aeiouAEIOU]\\)[aeiouAEIOU]" "\\1" (match-string 1))))
           (if (> (length str) 3) (substring str 0 3) str))))))
 
 (defun my-read-font-family ()
