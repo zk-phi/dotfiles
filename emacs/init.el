@@ -3682,8 +3682,10 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       ("\\=[ \t]*{[ \t]*\\(-?[a-zA-Z0-9_:]+\\)[ \t]*}" nil nil (1 'cperl-hash-key-face t))))
    t)
 
-  ;; make dollar sign "$" NOT an escape char
-  (modify-syntax-entry ?$ "." cperl-mode-syntax-table)
+  ;; make basic sigils part of a symbol
+  (modify-syntax-entry ?$ "_" cperl-mode-syntax-table)
+  (modify-syntax-entry ?% "_" cperl-mode-syntax-table)
+  (modify-syntax-entry ?@ "_" cperl-mode-syntax-table)
 
   (setup-keybinds cperl-mode-map
     "C-c C-l" 'cperl-lineup
