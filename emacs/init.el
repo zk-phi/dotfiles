@@ -5989,12 +5989,12 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#2A1F1B" "#887f73" "#768d82" "#d99481" "#bb4e62"
     ;;   "#db6b7e" "#8e6a60" "#adb78d" "#849f98" "#d4576f")
 
-    ;; "planet" palette
-    ;; reference | https://github.com/cmack/emacs-planet-theme/
-    (create-solarized-based-theme 'solarized-planet 'dark
-      "solarized-based theme with `planet' inspired color-palette."
-      "#192129" "#79828c" "#e9b96e" "#ff8683" "#fe5450"
-      "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
+    ;; ;; "planet" palette
+    ;; ;; reference | https://github.com/cmack/emacs-planet-theme/
+    ;; (create-solarized-based-theme 'solarized-planet 'dark
+    ;;   "solarized-based theme with `planet' inspired color-palette."
+    ;;   "#192129" "#79828c" "#e9b96e" "#ff8683" "#fe5450"
+    ;;   "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
 
     ;; ;; "kagamine len" inspired palette
     ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
@@ -6030,11 +6030,11 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     ;;   "#000000" "#007100" "#00c000" "#00b000" "#00ca00"
     ;;   "#00b000" "#00b000" "#00ca00" "#00df00" "#00c000")
 
-    ;; ;; "monochrome" inspired theme with "planet" colors
-    ;; (create-solarized-based-theme 'monoplanet 'dark
-    ;;   "solarized-based theme with `monochrome' inspired color-palette."
-    ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#649d8a" "#ff8683"
-    ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#e0b776" "#9e9e9e")
+    ;; less colorful "planet" theme based on "monochrome"
+    (create-solarized-based-theme 'monoplanet 'dark
+      "solarized-based theme with `monochrome' inspired color-palette."
+      "#192129" "#7d7d7d" "#e0b776" "#729fcf" "#ff8683"
+      "#c0c0c0" "#c0c0c0" "#c0c0c0" "#649d8a" "#9e9e9e")
 
     (set-face-attribute 'italic nil :slant 'italic :underline nil)
     ))
