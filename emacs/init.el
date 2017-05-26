@@ -2541,7 +2541,8 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
 
 ;; completion via `git grep'
 (setup-lazy '(git-complete) "git-complete"
-  :prepare (setup-in-idle "git-complete"))
+  :prepare (setup-in-idle "git-complete")
+  (setq git-complete-enable-omni-completion t))
 
 ;; insert import statement
 (setup-lazy '(include-anywhere) "include-anywhere")
