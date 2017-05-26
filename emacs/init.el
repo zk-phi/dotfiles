@@ -3736,6 +3736,7 @@ file. If the point is in a incorrect word marked by flyspell, correct the word."
       (key-combo-define-local (kbd "->") "->")
       (key-combo-define-local (kbd "=>") " => ")
       (key-combo-define-local (kbd "qw") "qw/`!!'/")
+      (key-combo-define-local (kbd "qr") "qr/`!!'/")
       (key-combo-define-local (kbd "?") " ? `!!' : ")))
   )
 
