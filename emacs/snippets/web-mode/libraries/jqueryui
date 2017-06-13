@@ -1,4 +1,4 @@
 # name : jqueryui
 # key : jqueryui
 # --
-<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js">
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
