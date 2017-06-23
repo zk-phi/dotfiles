@@ -1531,15 +1531,19 @@ unary operators which can also be binary."
   :prepare (setup-in-idle "yasnippet")
 
   (setq yas-triggers-in-field t
-        yas-fallback-behavior '(apply my-dabbrev-expand . nil)
         yas-snippet-dirs      (list my-snippets-directory)
         yas-verbosity         3)
 
-  ;; let fallback-behavior return-nil while expanding snippets
+  ;; setup fallback chain (yas -> prev lines -> git grep -> other)
+  (setq yas-fallback-behavior '(apply my-dabbrev-expand 5))
   (setup-hook 'yas-before-expand-snippet-hook
     (setq yas-fallback-behavior 'return-nil))
   (setup-hook 'yas-after-exit-snippet-hook
-    (setq yas-fallback-behavior '(apply my-dabbrev-expand . nil)))
+    (setq yas-fallback-behavior '(apply my-dabbrev-expand 5)))
+  (setup-expecting "git-complete"
+    :fallback (setq my-dabbrev-expand-fallback 'my-expand-dwim)
+    (setq my-dabbrev-expand-fallback     'git-complete
+          git-complete-fallback-function 'my-expand-dwim))
 
   (yas-reload-all)
   (yas-global-mode 1)
@@ -2294,6 +2298,23 @@ unary operators which can also be binary."
             (t                          ; otherwise: just-one-space
              (just-one-space))))))
 
+;; delimited dabbrev expand
+(defvar my-dabbrev-expand-fallback nil)
+(defun my-dabbrev-expand (&optional lines)
+  "Expands to the most recent, preceding word for which this is a
+prefix. When LINES is specified, matches must be at most LINES
+lines far from the cursor."
+  (interactive)
+  (or (and (looking-back "\\_<\\(?:\\sw\\|\\s_\\)*")
+           (save-excursion
+             (search-backward-regexp
+              (concat (regexp-quote (match-string 0)) "\\(\\(?:\\sw\\|\\s_\\)*\\)\\_>")
+              (and lines (point-at-bol (- lines))) t 2))
+           (progn (insert (match-string 1) " ") t))
+      (if my-dabbrev-expand-fallback
+          (funcall my-dabbrev-expand-fallback)
+        (message "No completions found."))))
+
 ;;   + | jokes
 
 ;; Emacs sɔɐɯƎ
@@ -2425,12 +2446,11 @@ unary operators which can also be binary."
 
 ;;   + | edit
 
-;; expand abbrev smartly
-(setup-lazy '(my-dabbrev-expand) "dabbrev"
-  (defun my-dabbrev-expand ()
-    "Expand dabbrev and insert SPC. when no preceding letters are
-provided and we are in emacs-lisp-mode, insert prefix for the
-file. If the point is in a incorrect word marked by flyspell, correct the word."
+;; expand anything
+(setup-lazy '(my-expand-dwim) "dabbrev"
+  (defun my-expand-dwim ()
+    "Expand either flyspell correction, dabbrev, or package name if
+emacs-lisp-mode."
     (interactive)
     (cond ((cl-some (lambda (ov)
                       (eq (overlay-get ov 'face) 'flyspell-incorrect))
