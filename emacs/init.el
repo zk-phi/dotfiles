@@ -62,7 +62,6 @@
 ;;
 ;; -     TAB : indent / ac-expand
 ;; -     ESC : vi-mode
-;; -   NConv : dabbrev-expand / yas-expand
 ;; -   C-RET : phi-rectangle-set-mark-command
 ;; -   C-SPC : set-mark-command / visible-register / exchange-point-and-mark
 
@@ -1568,10 +1567,9 @@ unary operators which can also be binary."
           (move-beginning-of-line 1)
         (goto-char pos))))
   (setup-keybinds yas-keymap
-    '("TAB" "<tab>")                           nil
-    '("<oem-pa1>" "<muhenkan>" "<nonconvert>") 'yas-next-field-or-maybe-expand
-    "C-j"                                      'my-yas/goto-start-of-active-field
-    "C-e"                                      'my-yas/goto-end-of-active-field)
+    '("TAB" "<tab>") nil
+    "C-j"            'my-yas/goto-start-of-active-field
+    "C-e"            'my-yas/goto-end-of-active-field)
   )
 
 ;;   + multiple-cursors [multiple-cursors]
@@ -6487,27 +6485,23 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 ;;     + other edit commands
 
 (setup-keybinds nil
-  "C-t"          'my-transpose-words
-  "C-;"          'comment-dwim
-  "C-."          '("git-complete" git-complete)
-  "C-M-t"        'my-transpose-lines
-  "C-M-."        '("include-anywhere" include-anywhere)
-  "M-h"          'my-shrink-whitespaces
-  "M-*"          '("paredit" paredit-forward-barf-sexp)
-  "M-("          '("paredit" my-paredit-wrap-round)
-  "M-)"          '("paredit" paredit-forward-slurp-sexp)
-  "M-{"          '("paredit" my-paredit-wrap-square)
-  "M-R"          '("paredit" paredit-raise-sexp)
-  "M-U"          '("paredit" paredit-splice-sexp-killing-backward)
-  "M-S"          '("paredit" paredit-split-sexp)
-  "M-J"          '("paredit" paredit-join-sexps)
-  "M-C"          '("paredit" paredit-convolute-sexp)
-  "M-\""         '("paredit" paredit-meta-doublequote)
-  "M-T"          'my-transpose-sexps
-  "M-:"          'my-comment-sexp
-  "<oem-pa1>"    '("yasnippet" yas-expand my-dabbrev-expand)
-  "<muhenkan>"   '("yasnippet" yas-expand my-dabbrev-expand)
-  "<nonconvert>" '("yasnippet" yas-expand my-dabbrev-expand))
+  "C-t"   'my-transpose-words
+  "C-;"   'comment-dwim
+  "C-M-t" 'my-transpose-lines
+  "C-."   '("include-anywhere" include-anywhere)
+  "M-h"   'my-shrink-whitespaces
+  "M-*"   '("paredit" paredit-forward-barf-sexp)
+  "M-("   '("paredit" my-paredit-wrap-round)
+  "M-)"   '("paredit" paredit-forward-slurp-sexp)
+  "M-{"   '("paredit" my-paredit-wrap-square)
+  "M-R"   '("paredit" paredit-raise-sexp)
+  "M-U"   '("paredit" paredit-splice-sexp-killing-backward)
+  "M-S"   '("paredit" paredit-split-sexp)
+  "M-J"   '("paredit" paredit-join-sexps)
+  "M-C"   '("paredit" paredit-convolute-sexp)
+  "M-\""  '("paredit" paredit-meta-doublequote)
+  "M-T"   'my-transpose-sexps
+  "M-:"   'my-comment-sexp)
 
 ;;   + | file, directory, shell
 ;;     + browsing
