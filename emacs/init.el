@@ -1535,11 +1535,11 @@ unary operators which can also be binary."
         yas-verbosity         3)
 
   ;; setup fallback chain (yas -> prev lines -> git grep -> other)
-  (setq yas-fallback-behavior '(apply my-dabbrev-expand 5))
+  (setq yas-fallback-behavior '(apply my-dabbrev-expand 2))
   (setup-hook 'yas-before-expand-snippet-hook
     (setq yas-fallback-behavior 'return-nil))
   (setup-hook 'yas-after-exit-snippet-hook
-    (setq yas-fallback-behavior '(apply my-dabbrev-expand 5)))
+    (setq yas-fallback-behavior '(apply my-dabbrev-expand 2)))
   (setup-expecting "git-complete"
     :fallback (setq my-dabbrev-expand-fallback 'my-expand-dwim)
     (setq my-dabbrev-expand-fallback     'git-complete
