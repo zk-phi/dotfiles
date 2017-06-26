@@ -12,6 +12,8 @@
     # ---- compare two branches excluding commits from other branches
     compare = "!f() { git diff ${1:-master}...${2:-HEAD}; }; f"
     history = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
+    # ---- push and pull in one shot
+    sync = "!f(){ local branch=${1-$(git symbolic-ref --short HEAD)}; git pull origin $branch --ff-only && git push origin $branch; }; f"
     # ---- fix typos
     chekcout = checkout
     hcekcout = checkout
