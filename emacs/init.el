@@ -2228,13 +2228,12 @@ unary operators which can also be binary."
     (">=" ."<") ( "<" .">=") ( ">" ."<=")))
 (defun my-transpose-chars ()
   (interactive)
-  (let ((lst my-transpose-chars-list))
-    (while (and lst (not (looking-back (caar lst))))
-      (setq lst (cdr lst)))
-    (if lst
-        (replace-match (cdar lst))
-      (transpose-chars -1)
-      (forward-char 1))))
+  (let ((replacement
+         (or (cl-some (lambda (pair) (and (looking-back (car pair)) (cdr pair)))
+                      my-transpose-chars-list)
+             (and (looking-back "\\(.\\)\\(.\\)") "\\2\\1"))))
+    (when replacement
+      (replace-match replacement))))
 
 (defun my-smart-comma ()
   "Insert comma maybe followed by a space."
