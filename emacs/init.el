@@ -2233,7 +2233,8 @@ unary operators which can also be binary."
       (setq lst (cdr lst)))
     (if lst
         (replace-match (cdar lst))
-      (save-excursion (transpose-chars -1)))))
+      (transpose-chars -1)
+      (forward-char 1))))
 
 (defun my-smart-comma ()
   "Insert comma maybe followed by a space."
