@@ -24,6 +24,7 @@
     stahs = stash
     hisotry = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
 [diff]
+    algorithm = patience
     compactionHeuristic = true
 [color]
     ui = auto
