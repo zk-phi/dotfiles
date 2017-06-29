@@ -6595,11 +6595,17 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (key-chord-define-global "jj" 'my-upcase-previous-word)
   (key-chord-define-global "kk" 'my-downcase-previous-word)
   (setup-expecting "yasnippet"
+    (key-chord-define-global " i" 'yas-expand)
+    (key-chord-define-global " e" 'yas-expand)
     (key-chord-define-global "fd" 'yas-expand)
     (key-chord-define-global "jk" 'yas-expand))
   (setup-after "yasnippet"
+    (key-chord-define yas-keymap " i" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap " e" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "fd" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "jk" 'yas-next-field-or-maybe-expand))
   (setup-expecting "iy-go-to-char"
+    (key-chord-define-global " f" 'iy-go-to-char-backward)
+    (key-chord-define-global " j" 'iy-go-to-char)
     (key-chord-define-global "sf" 'iy-go-to-char-backward)
     (key-chord-define-global "jl" 'iy-go-to-char)))
