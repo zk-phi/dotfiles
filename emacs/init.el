@@ -1552,9 +1552,7 @@ unary operators which can also be binary."
   (setup-expecting "ido"
     (custom-set-variables '(yas-prompt-functions '(yas-ido-prompt))))
 
-  (setup-keybinds yas-minor-mode-map '("TAB" "<tab>") nil)
-
-  ;; keybinds in snippets
+  ;; navigate inside fields
   ;; reference | https://github.com/magnars/.emacs.d/
   (defun my-yas/goto-end-of-active-field ()
     (interactive)
@@ -1574,6 +1572,10 @@ unary operators which can also be binary."
   ;; indent current line after expanding snippet
   (setup-hook 'yas-after-exit-snippet-hook
     (funcall indent-line-function))
+
+  ;; keybinds
+  (setup-keybinds yas-minor-mode-map
+    '("TAB" "<tab>") nil)
   (setup-keybinds yas-keymap
     '("TAB" "<tab>") 'yas-next-field-or-maybe-expand
     "C-j"            'my-yas/goto-start-of-active-field
