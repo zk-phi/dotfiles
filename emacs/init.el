@@ -52,8 +52,8 @@
 ;;
 ;; - sf : iy-go-to-char-backward
 ;; - jl : iy-go-to-char
-;; - df : yas-expand
-;; - jk : yas-expand
+;; - de : yas-expand
+;; - ji : yas-expand
 
 ;; special keys
 ;;
