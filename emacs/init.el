@@ -52,8 +52,8 @@
 ;;
 ;; - sf : iy-go-to-char-backward
 ;; - jl : iy-go-to-char
-;; - de : yas-expand
-;; - ji : yas-expand
+;; - fe,fr : yas-expand
+;; - ji,jo : yas-expand
 
 ;; special keys
 ;;
@@ -1571,7 +1571,7 @@ unary operators which can also be binary."
           (move-beginning-of-line 1)
         (goto-char pos))))
   (setup-keybinds yas-keymap
-    '("TAB" "<tab>") nil
+    '("TAB" "<tab>") 'yas-next-field-or-maybe-expand
     "C-j"            'my-yas/goto-start-of-active-field
     "C-e"            'my-yas/goto-end-of-active-field)
   )
@@ -6601,11 +6601,15 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (key-chord-define-global "jj" 'my-upcase-previous-word)
   (key-chord-define-global "kk" 'my-downcase-previous-word)
   (setup-expecting "yasnippet"
+    (key-chord-define-global "fr" 'yas-expand)
     (key-chord-define-global "fe" 'yas-expand)
-    (key-chord-define-global "ji" 'yas-expand))
+    (key-chord-define-global "ji" 'yas-expand)
+    (key-chord-define-global "jo" 'yas-expand))
   (setup-after "yasnippet"
+    (key-chord-define yas-keymap "fr" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "fe" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "ji" 'yas-next-field-or-maybe-expand))
+    (key-chord-define yas-keymap "ji" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "jo" 'yas-next-field-or-maybe-expand))
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "fd" 'iy-go-to-char-backward)
     (key-chord-define-global "jk" 'iy-go-to-char)))
