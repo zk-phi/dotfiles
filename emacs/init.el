@@ -1570,6 +1570,10 @@ unary operators which can also be binary."
       (if (= (point) pos)
           (move-beginning-of-line 1)
         (goto-char pos))))
+
+  ;; indent current line after expanding snippet
+  (setup-hook 'yas-after-exit-snippet-hook
+    (funcall indent-line-function))
   (setup-keybinds yas-keymap
     '("TAB" "<tab>") 'yas-next-field-or-maybe-expand
     "C-j"            'my-yas/goto-start-of-active-field
