@@ -1,4 +1,5 @@
 # name : class
 # key : kc-scl
+# condition : (looking-back "$ *")
 # --
 my $class = shift;

@@ -1,0 +1,6 @@
+# name : if (postfix)
+# key : kc-if
+# condition : (looking-back "[^ \n]")
+# --
+ if $1;
+$0

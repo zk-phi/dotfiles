@@ -1,0 +1,5 @@
+# name : sub_lambda
+# key : kc-su
+# condition : (looking-back "[^ \n]")
+# --
+sub { $0 }

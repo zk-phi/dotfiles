@@ -1,0 +1,6 @@
+# name : for (postfix)
+# key : kc-fo
+# condition : (looking-back "[^ \n]")
+# --
+ for $1;
+$0

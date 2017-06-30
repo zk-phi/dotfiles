@@ -2,6 +2,5 @@
 # key : params
 # --
 my %args = Params::Validate::validate(@_, {
-    $1
+    $0
 });
-$0

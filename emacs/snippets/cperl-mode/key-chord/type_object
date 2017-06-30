@@ -1,5 +1,5 @@
-# name : type_hashref
-# key : kc-ha
+# name : type_object
+# key : kc-ob
 # condition : (looking-back "type *=> *")
 # --
-HASHREF
+OBJECT

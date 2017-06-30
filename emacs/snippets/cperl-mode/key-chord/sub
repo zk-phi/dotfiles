@@ -1,5 +1,6 @@
 # name : sub
 # key : kc-su
+# condition : (looking-back "^ *")
 # --
 sub $1 {
     $0

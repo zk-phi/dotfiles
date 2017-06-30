@@ -1,0 +1,6 @@
+# name : unless (postfix)
+# key : kc-un
+# condition : (and (looking-back "[^ \n]") (not (looking-back "SCALAR\\|REF\\|OBJECT")))
+# --
+ unless $1;
+$0

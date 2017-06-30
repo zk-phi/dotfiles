@@ -1,0 +1,7 @@
+# name : if (prefix)
+# key : kc-if
+# condition : (looking-back "^ *")
+# --
+if ($1) {
+   $0
+}

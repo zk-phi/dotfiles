@@ -1,0 +1,7 @@
+# name : for (prefix)
+# key : kc-fo
+# condition : (looking-back "^ *")
+# --
+for my $${1:elem} ($2) {
+   $0
+}

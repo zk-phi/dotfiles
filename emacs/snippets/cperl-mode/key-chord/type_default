@@ -1,5 +1,5 @@
-# name : type_optional
-# key : kc-op
+# name : type_default
+# key : kc-de
 # condition : (looking-back "REF\\|OBJECT\\|SCALAR\\|UNDEF")
 # --
-, optional => 1
+, default => $0

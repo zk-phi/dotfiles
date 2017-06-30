@@ -1,0 +1,7 @@
+# name : unless (prefix)
+# key : kc-un
+# condition : (looking-back "^ *")
+# --
+unless ($1) {
+   $0
+}

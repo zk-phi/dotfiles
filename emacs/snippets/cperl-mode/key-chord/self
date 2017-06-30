@@ -1,4 +1,5 @@
 # name : self
 # key : kc-se
+# condition : (looking-back "^ *")
 # --
 my $self = shift;

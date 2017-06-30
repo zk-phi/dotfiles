@@ -1,7 +1,7 @@
 # name : params
 # key : kc-pa
+# condition : (looking-back "^ *")
 # --
 my %args = Params::Validate::validate(@_, {
-    $1
+    $0
 });
-$0

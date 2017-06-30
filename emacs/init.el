@@ -3734,19 +3734,24 @@ emacs-lisp-mode."
   (setup-expecting "key-chord"
     (setup-expecting "yasnippet"
       (setup-hook 'cperl-mode-hook
-        (key-chord-define-local "sk" (my-yas "kc-sk"))
-        (key-chord-define-local "ar" (my-yas "kc-ar"))
-        (key-chord-define-local "pa" (my-yas "kc-pa"))
-        (key-chord-define-local "ty" (my-yas "kc-ty"))
-        (key-chord-define-local "ar" (my-yas "kc-ar"))
-        (key-chord-define-local "ha" (my-yas "kc-ha"))
-        (key-chord-define-local "op" (my-yas "kc-op"))
-        (key-chord-define-local "sc" (my-yas "kc-sc"))
-        (key-chord-define-local "un" (my-yas "kc-un"))
-        (key-chord-define-local "de" (my-yas "kc-de"))
-        (key-chord-define-local "su" (my-yas "kc-su"))
-        (key-chord-define-local "se" (my-yas "kc-se"))
-        (key-chord-define-local "cl" (my-yas "kc-cl")))))
+        (key-chord-define-local "sk" (my-yas "kc-sk")) ; skeleton (package/script)
+        (key-chord-define-local "ar" (my-yas "kc-ar")) ; args / type_arrayref
+        (key-chord-define-local "ha" (my-yas "kc-ha")) ; type_hashref
+        (key-chord-define-local "pa" (my-yas "kc-pa")) ; params (= args)
+        (key-chord-define-local "ty" (my-yas "kc-ty")) ; type
+        (key-chord-define-local "ha" (my-yas "kc-ha")) ; type_hashref
+        (key-chord-define-local "op" (my-yas "kc-op")) ; type_optional
+        (key-chord-define-local "sc" (my-yas "kc-sc")) ; type_scalar
+        (key-chord-define-local "un" (my-yas "kc-un")) ; unless (postfix/prefix) / type_undef
+        (key-chord-define-local "de" (my-yas "kc-de")) ; type_default
+        (key-chord-define-local "su" (my-yas "kc-su")) ; sub
+        (key-chord-define-local "se" (my-yas "kc-se")) ; self
+        (key-chord-define-local "cl" (my-yas "kc-cl")) ; class
+        (key-chord-define-local "if" (my-yas "kc-if")) ; if (postfix/prefix)
+        (key-chord-define-local "fo" (my-yas "kc-fo")) ; for (postfix/prefix)
+        (key-chord-define-local "ob" (my-yas "kc-ob")) ; type_object
+        (key-chord-define-local "va" (my-yas "kc-va")) ; validate (= args)
+        )))
 
   (setup-expecting "key-combo"
     (setup-hook 'cperl-mode-hook
