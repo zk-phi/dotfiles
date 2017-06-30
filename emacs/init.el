@@ -3794,6 +3794,7 @@ emacs-lisp-mode."
       (key-combo-define-local (kbd "-=") " -= ")
       (key-combo-define-local (kbd "*=") " *= ")
       ;; other
+      (key-combo-define-local (kbd ",") '(", " " => " ", "))
       (key-combo-define-local (kbd "->") "->")
       (key-combo-define-local (kbd "=>") " => ")
       (key-combo-define-local (kbd "qw") "qw/`!!'/")
