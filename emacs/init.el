@@ -1577,11 +1577,18 @@ unary operators which can also be binary."
   )
 
 (setup-expecting "yasnippet"
+
+  ;; do not require-final-newline while editing yasnippet snippets
+  (setup-hook 'find-file-hook
+    (when (and buffer-file-name (string-match  "/snippets/" buffer-file-name))
+      (setq-local require-final-newline nil)))
+
   (defun my-yas (name)
     `(lambda ()
        (interactive)
        (yas--expand-or-prompt-for-template
-        (cl-mapcan #'(lambda (table) (yas--fetch table ,name)) (yas--get-snippet-tables))))))
+        (cl-mapcan #'(lambda (table) (yas--fetch table ,name)) (yas--get-snippet-tables)))))
+  )
 
 ;;   + multiple-cursors [multiple-cursors]
 
