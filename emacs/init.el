@@ -1527,7 +1527,7 @@ unary operators which can also be binary."
 
 ;;   + yasnippet settings [yasnippet]
 
-(setup-lazy '(yas-expand my-yas) "yasnippet"
+(setup-lazy '(yas-expand yas--expand-or-prompt-for-template) "yasnippet"
   :prepare (setup-in-idle "yasnippet")
 
   (setq yas-triggers-in-field t
@@ -1554,12 +1554,6 @@ unary operators which can also be binary."
 
   (setup-keybinds yas-minor-mode-map '("TAB" "<tab>") nil)
 
-  (defun my-yas (name)
-    `(lambda ()
-       (interactive)
-       (yas--expand-or-prompt-for-template
-        (cl-mapcan #'(lambda (table) (yas--fetch table ,name)) (yas--get-snippet-tables)))))
-
   ;; keybinds in snippets
   ;; reference | https://github.com/magnars/.emacs.d/
   (defun my-yas/goto-end-of-active-field ()
@@ -1581,6 +1575,13 @@ unary operators which can also be binary."
     "C-j"            'my-yas/goto-start-of-active-field
     "C-e"            'my-yas/goto-end-of-active-field)
   )
+
+(setup-expecting "yasnippet"
+  (defun my-yas (name)
+    `(lambda ()
+       (interactive)
+       (yas--expand-or-prompt-for-template
+        (cl-mapcan #'(lambda (table) (yas--fetch table ,name)) (yas--get-snippet-tables))))))
 
 ;;   + multiple-cursors [multiple-cursors]
 
