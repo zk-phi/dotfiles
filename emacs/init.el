@@ -52,8 +52,8 @@
 ;;
 ;; - sf : iy-go-to-char-backward
 ;; - jl : iy-go-to-char
-;; - fe,fr : yas-expand
-;; - ji,jo : yas-expand
+;; - fe,fr,de : yas-expand
+;; - ji,jo,ko : yas-expand
 
 ;; special keys
 ;;
@@ -6639,13 +6639,17 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (setup-expecting "yasnippet"
     (key-chord-define-global "fr" 'yas-expand)
     (key-chord-define-global "fe" 'yas-expand)
+    (key-chord-define-global "de" 'yas-expand)
     (key-chord-define-global "ji" 'yas-expand)
-    (key-chord-define-global "jo" 'yas-expand))
+    (key-chord-define-global "jo" 'yas-expand)
+    (key-chord-define-global "ko" 'yas-expand))
   (setup-after "yasnippet"
     (key-chord-define yas-keymap "fr" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "fe" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "de" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "ji" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "jo" 'yas-next-field-or-maybe-expand))
+    (key-chord-define yas-keymap "jo" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "ko" 'yas-next-field-or-maybe-expand))
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "fd" 'iy-go-to-char-backward)
     (key-chord-define-global "jk" 'iy-go-to-char)))
