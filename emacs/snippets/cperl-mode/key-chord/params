@@ -1,6 +1,7 @@
-# name : params_validate
-# key : args
+# name : params
+# key : kc-pa
 # --
 my %args = Params::Validate::validate(@_, {
-    $0
+    $1
 });
+$0

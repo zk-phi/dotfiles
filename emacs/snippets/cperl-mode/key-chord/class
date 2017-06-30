@@ -1,0 +1,4 @@
+# name : class
+# key : kc-scl
+# --
+my $class = shift;

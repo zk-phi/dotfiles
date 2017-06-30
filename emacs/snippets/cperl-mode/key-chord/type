@@ -1,0 +1,5 @@
+# name : type
+# key : kc-ty
+# --
+ => { type => $1 },
+$0

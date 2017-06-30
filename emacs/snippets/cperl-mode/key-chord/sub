@@ -1,0 +1,6 @@
+# name : sub
+# key : kc-su
+# --
+sub $1 {
+    $0
+}

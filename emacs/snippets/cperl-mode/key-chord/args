@@ -1,0 +1,8 @@
+# name : args
+# key : kc-ar
+# condition : (not (looking-back "type *=> *"))
+# --
+my %args = Params::Validate::validate(@_, {
+    $
+});
+$0
