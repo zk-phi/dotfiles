@@ -4463,6 +4463,8 @@ emacs-lisp-mode."
                                ac-source-filename))
               ("html"       . (;; ac-source-last-sessions
                                ac-source-my-words-in-web-mode-buffers))
+              ("jsx-html"   . (;; ac-source-last-sessions
+                               ac-source-my-words-in-web-mode-buffers))
               ("css"        . (ac-source-my-css-propname
                                ac-source-css-property
                                ;; ac-source-last-sessions
