@@ -4448,11 +4448,6 @@ emacs-lisp-mode."
             (3 'web-mode-keyword-face)))
          web-mode-javascript-font-lock-keywords))
 
-  ;; port tag-help from sgml-mode
-  (setup "sgml-mode"
-    (setup-keybinds web-mode-map
-      "<f1> s"  'sgml-tag-help))
-
   (setup-expecting "rainbow-mode"
     (setup-hook 'web-mode-hook 'rainbow-mode))
 
