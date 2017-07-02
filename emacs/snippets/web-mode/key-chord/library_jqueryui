@@ -1,4 +1,4 @@
-# name : jqueryui
-# key : jqueryui
+# name : library_jqueryui
+# key : kc-ui
 # --
 <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>

@@ -4474,6 +4474,14 @@ emacs-lisp-mode."
   (setup-after "smart-compile"
     (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
 
+  (setup-after "key-chord"
+    (setup-hook 'web-mode-hook
+      (key-chord-define-local "sk" (my-yas "kc-sk")) ; skeleton
+      (key-chord-define-local "jq" (my-yas "kc-jq")) ; jquery
+      (key-chord-define-local "ui" (my-yas "kc-ui")) ; jquery ui
+      (key-chord-define-local "bo" (my-yas "kc-bo")) ; bootstrap
+      ))
+
   (setup "jquery-doc"
     (push 'ac-source-jquery (cdr (assoc "javascript" web-mode-ac-sources-alist)))
     (setup-after "popwin"
