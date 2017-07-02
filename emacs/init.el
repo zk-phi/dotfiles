@@ -4363,21 +4363,7 @@ emacs-lisp-mode."
     (push 'dos-mode ac-modes)))
 
 ;;     + web
-;;       + JS and family
-
-(setup-after "js"
-  (setup-after "auto-complete"
-    (push 'js-mode ac-modes)
-    (setup-hook 'js-mode-hook
-      (setq ac-sources '(ac-source-my-buffer-file-name
-                         ;; ac-source-last-sessions
-                         ac-source-my-words-in-web-mode-buffers))))
-  (setup "jquery-doc"
-    (setup-hook 'js-mode-hook 'jquery-doc-setup)
-    (setup-after "popwin"
-      (push '("^\\*jQuery doc" :regexp t) popwin:special-display-config))
-    (setup-keybinds js-mode-map
-      "<f1> s" 'jquery-doc)))
+;;       + typescript-mode
 
 (setup-lazy '(typescript-mode) "typescript"
   :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
@@ -4412,7 +4398,7 @@ emacs-lisp-mode."
 (setup-lazy '(web-mode) "web-mode"
   :prepare (progn
              (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
-             (push '("\\.jsx$" . web-mode) auto-mode-alist)
+             (push '("\\.jsx?$" . web-mode) auto-mode-alist)
              (push '("\\.css$" . web-mode) auto-mode-alist))
 
   (defun my-web-mode-electric-semi ()
@@ -4491,6 +4477,13 @@ emacs-lisp-mode."
   (setup-after "smart-compile"
     (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
 
+  (setup "jquery-doc"
+    (push 'ac-source-jquery (cdr (assoc "javascript" web-mode-ac-sources-alist)))
+    (setup-after "popwin"
+      (push '("^\\*jQuery doc" :regexp t) popwin:special-display-config))
+    (setup-after "key-combo-web"
+      (key-combo-web-define "javascript" (kbd "<f1> s") 'jquery-doc)))
+
   (setup "key-combo-web"
     (setup-hook 'web-mode-hook
       (key-combo-mode 1)
@@ -4503,6 +4496,9 @@ emacs-lisp-mode."
       (key-combo-web-define "css" (kbd "$=") " $= ")
       (key-combo-web-define "css" (kbd "*=") " *= ")
       (key-combo-web-define "css" (kbd "=") " = ")
+      ;; js combos
+      (key-combo-web-define "javascript" (kbd "<") " < ")
+      (key-combo-web-define "javascript" (kbd "&") '(" & " " && "))
       ;; jsx combos
       (key-combo-web-define "jsx" (kbd "<") '(" < " "<`!!'>"))
       (key-combo-web-define "jsx" (kbd "&") '(" & " " && "))
