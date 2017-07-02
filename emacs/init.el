@@ -3731,7 +3731,7 @@ emacs-lisp-mode."
     "C-c C-l" 'cperl-lineup
     '("{" "[" "(" "<" "}" "]" ")" "C-j" "DEL" "C-M-q" "C-M-\\" "C-M-|") nil)
 
-  (setup-expecting "key-chord"
+  (setup-after "key-chord"
     (setup-expecting "yasnippet"
       (setup-hook 'cperl-mode-hook
         (key-chord-define-local "sk" (my-yas "kc-sk")) ; skeleton (package/script)
