@@ -4427,7 +4427,7 @@ emacs-lisp-mode."
         web-mode-enable-control-block-indentation nil
         web-mode-enable-auto-quoting              nil)
 
-  ;; JSX syntax highlight
+  ;; tweak JSX syntax highlight
   (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
   (setq web-mode-javascript-font-lock-keywords
         (nconc
@@ -4495,7 +4495,7 @@ emacs-lisp-mode."
       (key-combo-web-define "javascript" (kbd "<") " < ")
       (key-combo-web-define "javascript" (kbd "&") '(" & " " && "))
       ;; jsx combos
-      (key-combo-web-define "jsx" (kbd "<") '(" < " "<`!!'>"))
+      (key-combo-web-define "jsx" (kbd "<") '(" < " "<`!!'>")) ; press twice to start jsx-html
       (key-combo-web-define "jsx" (kbd "&") '(" & " " && "))
       (key-combo-web-define "jsx" (kbd "</") 'web-mode-element-close)
       (key-combo-web-define "jsx-html" (kbd "<") '("<`!!'>" "<"))
