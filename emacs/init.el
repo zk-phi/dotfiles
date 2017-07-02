@@ -289,12 +289,6 @@
   (when (apply 'derived-mode-p my-listy-modes)
     (run-hooks 'my-listy-mode-common-hook)))
 
-(defvar my-css-modes
-  '(css-mode scss-mode))
-(setup-hook 'change-major-mode-after-body-hook
-  (when (apply 'derived-mode-p my-css-modes)
-    (run-hooks 'my-css-mode-common-hook)))
-
 (defvar my-web-modes
   '(js-mode css-mode html-mode web-mode))
 
@@ -4388,45 +4382,38 @@ emacs-lisp-mode."
 (setup-lazy '(typescript-mode) "typescript"
   :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
 
-;;       + CSS and family
+;;       + scss-mode
 
-;; common settings
-(setup-after "auto-complete"
-  (setup "auto-complete-config"
-    (setup-hook 'my-css-mode-common-hook
-      (setq ac-sources '(ac-source-my-css-propname
-                         ac-source-css-property
-                         ;; ac-source-last-sessions
-                         ac-source-my-words-in-web-mode-buffers)))
-    (setq ac-modes (append my-css-modes ac-modes))))
-(setup-expecting "key-combo"
-  (setup-hook 'my-css-mode-common-hook
-    (key-combo-mode 1)
-    (key-combo-define-local (kbd "+") " + ")
-    (key-combo-define-local (kbd ">") " > ")
-    (key-combo-define-local (kbd "~") " ~ ")
-    ;; doesn't work ... (why?)
-    ;; (key-combo-define-local (kbd "^=") " ^= ")
-    (key-combo-define-local (kbd "$=") " $= ")
-    (key-combo-define-local (kbd "*=") " *= ")
-    (key-combo-define-local (kbd "=") " = ")))
-
-;; css
-(setup-lazy '(css-mode) "css-mode"
-  :prepare (push '("\\.css$" . css-mode) auto-mode-alist))
-
-;; scss
 (setup-lazy '(scss-mode) "scss-mode"
   :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist)
   (setup-hook 'scss-mode-hook
-    (setq-local css-indent-offset 2)))
+    (setq-local css-indent-offset 2))
+  (setup-after "auto-complete"
+    (setup-hook 'scss-mode-hook
+      (setq ac-sources '(ac-source-my-css-propname
+                         ac-source-css-property
+                         ;; ac-source-last-sessions
+                         ac-source-my-words-in-web-mode-buffers))
+      (push 'scss-mode ac-modes)))
+  (setup-expecting "key-combo"
+    (setup-hook 'scss-mode-hook
+      (key-combo-mode 1)
+      (key-combo-define-local (kbd "+") " + ")
+      (key-combo-define-local (kbd ">") " > ")
+      (key-combo-define-local (kbd "~") " ~ ")
+      ;; doesn't work ... (why?)
+      ;; (key-combo-define-local (kbd "^=") " ^= ")
+      (key-combo-define-local (kbd "$=") " $= ")
+      (key-combo-define-local (kbd "*=") " *= ")
+      (key-combo-define-local (kbd "=") " = "))))
 
 ;;       + web-mode
 
 (setup-lazy '(web-mode) "web-mode"
   :prepare (progn
              (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
-             (push '("\\.jsx$" . web-mode) auto-mode-alist))
+             (push '("\\.jsx$" . web-mode) auto-mode-alist)
+             (push '("\\.css$" . web-mode) auto-mode-alist))
 
   (defun my-web-mode-electric-semi ()
     (interactive)
@@ -4507,10 +4494,21 @@ emacs-lisp-mode."
   (setup "key-combo-web"
     (setup-hook 'web-mode-hook
       (key-combo-mode 1)
+      ;; css combos
+      (key-combo-web-define "css" (kbd "+") " + ")
+      (key-combo-web-define "css" (kbd ">") " > ")
+      (key-combo-web-define "css" (kbd "~") " ~ ")
+      ;; doesn't work ... (why?)
+      ;; (key-combo-web-define "css" (kbd "^=") " ^= ")
+      (key-combo-web-define "css" (kbd "$=") " $= ")
+      (key-combo-web-define "css" (kbd "*=") " *= ")
+      (key-combo-web-define "css" (kbd "=") " = ")
+      ;; jsx combos
       (key-combo-web-define "jsx" (kbd "<") '(" < " "<`!!'>"))
       (key-combo-web-define "jsx" (kbd "&") '(" & " " && "))
       (key-combo-web-define "jsx" (kbd "</") 'web-mode-element-close)
       (key-combo-web-define "jsx-html" (kbd "<") '("<`!!'>" "<"))
+      ;; html combos
       (key-combo-web-define "html" (kbd "<") '("<`!!'>" "&lt;" "<"))
       (key-combo-web-define "html" (kbd "<!") "<!DOCTYPE `!!'>")
       (key-combo-web-define "html" (kbd ">") '("&gt;" ">"))
