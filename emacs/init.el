@@ -289,9 +289,6 @@
   (when (apply 'derived-mode-p my-listy-modes)
     (run-hooks 'my-listy-mode-common-hook)))
 
-(defvar my-web-modes
-  '(js-mode css-mode html-mode web-mode))
-
 (defun my-shorten-directory (dir len)
   (if (null dir) ""
     (let ((lst (mapcar (lambda (s)
@@ -868,14 +865,6 @@ cons of two integers."
      '((candidates . (when buffer-file-name
                        (list (file-name-sans-extension
                               (file-name-nondirectory buffer-file-name)))))))
-   ;; complete words in web mode buffers
-   (ac-define-source my-words-in-web-mode-buffers
-     '((init . ac-update-word-index)
-       (candidates . (ac-word-candidates
-                      (lambda (buf)
-                        (cl-some (lambda (mode)
-                                   (with-current-buffer buf (derived-mode-p mode)))
-                                 my-web-modes))))))
    ;; complete property names in CSS-like languages
    (setup-after "auto-complete-config"
      (ac-define-source my-css-propname
@@ -4368,38 +4357,13 @@ emacs-lisp-mode."
 (setup-lazy '(typescript-mode) "typescript"
   :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
 
-;;       + scss-mode
-
-(setup-lazy '(scss-mode) "scss-mode"
-  :prepare (push '("\\.scss$" . scss-mode) auto-mode-alist)
-  (setup-hook 'scss-mode-hook
-    (setq-local css-indent-offset 2))
-  (setup-after "auto-complete"
-    (setup-hook 'scss-mode-hook
-      (setq ac-sources '(ac-source-my-css-propname
-                         ac-source-css-property
-                         ;; ac-source-last-sessions
-                         ac-source-my-words-in-web-mode-buffers))
-      (push 'scss-mode ac-modes)))
-  (setup-expecting "key-combo"
-    (setup-hook 'scss-mode-hook
-      (key-combo-mode 1)
-      (key-combo-define-local (kbd "+") " + ")
-      (key-combo-define-local (kbd ">") " > ")
-      (key-combo-define-local (kbd "~") " ~ ")
-      ;; doesn't work ... (why?)
-      ;; (key-combo-define-local (kbd "^=") " ^= ")
-      (key-combo-define-local (kbd "$=") " $= ")
-      (key-combo-define-local (kbd "*=") " *= ")
-      (key-combo-define-local (kbd "=") " = "))))
-
 ;;       + web-mode
 
 (setup-lazy '(web-mode) "web-mode"
   :prepare (progn
              (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
              (push '("\\.jsx?$" . web-mode) auto-mode-alist)
-             (push '("\\.css$" . web-mode) auto-mode-alist))
+             (push '("\\.s?css$" . web-mode) auto-mode-alist))
 
   (defun my-web-mode-electric-semi ()
     (interactive)
@@ -4456,19 +4420,19 @@ emacs-lisp-mode."
       (setq web-mode-ac-sources-alist
             '(("javascript" . (ac-source-my-buffer-file-name
                                ;; ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))
+                               ac-source-words-in-same-mode-buffers))
               ("jsx"        . (ac-source-my-buffer-file-name
                                ;; ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers
+                               ac-source-words-in-same-mode-buffers
                                ac-source-filename))
               ("html"       . (;; ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))
+                               ac-source-words-in-same-mode-buffers))
               ("jsx-html"   . (;; ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))
+                               ac-source-words-in-same-mode-buffers))
               ("css"        . (ac-source-my-css-propname
                                ac-source-css-property
                                ;; ac-source-last-sessions
-                               ac-source-my-words-in-web-mode-buffers))))
+                               ac-source-words-in-same-mode-buffers))))
       (push 'web-mode ac-modes)))
 
   (setup-after "smart-compile"
