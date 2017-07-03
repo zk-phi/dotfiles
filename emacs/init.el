@@ -2817,6 +2817,15 @@ emacs-lisp-mode."
                          ac-source-functions
                          ac-source-variables
                          ac-source-features))))
+  (setup-after "key-chord"
+    (setup-hook 'emacs-lisp-mode-hook
+      (key-chord-define-local "sk" (my-yas "kc-sk"))
+      ;; workaround (prog-mode-map is invisible from emacs-lisp-mode
+      ;; ?)
+      (key-chord-define-local "fr" 'yas-expand)
+      (key-chord-define-local "fe" 'yas-expand)
+      (key-chord-define-local "ji" 'yas-expand)
+      (key-chord-define-local "jo" 'yas-expand)))
   (setup-expecting "key-combo"
     (setup-hook 'emacs-lisp-mode-hook
       (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
