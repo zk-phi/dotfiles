@@ -1,0 +1,7 @@
+# name : tag_script (body)
+# key : kc-sc
+# condition : (save-excursion (search-backward "<body>" nil t))
+# --
+<script type="text/javascript">
+$0
+</script>

@@ -1,0 +1,16 @@
+# name : ogp
+# key : kc-og
+# condition : (save-excursion (search-forward "/head" nil t))
+# --
+<meta property="og:type" content="website">
+<meta property="og:title" content="${1:Page Title}">
+<meta property="og:site_name" content="${2:Site Title}">
+<meta property="og:url" content="${3:https://hogehoge.com/piyopiyo.html}">
+<meta property="og:description" content="${4:Hogehoge}">
+<meta property="og:image" content="${5:https://hogehoge.com/img/piyopiyo.png}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="$1">
+<meta name="twitter:description" content="$4">
+<meta name="twitter:image" content="$5">
+<meta name="twitter:site" content="@${6:hogehoge}">
+$0

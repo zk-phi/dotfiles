@@ -1,0 +1,6 @@
+# name : link_style
+# key : kc-st
+# condition : (save-excursion (search-forward "</head>" nil t))
+# --
+<link rel="stylesheet" href="${1:css/style.css}" type="text/css">
+$0

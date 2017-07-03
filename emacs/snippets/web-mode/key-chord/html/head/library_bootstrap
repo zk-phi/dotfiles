@@ -1,4 +1,6 @@
 # name : library_bootstrap
 # key : kc-bo
+# condition : (save-excursion (search-forward "</head>" nil t))
 # --
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+$0

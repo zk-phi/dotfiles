@@ -1,0 +1,7 @@
+# name : function (decl)
+# key : kc-fu
+# condition : (and (member (web-mode-language-at-pos) '("javascript" "jsx")) (looking-back "^ *"))
+# --
+function ${1:name} ($2) {
+    $0
+}

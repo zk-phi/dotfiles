@@ -1,0 +1,6 @@
+# name : link_apple_touch_icon
+# key : kc-ap
+# condition : (save-excursion (search-forward "</head>" nil t))
+# --
+<link rel="apple-touch-icon" href="${1:apple_touch_icon.png}">
+$0

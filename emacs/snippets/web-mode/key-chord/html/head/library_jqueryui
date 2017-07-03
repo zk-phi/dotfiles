@@ -1,4 +1,6 @@
 # name : library_jqueryui
 # key : kc-ui
+# condition : (save-excursion (search-forward "</head>" nil t))
 # --
 <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+$0

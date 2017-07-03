@@ -1,0 +1,6 @@
+# name : link_favicon
+# key : kc-fa
+# condition : (save-excursion (search-forward "</head>" nil t))
+# --
+<link rel="shortcut icon" href="${1:favicon.ico}" type="${2:image/vnd.microsoft.icon}">
+$0

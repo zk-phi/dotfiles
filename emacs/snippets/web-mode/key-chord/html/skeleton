@@ -1,5 +1,6 @@
 # name : skeleton
-# key : s
+# key : kc-sk
+# condition : (and (string= (web-mode-language-at-pos) "html") (= (point-min) (point-max)))
 # --
 <!DOCTYPE html>
 <html>

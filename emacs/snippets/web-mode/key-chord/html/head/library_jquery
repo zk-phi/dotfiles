@@ -1,4 +1,6 @@
 # name : library_jquery
 # key : kc-jq
+# condition : (save-excursion (search-forward "</head>" nil t))
 # --
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+$0

@@ -4439,12 +4439,19 @@ emacs-lisp-mode."
     (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
 
   (setup-after "key-chord"
-    (setup-hook 'web-mode-hook
-      (key-chord-define-local "sk" (my-yas "kc-sk")) ; skeleton
-      (key-chord-define-local "jq" (my-yas "kc-jq")) ; jquery
-      (key-chord-define-local "ui" (my-yas "kc-ui")) ; jquery ui
-      (key-chord-define-local "bo" (my-yas "kc-bo")) ; bootstrap
-      ))
+    (setup-expecting "yasnippet"
+      (setup-hook 'web-mode-hook
+        (key-chord-define-local "sk" (my-yas "kc-sk")) ; html/skeleton
+        (key-chord-define-local "jq" (my-yas "kc-jq")) ; html/jquery
+        (key-chord-define-local "ui" (my-yas "kc-ui")) ; html/jquery_ui
+        (key-chord-define-local "bo" (my-yas "kc-bo")) ; html/bootstrap
+        (key-chord-define-local "fa" (my-yas "kc-fa")) ; html/favicon
+        (key-chord-define-local "ap" (my-yas "kc-ap")) ; html/apple_touch_icon
+        (key-chord-define-local "st" (my-yas "kc-st")) ; html/stylesheet
+        (key-chord-define-local "og" (my-yas "kc-og")) ; html/OGP
+        (key-chord-define-local "sc" (my-yas "kc-sc")) ; html/script
+        (key-chord-define-local "fu" (my-yas "kc-fu")) ; js/function
+        )))
 
   (setup "jquery-doc"
     (push 'ac-source-jquery (cdr (assoc "javascript" web-mode-ac-sources-alist)))
