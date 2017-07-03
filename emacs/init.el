@@ -52,8 +52,8 @@
 ;;
 ;; - sf : iy-go-to-char-backward
 ;; - jl : iy-go-to-char
-;; - fe,fr,de : yas-expand
-;; - ji,jo,ko : yas-expand
+;; - fe,fr : yas-expand
+;; - ji,jo : yas-expand
 
 ;; special keys
 ;;
@@ -6609,25 +6609,19 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (setup-expecting "yasnippet"
     (key-chord-define prog-mode-map "fr" 'yas-expand)
     (key-chord-define prog-mode-map "fe" 'yas-expand)
-    (key-chord-define prog-mode-map "de" 'yas-expand)
     (key-chord-define prog-mode-map "ji" 'yas-expand)
-    (key-chord-define prog-mode-map "jo" 'yas-expand)
-    (key-chord-define prog-mode-map "ko" 'yas-expand))
+    (key-chord-define prog-mode-map "jo" 'yas-expand))
   (setup-after "yasnippet"
     (key-chord-define yas-keymap "fr" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "fe" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "de" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "ji" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "jo" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "ko" 'yas-next-field-or-maybe-expand)
     ;; move to the next field even while auto-complete is in action
     (setup-after "auto-complete"
       (key-chord-define ac-completing-map "fr" 'yas-next-field-or-maybe-expand)
       (key-chord-define ac-completing-map "fe" 'yas-next-field-or-maybe-expand)
-      (key-chord-define ac-completing-map "de" 'yas-next-field-or-maybe-expand)
       (key-chord-define ac-completing-map "ji" 'yas-next-field-or-maybe-expand)
-      (key-chord-define ac-completing-map "jo" 'yas-next-field-or-maybe-expand)
-      (key-chord-define ac-completing-map "ko" 'yas-next-field-or-maybe-expand)))
+      (key-chord-define ac-completing-map "jo" 'yas-next-field-or-maybe-expand)))
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "fd" 'iy-go-to-char-backward)
     (key-chord-define-global "jk" 'iy-go-to-char)))
