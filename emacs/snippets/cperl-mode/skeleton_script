@@ -1,6 +1,6 @@
 # name : skeleton (script)
 # key : s
-# condition : (and buffer-file-name (string-match "\\.pl$" buffer-file-name))
+# condition : (not (and buffer-file-name (string-match "\\.pm$" buffer-file-name)))
 # --
 #! /usr/bin/perl
 

@@ -1,6 +1,6 @@
 # name : skeleton (package)
 # key : kc-sk
-# condition : (and buffer-file-name (string-match "\\.pm$" buffer-file-name))
+# condition : (and (= (point-min) (point-max)) buffer-file-name (string-match "\\.pm$" buffer-file-name))
 # --
 package ${1:Package::Name};
 

@@ -1,5 +1,6 @@
 # name : validate
 # key : kc-va
+# condition : (looking-back "^ *")
 # --
 my %args = Params::Validate::validate(@_, {
     $0
