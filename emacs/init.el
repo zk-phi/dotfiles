@@ -6612,7 +6612,15 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
     (key-chord-define yas-keymap "de" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "ji" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "jo" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "ko" 'yas-next-field-or-maybe-expand))
+    (key-chord-define yas-keymap "ko" 'yas-next-field-or-maybe-expand)
+    ;; move to the next field even while auto-complete is in action
+    (setup-after "auto-complete"
+      (key-chord-define ac-completing-map "fr" 'yas-next-field-or-maybe-expand)
+      (key-chord-define ac-completing-map "fe" 'yas-next-field-or-maybe-expand)
+      (key-chord-define ac-completing-map "de" 'yas-next-field-or-maybe-expand)
+      (key-chord-define ac-completing-map "ji" 'yas-next-field-or-maybe-expand)
+      (key-chord-define ac-completing-map "jo" 'yas-next-field-or-maybe-expand)
+      (key-chord-define ac-completing-map "ko" 'yas-next-field-or-maybe-expand)))
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "fd" 'iy-go-to-char-backward)
     (key-chord-define-global "jk" 'iy-go-to-char)))
