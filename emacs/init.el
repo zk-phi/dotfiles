@@ -2819,13 +2819,7 @@ emacs-lisp-mode."
                          ac-source-features))))
   (setup-after "key-chord"
     (setup-hook 'emacs-lisp-mode-hook
-      (key-chord-define-local "sk" (my-yas "kc-sk"))
-      ;; workaround (prog-mode-map is invisible from emacs-lisp-mode
-      ;; ?)
-      (key-chord-define-local "fr" 'yas-expand)
-      (key-chord-define-local "fe" 'yas-expand)
-      (key-chord-define-local "ji" 'yas-expand)
-      (key-chord-define-local "jo" 'yas-expand)))
+      (key-chord-define-local "sk" (my-yas "kc-sk"))))
   (setup-expecting "key-combo"
     (setup-hook 'emacs-lisp-mode-hook
       (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
@@ -6616,10 +6610,11 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (key-chord-define-global "jj" 'my-upcase-previous-word)
   (key-chord-define-global "kk" 'my-downcase-previous-word)
   (setup-expecting "yasnippet"
-    (key-chord-define prog-mode-map "fr" 'yas-expand)
-    (key-chord-define prog-mode-map "fe" 'yas-expand)
-    (key-chord-define prog-mode-map "ji" 'yas-expand)
-    (key-chord-define prog-mode-map "jo" 'yas-expand))
+    (setup-hook 'prog-mode-hook
+      (key-chord-define-local "fr" 'yas-expand)
+      (key-chord-define-local "fe" 'yas-expand)
+      (key-chord-define-local "ji" 'yas-expand)
+      (key-chord-define-local "jo" 'yas-expand)))
   (setup-after "yasnippet"
     (key-chord-define yas-keymap "fr" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "fe" 'yas-next-field-or-maybe-expand)
