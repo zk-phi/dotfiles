@@ -1,4 +1,4 @@
-# name : tag_script (body)
+# name : script (body)
 # key : kc-sc
 # condition : (save-excursion (search-backward "<body>" nil t))
 # --

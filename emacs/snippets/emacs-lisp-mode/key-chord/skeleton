@@ -2,9 +2,9 @@
 # key : kc-sk
 # condition : (= (point-min) (point-max))
 # --
-;;; ${1:package-name}.el --- ${2:description}
+;;; ${1:`(if buffer-file-name (file-name-base buffer-file-name) "package-name")`}.el --- ${2:description}
 
-;; Copyright (C) $(format-time-string "%Y")- ${4:zk-phi}
+;; Copyright (C) ${3:`(format-time-string "%Y")`}- ${4:zk-phi}
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -36,6 +36,8 @@
 (defgroup $1 nil
   "$2."
   :group 'emacs)
+
+$0
 
 (provide '$1)
 

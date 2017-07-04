@@ -1,4 +1,4 @@
-# name : tag_script (header)
+# name : script (header)
 # key : kc-sc
 # condition : (save-excursion (search-forward "</head>" nil t))
 # --

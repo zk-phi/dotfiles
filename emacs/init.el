@@ -4443,6 +4443,25 @@ emacs-lisp-mode."
 
   (setup-after "key-chord"
     (setup-expecting "yasnippet"
+
+      ;; utilities called from snippets
+      (defun my-web-html-title ()
+        (save-excursion
+          (goto-char (point-min))
+          (if (search-forward-regexp "<title>\\([^<]+\\)</title>" nil t)
+              (match-string 1)
+            "Page title")))
+      (defun my-web-html-description ()
+        (save-excursion
+          (goto-char (point-min))
+          (if (search-forward-regexp "name=\"description\" content=\"\\([^\"]+\\)\"" nil t)
+              (match-string 1)
+            "Hogehoge")))
+      (defun my-optional-meta-prefix (name str)
+        (if (string= str "") "" (concat "<meta name=\"" name "\" content=\"")))
+      (defun my-optional-meta-suffix (str)
+        (if (string= str "") "" "\">\n    "))
+
       (setup-hook 'web-mode-hook
         (key-chord-define-local "sk" (my-yas "kc-sk")) ; html/skeleton
         (key-chord-define-local "jq" (my-yas "kc-jq")) ; html/jquery
