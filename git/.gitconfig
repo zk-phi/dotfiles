@@ -15,6 +15,10 @@
     history = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
     # ---- push and pull in one shot
     sync = "!f(){ local branch=${1-$(git symbolic-ref --short HEAD)}; git pull origin $branch --ff-only && git push origin $branch; }; f"
+    # ---- prepare worktree for review
+    review = "!f() { git fetch; git checkout -b review ${2:-$(git merge-base origin/master origin/$1)}; git stack origin/$1; }; f"
+    # ---- delete old local branches
+    clean-branch = "!f() { git branch -d $(git branch --merged ${1:-master} | grep -v \"*\\|${1:-master}\"); }; f"
     # ---- fix typos
     chekcout = checkout
     hcekcout = checkout
