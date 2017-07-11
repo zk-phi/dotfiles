@@ -1,6 +1,6 @@
 # name : skeleton (script)
 # key : kc-sk
-# condition : (and (= (point-min) (point-max)) (not (and buffer-file-name (string-match "\\.pm$" buffer-file-name))))
+# condition : (and (= (point-min) (point-max)) (not (and buffer-file-name (string-match "\\.\\(?:pm\\|t\\)$" buffer-file-name))))
 # --
 #! /usr/bin/perl
 

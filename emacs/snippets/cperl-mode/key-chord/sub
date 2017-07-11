@@ -1,7 +1,7 @@
 # name : sub
 # key : kc-su
-# condition : (looking-back "^ *")
+# condition : (and (not (and buffer-file-name (string-match "\\.t$" buffer-file-name))) (looking-back "^ *"))
 # --
-sub $1 {
+sub ${1:function name} {
     $0
 }

@@ -1,0 +1,7 @@
+# name : subtest
+# key : kc-su
+# condition : (and buffer-file-name (string-match "\\.t$" buffer-file-name) (looking-back "^ *"))
+# --
+subtest "${1:test name}" => sub {
+    $0
+};
