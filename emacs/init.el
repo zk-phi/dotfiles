@@ -4473,6 +4473,7 @@ emacs-lisp-mode."
         (key-chord-define-local "og" (my-yas "kc-og")) ; html/OGP
         (key-chord-define-local "sc" (my-yas "kc-sc")) ; html/script
         (key-chord-define-local "fu" (my-yas "kc-fu")) ; js/function
+        (key-chord-define-local "vu" (my-yas "kc-vu")) ; html/vue
         )))
 
   (setup "jquery-doc"

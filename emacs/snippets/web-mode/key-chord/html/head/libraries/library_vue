@@ -1,0 +1,6 @@
+# name : library_vue
+# key : kc-vu
+# condition : (save-excursion (search-forward "</head>" nil t))
+# --
+<script src="https://unpkg.com/vue" type="text/javascript"></script>
+$0
