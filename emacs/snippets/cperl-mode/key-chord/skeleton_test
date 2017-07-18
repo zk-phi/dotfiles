@@ -1,0 +1,15 @@
+# name : skeleton (test)
+# key : kc-sk
+# condition : (and (= (point-min) (point-max)) buffer-file-name (string-match "\\.t$" buffer-file-name))
+# --
+use strict;
+use warnings;
+use utf8;
+
+use Test::More;
+
+BEGIN { use_ok '${1:Package::Name}'; };
+
+$0
+
+done_testing;
