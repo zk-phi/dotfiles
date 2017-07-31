@@ -1,0 +1,10 @@
+# name : bootstrap panel
+# key : kc-pa
+# condition : (not (save-excursion (search-forward "</head>" nil t)))
+# --
+<div class="panel panel-default">
+  <div class="panel-heading">${1:Panel Title}</div>
+  <div class="panel-body">
+    $0
+  </div>
+</div>

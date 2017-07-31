@@ -1,6 +1,6 @@
 # name : script (body)
 # key : kc-sc
-# condition : (save-excursion (search-backward "<body>" nil t))
+# condition : (not (save-excursion (search-forward "</head>" nil t)))
 # --
 <script type="text/javascript">
 $0

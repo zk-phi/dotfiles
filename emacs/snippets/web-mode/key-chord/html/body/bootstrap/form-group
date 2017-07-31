@@ -1,0 +1,9 @@
+# name : bootstrap form-group
+# key : kc-fg
+# condition : (not (save-excursion (search-forward "</head>" nil t)))
+# --
+<div class="form-group">
+  <label>${1:Input label}</label>
+  <input type="${2:text}" class="form-control" />
+</div>
+$0

@@ -1,0 +1,10 @@
+# name : bootstrap checkbox
+# key : kc-ch
+# condition : (not (save-excursion (search-forward "</head>" nil t)))
+# --
+<div class="checkbox">
+  <label>
+    <input type="checkbox" /> ${1:Input label}
+  </label>
+</div>
+$0

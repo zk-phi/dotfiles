@@ -4474,6 +4474,9 @@ emacs-lisp-mode."
         (key-chord-define-local "sc" (my-yas "kc-sc")) ; html/script
         (key-chord-define-local "fu" (my-yas "kc-fu")) ; js/function
         (key-chord-define-local "vu" (my-yas "kc-vu")) ; html/vue
+        (key-chord-define-local "pa" (my-yas "kc-pa")) ; bootstrap/panel
+        (key-chord-define-local "fg" (my-yas "kc-fg")) ; bootstrap/form-group
+        (key-chord-define-local "ch" (my-yas "kc-ch")) ; bootstrap/checkbox
         )))
 
   (setup "jquery-doc"
