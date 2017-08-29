@@ -3713,6 +3713,19 @@ emacs-lisp-mode."
   (modify-syntax-entry ?% "_" cperl-mode-syntax-table)
   (modify-syntax-entry ?@ "_" cperl-mode-syntax-table)
 
+  ;; make $# NOT comment starter ($ is turned into a symbol character
+  ;; from an escaping character above)
+  (setup-hook 'cperl-mode-hook
+    (setq-local syntax-propertize-function
+                (lambda (start end)
+                  (goto-char start)
+                  (setq cperl-syntax-done-to start)
+                  (save-excursion (cperl-fontify-syntaxically end))
+                  (while (search-forward "$#" end t)
+                    (cperl-modify-syntax-type (1- (point)) (string-to-syntax "_")))))
+    (with-silent-modifications
+      (funcall syntax-propertize-function (point-min) (point-max))))
+
   (setup-keybinds cperl-mode-map
     "C-c C-l" 'cperl-lineup
     '("{" "[" "(" "<" "}" "]" ")" "C-j" "DEL" "C-M-q" "C-M-\\" "C-M-|") nil)
