@@ -30,6 +30,8 @@
     stauts = status
     stahs = stash
     hisotry = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
+[merge]
+    # conflictStyle = diff3
 [diff]
     algorithm = patience
     compactionHeuristic = true
