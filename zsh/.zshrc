@@ -82,19 +82,6 @@ alias igt=git
 alias fuck='eval $(thefuck $(fc -ln -1))'
 alias FUCK='fuck'
 
-# mysql (* set default DB_NAME in .zprofile)
-DB_USER=root
-function DELETE () { mysql -u $DB_USER -D $DB_NAME -e "SET NAMES utf8; DELETE $*" }
-function INSERT () { mysql -u $DB_USER -D $DB_NAME -e "SET NAMES utf8; INSERT $*" }
-function SELECT () { mysql -u $DB_USER -D $DB_NAME -e "SET NAMES utf8; SELECT $*" }
-function DROP () { mysql -u $DB_USER -D $DB_NAME -e "SET NAMES utf8; DROP $*" }
-function EXPLAIN () { mysql -u $DB_USER -D $DB_NAME -e "SET NAMES utf8; EXPLAIN $*" }
-alias delete="noglob DELETE"    # use noglob NOT to expand "*"s
-alias insert="noglob INSERT"
-alias select="noglob SELECT"
-alias drop="noglob DROP"
-alias explain="noglob EXPLAIN"
-
 # use git-like diff if colordiff is available
 if which colordiff > /dev/null; then
     function diff () { colordiff -u $* | less }
