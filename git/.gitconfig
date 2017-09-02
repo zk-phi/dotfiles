@@ -20,6 +20,8 @@
     review = "!f() { git fetch; git checkout -b review ${2:-$(git merge-base origin/master origin/$1)}; git stack origin/$1; git add -N .; }; f"
     # ---- delete old local branches
     clean-branch = "!f() { git branch -d $(git branch --merged ${1:-master} | grep -v \"*\\|${1:-master}\"); }; f"
+    # ---- stash lists
+    stash-list = "!f() { git-stash-list $*; }; f"
     # ---- fix typos
     chekcout = checkout
     hcekcout = checkout
