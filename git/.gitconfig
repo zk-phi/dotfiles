@@ -17,7 +17,7 @@
     sync = "!f(){ local branch=${1-$(git symbolic-ref --short HEAD)}; git pull origin $branch --ff-only && git push origin $branch; }; f"
     publish = "!f(){ git push origin ${1-$(git symbolic-ref --short HEAD)}; }; f"
     # ---- prepare worktree for review
-    review = "!f() { git fetch; git checkout -b review ${2:-$(git merge-base origin/master origin/$1)}; git stack origin/$1; }; f"
+    review = "!f() { git fetch; git checkout -b review ${2:-$(git merge-base origin/master origin/$1)}; git stack origin/$1; git add -N .; }; f"
     # ---- delete old local branches
     clean-branch = "!f() { git branch -d $(git branch --merged ${1:-master} | grep -v \"*\\|${1:-master}\"); }; f"
     # ---- fix typos
