@@ -15,6 +15,7 @@
     history = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
     # ---- push and pull in one shot
     sync = "!f(){ local branch=${1-$(git symbolic-ref --short HEAD)}; git pull origin $branch --ff-only && git push origin $branch; }; f"
+    publish = "!f(){ git push origin ${1-$(git symbolic-ref --short HEAD)}; }; f"
     # ---- prepare worktree for review
     review = "!f() { git fetch; git checkout -b review ${2:-$(git merge-base origin/master origin/$1)}; git stack origin/$1; }; f"
     # ---- delete old local branches
