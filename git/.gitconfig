@@ -21,7 +21,7 @@
     # ---- delete old local branches
     clean-branch = "!f() { git branch -d $(git branch --merged ${1:-master} | grep -v \"*\\|${1:-master}\"); }; f"
     # ---- stash lists
-    stash-list = "!f() { git-stash-list $*; }; f"
+    context = "!f() { git-context-switch $*; }; f"
     # ---- fix typos
     chekcout = checkout
     hcekcout = checkout
