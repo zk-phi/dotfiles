@@ -6645,12 +6645,12 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (key-chord-define-global "hh" 'my-capitalize-word-dwim)
   (key-chord-define-global "jj" 'my-upcase-previous-word)
   (key-chord-define-global "kk" 'my-downcase-previous-word)
-  (setup-expecting "yasnippet"
+  (setup-expecting "git-complete"
     (setup-hook 'prog-mode-hook
-      (key-chord-define-local "fr" 'yas-expand)
-      (key-chord-define-local "fe" 'yas-expand)
-      (key-chord-define-local "ji" 'yas-expand)
-      (key-chord-define-local "jo" 'yas-expand)))
+      (key-chord-define-local "fr" 'git-complete)
+      (key-chord-define-local "fe" 'git-complete)
+      (key-chord-define-local "ji" 'git-complete)
+      (key-chord-define-local "jo" 'git-complete)))
   (setup-after "yasnippet"
     (key-chord-define yas-keymap "fr" 'yas-next-field-or-maybe-expand)
     (key-chord-define yas-keymap "fe" 'yas-next-field-or-maybe-expand)
