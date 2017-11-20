@@ -2,5 +2,5 @@
 # key : kc-vu
 # condition : (save-excursion (search-forward "</head>" nil t))
 # --
-<script src="https://unpkg.com/vue" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue" type="text/javascript"></script>
 $0
