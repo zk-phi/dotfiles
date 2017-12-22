@@ -2581,7 +2581,10 @@ emacs-lisp-mode."
 (setup-lazy '(git-complete) "git-complete"
   :prepare (setup-in-idle "git-complete")
   (setq git-complete-limit-extension t)
-  (push '(web-mode "jsx" "js") git-complete-major-mode-extensions-alist))
+  (push '(web-mode "jsx" "js"
+                   "scss" "css"
+                   "html" "html.ep")
+        git-complete-major-mode-extensions-alist))
 
 ;; insert import statement
 (setup-lazy '(include-anywhere) "include-anywhere")
