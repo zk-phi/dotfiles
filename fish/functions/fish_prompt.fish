@@ -16,7 +16,7 @@ function fish_prompt
     # git info
     if git_repository_root > /dev/null
         set branch_name (set_color red -o)(git_branch_name)
-        if git_is_dirty; or git_is_staged
+        if git_is_touched
             set dirty "☁️ "
         else
             set dirty "✨ "
