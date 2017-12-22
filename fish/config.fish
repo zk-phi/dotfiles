@@ -52,7 +52,7 @@ set -x PERL5LIB $HOME/perl5/lib/perl5:$PERL5LIB
 # https://github.com/ryotako/fish-global-abbreviation
 if type -t gabbr > /dev/null
     gabbr G '| grep'
-    gabbr L '| less'
+    gabbr L '| less -R'
     gabbr --function B "git symbolic-ref --short HEAD"
 end
 
