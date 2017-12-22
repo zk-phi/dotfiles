@@ -26,10 +26,10 @@ function fish_prompt
         else
             set stash ""
         end
-        set git_prompt (set_color normal)"git:("$branch_name$dirty(set_color normal)")"$stash
+        set git_prompt (set_color normal)" git:("$branch_name$dirty(set_color normal)")"$stash
     else
         set git_prompt ""
     end
 
-    echo $pwd $git_prompt $status_face
+    echo $pwd$git_prompt $status_face
 end
