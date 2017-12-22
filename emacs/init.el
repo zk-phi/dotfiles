@@ -4399,7 +4399,8 @@ emacs-lisp-mode."
   :prepare (progn
              (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
              (push '("\\.jsx?$" . web-mode) auto-mode-alist)
-             (push '("\\.s?css$" . web-mode) auto-mode-alist))
+             (push '("\\.s?css$" . web-mode) auto-mode-alist)
+             (push '("\\.ejs$" . web-mode) auto-mode-alist))
 
   (defun my-web-mode-electric-semi ()
     (interactive)
