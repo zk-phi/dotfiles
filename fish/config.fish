@@ -10,7 +10,7 @@
 # -----------------------------------------------
 
 # path to executables
-set -x PATH $HOME/perl5/bin $HOME/.ndenv/bin $HOME/.plenv/bin $PATH
+set -x PATH $HOME/perl5/bin $HOME/.ndenv/bin $PATH
 
 # path to plugins
 for plugin in (ls $HOME/.config/fish/plugins)
