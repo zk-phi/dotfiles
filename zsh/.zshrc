@@ -122,10 +122,6 @@ alias igt=git
 alias sl=ls
 alias sls=ls
 
-# fuck
-alias fuck='eval $(thefuck $(fc -ln -1))'
-alias FUCK='fuck'
-
 # use git-like diff if colordiff is available
 if which colordiff > /dev/null; then
     function diff () { colordiff -u $* | less }
