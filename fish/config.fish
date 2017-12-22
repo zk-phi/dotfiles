@@ -14,9 +14,9 @@ set -x PATH $HOME/perl5/bin $HOME/.ndenv/bin $PATH
 
 # path to plugins
 for plugin in (ls $HOME/.config/fish/plugins)
-    set -x fish_function_path $HOME/.config/fish/plugins/$plugin $fish_function_path
-    set -x fish_function_path $HOME/.config/fish/plugins/$plugin/functions $fish_function_path
-    set -x fish_complete_path $HOME/.config/fish/plugins/$plugin/completions $fish_complete_path
+    set fish_function_path $HOME/.config/fish/plugins/$plugin $fish_function_path
+    set fish_function_path $HOME/.config/fish/plugins/$plugin/functions $fish_function_path
+    set fish_complete_path $HOME/.config/fish/plugins/$plugin/completions $fish_complete_path
 end
 
 # -----------------------------------------------
