@@ -6,7 +6,7 @@
 export ZSH=$HOME/.oh-my-zsh
 
 # settings
-plugins=(git)                   # plugins (~/.oh-my-zsh/plugins/)
+plugins=()                      # load no plugins on startup
 HYPHEN_INSENSITIVE="true"       # 'hoge-' also completes 'hoge_'
 ZSH_THEME="robbyrussell"
 
@@ -69,14 +69,21 @@ PROMPT='%{$fg_bold[cyan]%}%c%{$reset_color%} $(git_prompt_info)$(git_prompt_stat
 # aliases
 # ------------------------------
 
-# ls
+# git
+alias ga='git add'
+alias gco='git chegckout'
+alias gb='git branch'
+alias gd='git diff'
+alias gs='git diff --staged'
+alias gl='git log'
+alias glog='git log --oneline --decorate --graph'
+alias gst='git status'
+
+# typos
+alias gti=git
+alias igt=git
 alias sl=ls
 alias sls=ls
-
-# git
-alias gti=git
-alias g=git
-alias igt=git
 
 # fuck
 alias fuck='eval $(thefuck $(fc -ln -1))'
