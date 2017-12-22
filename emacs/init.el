@@ -2327,6 +2327,14 @@ lines far from the cursor."
           (funcall my-dabbrev-expand-fallback)
         (message "No completions found."))))
 
+(defun my-map-lines-from-here (fn)
+  (interactive (list (eval `(lambda (s) ,(read (read-from-minibuffer "(s) => "))))))
+  (save-excursion
+    (while (progn (let ((res (funcall fn (buffer-substring (point-at-bol) (point-at-eol)))))
+                    (delete-region (point-at-bol) (point-at-eol))
+                    (insert res))
+                  (zerop (forward-line 1))))))
+
 ;;   + | jokes
 
 ;; Emacs sɔɐɯƎ
