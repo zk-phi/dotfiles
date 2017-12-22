@@ -72,10 +72,11 @@ abbr gc='git commit'
 abbr gco='git checkout'
 abbr gb='git branch'
 abbr gd='git diff'
-abbr gs='git diff --staged'
+abbr gds='git diff --staged'
 abbr gl='git log'
 abbr glog='git log --oneline --decorate --graph'
 abbr gr='git reset'
+abbr gs='git show'
 abbr gst='git status'
 
 # typos
