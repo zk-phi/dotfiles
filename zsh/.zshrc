@@ -66,6 +66,43 @@ SPROMPT="%{$fg[green]%}%{$suggest%}(*'~'%)? < %B%r%b %{$fg[green]%}かな? [n,y,
 PROMPT='%{$fg_bold[cyan]%}%c%{$reset_color%} $(git_prompt_info)$(git_prompt_status)${ret_status}%{$reset_color%}'
 
 # ------------------------------
+# git checkout completion
+# ------------------------------
+
+# Redefine "_git_checkout" (originally defined in
+# /usr/local/share/zsh/functions/git-completion.bash) NOT to complete
+# remote branches on checkout.
+
+# Dummy function which immediately undefines itself and loads the real
+# definition of "_git", then replace "_git_checkout" defined in "_git"
+# with the new definition. FIXME: Remote branches are also completed
+# at the very first invokation of git-completion, since "autoload -X"
+# does not just load the function but also execute it. "autoload +X"
+# may avoid execution, but internal functions are defined during
+# execution, thus "_git_checkout" is not defined yet this case.
+_git () {
+    unfunction _git
+    autoload -X
+    _git_checkout () {
+        __git_has_doubledash && return
+        case "$cur" in
+            --conflict=*)
+                __gitcomp "diff3 merge" "" "${cur##--conflict=}"
+                ;;
+            --*)
+                __gitcomp "
+            --quiet --ours --theirs --track --no-track --merge
+            --conflict= --orphan --patch
+            "
+                ;;
+            *)
+                __gitcomp_nl "$(__git_heads)"
+                ;;
+        esac
+    }
+}
+
+# ------------------------------
 # aliases
 # ------------------------------
 
