@@ -744,7 +744,8 @@ cons of two integers."
 ;; tramp settings
 (setup-after "tramp"
   (setq tramp-persistency-file-name my-tramp-file
-        tramp-default-proxies-alist (nconc my-tramp-proxies tramp-default-proxies-alist)))
+        tramp-default-proxies-alist (nconc my-tramp-proxies tramp-default-proxies-alist))
+  (setup "docker-tramp"))
 (setup-expecting "tramp"
   (define-abbrev-table 'my-tramp-abbrev-table my-tramp-abbrevs)
   (setup-hook 'minibuffer-setup-hook
