@@ -4300,6 +4300,11 @@ emacs-lisp-mode."
   :prepare (push '("\\.zombie$" . zombie-mode) auto-mode-alist))
 
 ;;       + other
+;;         + Fish
+
+(setup-lazy '(fish-mode) "fish-mode"
+  :prepare (push '("\\.fish$" . fish-mode) auto-mode-alist))
+
 ;;         + Promela
 
 (setup-lazy '(promela-mode) "promela-mode"
