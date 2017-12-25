@@ -298,6 +298,8 @@ if ! type abbrv-alias > /dev/null; then
     # global aliases
     abbrev-alias -g G='| grep'
     abbrev-alias -g L='| less -R'
+    abbrev-alias -g C='| cut -d " " -f'
+    abbrev-alias -g S='| tr -s " "'
     abbrev-alias -f B="git symbolic-ref --short HEAD 2>/dev/null"
 else
     echo "[.zshrc] abbrev-alias is not unavailable."
