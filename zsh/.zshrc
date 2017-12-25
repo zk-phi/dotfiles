@@ -311,5 +311,5 @@ bindkey -e
 # extra keybinds
 bindkey '^r' history-incremental-search-backward
 bindkey '^p' history-beginning-search-backward
-bindkey '^n' history-beginning-search-forward
+bindkey '^n' end-of-history
 bindkey '^f' forward-char-or-accept-suggested-word
