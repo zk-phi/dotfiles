@@ -1,24 +1,33 @@
-# ------------------------------
-# oh-my-zsh
-# ------------------------------
-
-# /path/to/.oh-my-zsh
-export ZSH=$HOME/.oh-my-zsh
-
-# settings
-plugins=()                      # load no plugins on startup
-HYPHEN_INSENSITIVE="true"       # 'hoge-' also completes 'hoge_'
-ZSH_THEME="robbyrussell"
-
-# install
-source $ZSH/oh-my-zsh.sh
+ZSH=$HOME/.zsh.d
 
 # ------------------------------
-# directories
+# load plugins
 # ------------------------------
 
-export PATH="$HOME/perl5/bin:$HOME/.ndenv/bin:$HOME/.plenv/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+if test -e $ZSH/plugins; then
+    for file in $ZSH/plugins/*/*.plugin.zsh; do
+        source $file;
+    done
+fi
+
+# ------------------------------
+# fundamental settings
+# ------------------------------
+
+export LANG="en_US.UTF-8"
+export EDITOR="vim"
+export PAGER="less"
+export LSCOLORS="Gxfxcxdxbxegedabagacad" # enable colors in "ls"
+
+export PATH="$HOME/perl5/bin:$HOME/.ndenv/bin:$HOME/.plenv/bin:$PATH"
+export FPATH="$ZSH/functions:$FPATH"
+export SSH_KEY_PATH="$HOME/.ssh"
 export PGDATA="/usr/local/var/postgres"
+
+setopt interactivecomments      # recognize comments in the REPL too
+setopt extended_glob            # enable extended glob syntax
+setopt auto_cd                  # "cd" with directory names
+setopt multios                  # accept multiple redirections
 
 # ------------------------------
 # language-specific settings
@@ -36,95 +45,271 @@ eval "$(rbenv init -)"
 eval "$(ndenv init -)"
 
 # ------------------------------
-# commandline
-# ------------------------------
-
-# autocorrect
-setopt correct
-
-# history
-setopt hist_ignore_all_dups # remove dups except for the newest one
-setopt hist_verify          # verify before executing history commands
-setopt hist_reduce_blanks   # remove unuseful spaces
-setopt hist_expand          # use history completions
-setopt hist_ignore_space    # do not save commands starts with a space
-
-# keybinds
-bindkey '\e' vi-cmd-mode
-bindkey '^P' history-beginning-search-backward
-bindkey '^N' history-beginning-search-forward
-
 # prompt
+# ------------------------------
+
 setopt prompt_subst
-ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}git:(%{$fg[red]%}"
-ZSH_THEME_GIT_PROMPT_SUFFIX=" %{$fg[blue]%})%{$reset_color%} "
-ZSH_THEME_GIT_PROMPT_DIRTY="☁️"
-ZSH_THEME_GIT_PROMPT_CLEAN="✨"
-ZSH_THEME_GIT_PROMPT_STASHED="📃 "
-local ret_status="%(?:%{$fg[white]%}（*'-'）? :%{$fg[red]%}（\`;w;）! )"
-SPROMPT="%{$fg[green]%}%{$suggest%}(*'~'%)? < %B%r%b %{$fg[green]%}かな? [n,y,a,e]:${reset_color} "
-PROMPT='%{$fg_bold[cyan]%}%c%{$reset_color%} $(git_prompt_info)$(git_prompt_status)${ret_status}%{$reset_color%}'
+autoload -U colors && colors
 
-# ------------------------------
-# git checkout completion
-# ------------------------------
-
-# Redefine "_git_checkout" (originally defined in
-# /usr/local/share/zsh/functions/git-completion.bash) NOT to complete
-# remote branches on checkout.
-
-# Dummy function which immediately undefines itself and loads the real
-# definition of "_git", then replace "_git_checkout" defined in "_git"
-# with the new definition. FIXME: Remote branches are also completed
-# at the very first invokation of git-completion, since "autoload -X"
-# does not just load the function but also execute it. "autoload +X"
-# may avoid execution, but internal functions are defined during
-# execution, thus "_git_checkout" is not defined yet this case.
-_git () {
-    unfunction _git
-    autoload -X
-    _git_checkout () {
-        __git_has_doubledash && return
-        case "$cur" in
-            --conflict=*)
-                __gitcomp "diff3 merge" "" "${cur##--conflict=}"
-                ;;
-            --*)
-                __gitcomp "
-            --quiet --ours --theirs --track --no-track --merge
-            --conflict= --orphan --patch
-            "
-                ;;
-            *)
-                __gitcomp_nl "$(__git_heads)"
-                ;;
-        esac
-    }
+function _errno_face {
+    echo "%(?:%{$reset_color%}（*'-'）? :%{$fg[red]%}（\`;w;）! )"
 }
 
+function _pwd {
+    if [[ $PWD == $HOME ]]; then
+        echo "%{$fg_bold[cyan]%}~"
+    else
+        echo "%{$fg_bold[cyan]%}$(basename $PWD)"
+    fi
+}
+
+function _under_gitrepo_p {
+    test -d .git || command git rev-parse --git-dir >/dev/null 2>/dev/null
+}
+
+function _git_prompt {
+    if _under_gitrepo_p; then
+        _branch_name=$(git symbolic-ref --short HEAD 2>/dev/null || git show-ref --head -s --abbrev | head -n1)
+
+        if test -n "$(git status --porcelain)"; then
+            _git_status="☁️ "
+        else
+            _git_status="✨ "
+        fi
+
+        if git rev-parse --verify --quiet refs/stash >/dev/null; then
+            _git_stashed=" 📃 "
+        else
+            _git_stashed=""
+        fi
+
+        echo " %{$fg_bold[blue]%}git:(%{$fg_bold[red]%}$_branch_name$_git_status%{$fg_bold[blue]%})$_git_stashed"
+    else
+        echo ""
+    fi
+}
+
+function _local_git_user {
+    git config --local user.name
+}
+
+PROMPT='$(_pwd)$(_git_prompt)$(_errno_face)%{$reset_color%}'
+RPROMPT='$(_local_git_user)'
+
 # ------------------------------
-# aliases
+# terminal title
 # ------------------------------
 
-# git
-alias ga='git add'
-alias gco='git checkout'
-alias gb='git branch'
-alias gd='git diff'
-alias gs='git diff --staged'
-alias gl='git log'
-alias glog='git log --oneline --decorate --graph'
-alias gst='git status'
+# Display process name or PWD in the terminal title.
+# Reference: .oh-my-zsh/lib/termsupport.zsh
 
-# typos
-alias gti=git
-alias igt=git
-alias sl=ls
-alias sls=ls
+function _title {
+    emulate -L zsh
+    case "$TERM" in
+        cygwin|xterm*|putty*|rxvt*|ansi)
+            print -Pn "\e]2;$2:q\a" # set window name
+            print -Pn "\e]1;$1:q\a" # set tab name
+            ;;
+        screen*)
+            print -Pn "\ek$1:q\e\\" # set screen hardstatus
+            ;;
+        *)
+            if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
+                print -Pn "\e]2;$2:q\a" # set window name
+                print -Pn "\e]1;$1:q\a" # set tab name
+            else
+                # Try to use terminfo to set the title
+                # If the feature is available set title
+                if [[ -n "$terminfo[fsl]" ]] && [[ -n "$terminfo[tsl]" ]]; then
+                    echoti tsl
+                    print -Pn "$1"
+                    echoti fsl
+                fi
+            fi
+            ;;
+    esac
+}
 
-# use git-like diff if colordiff is available
+function _set_title_pwd {
+    emulate -L zsh
+    _title "%15<..<%~%<<" "%n@%m: %~"
+}
+
+function _set_title_procname {
+    emulate -L zsh
+    local CMD=${1[(wr)^(*=*|sudo|ssh|mosh|rake|-*)]:gs/%/%%}
+    local LINE="${2:gs/%/%%}"
+    _title '$CMD' '%100>...>$LINE%<<'
+}
+
+precmd_functions+=(_set_title_pwd)
+preexec_functions+=(_set_title_procname)
+
+# ------------------------------
+# autocompletion
+# ------------------------------
+
+autoload -U compinit && compinit -i
+
+ZSH_CACHE_DIR=$ZSH/cache
+
+unsetopt menu_complete  # do not autoselect the first completion
+unsetopt flowcontrol    # disable flowcontrol
+setopt auto_menu        # automatically show completion menu
+setopt complete_in_word # complete at the cursor position
+setopt always_to_end    # move cursor to the end after completion
+
+# Reference: .oh-my-zsh/lib/completion.zsh
+zstyle ':completion:*:*:*:*:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z-_}={A-Za-z_-}' 'r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' list-colors ''
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#) ([0-9a-z-]#)*=01;34=0=01'
+zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
+zstyle ':completion:*:cd:*' tag-order local-directories directory-stack path-directories
+zstyle ':completion::complete:*' use-cache 1
+zstyle ':completion::complete:*' cache-path $ZSH_CACHE_DIR
+zstyle ':completion:*:*:*:users' ignored-patterns \
+       adm amanda apache at avahi avahi-autoipd beaglidx bin cacti canna \
+       clamav daemon dbus distcache dnsmasq dovecot fax ftp games gdm \
+       gkrellmd gopher hacluster haldaemon halt hsqldb ident junkbust kdm \
+       ldap lp mail mailman mailnull man messagebus  mldonkey mysql nagios \
+       named netdump news nfsnobody nobody nscd ntp nut nx obsrun openvpn \
+       operator pcap polkitd postfix postgres privoxy pulse pvm quagga radvd \
+       rpc rpcuser rpm rtkit scard shutdown squid sshd statd svn sync tftp \
+       usbmux uucp vcsa wwwrun xfs '_*'
+zstyle '*' single-ignored show
+
+# ------------------------------
+# autocorrect
+# ------------------------------
+
+setopt correct_all
+
+# list of commands not to enable autocorrection
+# Reference: .oh-my-zsh/lib/correction.zsh
+alias ebuild='nocorrect ebuild'
+alias gist='nocorrect gist'
+alias heroku='nocorrect heroku'
+alias hpodder='nocorrect hpodder'
+alias man='nocorrect man'
+alias mkdir='nocorrect mkdir'
+alias mv='nocorrect mv'
+alias mysql='nocorrect mysql'
+alias sudo='nocorrect sudo'
+
+# ------------------------------
+# history
+# ------------------------------
+
+HISTFILE=$HOME/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+
+setopt append_history          # append new commands to the HISTFILE,
+setopt inc_append_history      # -- just after invoking commands
+setopt hist_ignore_dups        # do not add duplicate entries
+setopt hist_expire_dups_first  # expire duplicate entries first
+setopt hist_ignore_space       # filter commands starts with a space
+setopt hist_verify             # edit before executing from history
+setopt share_history           # share history among the tabs
+setopt hist_reduce_blanks      # remove unuseful spaces
+
+# ------------------------------
+# built-in commands overrides
+# ------------------------------
+
+# grep: colorize, and exclude CSV directories
+alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn}'
+
+# diff: if colordiff is available, prefer it
 if which colordiff > /dev/null; then
     function diff () { colordiff -u $* | less }
 else
     echo "[.zshrc] colordiff is unavailable."
 fi
+
+# less: make less recognize ANSI escape sequences
+alias less='less -R'
+
+# jobs
+alias jobs='jobs -l'
+
+# sudo: please, please do it
+alias please='sudo'
+
+# ------------------------------
+# plugin: autosuggestions
+# ------------------------------
+
+# Installation:
+# $ cd ~/.zsh.d/plugins
+# $ git clone https://github.com/zsh-users/zsh-autosuggestions.git
+
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=yellow'
+ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(forward-char-or-accept-suggested-word)
+
+# If CURSOR is at the end of the BUFFER, excluding POSTDISPLAY (which
+# zsh-autosuggestions temporarilly adds at the end of the BUFFER),
+# invoke forward-word to complete a word. Otherwise just invoke
+# forward-char.
+function forward-char-or-accept-suggested-word () {
+    if (( $CURSOR == $#BUFFER - $#POSTDISPLAY )); then
+        zle forward-word
+    else
+        zle forward-char
+    fi
+}
+zle -N forward-char-or-accept-suggested-word
+
+# ------------------------------
+# plugin: abbrev-alias
+# ------------------------------
+
+# Installation:
+# $ cd ~/.zsh.d/plugins
+# $ git clone https://github.com/momo-lab/zsh-abbrev-alias.git
+
+# use abbrevs if abbev-alias is available
+if ! type abbrv-alias > /dev/null; then
+    # git
+    abbrev-alias ga='git add'
+    abbrev-alias gc='git commit'
+    abbrev-alias gco='git checkout'
+    abbrev-alias gb='git branch'
+    abbrev-alias gd='git diff'
+    abbrev-alias gds='git diff --staged'
+    abbrev-alias gl='git log'
+    abbrev-alias glog='git log --oneline --decorate --graph'
+    abbrev-alias gst='git status'
+
+    # typos
+    abbrev-alias gti='git'
+    abbrev-alias igt='git'
+    abbrev-alias sl='ls'
+    abbrev-alias sls='ls'
+
+    # ls
+    abbrev-alias la='ls -a'
+    abbrev-alias ll='ls -lh'
+    abbrev-alias lla='ls -lah'
+
+    # global aliases
+    abbrev-alias -g G='| grep'
+    abbrev-alias -g L='| less -R'
+    abbrev-alias -f B="git symbolic-ref --short HEAD 2>/dev/null"
+else
+    echo "[.zshrc] abbrev-alias is not unavailable."
+fi
+
+# ------------------------------
+# keybinds
+# ------------------------------
+
+# enable emacs keybinds
+bindkey -e
+
+# extra keybinds
+bindkey '^r' history-incremental-search-backward
+bindkey '^p' history-beginning-search-backward
+bindkey '^n' history-beginning-search-forward
+bindkey '^f' forward-char-or-accept-suggested-word

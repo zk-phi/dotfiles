@@ -1,0 +1,26 @@
+#compdef git gitk
+
+source /usr/local/share/zsh/site-functions/_git
+
+# Overwrite original definition of _git_checkout, defined in
+# "/usr/local/share/zsh/site-functions/git-completion.bash", loaded in
+# "_git", NOT to complete remote branches when checking out.
+_git_checkout () {
+    __git_has_doubledash && return
+    case "$cur" in
+        --conflict=*)
+            __gitcomp "diff3 merge" "" "${cur##--conflict=}"
+            ;;
+        --*)
+            __gitcomp "
+            --quiet --ours --theirs --track --no-track --merge
+            --conflict= --orphan --patch
+            "
+            ;;
+        *)
+            __gitcomp_nl "$(__git_heads)"
+            ;;
+    esac
+}
+
+_git
