@@ -280,6 +280,7 @@ if ! type abbrv-alias > /dev/null; then
     abbrev-alias gds='git diff --staged'
     abbrev-alias gl='git log'
     abbrev-alias glog='git log --oneline --decorate --graph'
+    abbrev-alias gs='git show'
     abbrev-alias gst='git status'
 
     # typos
