@@ -108,7 +108,7 @@ _git () {
 
 # git
 alias ga='git add'
-alias gco='git chegckout'
+alias gco='git checkout'
 alias gb='git branch'
 alias gd='git diff'
 alias gs='git diff --staged'
