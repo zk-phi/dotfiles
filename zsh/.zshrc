@@ -34,19 +34,19 @@ setopt multios                  # accept multiple redirections
 # ------------------------------
 
 # perl
-if ! type plenv > /dev/null; then
+if type plenv > /dev/null; then
     eval "$(plenv init -)"
     export PERL_CPANM_OPT="--local-lib=$HOME/perl5"
     export PERL5LIB=$HOME/perl5/lib/perl5:$PERL5LIB
 fi
 
 # ruby
-if ! type rbenv > /dev/null; then
+if type rbenv > /dev/null; then
     eval "$(rbenv init -)"
 fi
 
 # node
-if ! type ndenv > /dev/null; then
+if type ndenv > /dev/null; then
     eval "$(ndenv init -)"
 fi
 
@@ -308,7 +308,7 @@ zle -N forward-char-or-accept-suggested-word
 # $ git clone https://github.com/momo-lab/zsh-abbrev-alias.git
 
 # use abbrevs if abbev-alias is available
-if ! type abbrv-alias > /dev/null; then
+if whence abbrv-alias > /dev/null; then
     # git
     abbrev-alias ga='git add'
     abbrev-alias gc='git commit'
