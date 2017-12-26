@@ -83,13 +83,16 @@ function _git_prompt {
         _branch_name=$(git symbolic-ref --short HEAD 2>/dev/null || git show-ref --head -s --abbrev | head -n1)
 
         if test -n "$(git status --porcelain)"; then
-            _git_status="☁️ "
+            # _git_status="☁️ "
+            _git_status="%{$fg_bold[white]%}*"
         else
-            _git_status="✨ "
+            # _git_status="✨ "
+            _git_status=""
         fi
 
         if git rev-parse --verify --quiet refs/stash >/dev/null; then
-            _git_stashed=" 📃 "
+            # _git_stashed=" 📃 "
+            _git_stashed="%{$fg_bold[white]%}*"
         else
             _git_stashed=""
         fi
@@ -127,7 +130,8 @@ function _local_git_user {
     git config --local user.name
 }
 
-PROMPT='$(_moon_phase)  $(_pwd)$(_git_prompt)$(_errno_face)%{$reset_color%}'
+# PROMPT='$(_moon_phase)  $(_pwd)$(_git_prompt)$(_errno_face)%{$reset_color%}'
+PROMPT='$(_pwd)$(_git_prompt)$(_errno_face)%{$reset_color%}'
 RPROMPT='$(_local_git_user)'
 
 # ------------------------------
