@@ -34,15 +34,21 @@ setopt multios                  # accept multiple redirections
 # ------------------------------
 
 # perl
-eval "$(plenv init -)"
-export PERL_CPANM_OPT="--local-lib=$HOME/perl5"
-export PERL5LIB=$HOME/perl5/lib/perl5:$PERL5LIB
+if ! type plenv > /dev/null; then
+    eval "$(plenv init -)"
+    export PERL_CPANM_OPT="--local-lib=$HOME/perl5"
+    export PERL5LIB=$HOME/perl5/lib/perl5:$PERL5LIB
+fi
 
 # ruby
-eval "$(rbenv init -)"
+if ! type rbenv > /dev/null; then
+    eval "$(rbenv init -)"
+fi
 
 # node
-eval "$(ndenv init -)"
+if ! type ndenv > /dev/null; then
+    eval "$(ndenv init -)"
+fi
 
 # ocaml
 if test -e $HOME/.opam/opam-init/init.zsh; then
