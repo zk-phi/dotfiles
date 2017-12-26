@@ -325,6 +325,7 @@ if ! type abbrv-alias > /dev/null; then
     abbrev-alias sls='ls'
 
     # ls
+    abbrev-alias l='ls'
     abbrev-alias la='ls -a'
     abbrev-alias ll='ls -lh'
     abbrev-alias lla='ls -lah'
