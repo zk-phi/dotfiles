@@ -44,6 +44,11 @@ eval "$(rbenv init -)"
 # node
 eval "$(ndenv init -)"
 
+# ocaml
+if test -e $HOME/.opam/opam-init/init.zsh; then
+    source $HOME/.opam/opam-init/init.zsh &> /dev/null
+fi
+
 # ------------------------------
 # prompt
 # ------------------------------
