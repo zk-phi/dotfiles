@@ -418,6 +418,14 @@ cons of two integers."
              (y-or-n-p "Switch to root ? "))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
+;; make a parent directory on find-file
+(setup-hook 'find-file-hook
+  (when buffer-file-name
+    (let ((dir (file-name-directory buffer-file-name)))
+      (when (and (not (file-exists-p dir))
+                 (y-or-n-p (format "Directory does not exist. Create it? ")))
+        (make-directory dir t)))))
+
 ;;   + Misc: core
 ;;   + | system
 
@@ -736,7 +744,8 @@ cons of two integers."
 ;; tramp settings
 (setup-after "tramp"
   (setq tramp-persistency-file-name my-tramp-file
-        tramp-default-proxies-alist (nconc my-tramp-proxies tramp-default-proxies-alist)))
+        tramp-default-proxies-alist (nconc my-tramp-proxies tramp-default-proxies-alist))
+  (setup "docker-tramp"))
 (setup-expecting "tramp"
   (define-abbrev-table 'my-tramp-abbrev-table my-tramp-abbrevs)
   (setup-hook 'minibuffer-setup-hook
@@ -2320,6 +2329,14 @@ lines far from the cursor."
           (funcall my-dabbrev-expand-fallback)
         (message "No completions found."))))
 
+(defun my-map-lines-from-here (fn)
+  (interactive (list (eval `(lambda (s) ,(read (read-from-minibuffer "(s) => "))))))
+  (save-excursion
+    (while (progn (let ((res (funcall fn (buffer-substring (point-at-bol) (point-at-eol)))))
+                    (delete-region (point-at-bol) (point-at-eol))
+                    (insert res))
+                  (zerop (forward-line 1))))))
+
 ;;   + | jokes
 
 ;; Emacs sɔɐɯƎ
@@ -2566,7 +2583,10 @@ emacs-lisp-mode."
 (setup-lazy '(git-complete) "git-complete"
   :prepare (setup-in-idle "git-complete")
   (setq git-complete-limit-extension t)
-  (push '(web-mode "jsx" "js") git-complete-major-mode-extensions-alist))
+  (push '(web-mode "jsx" "js"
+                   "scss" "css"
+                   "html" "html.ep")
+        git-complete-major-mode-extensions-alist))
 
 ;; insert import statement
 (setup-lazy '(include-anywhere) "include-anywhere")
@@ -4381,7 +4401,8 @@ emacs-lisp-mode."
   :prepare (progn
              (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
              (push '("\\.jsx?$" . web-mode) auto-mode-alist)
-             (push '("\\.s?css$" . web-mode) auto-mode-alist))
+             (push '("\\.s?css$" . web-mode) auto-mode-alist)
+             (push '("\\.ejs$" . web-mode) auto-mode-alist))
 
   (defun my-web-mode-electric-semi ()
     (interactive)

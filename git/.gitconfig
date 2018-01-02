@@ -3,6 +3,8 @@
     required = true
     clean = git-lfs clean %f
 [alias]
+    # ---- mark new files as tracked
+    touch = add -N
     # ---- patch/unpatch a commit
     # -> 'git show $1 -p' doesn't work with stashes so we use diff here
     patch = "!f(){ git diff $1^ $1 | git apply; }; f"
@@ -16,12 +18,13 @@
     # ---- push and pull in one shot
     sync = "!f(){ local branch=${1-$(git symbolic-ref --short HEAD)}; git pull origin $branch --ff-only && git push origin $branch; }; f"
     publish = "!f(){ git push origin ${1-$(git symbolic-ref --short HEAD)}; }; f"
-    # ---- prepare worktree for review
-    review = "!f() { git fetch; git checkout -b review ${2:-$(git merge-base origin/master origin/$1)}; git stack origin/$1; git add -N .; }; f"
     # ---- delete old local branches
     clean-branch = "!f() { git branch -d $(git branch --merged ${1:-master} | grep -v \"*\\|${1:-master}\"); }; f"
-    # ---- stash lists
-    context = "!f() { git-context-switch $*; }; f"
+    # ---- show dangling objects
+    dangling-commits  = "!f() { git show --format='%ad %h: %s' --no-patch --date=short $(git fsck | grep 'commit' | cut -d ' ' -f 3) | sort -r | less; }; f"
+    # ---- locally ignore some files
+    ignore = update-index --assume-unchanged
+    ignored = "!f() { git ls-files -v | grep '^[[:lower:]]'; }; f"
     # ---- fix typos
     chekcout = checkout
     hcekcout = checkout
