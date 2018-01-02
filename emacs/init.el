@@ -965,6 +965,8 @@ unary operators which can also be binary."
 (!-
  (setup "symon"
    (setq symon-sparkline-ascent (!if my-home-system-p 97 100))
+   (setup "symon-moonphase"
+     (add-to-list 'symon-monitors 'symon-moonphase-monitor t))
    (symon-mode 1)
    ;; (when my-lingr-account
    ;;   (setup-in-idle "symon-lingr")
