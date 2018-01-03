@@ -974,8 +974,6 @@ unary operators which can also be binary."
 (!-
  (setup "symon"
    (setq symon-sparkline-ascent (!if my-home-system-p 97 100))
-   (setup "symon-moonphase"
-     (add-to-list 'symon-monitors 'symon-moonphase-monitor t))
    (symon-mode 1)
    ;; (when my-lingr-account
    ;;   (setup-in-idle "symon-lingr")
@@ -5804,6 +5802,12 @@ displayed, use substring of the buffer."
       (cl-case eol-type
         ((0) ?u) ((1) ?d) ((2) ?m) (else ?-)))))
 
+(defun my-time-string ()
+  (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face))
+(setup "sky-color-clock"
+  (sky-color-clock-initialize 35.40)
+  (defun my-time-string () (sky-color-clock)))
+
 (defvar-local my-current-branch-name nil)
 (setup-hook 'find-file-hook
   (when buffer-file-name
@@ -5835,10 +5839,6 @@ displayed, use substring of the buffer."
          (if (and (boundp 'multiple-cursors-mode) multiple-cursors-mode)
              (propertize (format "%02d" (mc/num-cursors)) 'face 'mode-line-mc-face)
            (! (propertize "00" 'face 'mode-line-bright-face))))
-        (dirname
-         (propertize (let ((dir (if (not buffer-file-name) ""
-                                  (file-name-directory buffer-file-name))))
-                       (my-shorten-directory dir 20)) 'face 'mode-line-dark-face))
         (filename
          (! (propertize "%b" 'face 'mode-line-highlight-face)))
         (branch
@@ -5871,7 +5871,7 @@ displayed, use substring of the buffer."
                      'face 'mode-line-dark-face))
         (time
          (if (null my-ramen-start-time)
-             (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face)
+             (my-time-string)
            (propertize (format-time-string
                         "%M:%S" (time-subtract (current-time) my-ramen-start-time))
                        'face 'mode-line-warning-face)))
@@ -5885,7 +5885,7 @@ displayed, use substring of the buffer."
     (let* ((lstr
             (concat linum VBAR colnum-or-region VBAR
                     i-narrowed i-readonly i-modified i-mc VBAR
-                    dirname filename branch palette recur))
+                    filename branch palette recur))
            (rstr
             (concat VBAR mode process " " encoding VBAR time " " battery))
            (lmargin
