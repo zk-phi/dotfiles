@@ -275,6 +275,9 @@ alias jobs='jobs -l'
 # sudo: please, please do it
 alias please='sudo'
 
+# git: disable glob expansion (otherwise "reset HEAD^" fails as "no matches found")
+alias git='noglob git'
+
 # ------------------------------
 # plugin: autosuggestions
 # ------------------------------
