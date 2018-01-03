@@ -2757,7 +2757,9 @@ emacs-lisp-mode."
 (setup-expecting "key-combo"
   (defun my-lisp-smart-dot ()
     (interactive)
-    (insert (if (looking-back "[0-9]") "." " . ")))
+    (insert (cond ((looking-back "[0-9]") ".")
+                  ((= (char-before) ?\s) ". ")
+                  (t " . "))))
   (setup-hook 'my-lispy-mode-common-hook
     (key-combo-mode 1)
     (key-combo-define-local (kbd ".") '(my-lisp-smart-dot "."))
