@@ -324,6 +324,7 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias gr='git reset'
     abbrev-alias gs='git show'
     abbrev-alias gst='git status'
+    abbrev-alias gsta='git stash'
 
     # typos
     abbrev-alias gti='git'
