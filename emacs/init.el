@@ -5808,6 +5808,7 @@ displayed, use substring of the buffer."
   (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face))
 (setup "sky-color-clock"
   (sky-color-clock-initialize 35.40)
+  (setq sky-color-clock-enable-moonphase-emoji nil)
   (defun my-time-string () (sky-color-clock)))
 
 (defvar-local my-current-branch-name nil)
