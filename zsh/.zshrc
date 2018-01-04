@@ -311,7 +311,7 @@ zle -N forward-char-or-accept-suggested-word
 # $ git clone https://github.com/momo-lab/zsh-abbrev-alias.git
 
 # use abbrevs if abbev-alias is available
-if whence abbrv-alias > /dev/null; then
+if whence abbrev-alias > /dev/null; then
     # git
     abbrev-alias ga='git add'
     abbrev-alias gc='git commit'
