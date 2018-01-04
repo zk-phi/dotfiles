@@ -84,7 +84,7 @@ function _git_prompt {
 
         if test -n "$(git status --porcelain)"; then
             # _git_status="☁️ "
-            _git_status="%{$fg_bold[white]%}*"
+            _git_status="%{$fg_bold[white]%}＊"
         else
             # _git_status="✨ "
             _git_status=""
@@ -92,7 +92,7 @@ function _git_prompt {
 
         if git rev-parse --verify --quiet refs/stash >/dev/null; then
             # _git_stashed=" 📃 "
-            _git_stashed="%{$fg_bold[white]%}*"
+            _git_stashed="%{$fg_bold[white]%}＊"
         else
             _git_stashed=""
         fi
