@@ -6164,8 +6164,8 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
  :weight     'bold)
 (set-face-attribute
  'mode-line-warning-face nil
- :foreground (! (face-background 'default))
- :background (! (face-foreground 'term-color-yellow)))
+ :foreground (! (face-foreground 'term-color-yellow))
+ :box        (! `(:line-width 1 :color ,(face-foreground 'term-color-yellow))))
 (set-face-attribute
  'mode-line-special-mode-face nil
  :foreground (! (face-foreground 'term-color-cyan))
