@@ -5811,7 +5811,7 @@ displayed, use substring of the buffer."
   (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face))
 (setup "sky-color-clock"
   (sky-color-clock-initialize 35.40)
-  (setq sky-color-clock-enable-moonphase-emoji nil)
+  (setq sky-color-clock-enable-emoji-icon nil)
   (when my-openweathermap-api-key
     (sky-color-clock-start-openwethermap-client my-openweathermap-api-key 1850144))
   (defun my-time-string () (sky-color-clock)))
