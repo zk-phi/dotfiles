@@ -120,6 +120,9 @@
   (defconst my-lingr-account
     (when (boundp 'my-lingr-account) my-lingr-account)
     "My Lingr account.")
+  (defconst my-openweathermap-api-key
+    (when (boundp 'my-openweathermap-api-key) my-openweathermap-api-key)
+    "Access token for openwethermap API.")
   (defconst my-tramp-proxies
     (when (boundp 'my-tramp-proxies) my-tramp-proxies)
     "My tramp proxies.")
@@ -5809,6 +5812,8 @@ displayed, use substring of the buffer."
 (setup "sky-color-clock"
   (sky-color-clock-initialize 35.40)
   (setq sky-color-clock-enable-moonphase-emoji nil)
+  (when my-openweathermap-api-key
+    (sky-color-clock-start-openwethermap-client my-openweathermap-api-key 1850144))
   (defun my-time-string () (sky-color-clock)))
 
 (defvar-local my-current-branch-name nil)
