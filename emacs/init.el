@@ -5813,7 +5813,7 @@ displayed, use substring of the buffer."
   (sky-color-clock-initialize 35.40)
   (setq sky-color-clock-enable-emoji-icon nil)
   (when my-openweathermap-api-key
-    (sky-color-clock-start-openwethermap-client my-openweathermap-api-key 1850144))
+    (sky-color-clock-initialize-openwethermap-client my-openweathermap-api-key 1850144))
   (defun my-time-string () (sky-color-clock)))
 
 (defvar-local my-current-branch-name nil)
