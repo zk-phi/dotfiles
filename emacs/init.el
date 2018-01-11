@@ -5746,10 +5746,10 @@ displayed, use substring of the buffer."
 (defvar my-mode-line-background '("#194854" . "#594854"))
 
 (defvar my-mode-line-battery-indicator-colors
-  ;; #bf3f3f #bf623f #bf853f #bfa73f #b3bf3f #91bf3f
-  ;; #6dbf3f #4bbf3f #3fbf56 #3fbf79 #3fbf9c #3fbfbf
-  (mapcar (lambda (x)  (apply 'color-rgb-to-hex (color-hsl-to-rgb x 0.5 0.5)))
-          '(0.00 0.045 0.091 0.136 0.182 0.227 0.273 0.318 0.363 0.409 0.455 0.500)))
+  ;; (mapcar (lambda (x)  (apply 'color-rgb-to-hex (color-hsl-to-rgb x 0.5 0.5)))
+  ;;         '(0.00 0.045 0.091 0.136 0.182 0.227 0.273 0.318 0.363 0.409 0.455 0.500))
+  '("#bf3f3f" "#bf623f" "#bf853f" "#bfa73f" "#b3bf3f" "#91bf3f"
+    "#6dbf3f" "#4bbf3f" "#3fbf56" "#3fbf79" "#3fbf9c" "#3fbfbf"))
 
 ;;   + | change color while recording macros
 
