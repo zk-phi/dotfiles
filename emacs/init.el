@@ -528,6 +528,10 @@ cons of two integers."
   (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend) ; japanese
   )
 
+;; rescale apple color emoji
+(when (eq system-type 'darwin)
+  (my-set-fontset-font "Apple Color Emoji" 'unicode 0.8 'prepend))
+
 ;; settings for the byte-compiler
 (eval-when-compile
   (setq byte-compile-warnings '(not make-local)
@@ -5811,7 +5815,7 @@ displayed, use substring of the buffer."
   (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face))
 (setup "sky-color-clock"
   (sky-color-clock-initialize 35.40)
-  (setq sky-color-clock-enable-emoji-icon nil)
+  (setq sky-color-clock-enable-emoji-icon t)
   (when my-openweathermap-api-key
     (sky-color-clock-initialize-openwethermap-client my-openweathermap-api-key 1850144))
   (defun my-time-string () (sky-color-clock)))
