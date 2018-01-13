@@ -399,11 +399,13 @@ cons of two integers."
 ;; reference | http://www.bookshelf.jp/soft/meadow_24.html#SEC265
 (!-
  (setup-hook 'after-save-hook
-   (when (and (buffer-file-name (current-buffer))
-              (= 0 (buffer-size)))
-     (when (y-or-n-p "Delete file and kill buffer ? ")
-       (delete-file (buffer-file-name (current-buffer)))
-       (kill-buffer (current-buffer))))))
+   (let ((filename (buffer-file-name (current-buffer))))
+     (when (and filename
+                (file-exists-p filename)
+                (= 0 (buffer-size)))
+       (when (y-or-n-p "Delete file and kill buffer ? ")
+         (delete-file (buffer-file-name (current-buffer)))
+         (kill-buffer (current-buffer)))))))
 
 ;; delete-trailing-whitespace on save
 (!-
