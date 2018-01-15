@@ -2340,9 +2340,9 @@ lines far from the cursor."
   (interactive (list (eval `(lambda (s) ,(read (read-from-minibuffer "(s) => "))))))
   (save-excursion
     (while (progn (let ((res (funcall fn (buffer-substring (point-at-bol) (point-at-eol)))))
-                    (delete-region (point-at-bol) (point-at-eol))
-                    (insert res))
-                  (zerop (forward-line 1))))))
+                    (kill-whole-line)
+                    (and res (insert res "\n")))
+                  (not (eobp))))))
 
 ;;   + | jokes
 
