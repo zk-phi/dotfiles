@@ -197,9 +197,15 @@ setopt auto_menu        # automatically show completion menu
 setopt complete_in_word # complete at the cursor position
 setopt always_to_end    # move cursor to the end after completion
 
+# add flex matcher (as a fallback to the default oh-my-zsh matchers)
+zstyle ':completion:*' matcher-list \
+       'm:{a-zA-Z-_}={A-Za-z_-}' \
+       'r:|=*' \
+       'l:|=* r:|=*' \
+       'r:|?=** m:{a-z\-}={A-Z\_}'
+
 # Reference: .oh-my-zsh/lib/completion.zsh
 zstyle ':completion:*:*:*:*:*' menu select
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z-_}={A-Za-z_-}' 'r:|=*' 'l:|=* r:|=*'
 zstyle ':completion:*' list-colors ''
 zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#) ([0-9a-z-]#)*=01;34=0=01'
 zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
