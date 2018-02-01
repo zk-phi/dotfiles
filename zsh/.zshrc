@@ -319,6 +319,7 @@ zle -N forward-char-or-accept-suggested-word
 # use abbrevs if abbev-alias is available
 if whence abbrev-alias > /dev/null; then
     # git
+    abbrev-alias g='git'
     abbrev-alias ga='git add'
     abbrev-alias gc='git commit'
     abbrev-alias gco='git checkout'
