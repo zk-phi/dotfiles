@@ -331,6 +331,7 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias gs='git show'
     abbrev-alias gst='git status'
     abbrev-alias gsta='git stash'
+    abbrev-alias gpu='git pull'
 
     # typos
     abbrev-alias gti='git'
