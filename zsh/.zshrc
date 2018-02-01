@@ -321,7 +321,9 @@ if whence abbrev-alias > /dev/null; then
     # git
     abbrev-alias g='git'
     abbrev-alias ga='git add'
-    abbrev-alias gc='git commit'
+    abbrev-alias gap='git add -p'
+    abbrev-alias gm='git commit'
+    abbrev-alias gmm='git commit -m'
     abbrev-alias gco='git checkout'
     abbrev-alias gb='git branch'
     abbrev-alias gd='git diff'
