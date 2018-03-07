@@ -38,8 +38,8 @@
 [merge]
     conflictStyle = diff3
 [diff]
-    algorithm = patience
-    compactionHeuristic = true
+    algorithm = histogram
+    indentHeuristic = true
 [color]
     ui = auto
 [pager]
