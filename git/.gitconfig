@@ -25,6 +25,8 @@
     # ---- locally ignore some files
     ignore = update-index --assume-unchanged
     ignored = "!f() { git ls-files -v | grep '^[[:lower:]]'; }; f"
+    # ---- DWIM abort rebase, merge or cherry-pick
+    abort = "!f() { local command=$(git status | grep -o \"git \\w* --abort\"); echo $command; $($command); }; f"
     # ---- fix typos
     chekcout = checkout
     hcekcout = checkout
