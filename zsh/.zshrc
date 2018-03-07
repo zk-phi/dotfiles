@@ -127,7 +127,11 @@ _moon_phase () {
 }
 
 function _local_git_user {
-    git config --local user.name
+    if _under_gitrepo_p; then
+        echo $(git config --local user.name)
+    else
+        echo ""
+    fi
 }
 
 # PROMPT='$(_moon_phase)  $(_pwd)$(_git_prompt)$(_errno_face)%{$reset_color%}'
