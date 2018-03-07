@@ -19,7 +19,7 @@ export EDITOR="vim"
 export PAGER="less"
 export LSCOLORS="Gxfxcxdxbxegedabagacad" # enable colors in "ls"
 
-export PATH="$HOME/perl5/bin:$HOME/.ndenv/bin:$HOME/.plenv/bin:$PATH"
+export PATH="/usr/local/share/git-core/contrib/diff-highlight:$HOME/perl5/bin:$HOME/.ndenv/bin:$HOME/.plenv/bin:$PATH"
 export FPATH="$ZSH/functions:$FPATH"
 export SSH_KEY_PATH="$HOME/.ssh"
 export PGDATA="/usr/local/var/postgres"
