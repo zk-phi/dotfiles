@@ -6403,7 +6403,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
 (!-
  (setup "combo"
-   (combo-initialize (car my-mode-line-background) (my-make-color (car my-mode-line-background) 100) 50 0.2)
+   (combo-initialize (car my-mode-line-background) (my-make-color (car my-mode-line-background) 100) 50 0.25)
    (add-hook 'combo-change-hook
              (lambda ()
                (unless defining-kbd-macro
