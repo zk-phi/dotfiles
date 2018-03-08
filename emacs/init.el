@@ -6401,6 +6401,14 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
       (sublimity-attractive-hide-bars)
       (sublimity-attractive-hide-fringes))))
 
+(!-
+ (setup "combo"
+   (combo-initialize (car my-mode-line-background) (my-make-color (car my-mode-line-background) 100) 50 0.2)
+   (add-hook 'combo-change-hook
+             (lambda ()
+               (unless defining-kbd-macro
+                 (set-face-background 'mode-line (combo-get-color)))))))
+
 ;; + | Keybinds
 ;;   + translations
 
