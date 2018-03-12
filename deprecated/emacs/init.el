@@ -78,3 +78,76 @@
    :background 'unspecified
    :underline  (! `(:style wave :color ,(face-foreground 'term-color-red)))))
 
+;; ---- flycheck: core
+
+(setup-lazy '(flycheck-mode) "flycheck"
+  :prepare (add-hook 'prog-mode-hook 'flycheck-mode)
+  (setq flycheck-display-errors-delay 0.1
+        flycheck-highlighting-mode    'lines))
+
+;; ---- flycheck: anything source
+
+(setup-lazy '(my-anything-jump) "anything"
+
+  ;; reference | http://d.hatena.ne.jp/kiris60/20091003
+  ;;           | https://github.com/yasuyk/helm-flycheck/
+  (setup-after "flycheck"
+    (defvar my-flycheck-candidates nil)
+    (defun my-flycheck-candidates ()
+      (mapcar
+       (lambda (err)
+         (let* ((type (flycheck-error-level err))
+                (type (propertize (symbol-name type) 'face
+                                  (flycheck-error-level-error-list-face type)))
+                (line (flycheck-error-line err))
+                (text (flycheck-error-message err)))
+           (cons (format "%s:%s: %s" line type text) err)))
+       my-flycheck-candidates))
+    (defvar my-anything-source-flycheck
+      '((name . "Flycheck")
+        (init . (lambda ()
+                  (setq my-flycheck-candidates
+                        (sort flycheck-current-errors 'flycheck-error-<))))
+        (candidates . my-flycheck-candidates)
+        (action . (("Goto line" .
+                    (lambda (err)
+                      (goto-line (flycheck-error-line err)
+                                 (flycheck-error-buffer err)))))))))
+  )
+
+;; ---- flycheck: cc-mode
+
+(setup-after "cc-mode"
+
+  (setup-after "flycheck"
+    (defun my-flycheck-use-c99-p ()
+      (save-excursion
+        (goto-char (point-min))
+        (search-forward-regexp "__STDC_VERSION__[^\n]*1999" 500 t)))
+    ;; C/C++ checker powered by gcc/g++
+    ;; reference | https://github.com/jedrz/.emacs.d/blob/master/setup-flycheck.el
+    (flycheck-define-checker
+     c-gcc "A C checker using gcc"
+     :command ("gcc" "-fsyntax-only" "-ansi" "-pedantic" "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+     :error-patterns ((warning line-start (file-name) ":" line ":" column ":" " warning: " (message) line-end)
+                      (error line-start (file-name) ":" line ":" column ":" " error: " (message) line-end))
+     :modes 'c-mode
+     :predicate (lambda () (not (my-flycheck-use-c99-p))))
+    (flycheck-define-checker
+     c99-gcc "A C checker using gcc -std=c99"
+     :command ("gcc" "-fsyntax-only" "-std=c99" "-pedantic" "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+     :error-patterns ((warning line-start (file-name) ":" line ":" column ":" " warning: " (message) line-end)
+                      (error line-start (file-name) ":" line ":" column ":" " error: " (message) line-end))
+     :modes 'c-mode
+     :predicate my-flycheck-use-c99-p)
+    (flycheck-define-checker
+     c++-g++ "A C checker using g++"
+     :command ("g++" "-fsyntax-only" "-std=c++11" "-pedantic" "-Wall" "-Wextra" "-W" "-Wunreachable-code" source-inplace)
+     :error-patterns ((warning line-start (file-name) ":" line ":" column ":" " warning: " (message) line-end)
+                      (error line-start (file-name) ":" line ":" column ":" " error: " (message) line-end))
+     :modes 'c++-mode)
+    (add-to-list 'flycheck-checkers 'c-gcc)
+    (add-to-list 'flycheck-checkers 'c++-g++)
+    (add-to-list 'flycheck-checkers 'c99-gcc))
+  )
+
