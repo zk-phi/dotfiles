@@ -186,10 +186,6 @@
   (unless (file-exists-p my-dat-directory)
     (make-directory my-dat-directory)))
 
-(defconst my-eww-download-directory
-  "~/.emacs.d/dat/eww_download/"
-  "Directory to download files in.")
-
 ;; Common History Datas
 
 (defconst my-ac-history-file
@@ -905,93 +901,6 @@ unary operators which can also be binary."
    ))
 
 ;; + | Commands
-;;   + web browser [eww]
-
-(setup-lazy '(eww) "eww"
-
-  (setq eww-search-prefix      "http://search.yahoo.co.jp/search?p="
-        eww-download-directory my-eww-download-directory
-        eww-header-line-format nil)
-
-  ;; disable colors by default
-  ;; Reference | http://rubikitch.com/2014/11/19/eww-nocolor/
-  (defvar my-eww-enable-colors nil)
-  (defadvice shr-colorize-region (around my-eww-colorize-ad activate)
-    (when my-eww-enable-colors ad-do-it))
-  (defadvice eww-colorize-region (around my-eww-colorize-ad activate)
-    (when my-eww-enable-colors ad-do-it))
-  (defun my-eww-enable-colors ()
-    "Enable colors in this eww buffer."
-    (interactive)
-    (setq-local my-eww-enable-colors t)
-    (eww-reload))
-
-  ;; Backward Compatibility (<= 24.3)
-  ;; Reference | https://lists.gnu.org/archive/html/emacs-diffs/2013-06/msg00410.html
-  (unless (fboundp 'add-face-text-property)
-    (defun add-face-text-property (beg end face &optional appendp object)
-      "Combine FACE BEG and END."
-      (let ((b beg))
-        (while (< b end)
-          (let ((oldval (get-text-property b 'face)))
-            (put-text-property
-             b (setq b (next-single-property-change b 'face nil end))
-             'face (cond ((null oldval)
-                          face)
-                         ((and (consp oldval)
-                               (not (keywordp (car oldval))))
-                          (if appendp
-                              (nconc oldval (list face))
-                            (cons face oldval)))
-                         (t
-                          (if appendp
-                              (list oldval face)
-                            (list face oldval))))))))))
-
-  ;; disable sublimity-attractive-centering
-  (setup-after "sublimity-attractive"
-    (setup-hook 'eww-mode-hook
-      (setq-local sublimity-attractive-centering-width nil)
-      (set-window-margins (selected-window) nil nil)))
-
-  ;; disable key-chord
-  (setup-after "key-chord"
-    (setup-hook 'eww-mode-hook
-      (setq-local key-chord-mode nil)
-      (setq-local input-method-function nil)))
-
-  ;; disable hl-line
-  (setup-after "hl-line"
-    (setup-hook 'eww-mode-hook
-      (setq-local global-hl-line-mode nil)))
-
-  (setup-keybinds eww-mode-map
-    ;; fundamental
-    "q"   'quit-window
-    "r"   'eww-reload
-    ;; navigation
-    "p"   'shr-previous-link
-    "n"   'shr-next-link
-    "h"   'eww-back-url
-    "j"   '("pager" pager-row-down next-line)
-    "k"   '("pager" pager-row-up previous-line)
-    "C-f" '("pager" pager-page-down scroll-up-command)
-    "C-b" '("pager" pager-page-up scroll-down-command)
-    " "   '("pager" pager-page-down scroll-up-command)
-    "DEL" '("pager" pager-page-up scroll-down-command)
-    "l"   'eww-forward-url
-    "f"   '("ace-link" ace-link-eww)
-    "g"   'beginning-of-buffer
-    "G"   'end-of-buffer
-    ;; others
-    "d"   'eww-download
-    "w"   'eww-copy-page-url
-    "x"   'eww-browse-with-external-browser
-    "v"   'eww-view-source
-    "C"   'url-cookie-list
-    "H"   'eww-list-histories)
-  )
-
 ;;   + english <-> japanese dictionary [sdic]
 
 (setup-after "sdic"
@@ -2587,7 +2496,7 @@ emacs-lisp-mode."
 (setup-lazy '(spray-mode) "spray"
   (setq spray-wpm 400))
 
-(setup-lazy '(ace-link-help ace-link-info ace-link-eww) "ace-link")
+(setup-lazy '(ace-link-help ace-link-info) "ace-link")
 
 (setup-lazy '(mf/mirror-region-in-multifile) "multifiles")
 
