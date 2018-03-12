@@ -2335,8 +2335,6 @@ emacs-lisp-mode."
 
 (setup-lazy '(ace-link-help ace-link-info) "ace-link")
 
-(setup-lazy '(mf/mirror-region-in-multifile) "multifiles")
-
 (setup-lazy '(simple-demo-set-up) "simple-demo")
 
 (setup-lazy '(htmlize-buffer htmlize-file) "htmlize")
@@ -6284,7 +6282,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "M-,"       '("howm" my-howm-menu-or-remember)
   "M-c"       '("smart-compile" smart-compile compile)
   "C-x C-i"   '("ispell" ispell-region)
-  "C-x C-a"   '("multifiles" mf/mirror-region-in-multifile)
   "C-x C-t"   'toggle-truncate-lines
   "C-x C-p"   'my-restore-from-backup
   "C-x C-,"   '("download-region" download-region-as-url))

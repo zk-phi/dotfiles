@@ -427,3 +427,12 @@
 (setup-keybinds nil
   "C-x C-l"   'my-add-change-log-entry)
 
+;; ---- multifiles: core
+
+(setup-lazy '(mf/mirror-region-in-multifile) "multifiles")
+
+;; ---- multifiles: keybinds
+
+(setup-keybinds nil
+  "C-x C-a"   '("multifiles" mf/mirror-region-in-multifile))
+
