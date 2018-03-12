@@ -123,9 +123,6 @@
   (defconst my-tramp-proxies
     (when (boundp 'my-tramp-proxies) my-tramp-proxies)
     "My tramp proxies.")
-  (defconst my-lmntal-home-directory
-    (when (boundp 'my-lmntal-home-directory) my-lmntal-home-directory)
-    "The LMNTAL_HOME Path.")
   (defconst my-tramp-abbrevs
     (when (boundp 'my-tramp-abbrevs) my-tramp-abbrevs)
     "Abbreviation table for remote hosts.")
@@ -3636,61 +3633,6 @@ emacs-lisp-mode."
       (key-combo-define-local (kbd "/") " / ")
       (key-combo-define-local (kbd "//") " // "))))
 
-;;         + LMNtal
-
-(setup-lazy '(lmntal-mode lmntal-slimcode-mode) "lmntal-mode"
-  :prepare (progn
-             (push '("\\.lmn$" . lmntal-mode) auto-mode-alist)
-             (push '("\\.cslmn" . lmntal-mode) auto-mode-alist)
-             (push '("\\.il$" . lmntal-slimcode-mode) auto-mode-alist))
-
-  (setq lmntal-home-directory my-lmntal-home-directory
-        lmntal-mc-use-dot     (! (executable-find "dot")))
-
-  (setup-hook 'lmntal-trace-mode-hook 'my-kindly-view-mode)
-  (setup-hook 'lmntal-mc-mode-hook 'my-kindly-view-mode)
-  (setup-hook 'lmntal-slimcode-help-hook 'my-kindly-view-mode)
-
-  ;; highlight additional keywords
-  (font-lock-add-keywords
-   'lmntal-mode '(("\\_<\\(typedef\\|define\\|defop\\)\\_>" . font-lock-function-name-face)))
-
-  (setup-after "popwin"
-    (push '("*SLIMcode-help*") popwin:special-display-config))
-
-  (setup-after "auto-complete"
-    (push 'lmntal-mode ac-modes))
-
-  (setup-expecting "key-combo"
-    (defun my-lmntal-smart-slashes ()
-      (interactive)
-      (if (looking-back "}")
-          (insert "/")
-        (insert (concat (unless (looking-back " ") " ")
-                        "/"
-                        (unless (looking-at " ") " ")))))
-    (setup-hook 'lmntal-mode-hook
-      (my-install-prolog-common-smartchr)
-      ;; membrane or binary
-      (key-combo-define-local (kbd "/") '(my-lmntal-smart-slashes))
-      ;; comments
-      (key-combo-define-local (kbd "//") "// ")
-      ;; (key-combo-define-local (kbd "/*") "/*\n`!!'\n*/")
-      ;; cmpfloat
-      (key-combo-define-local (kbd "=:=.") " =:=. ")
-      (key-combo-define-local (kbd "==.") " =:=. ")
-      (key-combo-define-local (kbd "=\\=.") " =\\=. ")
-      (key-combo-define-local (kbd "!==.") " =\\=. ")
-      (key-combo-define-local (kbd "<.") " <. ")
-      (key-combo-define-local (kbd ">.") " >. ")
-      (key-combo-define-local (kbd "=<.") " =<. ")
-      (key-combo-define-local (kbd "<=.") " =<. ")
-      (key-combo-define-local (kbd ">=.") " >=. ")))
-
-  (setup-after "mark-hacks"
-    (push 'lmntal-slimcode-mode mark-hacks-auto-indent-inhibit-modes))
-  )
-
 ;;       + esolangs
 ;;         + Brainfuck
 
@@ -5706,12 +5648,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   (set-face-attribute
    'cperl-hash-key-face nil
    :foreground (! (my-make-color (face-foreground 'default) 30))))
-
-;;   + | lmntal-mode
-
-(setup-after "lmntal-mode"
-  (set-face-background 'lmntal-link-name-face
-                       (! (my-make-color (face-background 'default) 3.5 -10))))
 
 ;;   + | phi-search
 
