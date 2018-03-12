@@ -328,7 +328,7 @@ cons of two integers."
          (max (length chars))
          (lst (make-list len nil))
          (str (mapconcat (lambda (x) (char-to-string (aref chars (random max)))) lst ""))
-         (outputfn (if (called-interactively-p 'any) 'print 'identity)))
+         (outputfn (if (called-interactively-p 'any) 'insert 'identity)))
     (funcall outputfn str)))
 
 ;; + | System
