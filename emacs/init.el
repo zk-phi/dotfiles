@@ -111,9 +111,6 @@
   (defconst my-howm-export-ics
     (when (boundp 'my-howm-export-ics) my-howm-export-ics)
     "iCal which Howm should export schedules to.")
-  (defconst my-clojure-jar-file
-    (when (boundp 'my-clojure-jar-file) my-clojure-jar-file)
-    "Path to clojure.jar executable.")
   (defconst my-migemo-dictionary
     (when (boundp 'my-migemo-dictionary) my-migemo-dictionary)
     "Dictionary file for migemo.")
@@ -2511,38 +2508,6 @@ emacs-lisp-mode."
     "C-c C-m" 'gauche-mode-macroexpand
     "C-c C-s" 'my-run-scheme-other-window
     "C-c C-l" 'scheme-load-file)
-  )
-
-;;         + Clojure
-
-(setup-lazy '(clojure-mode) "clojure-mode"
-  :prepare (progn (push '("\\.clj$" . clojure-mode) auto-mode-alist))
-
-  (setq clojure-inf-lisp-command (when my-clojure-jar-file
-                                   (concat "java -jar " my-clojure-jar-file)))
-
-  (setup-after "auto-complete"
-    (push 'clojure-mode ac-modes))
-
-  (defun my-run-clojure-other-window ()
-    (interactive)
-    (if (not clojure-inf-lisp-command)
-        (error "Clojure executable is not specified.")
-      (with-selected-window (split-window-vertically -10)
-        (run-lisp clojure-inf-lisp-command))
-      (when buffer-file-name
-        (clojure-load-file buffer-file-name))))
-
-  (defun my-clojure-send-dwim ()
-    (interactive)
-    (if (use-region-p)
-        (lisp-eval-region (region-beginning) (region-end))
-      (lisp-eval-last-sexp)))
-
-  (setup-keybinds clojure-mode-map
-    "C-c C-e" 'my-clojure-send-dwim
-    "C-c C-s" 'my-run-clojure-other-window
-    "C-c C-l" 'clojure-load-file)
   )
 
 ;;         + Egison
