@@ -2510,14 +2510,6 @@ emacs-lisp-mode."
     "C-c C-l" 'scheme-load-file)
   )
 
-;;         + Egison
-
-(setup-lazy '(egison-mode) "egison-mode"
-  :prepare (push '("\\.egi$" . egison-mode) auto-mode-alist)
-  (setup-after "auto-complete"
-    (push 'egison-mode ac-modes))
-  (setup-keybinds egison-mode-map "C-j" nil))
-
 ;;         + Racket
 
 (setup-lazy '(racket-mode) "racket-mode"

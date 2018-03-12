@@ -523,3 +523,11 @@
     "C-c C-l" 'clojure-load-file)
   )
 
+;; languages/Egison: core
+
+(setup-lazy '(egison-mode) "egison-mode"
+  :prepare (push '("\\.egi$" . egison-mode) auto-mode-alist)
+  (setup-after "auto-complete"
+    (push 'egison-mode ac-modes))
+  (setup-keybinds egison-mode-map "C-j" nil))
+
