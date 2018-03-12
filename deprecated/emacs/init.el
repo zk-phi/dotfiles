@@ -802,3 +802,9 @@
                  "M-*" 'cedit-or-paredit-barf
                  "M-U" 'cedit-or-paredit-splice-killing-backward
                  "M-R" 'cedit-or-paredit-raise)))
+
+;; ---- spray: core
+
+;; Spritz-like speed reading mode
+(setup-lazy '(spray-mode) "spray"
+  (setq spray-wpm 400))

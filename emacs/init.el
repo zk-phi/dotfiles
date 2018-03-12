@@ -2315,10 +2315,6 @@ emacs-lisp-mode."
             httpd-port port)
       (httpd-start))))
 
-;; Spritz-like speed reading mode
-(setup-lazy '(spray-mode) "spray"
-  (setq spray-wpm 400))
-
 (setup-lazy '(ace-link-help ace-link-info) "ace-link")
 
 (setup-lazy '(htmlize-buffer htmlize-file) "htmlize")
