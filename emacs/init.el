@@ -836,6 +836,7 @@ cons of two integers which defines a range of the codepoints."
   :prepare (setup-hook 'prog-mode-hook 'electric-align-mode)
   (setq electric-align-shortcut-commands '(my-smart-comma)))
 
+;; not "electric-spacing" hosted in MELPA, but my own one
 (setup-lazy '(electric-spacing-mode) "electric-spacing"
   (setq electric-spacing-regexp-pairs
         '(("\\cA\\|\\cC\\|\\ck\\|\\cK\\|\\cH" . "[\\\\{[($0-9A-Za-z]")
@@ -1891,6 +1892,9 @@ unary operators which can also be binary."
 
 ;;   + | word-wise operations
 
+;;                          |                          |
+;; |hoge hoge -> Hoge| hoge | hoge| hoge -> Hoge| hoge | [hoge hoge| hoge -> Hoge Hoge| hoge
+;;                          |                          |
 (defun my-capitalize-word-dwim ()
   (interactive)
   (cond ((use-region-p)
@@ -1900,6 +1904,7 @@ unary operators which can also be binary."
         (t
          (capitalize-word -1))))
 
+;; hoge hoge| hoge -> hoge HOGE| hoge -> HOGE HOGE| hoge
 (defvar my-upcase-previous-word-count nil)
 (defun my-upcase-previous-word ()
   (interactive)
@@ -1913,6 +1918,7 @@ unary operators which can also be binary."
          (cl-decf my-upcase-previous-word-count)
          (upcase-word my-upcase-previous-word-count))))
 
+;; Hoge HOGE| HOGE -> Hoge hoge| HOGE -> hoge hoge| HOGE
 (defvar my-downcase-previous-word-count nil)
 (defun my-downcase-previous-word ()
   (interactive)
@@ -1950,6 +1956,8 @@ unary operators which can also be binary."
     (set-temporary-overlay-map m t)))
 
 (defun my-kill-this-buffer (&optional force)
+  "Like kill-this-buffer but accepts FORCE argument to skip
+kill-buffer-query-functions."
   (interactive "P")
   (if (not force)
       (kill-this-buffer)
