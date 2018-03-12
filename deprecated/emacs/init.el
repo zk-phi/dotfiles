@@ -323,3 +323,38 @@
       (action . (lambda (num) (goto-char num)))
       (multiline))))
 
+;; ---- window-undo: core
+
+;; seems not working :(
+
+;; window-undo ("winner-mode" simplified)
+(defvar my-window-undo-list `((1 . ,(current-window-configuration))))
+(setup-hook 'window-configuration-change-hook
+  (let ((wins (length (window-list))))
+    (unless (or (eq this-command 'my-window-undo)
+                (and (boundp 'phi-search--original-position)
+                     phi-search--original-position)
+                (and (boundp 'phi-search--target)
+                     phi-search--target)
+                (and my-window-undo-list
+                     (= (caar my-window-undo-list) wins)))
+      (push (cons wins (current-window-configuration)) my-window-undo-list))))
+(setup-lazy '(my-window-undo) "edmacro"
+  (defun my-window-undo ()
+    (interactive)
+    (let ((repeat-key (vector last-input-event)))
+      (set-temporary-overlay-map
+       (let ((km (make-sparse-keymap)))
+         (define-key km repeat-key 'my-window-undo)
+         km) t)
+      (message "(Type %s to repeat)" (edmacro-format-keys repeat-key))
+      (pop my-window-undo-list)
+      (if (null my-window-undo-list)
+          (message "No further undo information")
+        (set-window-configuration (cdar my-window-undo-list))))))
+
+;; ---- window-undo: kaybinds
+
+(setup-keybinds nil
+  "C-x C--" 'my-window-undo)
+
