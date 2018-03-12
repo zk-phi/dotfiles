@@ -2414,52 +2414,7 @@ emacs-lisp-mode."
 (setup-expecting "rainbow-delimiters"
   (setup-hook 'my-lispy-mode-common-hook 'rainbow-delimiters-mode))
 
-;;         + Common Lisp
-
-(setup-after "lisp-mode"
-
-  (setup-after "auto-complete"
-    (push 'lisp-mode ac-modes))
-
-  (setup "cldoc"
-    (setup-hook 'lisp-mode-hook
-      (turn-on-cldoc-mode)))
-
-  (setup-lazy '(my-run-lisp-other-window my-lisp-send-dwim my-lisp-load) "inf-lisp"
-
-    (setq inferior-lisp-program "sbcl")
-
-    (defun my-run-lisp-other-window ()
-      (interactive)
-      (with-selected-window (split-window-vertically -10)
-        (switch-to-buffer (get-buffer-create "*inferior-lisp*"))
-        (run-lisp inferior-lisp-program))
-      (when buffer-file-name
-        (my-lisp-load)))
-
-    (defun my-lisp-send-dwim ()
-      (interactive)
-      (if (use-region-p)
-          (lisp-eval-region (region-beginning) (region-end))
-        (lisp-eval-last-sexp)))
-
-    (defun my-lisp-load (&optional file)
-      (interactive)
-      (let ((file (or file
-                      (expand-file-name buffer-file-name)
-                      (read-file-name "Load file: "))))
-        (with-temp-buffer
-          (lisp-eval-string (format "(load \"%s\")" file)))))
-    )
-
-  (setup-keybinds lisp-mode-map
-    '("M-TAB" "C-j") nil
-    "C-c C-s" 'my-run-lisp-other-window
-    "C-c C-e" 'my-lisp-send-dwim
-    "C-c C-l" 'my-lisp-load)
-  )
-
-;;         + Emacs Lisp [outlined-elisp] [cl-lib-hl]
+;;         + Emacs Lisp [cl-lib-hl]
 
 (setup-after "lisp-mode"
   (font-lock-add-keywords
