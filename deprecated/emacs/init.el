@@ -729,3 +729,76 @@
 (setup-lazy '(zombie-mode) "zombie"
   :prepare (push '("\\.zombie$" . zombie-mode) auto-mode-alist))
 
+;; languages/Promela: core
+
+(setup-lazy '(promela-mode) "promela-mode"
+  :prepare (progn (push '("\\.pml$" . promela-mode) auto-mode-alist)
+                  ;; workaround for emacs>=24
+                  (when (version<= "24" emacs-version)
+                    (defvar font-lock-defaults-alist nil)
+                    (make-obsolete-variable 'font-lock-defaults-alist
+                                            "(setq-local 'font-lock-defaults)"
+                                            "Emacs 24")))
+
+  (setq promela-selection-indent 0
+        promela-block-indent 4)
+
+  (set-face-attribute 'promela-fl-send-poll-face nil
+                      :foreground 'unspecified
+                      :background 'unspecified
+                      :inverse-video 'unspecified
+                      :bold t)
+
+  (setup-hook 'promela-mode-hook
+    (setq-local font-lock-defaults promela-font-lock-defaults))
+
+  (setup-after "auto-complete"
+    (push 'promela-mode ac-modes))
+
+  (defun my-promela-electric-semi ()
+    (interactive)
+    (insert ";")
+    (unless (string-match "}" (buffer-substring (point) (point-at-eol)))
+      (promela-indent-newline-indent)))
+  ;;
+  (defun my-promela-smart-colons ()
+    "insert two colons followed by a space, and reindent"
+    (interactive)
+    (insert (concat "::"
+                    (if (looking-at " ") "" " ")))
+    (save-excursion (promela-indent-line)))
+
+  (setup-expecting "key-combo"
+    (setup-hook 'promela-mode-hook
+      (my-install-c-common-smartchr)
+      ;; guards
+      (key-combo-define-local (kbd "->") " -> ")
+      (key-combo-define-local (kbd ":") '(":" my-promela-smart-colons))
+      ;; LTL
+      (key-combo-define-local (kbd "<>") "<>")
+      (key-combo-define-local (kbd "[]") "[]")
+      ;; does not work ...
+      ;; (key-combo-define-local (kbd "do") "do\n`!!'\nod")
+      ;; (key-combo-define-local (kbd "if") "if\n`!!'\nfi")
+      ))
+
+  (setup-keybinds promela-mode-map
+    ";"   'my-promela-electric-semi
+    "C-m" 'promela-indent-newline-indent)
+  )
+
+;; languages/Promela: cedit
+
+(setup-lazy
+  '(cedit-or-paredit-slurp
+    cedit-wrap-brace
+    cedit-or-paredit-barf
+    cedit-or-paredit-splice-killing-backward
+    cedit-or-paredit-raise) "cedit"
+    :prepare (setup-after "promela-mode"
+               (setup-keybinds promela-mode-map
+                 "M-)" 'cedit-or-paredit-slurp
+                 "M-{" 'cedit-wrap-brace
+                 "M-*" 'cedit-or-paredit-barf
+                 "M-U" 'cedit-or-paredit-splice-killing-backward
+                 "M-R" 'cedit-or-paredit-raise)))
