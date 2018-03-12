@@ -2335,8 +2335,6 @@ emacs-lisp-mode."
 
 (setup-lazy '(ace-link-help ace-link-info) "ace-link")
 
-(setup-lazy '(simple-demo-set-up) "simple-demo")
-
 (setup-lazy '(htmlize-buffer htmlize-file) "htmlize")
 
 (setup-lazy '(togetherly-client-start togetherly-server-start) "togetherly")

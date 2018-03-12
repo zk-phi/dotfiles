@@ -436,3 +436,7 @@
 (setup-keybinds nil
   "C-x C-a"   '("multifiles" mf/mirror-region-in-multifile))
 
+;; ---- simple-demo: core
+
+(setup-lazy '(simple-demo-set-up) "simple-demo")
+
