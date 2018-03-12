@@ -271,7 +271,7 @@ alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn}'
 
 # diff: if colordiff is available, prefer it
 if which colordiff > /dev/null; then
-    function diff () { colordiff -u $* | less }
+    function diff () { colordiff -u $* | less -R }
 else
     echo "[.zshrc] colordiff is unavailable."
 fi
