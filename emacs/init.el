@@ -2033,28 +2033,34 @@ kill-buffer-query-functions."
                     (- (window-total-width) (/ (window-total-width) n))))
                  (split (1- n) vertically)))))
     (cl-case last-command
+      ;; horizontally
       ;; |---------------| -> |-------|-------|
       ((my-split-window-horizontally-0)
        (split 2)
        (setq this-command 'my-split-window-horizontally-1))
-      ;; |-------|-------| -> |----|-----|----|
+      ;; (try vertical split)
       ((my-split-window-horizontally-1)
        (set-window-configuration my-split-window-saved-configuration)
-       (split 3)
+       (split 2 t)
        (setq this-command 'my-split-window-horizontally-2))
-      ;; |----|-----|----| -> |---|---|-------|
+      ;; |-------|-------| -> |----|-----|----|
       ((my-split-window-horizontally-2)
        (set-window-configuration my-split-window-saved-configuration)
-       (split 2)
-       (split 2)
+       (split 3)
        (setq this-command 'my-split-window-horizontally-3))
-      ;; |---|---|-------| -> |---|---|---|---|
+      ;; |----|-----|----| -> |---|---|-------|
       ((my-split-window-horizontally-3)
        (set-window-configuration my-split-window-saved-configuration)
-       (split 4)
+       (split 2)
+       (split 2)
        (setq this-command 'my-split-window-horizontally-4))
-      ;; |---|---|---|---| -> |---------------|
+      ;; |---|---|-------| -> |---|---|---|---|
       ((my-split-window-horizontally-4)
+       (set-window-configuration my-split-window-saved-configuration)
+       (split 4)
+       (setq this-command 'my-split-window-horizontally-5))
+      ;; |---|---|---|---| -> |---------------|
+      ((my-split-window-horizontally-5)
        (set-window-configuration my-split-window-saved-configuration)
        (setq this-command 'my-split-window-horizontally-0))
       ;; vertically
@@ -2063,9 +2069,13 @@ kill-buffer-query-functions."
        (setq this-command 'my-split-window-vertically-1))
       ((my-split-window-vertically-1)
        (set-window-configuration my-split-window-saved-configuration)
-       (split 3 t)
+       (split 2)
        (setq this-command 'my-split-window-vertically-2))
       ((my-split-window-vertically-2)
+       (set-window-configuration my-split-window-saved-configuration)
+       (split 3 t)
+       (setq this-command 'my-split-window-vertically-3))
+      ((my-split-window-vertically-3)
        (set-window-configuration my-split-window-saved-configuration)
        (setq this-command 'my-split-window-vertically-0))
       (t
