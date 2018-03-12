@@ -292,23 +292,6 @@
   (when (apply 'derived-mode-p my-listy-modes)
     (run-hooks 'my-listy-mode-common-hook)))
 
-(defun my-shorten-directory (dir len)
-  (if (null dir) ""
-    (let ((lst (mapcar (lambda (s)
-                         (if (> (length s) 5)
-                             (cons 5 (concat (substring s 0 4) "-"))
-                           (cons (length s) s)))
-                       (reverse (split-string (abbreviate-file-name dir) "/"))))
-          (reslen 0)
-          (res ""))
-      (when (zerop (caar lst)) (setq lst (cdr lst))) ; ?
-      (while (and lst (< (+ reslen (caar lst) 1 (if (cdr lst) 4 0)) len))
-        (setq res    (concat (cdar lst) "/" res)
-              reslen (+ reslen (caar lst) 1)
-              lst    (cdr lst)))
-      (when lst (setq res (concat "…/" res)))
-      res)))
-
 (defun my-get-short-branch-name (file)
   (let* ((project-root (locate-dominating-file file ".git"))
          (head-path (and project-root (concat project-root "/.git/HEAD"))))
@@ -5370,6 +5353,23 @@ emacs-lisp-mode."
 ;;     + eshell
 
 (setup-after "eshell"
+
+  (defun my-shorten-directory (dir len)
+    (if (null dir) ""
+      (let ((lst (mapcar (lambda (s)
+                           (if (> (length s) 5)
+                               (cons 5 (concat (substring s 0 4) "-"))
+                             (cons (length s) s)))
+                         (reverse (split-string (abbreviate-file-name dir) "/"))))
+            (reslen 0)
+            (res ""))
+        (when (zerop (caar lst)) (setq lst (cdr lst))) ; ?
+        (while (and lst (< (+ reslen (caar lst) 1 (if (cdr lst) 4 0)) len))
+          (setq res    (concat (cdar lst) "/" res)
+                reslen (+ reslen (caar lst) 1)
+                lst    (cdr lst)))
+        (when lst (setq res (concat "…/" res)))
+        res)))
 
   (setq eshell-directory-name  my-eshell-directory
         eshell-prompt-regexp   (regexp-opt '("（*>w<）? " "（*'-'）? " "（`;w;）! "))
