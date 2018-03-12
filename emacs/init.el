@@ -2113,10 +2113,23 @@ lines far from the cursor."
 ;;   + | buffers / windows
 
 ;; turn-off follow-mode on delete-other-windows
-(setup-lazy '(follow-delete-other-windows-and-split) "follow"
-  (defadvice delete-other-windows (after auto-disable-follow activate)
-    (when (and (boundp 'follow-mode) follow-mode)
-      (follow-mode -1))))
+(setup-lazy '(my-toggle-follow-mode) "follow"
+  (defun my-toggle-follow-mode ()
+    (interactive)
+    (cond (follow-mode
+           (let ((selected-window (selected-window)))
+             (dolist (window (follow-all-followers))
+               (unless (eq window selected-window)
+                 (delete-window window))))
+           (follow-mode -1))
+          (t
+           (split-window-horizontally)
+           (follow-mode 1))))
+  (setup-hook 'window-configuration-change-hook
+    (dolist (window (window-list))
+      (with-selected-window window
+        (when (and follow-mode (null (cdr (follow-all-followers))))
+          (follow-mode -1))))))
 
 ;;   + | edit
 
@@ -5145,6 +5158,8 @@ displayed, use substring of the buffer."
                 (! (propertize "*Artist*" 'face 'mode-line-special-mode-face)))
                ((and (boundp 'orgtbl-mode) orgtbl-mode)
                 (! (propertize "*OrgTbl*" 'face 'mode-line-special-mode-face)))
+               ((and (boundp 'follow-mode) follow-mode)
+                (! (propertize "*Follow*" 'face 'mode-line-special-mode-face)))
                (t
                 (propertize
                  ;; mode-name may be a list in sgml modes
@@ -5735,6 +5750,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "M-1" 'delete-other-windows
   "M-2" 'my-split-window
   "M-3" 'my-resize-window
+  "M-4" 'my-toggle-follow-mode
   "M-8" 'my-transpose-window-buffers
   "M-9" 'previous-multiframe-window
   "M-o" 'my-toggle-transparency
