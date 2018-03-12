@@ -310,18 +310,6 @@
         (outputfn (if (called-interactively-p 'any) (lambda (s) (insert "\"" s "\"")) 'identity)))
     (funcall outputfn res)))
 
-(defun my-set-fontset-font (family targets &optional rescale-rate add)
-  "TARGETS can be a, or a list of, either charset-scripts (listed
-in charset-script-alist), charsets (listed in charset-list), or a
-cons of two integers."
-  (let ((font-spec (font-spec :family family)))
-    (when rescale-rate
-      (push (cons font-spec rescale-rate) face-font-rescale-alist))
-    (unless (and (consp targets) (listp (cdr targets)))
-      (setq targets (list targets)))
-    (dolist (target targets)
-      (set-fontset-font t target font-spec nil add))))
-
 (defun my-generate-random-str (len)
   (interactive (list (read-number "length : ")))
   (let* ((chars (string-to-vector "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKMNLOPQRSTUVWXYZ_"))
@@ -501,6 +489,19 @@ cons of two integers."
       (lambda ()
         (unless (memq this-command '(minibuffer-keyboard-quit keyboard-quit))
           (ding))))
+
+;; utility function to set font
+(defun my-set-fontset-font (family targets &optional rescale-rate add)
+  "TARGETS can be a, or a list of, either charset-scripts (listed
+in charset-script-alist), charsets (listed in charset-list), or a
+cons of two integers which defines a range of the codepoints."
+  (let ((font-spec (font-spec :family family)))
+    (when rescale-rate
+      (push (cons font-spec rescale-rate) face-font-rescale-alist))
+    (unless (and (consp targets) (listp (cdr targets)))
+      (setq targets (list targets)))
+    (dolist (target targets)
+      (set-fontset-font t target font-spec nil add))))
 
 ;; font settings
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
