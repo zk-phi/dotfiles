@@ -3528,59 +3528,6 @@ emacs-lisp-mode."
     )
   )
 
-;;         + OCaml (tuareg-mode)
-
-(setup-lazy '(tuareg-mode) "tuareg"
-  :prepare (push '("\\.ml[iylp]?$" . tuareg-mode) auto-mode-alist)
-
-  (setq tuareg-interactive-program "ocaml")
-
-  (set-face-foreground 'tuareg-font-lock-governing-face
-                       (face-foreground 'font-lock-keyword-face))
-  (set-face-foreground 'tuareg-font-lock-operator-face
-                       'unspecified)
-
-  (defun my-tuareg-load-file (&optional file)
-    (interactive)
-    (let ((file (or file buffer-file-name)))
-      (when (and file (comint-check-proc tuareg-interactive-buffer-name))
-        (with-current-buffer tuareg-interactive-buffer-name
-          (comint-send-string
-           tuareg-interactive-buffer-name (format "#use \"%s\";;" file))
-          (comint-send-input)))))
-
-  (defun my-run-ocaml-other-window ()
-    (interactive)
-    (with-selected-window (split-window-vertically -10)
-      (switch-to-buffer
-       (get-buffer-create tuareg-interactive-buffer-name))
-      (tuareg-run-process-if-needed tuareg-interactive-program)
-      (when buffer-file-name
-        (my-tuareg-load-file buffer-file-name))))
-
-  (defun my-tuareg-send-dwim ()
-    (interactive)
-    (if (use-region-p)
-        (tuareg-eval-region (region-beginning) (region-end))
-      (save-excursion
-        (tuareg-skip-to-end-of-phrase)
-        (tuareg-eval-phrase))))
-
-  (setup-keybinds tuareg-mode-map
-    "C-c C-e" 'my-tuareg-send-dwim
-    "C-c C-s" 'my-run-ocaml-other-window
-    "C-c C-l" 'my-tuareg-load-file
-    '("C-M-p" "C-M-n" "C-M-h" "M-q") nil)
-
-  (setup-lazy '(ocamldebug) "ocamldebug")
-
-  (setup-after "indent-guide"
-    (push 'tuareg-interactive-mode indent-guide-inhibit-modes))
-
-  (setup-after "auto-complete"
-    (push 'tuareg-mode ac-modes))
-  )
-
 ;;       + declarative
 ;;         + (common)
 
