@@ -305,7 +305,10 @@
           (if (> (length str) 4) (substring str 0 4) str))))))
 
 (defun my-read-font-family ()
-  (completing-read "Font Family: " (cl-remove-duplicates (font-family-list)) nil t))
+  (interactive)
+  (let ((res (completing-read "Font Family: " (cl-remove-duplicates (font-family-list)) nil t))
+        (outputfn (if (called-interactively-p 'any) (lambda (s) (insert "\"" s "\"")) 'identity)))
+    (funcall outputfn res)))
 
 (defun my-set-fontset-font (family targets &optional rescale-rate add)
   "TARGETS can be a, or a list of, either charset-scripts (listed
