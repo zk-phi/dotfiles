@@ -3639,11 +3639,6 @@ emacs-lisp-mode."
 (setup-lazy '(bfbuilder-mode) "bfbuilder"
   :prepare (push '("\\.bf" . bfbuilder-mode) auto-mode-alist))
 
-;;         + ZOMBIE
-
-(setup-lazy '(zombie-mode) "zombie"
-  :prepare (push '("\\.zombie$" . zombie-mode) auto-mode-alist))
-
 ;;       + other
 ;;         + Promela
 

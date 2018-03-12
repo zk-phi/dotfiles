@@ -724,3 +724,8 @@
   (set-face-background 'lmntal-link-name-face
                        (! (my-make-color (face-background 'default) 3.5 -10))))
 
+;; languages/ZOMBIE: core
+
+(setup-lazy '(zombie-mode) "zombie"
+  :prepare (push '("\\.zombie$" . zombie-mode) auto-mode-alist))
+
