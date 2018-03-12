@@ -360,15 +360,6 @@
 
 ;;   + hooks for save/open
 
-;; make a parent directory on save if it does not exist
-(!-
- (setup-hook 'before-save-hook
-   (when buffer-file-name
-     (let ((dir (file-name-directory buffer-file-name)))
-       (when (and (not (file-exists-p dir))
-                  (y-or-n-p (format "Directory does not exist. Create it? ")))
-         (make-directory dir t))))))
-
 ;; query delete empty files instead of saving it
 ;; reference | http://www.bookshelf.jp/soft/meadow_24.html#SEC265
 (!-
