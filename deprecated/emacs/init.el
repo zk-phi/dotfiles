@@ -248,3 +248,78 @@
 
 (setup-lazy '(ace-link-eww) "ace-link")
 
+;; ---- highlight-changes-mode: core
+
+(setup-lazy '(highlight-changes-mode) "hilit-chg"
+  :prepare (setup-hook 'find-file-hook 'highlight-changes-mode)
+
+  ;; start with invisible mode
+  (setq highlight-changes-visibility-initial-state nil)
+
+  ;; clear highlights after save
+  (setup-hook 'after-save-hook
+    (when highlight-changes-mode
+      (save-restriction
+        (widen)
+        (highlight-changes-remove-highlight (point-min) (point-max)))))
+
+  ;; fix for yasnippet
+  (setup-after "yasnippet"
+    (setup-hook 'yas-before-expand-snippet-hook
+      (when highlight-changes-mode
+        (highlight-changes-mode -1)))
+    (setup-hook 'yas-after-exit-snippet-hook
+      (highlight-changes-mode 1)
+      (hilit-chg-set-face-on-change yas-snippet-beg yas-snippet-end 0)))
+  )
+
+;; ---- highlight-changes-mode: anything source
+
+(setup-after "hilit-chg"
+  (defun my-change-search-next (point)
+    (let (start tmp)
+      ;; if the point is nil, return nil
+      (when point
+        (setq start (if (get-text-property point 'hilit-chg) point
+                      (next-single-property-change point 'hilit-chg)))
+        ;; if there are no changes more, return nil
+        (when start
+          ;; possibly, the end of this change
+          (setq tmp (next-single-property-change start 'hilit-chg))
+          ;; join adjacent changes
+          (while (and tmp (get-text-property tmp 'hilit-chg))
+            (setq tmp (next-single-property-change tmp 'hilit-chg)))
+          (if tmp (list start tmp)
+            (list start (point-max)))))))
+  (defun my-change-get-string (from to)
+    (let* ((from (save-excursion (goto-char from)
+                                 (skip-chars-forward "\n")
+                                 (point)))
+           (to (save-excursion (goto-char to)
+                               (skip-chars-backward "\s\t\n")
+                               (if (looking-back "[\s\t\n]")
+                                   (1- (point))
+                                 (point))))
+           (string (buffer-substring from to)))
+      (if (string-match "^[\s\t\n]*$" string) ""
+        string)))
+  (defun my-change-buffer nil)
+  (defun my-change-candidates ()
+    (with-current-buffer my-change-buffer
+      (let ((start (point-min)) tmp candidates)
+        (while (setq tmp (my-change-search-next start))
+          (add-to-list 'candidates
+                       (cons (format "%5d:: %s"
+                                     (line-number-at-pos (car tmp))
+                                     (apply 'my-change-get-string tmp))
+                             (car tmp)))
+          ;; change start position of search
+          (setq start (cadr tmp)))
+        (reverse candidates))))
+  (defvar anything-source-highlight-changes-mode
+    '((name . "Changes")
+      (init . (lambda () (setq my-change-buffer (current-buffer))))
+      (candidates . my-change-candidates)
+      (action . (lambda (num) (goto-char num)))
+      (multiline))))
+
