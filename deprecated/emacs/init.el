@@ -402,3 +402,28 @@
        (floor (* 20 (+ (sin (* 2 (float-time))) 2)))
        (floor (* 10 (+ (cos (* 2 (float-time))) 2)))))))
 
+;; ---- add-log: core
+
+;; add change-lod entry
+(setup-lazy '(my-add-change-log-entry) "add-log"
+  (setup-after "popwin"
+    (push '("ChangeLog") popwin:special-display-config))
+  (defun my-change-log-save-and-kill ()
+    (interactive)
+    (save-buffer)
+    (kill-buffer)
+    (delete-window))
+  (defun my-add-change-log-entry ()
+    (interactive)
+    (select-window
+     (split-window-below (* (/ (window-height) 3) 2)))
+    (add-change-log-entry))
+  (setup-keybinds change-log-mode-map
+    "C-x C-s" 'my-change-log-save-and-kill
+    "C-g"     'my-change-log-save-and-kill))
+
+;; ---- add-log: keybinds
+
+(setup-keybinds nil
+  "C-x C-l"   'my-add-change-log-entry)
+

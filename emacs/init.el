@@ -2158,24 +2158,6 @@ emacs-lisp-mode."
 
 ;;   + | trace changes
 
-;; add change-lod entry
-(setup-lazy '(my-add-change-log-entry) "add-log"
-  (setup-after "popwin"
-    (push '("ChangeLog") popwin:special-display-config))
-  (defun my-change-log-save-and-kill ()
-    (interactive)
-    (save-buffer)
-    (kill-buffer)
-    (delete-window))
-  (defun my-add-change-log-entry ()
-    (interactive)
-    (select-window
-     (split-window-below (* (/ (window-height) 3) 2)))
-    (add-change-log-entry))
-  (setup-keybinds change-log-mode-map
-    "C-x C-s" 'my-change-log-save-and-kill
-    "C-g"     'my-change-log-save-and-kill))
-
 ;; run "diff" from emacs
 (setup-lazy '(ediff) "ediff"
   (setq ediff-split-window-function 'split-window-horizontally))
@@ -6303,7 +6285,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   "M-c"       '("smart-compile" smart-compile compile)
   "C-x C-i"   '("ispell" ispell-region)
   "C-x C-a"   '("multifiles" mf/mirror-region-in-multifile)
-  "C-x C-l"   'my-add-change-log-entry
   "C-x C-t"   'toggle-truncate-lines
   "C-x C-p"   'my-restore-from-backup
   "C-x C-,"   '("download-region" download-region-as-url))
