@@ -364,6 +364,14 @@ else
 fi
 
 # ------------------------------
+# plugin: per-directory-history
+# ------------------------------
+
+# Installation:
+# $ cd ~/.zsh.d/plugins
+# $ git clone https://github.com/jimhester/per-directory-history.git
+
+# ------------------------------
 # keybinds
 # ------------------------------
 
