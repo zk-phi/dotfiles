@@ -765,6 +765,9 @@ cons of two integers which defines a range of the codepoints."
 
 (setup-lazy '(jaword-mode) "jaword")
 
+(setup-lazy '(subword-mode) "subword"
+  :prepare (setup-hook 'prog-mode-hook 'subword-mode))
+
 (!-
  (setup "popup")
  (setup "auto-complete"
