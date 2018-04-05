@@ -1237,7 +1237,10 @@ unary operators which can also be binary."
 
 ;;   + yasnippet settings [yasnippet]
 
-(setup-lazy '(yas-expand yas--expand-or-prompt-for-template) "yasnippet"
+(setup-lazy
+  '(yas-expand
+    my-yas-next-field-or-git-complete
+    yas--expand-or-prompt-for-template) "yasnippet"
   :prepare (setup-in-idle "yasnippet")
 
   (setq yas-triggers-in-field t
@@ -1278,6 +1281,15 @@ unary operators which can also be binary."
       (if (= (point) pos)
           (move-beginning-of-line 1)
         (goto-char pos))))
+
+  (defun my-yas-next-field-or-git-complete ()
+    (interactive)
+    (cond ((yas--snippets-at-point)
+           (yas-next-field))
+          ((fboundp 'git-complete)
+           (git-complete))
+          (t
+           (my-dabbrev-expand))))
 
   ;; indent current line after expanding snippet
   (setup-hook 'yas-after-exit-snippet-hook
@@ -5964,16 +5976,16 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
       (key-chord-define-local "ji" 'git-complete)
       (key-chord-define-local "jo" 'git-complete)))
   (setup-after "yasnippet"
-    (key-chord-define yas-keymap "fr" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "fe" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "ji" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "jo" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "fr" 'my-yas-next-field-or-git-complete)
+    (key-chord-define yas-keymap "fe" 'my-yas-next-field-or-git-complete)
+    (key-chord-define yas-keymap "ji" 'my-yas-next-field-or-git-complete)
+    (key-chord-define yas-keymap "jo" 'my-yas-next-field-or-git-complete)
     ;; move to the next field even while auto-complete is in action
     (setup-after "auto-complete"
-      (key-chord-define ac-completing-map "fr" 'yas-next-field-or-maybe-expand)
-      (key-chord-define ac-completing-map "fe" 'yas-next-field-or-maybe-expand)
-      (key-chord-define ac-completing-map "ji" 'yas-next-field-or-maybe-expand)
-      (key-chord-define ac-completing-map "jo" 'yas-next-field-or-maybe-expand)))
+      (key-chord-define ac-completing-map "fr" 'my-yas-next-field-or-git-complete)
+      (key-chord-define ac-completing-map "fe" 'my-yas-next-field-or-git-complete)
+      (key-chord-define ac-completing-map "ji" 'my-yas-next-field-or-git-complete)
+      (key-chord-define ac-completing-map "jo" 'my-yas-next-field-or-git-complete)))
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "fd" 'iy-go-to-char-backward)
     (key-chord-define-global "jk" 'iy-go-to-char)))
