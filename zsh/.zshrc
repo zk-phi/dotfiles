@@ -289,6 +289,18 @@ alias please='sudo'
 alias git='noglob git'
 
 # ------------------------------
+# plugin: per-directory-history
+# ------------------------------
+
+# Installation:
+# $ cd ~/.zsh.d/plugins
+# $ git clone https://github.com/zk-phi/per-directory-history.git
+
+# NOTE: zk-phi/per-directory-history is a fork of
+# jimhester/per-directory-history, with a workaround to the problem
+# with unicode characters.
+
+# ------------------------------
 # plugin: autosuggestions
 # ------------------------------
 
