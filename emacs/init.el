@@ -3747,6 +3747,14 @@ emacs-lisp-mode."
             (3 'web-mode-keyword-face)))
          web-mode-javascript-font-lock-keywords))
 
+  ;; fix autopairing (closing > for HTML tags are inserted by
+  ;; phi-autopair, thus we do not need them inserted by web-mode too)
+  (push '("mojolicious" . (("<% " . " %")
+                           ("<%=" . " | %")
+                           ("<%%" . " | %")
+                           ("<%#" . " | %")))
+        web-mode-engines-auto-pairs)
+
   (setup-expecting "rainbow-mode"
     (setup-hook 'web-mode-hook 'rainbow-mode))
 
