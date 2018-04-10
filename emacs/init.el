@@ -52,8 +52,8 @@
 ;;
 ;; - sf : iy-go-to-char-backward
 ;; - jl : iy-go-to-char
-;; - fe,fr : yas-expand
-;; - ji,jo : yas-expand
+;; - fe,fr : git-complete / yas-next-field
+;; - ji,jo : git-complete / yas-next-field
 
 ;; special keys
 ;;
