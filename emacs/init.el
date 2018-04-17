@@ -3674,6 +3674,11 @@ emacs-lisp-mode."
   (setup-hook 'ahk-mode-hook
     (setup-keybinds ahk-mode-map '("C-j" "C-h") nil)))
 
+;;         + shell
+
+(setup-lazy '(shell-script-mode) "sh-script"
+  :prepare (push '("\\.z?sh$" . shell-script-mode) auto-mode-alist))
+
 ;;         + DOS
 
 (setup-lazy '(dos-mode) "dos"
