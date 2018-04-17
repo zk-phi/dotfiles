@@ -820,7 +820,7 @@ cons of two integers which defines a range of the codepoints."
 (!-
  (setup "key-chord"
    (key-chord-mode 1)
-   (setq key-chord-safety-interval-forward 0.45)))
+   (setq key-chord-safety-interval-forward 0.55)))
 
 (setup-lazy '(key-combo-mode key-combo-define-local) "key-combo"
   ;; input-method (and multiple-cursors) is incompatible with key-combo
