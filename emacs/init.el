@@ -5492,7 +5492,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (setup-after "highlight-parentheses"
   (hl-paren-set 'hl-paren-colors nil)
   (hl-paren-set 'hl-paren-background-colors
-                (list (face-background 'elemental-brighter-bg-face))))
+                (list (face-background 'elemental-highlight-bg-1-face))))
 
 ;;   + | whitespace
 
