@@ -498,8 +498,9 @@ cons of two integers which defines a range of the codepoints."
   (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend) ; japanese
   )
 
-;; rescale apple color emoji
-(when (eq system-type 'darwin)
+;; font settings (Mac)
+(!when (eq system-type 'darwin)
+  (set-face-attribute 'default nil :family "Monaco") ; base
   (my-set-fontset-font "Apple Color Emoji" 'unicode 0.8 'prepend))
 
 ;; settings for the byte-compiler
