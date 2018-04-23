@@ -5326,9 +5326,9 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 (setup-include "elemental-theme"
 
   (defun my-elemental-theme-apply-colors
-    (mode bg-base fg-base
-          type-yellow warning-orange error-red visited-magenta
-          link-violet identifier-blue string-cyan keyword-green)
+      (mode bg-base fg-base
+            type-yellow warning-orange error-red visited-magenta
+            link-violet identifier-blue string-cyan keyword-green)
     (declare (indent 1))
     (custom-theme-set-variables 'elemental-theme `(frame-background-mode ',mode))
     (let* ((bright-bg      (my-make-color bg-base nil nil (if (eq mode 'dark) "#fff" "#000") 9))
