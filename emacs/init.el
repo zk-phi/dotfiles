@@ -5367,12 +5367,12 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
 
   ;; ;; the solarized-dark theme
   ;; (my-elemental-theme-apply-colors 'dark
-  ;;   "#002b36" "#83948f" "#b58900" "#cb4b16" "#dc322f"
+  ;;   "#002b36" "#839496" "#b58900" "#cb4b16" "#dc322f"
   ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
 
   ;; ;; the solarized-light theme
   ;; (my-elemental-theme-apply-colors 'light
-  ;;   "#fdf6e3" "#002b36" "#b58900" "#cb4b16" "#dc322f"
+  ;;   "#fdf6e3" "#657b83" "#b58900" "#cb4b16" "#dc322f"
   ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
 
   ;; ;; "jellybeans" palette
