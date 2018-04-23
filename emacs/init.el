@@ -52,8 +52,8 @@
 ;;
 ;; - sf : iy-go-to-char-backward
 ;; - jl : iy-go-to-char
-;; - fe,fr : yas-expand
-;; - ji,jo : yas-expand
+;; - fe,fr : git-complete / yas-next-field
+;; - ji,jo : git-complete / yas-next-field
 
 ;; special keys
 ;;
@@ -765,6 +765,9 @@ cons of two integers which defines a range of the codepoints."
 
 (setup-lazy '(jaword-mode) "jaword")
 
+(setup-lazy '(subword-mode) "subword"
+  :prepare (setup-hook 'prog-mode-hook 'subword-mode))
+
 (!-
  (setup "popup")
  (setup "auto-complete"
@@ -816,7 +819,8 @@ cons of two integers which defines a range of the codepoints."
 
 (!-
  (setup "key-chord"
-   (key-chord-mode 1)))
+   (key-chord-mode 1)
+   (setq key-chord-safety-interval-forward 0.45)))
 
 (setup-lazy '(key-combo-mode key-combo-define-local) "key-combo"
   ;; input-method (and multiple-cursors) is incompatible with key-combo
@@ -1234,7 +1238,10 @@ unary operators which can also be binary."
 
 ;;   + yasnippet settings [yasnippet]
 
-(setup-lazy '(yas-expand yas--expand-or-prompt-for-template) "yasnippet"
+(setup-lazy
+  '(yas-expand
+    my-yas-next-field-or-git-complete
+    yas--expand-or-prompt-for-template) "yasnippet"
   :prepare (setup-in-idle "yasnippet")
 
   (setq yas-triggers-in-field t
@@ -1275,6 +1282,15 @@ unary operators which can also be binary."
       (if (= (point) pos)
           (move-beginning-of-line 1)
         (goto-char pos))))
+
+  (defun my-yas-next-field-or-git-complete ()
+    (interactive)
+    (cond ((yas--snippets-at-point)
+           (yas-next-field))
+          ((fboundp 'git-complete)
+           (git-complete))
+          (t
+           (my-dabbrev-expand))))
 
   ;; indent current line after expanding snippet
   (setup-hook 'yas-after-exit-snippet-hook
@@ -2056,7 +2072,7 @@ lines far from the cursor."
   "Toggle transparency."
   (interactive)
   (let* ((current-alpha (or (cdr (assoc 'alpha (frame-parameters))) 100))
-         (new-alpha (cl-case current-alpha ((100) 96) ((96) 91) ((91) 78) ((78) 66) (t 100))))
+         (new-alpha (cl-case current-alpha ((100) 93) ((93) 91) ((91) 78) ((78) 66) (t 100))))
     (set-frame-parameter nil 'alpha new-alpha)))
 
 ;; URL encode / decode region
@@ -3731,6 +3747,14 @@ emacs-lisp-mode."
             (2 'web-mode-variable-name-face)
             (3 'web-mode-keyword-face)))
          web-mode-javascript-font-lock-keywords))
+
+  ;; fix autopairing (closing > for HTML tags are inserted by
+  ;; phi-autopair, thus we do not need them inserted by web-mode too)
+  (push '("mojolicious" . (("<% " . " %")
+                           ("<%=" . " | %")
+                           ("<%%" . " | %")
+                           ("<%#" . " | %")))
+        web-mode-engines-auto-pairs)
 
   (setup-expecting "rainbow-mode"
     (setup-hook 'web-mode-hook 'rainbow-mode))
@@ -5836,16 +5860,16 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
       (key-chord-define-local "ji" 'git-complete)
       (key-chord-define-local "jo" 'git-complete)))
   (setup-after "yasnippet"
-    (key-chord-define yas-keymap "fr" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "fe" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "ji" 'yas-next-field-or-maybe-expand)
-    (key-chord-define yas-keymap "jo" 'yas-next-field-or-maybe-expand)
+    (key-chord-define yas-keymap "fr" 'my-yas-next-field-or-git-complete)
+    (key-chord-define yas-keymap "fe" 'my-yas-next-field-or-git-complete)
+    (key-chord-define yas-keymap "ji" 'my-yas-next-field-or-git-complete)
+    (key-chord-define yas-keymap "jo" 'my-yas-next-field-or-git-complete)
     ;; move to the next field even while auto-complete is in action
     (setup-after "auto-complete"
-      (key-chord-define ac-completing-map "fr" 'yas-next-field-or-maybe-expand)
-      (key-chord-define ac-completing-map "fe" 'yas-next-field-or-maybe-expand)
-      (key-chord-define ac-completing-map "ji" 'yas-next-field-or-maybe-expand)
-      (key-chord-define ac-completing-map "jo" 'yas-next-field-or-maybe-expand)))
+      (key-chord-define ac-completing-map "fr" 'my-yas-next-field-or-git-complete)
+      (key-chord-define ac-completing-map "fe" 'my-yas-next-field-or-git-complete)
+      (key-chord-define ac-completing-map "ji" 'my-yas-next-field-or-git-complete)
+      (key-chord-define ac-completing-map "jo" 'my-yas-next-field-or-git-complete)))
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "fd" 'iy-go-to-char-backward)
     (key-chord-define-global "jk" 'iy-go-to-char)))

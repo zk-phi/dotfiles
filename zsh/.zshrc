@@ -271,7 +271,7 @@ alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn}'
 
 # diff: if colordiff is available, prefer it
 if which colordiff > /dev/null; then
-    function diff () { colordiff -u $* | less }
+    function diff () { colordiff -u $* | less -R }
 else
     echo "[.zshrc] colordiff is unavailable."
 fi
@@ -287,6 +287,18 @@ alias please='sudo'
 
 # git: disable glob expansion (otherwise "reset HEAD^" fails as "no matches found")
 alias git='noglob git'
+
+# ------------------------------
+# plugin: per-directory-history
+# ------------------------------
+
+# Installation:
+# $ cd ~/.zsh.d/plugins
+# $ git clone https://github.com/zk-phi/per-directory-history.git
+
+# NOTE: zk-phi/per-directory-history is a fork of
+# jimhester/per-directory-history, with a workaround to the problem
+# with unicode characters.
 
 # ------------------------------
 # plugin: autosuggestions
