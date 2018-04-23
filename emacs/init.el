@@ -5302,26 +5302,13 @@ displayed, use substring of the buffer."
 
 ;; utility to mix two colors
 (setup-include "color"
-  (defun my-make-color (basecolor &optional bright sat mixcolor percent)
-    "generate a color by brightening BASECOLOR by BRIGHT,
-saturating by SAT, and mixing with MIXCOLOR by PERCENT."
-    (let ((hsl
-           (if mixcolor
-               (cl-destructuring-bind (r g b) (color-name-to-rgb basecolor)
-                 (cl-destructuring-bind (rr gg bb) (color-name-to-rgb mixcolor)
-                   (let* ((x (if percent (/ percent 100.0) 0.5))
-                          (y (- 1 x)))
-                     (color-rgb-to-hsl (+ (* r y) (* rr x))
-                                       (+ (* g y) (* gg x))
-                                       (+ (* b y) (* bb x))))))
-             (apply 'color-rgb-to-hsl (color-name-to-rgb basecolor)))))
-      (when bright
-        (when (eq (frame-parameter nil 'background-mode) 'light)
-          (setq bright (- bright)))
-        (setq hsl (apply 'color-lighten-hsl `(,@hsl ,bright))))
-      (when sat
-        (setq hsl (apply 'color-saturate-hsl `(,@hsl ,sat))))
-      (apply 'color-rgb-to-hex (apply 'color-hsl-to-rgb hsl)))))
+  (defun my-blend-colors (basecolor mixcolor percent)
+    "Mix two colors."
+    (cl-destructuring-bind (r g b) (color-name-to-rgb basecolor)
+      (cl-destructuring-bind (r2 g2 b2) (color-name-to-rgb mixcolor)
+        (let* ((x (/ percent 100.0))
+               (y (- 1 x)))
+          (color-rgb-to-hex (+ (* r y) (* r2 x)) (+ (* g y) (* g2 x)) (+ (* b y) (* b2 x))))))))
 
 (setup-include "elemental-theme"
 
@@ -5331,13 +5318,13 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
             link-violet identifier-blue string-cyan keyword-green)
     (declare (indent 1))
     (custom-theme-set-variables 'elemental-theme `(frame-background-mode ',mode))
-    (let* ((bright-bg      (my-make-color bg-base nil nil (if (eq mode 'dark) "#fff" "#000") 8))
-           (brighter-bg    (my-make-color bg-base nil nil (if (eq mode 'dark) "#fff" "#000") 16))
-           (highlight-bg-1 (my-make-color bg-base nil nil (if (eq mode 'dark) "#fff" "#000") 24))
-           (highlight-bg-2 (my-make-color highlight-bg-1 nil nil "red" 30))
-           (darker-fg      (my-make-color fg-base nil nil bg-base 65))
-           (dark-fg        (my-make-color fg-base nil nil bg-base 27))
-           (bright-fg      (my-make-color fg-base nil nil bg-base -40)))
+    (let* ((bright-bg      (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 8))
+           (brighter-bg    (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 16))
+           (highlight-bg-1 (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 24))
+           (highlight-bg-2 (my-blend-colors highlight-bg-1 "red" 30))
+           (darker-fg      (my-blend-colors fg-base bg-base 65))
+           (dark-fg        (my-blend-colors fg-base bg-base 27))
+           (bright-fg      (my-blend-colors fg-base bg-base -40)))
       (set-face-background 'default bg-base)
       (set-face-background 'cursor fg-base)
       (set-face-background 'elemental-bright-bg-face bright-bg)
