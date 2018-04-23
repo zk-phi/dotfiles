@@ -5330,6 +5330,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
           type-yellow warning-orange error-red visited-magenta
           link-violet identifier-blue string-cyan keyword-green)
     (declare (indent 1))
+    (custom-theme-set-variables 'elemental-theme `(frame-background-mode ',mode))
     (let* ((bright-bg      (my-make-color bg-base nil nil fg-base 15))
            (brighter-bg    (my-make-color bg-base nil nil fg-base 30))
            (highlight-bg-1 (my-make-color bg-base nil nil fg-base 50))
