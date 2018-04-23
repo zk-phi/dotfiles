@@ -5432,9 +5432,7 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
   ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#649d8a" "#9e9e9e")
   )
 
-;;   + | modeline
-
-;; change color while recording macros
+;; switch mode-line color while recording macros
 (defadvice kmacro-start-macro (after my-recording-mode-line activate)
   (set-face-attribute 'mode-line nil :inherit 'elemental-highlight-bg-2-face)
   (add-hook 'post-command-hook 'my-recording-mode-line-end))
@@ -5479,14 +5477,10 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
  :inherit 'elemental-cyan-face
  :weight  'bold)
 
-;;   + | highlight-parentheses
-
 (setup-after "highlight-parentheses"
   (hl-paren-set 'hl-paren-colors nil)
   (hl-paren-set 'hl-paren-background-colors
                 (list (face-background 'elemental-highlight-bg-1-face))))
-
-;;   + | whitespace
 
 (setup-after "whitespace"
   (set-face-attribute 'whitespace-space nil
@@ -5497,8 +5491,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
                       :inherit    'elemental-darker-fg-face
                       :foreground 'unspecified
                       :background 'unspecified))
-
-;;   + | cperl-mode
 
 (setup-after "cperl-mode"
   (set-face-attribute 'cperl-hash-key-face nil :inherit 'elemental-bright-fg-face))
