@@ -5298,10 +5298,10 @@ displayed, use substring of the buffer."
 (my-global-secret-words-mode 1)
 
 ;;   + colorscheme
-;;   + | util
+;;   + | colorscheme [elemental-theme]
 
-(eval-and-compile
-  (require 'color)
+;; utility to mix two colors
+(setup-include "color"
   (defun my-make-color (basecolor &optional bright sat mixcolor percent)
     "generate a color by brightening BASECOLOR by BRIGHT,
 saturating by SAT, and mixing with MIXCOLOR by PERCENT."
@@ -5322,14 +5322,6 @@ saturating by SAT, and mixing with MIXCOLOR by PERCENT."
       (when sat
         (setq hsl (apply 'color-saturate-hsl `(,@hsl ,sat))))
       (apply 'color-rgb-to-hex (apply 'color-hsl-to-rgb hsl)))))
-
-;; load "term" and "hl-line" during compile so that we can use
-;; "(face-foreground 'term-color-red)"
-(eval-when-compile
-  (require 'term)
-  (require 'hl-line))
-
-;;   + | colorscheme [elemental-theme]
 
 (setup-include "elemental-theme"
 
