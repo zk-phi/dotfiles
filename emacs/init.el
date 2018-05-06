@@ -5299,25 +5299,25 @@ displayed, use substring of the buffer."
 (my-global-secret-words-mode 1)
 
 ;;   + colorscheme
-;;   + | colorscheme [elemental-theme]
 
 ;; utility to mix two colors
-(setup-include "color"
-  (defun my-blend-colors (basecolor mixcolor percent)
-    "Mix two colors."
-    (cl-destructuring-bind (r g b) (color-name-to-rgb basecolor)
-      (cl-destructuring-bind (r2 g2 b2) (color-name-to-rgb mixcolor)
-        (let* ((x (/ percent 100.0))
-               (y (- 1 x)))
-          (color-rgb-to-hex (+ (* r y) (* r2 x)) (+ (* g y) (* g2 x)) (+ (* b y) (* b2 x))))))))
+(setup-include "color")
+(defun my-blend-colors (basecolor mixcolor percent)
+  "Mix two colors."
+  (cl-destructuring-bind (r g b) (color-name-to-rgb basecolor)
+    (cl-destructuring-bind (r2 g2 b2) (color-name-to-rgb mixcolor)
+      (let* ((x (/ percent 100.0))
+             (y (- 1 x)))
+        (color-rgb-to-hex (+ (* r y) (* r2 x)) (+ (* g y) (* g2 x)) (+ (* b y) (* b2 x)))))))
 
-(setup-include "elemental-theme"
-
-  (defun my-elemental-theme-apply-colors
-      (mode bg-base fg-base
-            type-yellow warning-orange error-red visited-magenta
-            link-violet identifier-blue string-cyan keyword-green)
-    (declare (indent 1))
+;; utility to apply color palette to the elemental-theme
+(setup-include "elemental-theme")
+(defun my-elemental-theme-apply-colors
+  (bg-base fg-base
+           type-yellow warning-orange error-red visited-magenta
+           link-violet identifier-blue string-cyan keyword-green)
+  (declare (indent defun))
+  (let ((mode (if (string< bg-base fg-base) 'dark 'light)))
     (custom-theme-set-variables 'elemental-theme `(frame-background-mode ',mode))
     (let* ((bright-bg      (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 7))
            (brighter-bg    (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 14))
@@ -5344,145 +5344,151 @@ displayed, use substring of the buffer."
       (set-face-foreground 'elemental-blue-face identifier-blue)
       (set-face-foreground 'elemental-green-face keyword-green)
       (set-face-foreground 'elemental-orange-face warning-orange)
-      (set-face-foreground 'elemental-cyan-face string-cyan)))
+      (set-face-foreground 'elemental-cyan-face string-cyan)
+      (run-hooks 'my-elemental-theme-change-palette-hook))))
+
+(setup-after "elemental-theme"
 
   ;; ;; the solarized-dark theme
-  ;; (my-elemental-theme-apply-colors 'dark
+  ;; (my-elemental-theme-apply-colors
   ;;   "#002b36" "#839496" "#b58900" "#cb4b16" "#dc322f"
   ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
 
   ;; ;; the solarized-light theme
-  ;; (my-elemental-theme-apply-colors 'light
+  ;; (my-elemental-theme-apply-colors
   ;;   "#fdf6e3" "#657b83" "#b58900" "#cb4b16" "#dc322f"
   ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
 
   ;; ;; "jellybeans" palette
   ;; ;; reference | https://github.com/nanotech/jellybeans.vim
-  ;; (my-elemental-theme-apply-colors 'dark
+  ;; (my-elemental-theme-apply-colors
   ;;   "#202020" "#939393" "#ffb964" "#8fbfdc" "#a04040"
   ;;   "#b05080" "#805090" "#fad08a" "#99ad6a" "#8fbfdc")
 
   ;; ;; "mesa" palette
   ;; ;; reference | http://emacsfodder.github.io/blog/mesa-theme/
-  ;; (my-elemental-theme-apply-colors 'light
+  ;; (my-elemental-theme-apply-colors
   ;;   "#ece8e1" "grey30" "#3388dd" "#ac3d1a" "#dd2222"
   ;;   "#8b008b" "#00b7f0" "#1388a2" "#104e8b" "#00688b")
 
   ;; ;; "tron" palette
   ;; ;; reference | https://github.com/ivanmarcin/emacs-tron-theme/
-  ;; (my-elemental-theme-apply-colors 'dark
+  ;; (my-elemental-theme-apply-colors
   ;;   "#000000" "#75797b" "#74abbe" "orange" "red"
   ;;   "magenta" "violet" "#ec9346" "#e8b778" "#a4cee5")
 
   ;; ;; "majapahit" palette
   ;; ;; reference | https://gitlab.com/franksn/majapahit-theme/
-  ;; (my-elemental-theme-apply-colors 'dark
+  ;; (my-elemental-theme-apply-colors
   ;;   "#2A1F1B" "#887f73" "#768d82" "#d99481" "#bb4e62"
   ;;   "#db6b7e" "#8e6a60" "#adb78d" "#849f98" "#d4576f")
 
   ;; ;; "planet" palette
   ;; ;; reference | https://github.com/cmack/emacs-planet-theme/
-  ;; (my-elemental-theme-apply-colors 'dark
+  ;; (my-elemental-theme-apply-colors
   ;;   "#192129" "#79828c" "#e9b96e" "#ff8683" "#fe5450"
   ;;   "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
 
   ;; ;; "kagamine len" inspired palette
   ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
   ;; ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
-  ;; (my-elemental-theme-apply-colors 'light
+  ;; (my-elemental-theme-apply-colors
   ;;   "#fffdf9" "#7e7765" "#db8d2e" "#f77e96" "#f47166"
   ;;   "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
 
   ;; ;; "reykjavik" palette
   ;; ;; reference | https://github.com/mswift42/reykjavik-theme/
-  ;; (my-elemental-theme-apply-colors 'dark
+  ;; (my-elemental-theme-apply-colors
   ;;   "#112328" "#798284" "#c1d2b1" "#e86310" "#e81050"
   ;;   "#c4cbee" "#a3d6cc" "#f1c1bd" "#e6c2db" "#a3d4e8")
 
   ;; ;; chillized ("monochrome" inspired palette)
   ;; ;; reference | https://github.com/fxn/monochrome-theme.el/
-  ;; (my-elemental-theme-apply-colors 'dark
+  ;; (my-elemental-theme-apply-colors
   ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#9b744c" "#aa6b6b"
   ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
 
   ;; ;; sakura ("monochrome" inspired palette 2)
-  ;; (my-elemental-theme-apply-colors 'dark
+  ;; (my-elemental-theme-apply-colors
   ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#B0D391" "#FB9A85"
   ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
 
   ;; ;; green ("monochrome" inspired palette 3)
-  ;; (my-elemental-theme-apply-colors 'dark
+  ;; (my-elemental-theme-apply-colors
   ;;   "#000000" "#007100" "#00c000" "#00b000" "#00ca00"
   ;;   "#00b000" "#00b000" "#00ca00" "#00df00" "#00c000")
 
-  ;; ;; less colorful "planet" theme based on "monochrome"
-  ;; (my-elemental-theme-apply-colors 'dark
-  ;;   "#192129" "#7d7d7d" "#e0b776" "#729fcf" "#ff8683"
-  ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#649d8a" "#9e9e9e")
+  ;; less colorful "planet" theme based on "monochrome"
+  (my-elemental-theme-apply-colors
+    "#192129" "#7d7d7d" "#e0b776" "#729fcf" "#ff8683"
+    "#c0c0c0" "#c0c0c0" "#c0c0c0" "#649d8a" "#9e9e9e")
+
+  ;; switch mode-line color while recording macros
+  (defadvice kmacro-start-macro (after my-recording-mode-line activate)
+    (set-face-attribute 'mode-line nil :inherit 'elemental-highlight-bg-2-face)
+    (add-hook 'post-command-hook 'my-recording-mode-line-end))
+  (defun my-recording-mode-line-end ()
+    (unless defining-kbd-macro
+      (set-face-attribute 'mode-line nil :inherit 'elemental-brighter-bg-face)
+      (remove-hook 'post-command-hook 'my-recording-mode-line-end)))
+
+  ;; extra mode-line faces
+  (set-face-attribute
+   'mode-line-dark-face nil
+   :inherit 'elemental-dark-fg-face)
+  (set-face-attribute
+   'mode-line-highlight-face nil
+   :inherit 'elemental-yellow-face
+   :weight  'bold)
+  (set-face-attribute
+   'mode-line-warning-face nil
+   :inherit '(elemental-yellow-face elemental-bright-bg-face))
+  (set-face-attribute
+   'mode-line-special-mode-face nil
+   :inherit 'elemental-cyan-face
+   :weight  'bold)
+  (set-face-attribute
+   'mode-line-git-branch-face nil
+   :weight 'bold)
+  (set-face-attribute
+   'mode-line-modified-face nil
+   :inherit '(elemental-red-face elemental-bright-bg-face))
+  (set-face-attribute
+   'mode-line-read-only-face nil
+   :inherit '(elemental-blue-face elemental-bright-bg-face))
+  (set-face-attribute
+   'mode-line-narrowed-face nil
+   :inherit '(elemental-cyan-face elemental-bright-bg-face))
+  (set-face-attribute
+   'mode-line-mc-face nil
+   :inherit '(elemental-bright-fg-face elemental-bright-bg-face))
+  (set-face-attribute
+   'mode-line-palette-face nil
+   :inherit 'elemental-cyan-face
+   :weight  'bold)
+
+  (setup-after "highlight-parentheses"
+    (hl-paren-set 'hl-paren-colors nil)
+    (hl-paren-set 'hl-paren-background-colors
+                  (list (face-background 'elemental-highlight-bg-1-face)))
+    ;; re-apply colors when the palette is changed
+    (setup-hook 'my-elemental-theme-change-palette-hook
+      (hl-paren-set 'hl-paren-background-colors
+                    (list (face-background 'elemental-highlight-bg-1-face)))))
+
+  (setup-after "whitespace"
+    (set-face-attribute 'whitespace-space nil
+                        :inherit    'elemental-darker-fg-face
+                        :foreground 'unspecified
+                        :background 'unspecified)
+    (set-face-attribute 'whitespace-tab nil
+                        :inherit    'elemental-darker-fg-face
+                        :foreground 'unspecified
+                        :background 'unspecified))
+
+  (setup-after "cperl-mode"
+    (set-face-attribute 'cperl-hash-key-face nil :inherit 'elemental-bright-fg-face))
   )
-
-;; switch mode-line color while recording macros
-(defadvice kmacro-start-macro (after my-recording-mode-line activate)
-  (set-face-attribute 'mode-line nil :inherit 'elemental-highlight-bg-2-face)
-  (add-hook 'post-command-hook 'my-recording-mode-line-end))
-(defun my-recording-mode-line-end ()
-  (unless defining-kbd-macro
-    (set-face-attribute 'mode-line nil :inherit 'elemental-brighter-bg-face)
-    (remove-hook 'post-command-hook 'my-recording-mode-line-end)))
-
-(set-face-attribute
- 'mode-line-dark-face nil
- :inherit 'elemental-dark-fg-face)
-(set-face-attribute
- 'mode-line-highlight-face nil
- :inherit 'elemental-yellow-face
- :weight  'bold)
-(set-face-attribute
- 'mode-line-warning-face nil
- :inherit '(elemental-yellow-face elemental-bright-bg-face))
-(set-face-attribute
- 'mode-line-special-mode-face nil
- :inherit 'elemental-cyan-face
- :weight  'bold)
-(set-face-attribute
- 'mode-line-git-branch-face nil
- :weight 'bold)
-
-(set-face-attribute
- 'mode-line-modified-face nil
- :inherit '(elemental-red-face elemental-bright-bg-face))
-(set-face-attribute
- 'mode-line-read-only-face nil
- :inherit '(elemental-blue-face elemental-bright-bg-face))
-(set-face-attribute
- 'mode-line-narrowed-face nil
- :inherit '(elemental-cyan-face elemental-bright-bg-face))
-(set-face-attribute
- 'mode-line-mc-face nil
- :inherit '(elemental-bright-fg-face elemental-bright-bg-face))
-
-(set-face-attribute
- 'mode-line-palette-face nil
- :inherit 'elemental-cyan-face
- :weight  'bold)
-
-(setup-after "highlight-parentheses"
-  (hl-paren-set 'hl-paren-colors nil)
-  (hl-paren-set 'hl-paren-background-colors
-                (list (face-background 'elemental-highlight-bg-1-face))))
-
-(setup-after "whitespace"
-  (set-face-attribute 'whitespace-space nil
-                      :inherit    'elemental-darker-fg-face
-                      :foreground 'unspecified
-                      :background 'unspecified)
-  (set-face-attribute 'whitespace-tab nil
-                      :inherit    'elemental-darker-fg-face
-                      :foreground 'unspecified
-                      :background 'unspecified))
-
-(setup-after "cperl-mode"
-  (set-face-attribute 'cperl-hash-key-face nil :inherit 'elemental-bright-fg-face))
 
 ;;   + Misc: built-ins
 
