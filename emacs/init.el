@@ -5347,7 +5347,7 @@ displayed, use substring of the buffer."
       (set-face-foreground 'elemental-cyan-face string-cyan)
       (run-hooks 'my-elemental-theme-change-palette-hook))))
 
-(setup-after "elemental-theme"
+(setup-expecting "elemental-theme"
 
   ;; ;; the solarized-dark theme
   ;; (my-elemental-theme-apply-colors
