@@ -269,6 +269,9 @@ setopt hist_reduce_blanks      # remove unuseful spaces
 # grep: colorize, and exclude CSV directories
 alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn}'
 
+# ls: colorize
+alias ls=ls -G
+
 # diff: if colordiff is available, prefer it
 if which colordiff > /dev/null; then
     function diff () { colordiff -u $* | less -R }
