@@ -1,0 +1,50 @@
+#!/usr/bin/fontforge -script
+
+Open("sawarabi-gothic-medium.ttf")
+SelectWorthOutputting()
+
+# adjust parameters to SourceCodePro
+Print("Sawarabi: Adjusting...")
+ScaleToEm(750, 250)
+SetOS2Value("WinAscent", 984)
+SetOS2Value("WinDescent", 273)
+SetOS2Value("HHeadAscent", 984)
+SetOS2Value("HHeadDescent", -273)
+SetOS2Value("HHeadLineGap", 0)
+SetOS2Value("TypoAscent", 750)
+SetOS2Value("TypoDescent", -250)
+SetOS2Value("TypoLineGap", 0)
+
+# lighten
+Print("Sawarabi: Lightening...")
+ExpandStroke(7, 0, 0, 0, 2)
+
+# generate temp file
+Print("Sawarabi: Generating temp file...")
+Generate("SawarabiGothicPhi-Regular_tmp.ttf")
+
+Close()
+
+# -------------------------------------------
+
+Open("SawarabiGothicPhi-Regular_tmp.ttf")
+SelectWorthOutputting()
+
+# widen 120%
+Print("Sawarabi: Widening...")
+SetWidth(120, 2)
+CenterInWidth()
+
+# move some glyphs left
+SelectSingletons(0u3001, 0u3002, 0uff0c, 0uff0e); # 、。，．
+Move(-10, 0);
+
+# set fontnames
+SetFontNames("SawarabiGothic_phi", "SawarabiGothic phi", "SawarabiGothic phi")
+SetUniqueID(0)
+
+# generate font file
+Print("Sawarabi: Generating...")
+Generate("SawarabiGothicPhi-Regular.ttf")
+
+Close()
