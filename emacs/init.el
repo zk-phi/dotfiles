@@ -5487,7 +5487,10 @@ displayed, use substring of the buffer."
                         :background 'unspecified))
 
   (setup-after "cperl-mode"
-    (set-face-attribute 'cperl-hash-key-face nil :inherit 'elemental-bright-fg-face))
+    (set-face-attribute 'cperl-hash-key-face nil
+                        :inherit    'elemental-bright-fg-face
+                        :foreground 'unspecified
+                        :background 'unspecified))
   )
 
 ;;   + Misc: built-ins
