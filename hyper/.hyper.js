@@ -17,8 +17,11 @@ const CSS = `
 nav {
   background-color: ${NAV};
 }
+.tab_tab {
+  border none;
+  border-left: 1px solid ${BLACK} !important;
+}
 .tab_active {
-  border: none;
   border-bottom: 1px solid ${BLUE} !important;
   transition: border 200ms;
 }
