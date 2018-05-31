@@ -748,9 +748,7 @@ cons of two integers which defines a range of the codepoints."
 (setup-lazy
   '(phi-grep-in-directory
     phi-grep-in-file
-    phi-grep-find-file-flat) "phi-grep"
-    (setup-after "indent-guide"
-      (add-to-list 'indent-guide-inhibit-modes 'phi-grep-mode)))
+    phi-grep-find-file-flat) "phi-grep")
 
 ;;   + | edit
 
@@ -5234,7 +5232,7 @@ displayed, use substring of the buffer."
         "h"            'backward-char
         "l"            'forward-char)))
   (defvar my-kindly-unsupported-minor-modes
-    '(indent-guide-mode phi-autopair-mode)
+    '(phi-autopair-mode)
     "list of minor-modes that must be turned-off temporarily.")
   (defvar my-kindly-unsupported-global-variables
     '(global-hl-line-mode show-paren-mode
@@ -5477,6 +5475,14 @@ displayed, use substring of the buffer."
    :inherit 'elemental-cyan-face
    :weight  'bold)
 
+  (setup-after "highlight-indent-guides"
+    (set-face-attribute 'highlight-indent-guides-character-face nil
+                        :foreground 'unspecified
+                        :inherit 'elemental-hidden-fg-face)
+    (set-face-attribute 'highlight-indent-guides-top-character-face nil
+                        :foreground 'unspecified
+                        :inherit 'elemental-darker-fg-face))
+
   (setup-after "highlight-parentheses"
     (hl-paren-set 'hl-paren-colors nil)
     (hl-paren-set 'hl-paren-background-colors
@@ -5534,8 +5540,14 @@ displayed, use substring of the buffer."
 ;;   + Misc: plug-ins
 
 (!-
- (setup "indent-guide"
-   (indent-guide-global-mode)))
+ (setup "highlight-indent-guides"
+   (setq highlight-indent-guides-method       'character
+         highlight-indent-guides-character    ?|
+         highlight-indent-guides-responsive   'top
+         highlight-indent-guides-delay        0
+         highlight-indent-guides-auto-enabled nil)
+   (setup-hook 'prog-mode-hook
+     (highlight-indent-guides-mode 1))))
 
 (!-
  (setup "highlight-parentheses"
