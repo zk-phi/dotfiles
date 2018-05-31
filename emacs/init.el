@@ -484,24 +484,28 @@ cons of two integers which defines a range of the codepoints."
     (dolist (target targets)
       (set-fontset-font t target font-spec nil add))))
 
-;; font settings
+;; font settings (mac)
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
-(!when (cl-every (lambda (f) (member f (font-family-list)))
-                 '("Source Code Pro" "Unifont" ;; "Arial Unicode MS"
-                   "Symbola" "VLゴシック phi" "さわらびゴシック phi"))
-  (set-face-attribute 'default nil :family "Source Code Pro" :height 90) ; base
-  ;; (set-face-attribute 'default nil :family "Source Code Pro" :height 75) ; base
-  (my-set-fontset-font "Unifont" 'unicode) ; unicode fallback 2
-  (my-set-fontset-font "Arial Unicode MS" 'unicode nil 'prepend) ; unicode fallback
-  (my-set-fontset-font "Symbola" 'unicode nil 'prepend) ; unicode symbols
-  (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend) ; unicode
-  (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend) ; japanese
-  )
-
-;; font settings (Mac)
 (!when (eq system-type 'darwin)
-  (set-face-attribute 'default nil :family "Monaco") ; base
-  (my-set-fontset-font "Apple Color Emoji" 'unicode 0.8 'prepend))
+  (!cond
+   (t
+    (set-face-attribute 'default nil :family "Monaco" :height 130) ; base
+    (my-set-fontset-font "SawarabiGothic phi" 'unicode nil)
+    (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95 'prepend))))
+
+;; font settings (windows)
+(!when (eq system-type 'windows-nt)
+  (!cond
+   ((cl-every (lambda (f) (member f (font-family-list)))
+              '("Source Code Pro" "Unifont" ;; "Arial Unicode MS"
+                "Symbola" "VLゴシック phi" "さわらびゴシック phi"))
+    (set-face-attribute 'default nil :family "Source Code Pro" :height 90) ; base
+    ;; (set-face-attribute 'default nil :family "Source Code Pro" :height 75) ; base
+    (my-set-fontset-font "Unifont" 'unicode) ; unicode fallback 2
+    (my-set-fontset-font "Arial Unicode MS" 'unicode nil 'prepend) ; unicode fallback
+    (my-set-fontset-font "Symbola" 'unicode nil 'prepend) ; unicode symbols
+    (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend) ; unicode
+    (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend)))) ; japanese
 
 ;; settings for the byte-compiler
 (eval-when-compile
