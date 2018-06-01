@@ -36,15 +36,14 @@ SetWidth(120, 2)
 CenterInWidth()
 
 # move some glyphs left
+Print("Sawarabi: Positioning puncts...")
 SelectSingletons(0u3001, 0u3002, 0uff0c, 0uff0e); # 、。，．
 Move(-10, 0);
 
-# set fontnames
-SetFontNames("SawarabiGothic_phi", "SawarabiGothic phi", "SawarabiGothic phi")
-SetUniqueID(0)
-
 # generate font file
 Print("Sawarabi: Generating...")
+SetFontNames("SawarabiGothic_phi", "SawarabiGothic phi", "SawarabiGothic phi")
+SetUniqueID(0)
 Generate("SawarabiGothicPhi-Regular.ttf")
 
 Close()
