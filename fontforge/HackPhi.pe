@@ -1,0 +1,19 @@
+#!/usr/bin/fontforge -script
+
+Open("Hack-Regular.ttf")
+
+# round parens
+Print("Hack: Tweaking parens...")
+SelectSingletons(0u0028, 0u0029); # ( )
+Scale(125, 100, 0, 0)
+SetWidth(80, 2)
+ExpandStroke(9, 0, 0, 0, 2)
+CenterInWidth()
+
+# generate font file
+Print("Hack: Generating...")
+SetFontNames("Hack_phi", "Hack phi", "Hack phi")
+SetUniqueID(0)
+Generate("HackPhi-Regular.ttf")
+
+Close()
