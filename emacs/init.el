@@ -489,12 +489,16 @@ cons of two integers which defines a range of the codepoints."
 (!when (eq system-type 'darwin)
   (!cond
    ((member "Hack phi" (font-family-list))
-    (set-face-attribute 'default nil :family "Hack phi" :height 150))
+    (set-face-attribute 'default nil :family "Hack phi")
+    (setq-default line-spacing 0.1))
    ((member "Hack" (font-family-list))
-    (set-face-attribute 'default nil :family "Hack" :height 150))
+    (set-face-attribute 'default nil :family "Hack")
+    (setq-default line-spacing 0.1))
    (t
-    (set-face-attribute 'default nil :family "Monaco" :height 130)))
-  (my-set-fontset-font "SawarabiGothic phi" 'unicode nil)
+    (set-face-attribute 'default nil :family "Monaco")
+    (setq-default line-spacing 0)))
+  (when (member "SawarabiGothic phi" (font-family-list))
+    (my-set-fontset-font "SawarabiGothic phi" 'unicode nil))
   (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95 'prepend))
 
 ;; font settings (windows)
