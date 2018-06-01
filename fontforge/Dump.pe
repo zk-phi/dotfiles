@@ -1,0 +1,11 @@
+#!/usr/bin/fontforge -script
+
+Open($1)
+Print(GetOS2Value("WinAscent"))
+Print(GetOS2Value("WinDescent"))
+Print(GetOS2Value("HHeadAscent"))
+Print(GetOS2Value("HHeadDescent"))
+Print(GetOS2Value("HHeadLineGap"))
+Print(GetOS2Value("TypoAscent"))
+Print(GetOS2Value("TypoDescent"))
+Print(GetOS2Value("TypoLineGap"))
