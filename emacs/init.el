@@ -488,10 +488,14 @@ cons of two integers which defines a range of the codepoints."
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
 (!when (eq system-type 'darwin)
   (!cond
+   ((member "Hack phi" (font-family-list))
+    (set-face-attribute 'default nil :family "Hack phi" :height 150))
+   ((member "Hack" (font-family-list))
+    (set-face-attribute 'default nil :family "Hack" :height 150))
    (t
-    (set-face-attribute 'default nil :family "Monaco" :height 130) ; base
-    (my-set-fontset-font "SawarabiGothic phi" 'unicode nil)
-    (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95 'prepend))))
+    (set-face-attribute 'default nil :family "Monaco" :height 130)))
+  (my-set-fontset-font "SawarabiGothic phi" 'unicode nil)
+  (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95 'prepend))
 
 ;; font settings (windows)
 (!when (eq system-type 'windows-nt)
@@ -500,7 +504,6 @@ cons of two integers which defines a range of the codepoints."
               '("Source Code Pro" "Unifont" ;; "Arial Unicode MS"
                 "Symbola" "VLゴシック phi" "さわらびゴシック phi"))
     (set-face-attribute 'default nil :family "Source Code Pro" :height 90) ; base
-    ;; (set-face-attribute 'default nil :family "Source Code Pro" :height 75) ; base
     (my-set-fontset-font "Unifont" 'unicode) ; unicode fallback 2
     (my-set-fontset-font "Arial Unicode MS" 'unicode nil 'prepend) ; unicode fallback
     (my-set-fontset-font "Symbola" 'unicode nil 'prepend) ; unicode symbols
