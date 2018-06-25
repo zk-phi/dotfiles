@@ -2255,7 +2255,8 @@ emacs-lisp-mode."
 ;; completion via `git grep'
 (setup-lazy '(git-complete) "git-complete"
   :prepare (setup-in-idle "git-complete")
-  (setq git-complete-limit-extension t)
+  (setq git-complete-limit-extension   t
+        git-complete-repeat-completion t)
   (push '(web-mode "jsx" "js"
                    "scss" "css"
                    "html" "html.ep")
