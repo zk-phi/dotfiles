@@ -83,6 +83,12 @@ SelectSingletons(0u0031) # "1"
 Move(one_kerning_offset, 0)
 SetWidth(halfwidth)
 
+# ---- Hinting
+
+Print("JISZ8903: Hinting ...")
+SelectHintingNeeded()
+AutoHint()
+
 # ---- Font Generation
 
 Print("JISZ8903: Generating ...")
