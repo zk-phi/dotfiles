@@ -1,5 +1,22 @@
 #!/usr/bin/fontforge -script
 
+# ---- configurations
+
+weight           = 10
+ascii_rescale    = 95
+capital_rescale  = 80
+mw_extra_rescale = 80
+halfwidth        = 650
+fullwidth        = 1300
+
+ja_punct_kerning_offset = -400
+l_kerning_offset        = 30
+r_kerning_offset        = 35
+j_kerning_offset        = -50
+one_kerning_offset      = 25
+
+# ---- Reencode
+
 Open("JISZ8903-Medium.otf")
 Reencode("unicode")
 
@@ -15,29 +32,29 @@ Print("JISZ8903: Rescaling some glyphs ...")
 
 # make numbers and capital letters smaller
 Select(0u0030, 0u0039, 0u0041, 0u005A) # 0-9, A-Z
-Scale(80, 100, 0, 0)
+Scale(capital_rescale, 100, 0, 0)
 
 # make other ascii slightly smaller
 Select(0u0020, 0u007E)          # ASCII
 SelectFewer(0u0030, 0u0039, 0u0041, 0u005A)
-Scale(95, 100, 0, 0)
+Scale(ascii_rescale, 100, 0, 0)
 
 # make wide characters more smaller
 SelectSingletons(0u004D, 0u0057, 0u006D, 0u0077) # M, W, m, w
-Scale(80, 100, 0, 0)
+Scale(mw_extra_rescale, 100, 0, 0)
 
 # ---- Monospacify
 
 Print("JISZ8903: Monospacifying ...")
 
-# monospacify (halfwidth: 650)
+# monospacify
 Select(0u0020, 0u007E)          # ASCII
-SetWidth(650)
+SetWidth(halfwidth)
 
-# monospacify (halfwidth: 1300)
+# monospacify
 SelectWorthOutputting()
 SelectFewer(0u0020, 0u007E)
-SetWidth(1300)
+SetWidth(fullwidth)
 
 # ---- Positioning
 
@@ -47,25 +64,25 @@ Print("JISZ8903: Positioning glyphs ...")
 SelectWorthOutputting()
 CenterInWidth()
 
-SelectSingletons(0u3001, 0u3002, 0uff0c, 0uff0e) # "、。，．"
-Move(-400, 0)
-SetWidth(1300)
+SelectSingletons(0u3001, 0u3002) # "、。"
+Move(ja_punct_kerning_offset, 0)
+SetWidth(fullwidth)
 
 SelectSingletons(0u006c) # "l"
-Move(30, 0)
-SetWidth(650)
+Move(l_kerning_offset, 0)
+SetWidth(halfwidth)
 
 SelectSingletons(0u0072) # "r"
-Move(35, 0)
-SetWidth(650)
+Move(r_kerning_offset, 0)
+SetWidth(halfwidth)
 
 SelectSingletons(0u006A) # "j"
-Move(-60, 0)
-SetWidth(650)
+Move(j_kerning_offset, 0)
+SetWidth(halfwidth)
 
 SelectSingletons(0u0031) # "1"
-Move(-30, 0)
-SetWidth(650)
+Move(one_kerning_offset, 0)
+SetWidth(halfwidth)
 
 # ---- Font Generation
 
