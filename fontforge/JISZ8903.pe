@@ -13,7 +13,7 @@ ja_punct_kerning_offset = -400
 l_kerning_offset        = 30
 r_kerning_offset        = 35
 j_kerning_offset        = -50
-one_kerning_offset      = 25
+one_kerning_offset      = -25
 
 # ---- Reencode
 
