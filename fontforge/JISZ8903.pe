@@ -6,11 +6,11 @@ weight           = 10
 ascii_rescale    = 95
 capital_rescale  = 80
 mw_extra_rescale = 80
-halfwidth        = 650
-fullwidth        = 1300
+halfwidth        = 625
+fullwidth        = 1250
 
 ja_punct_kerning_offset = -400
-l_kerning_offset        = 30
+l_kerning_offset        = 25
 r_kerning_offset        = 35
 j_kerning_offset        = -50
 one_kerning_offset      = -25
