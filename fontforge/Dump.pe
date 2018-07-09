@@ -9,3 +9,9 @@ Print(GetOS2Value("HHeadLineGap"))
 Print(GetOS2Value("TypoAscent"))
 Print(GetOS2Value("TypoDescent"))
 Print(GetOS2Value("TypoLineGap"))
+
+SelectSingletons(0u0057) # W
+Print(GlyphInfo('Width'))
+
+SelectSingletons(0u3042) # あ
+Print(GlyphInfo('Width'))
