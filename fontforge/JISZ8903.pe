@@ -3,7 +3,6 @@
 # ---- Configurations
 
 weight                = 10
-ascii_rescale         = 95
 capital_extra_rescale = 80
 mw_extra_rescale      = 80
 halfwidth             = 625
@@ -23,10 +22,6 @@ Reencode("unicode")
 # ---- Rescaling
 
 Print("JISZ8903: Rescaling some glyphs ...")
-
-# make other ascii slightly smaller
-Select(0u0020, 0u007E)          # ASCII
-Scale(ascii_rescale, 100, 0, 0)
 
 # make numbers and capital letters more smaller
 Select(0u0030, 0u0039, 0u0041, 0u005A) # 0-9, A-Z
