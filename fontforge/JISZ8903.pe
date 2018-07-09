@@ -1,7 +1,8 @@
 #!/usr/bin/fontforge -script
 
-# ---- configurations
+# ---- Configurations
 
+weight                = 10
 ascii_rescale         = 95
 capital_extra_rescale = 80
 mw_extra_rescale      = 80
@@ -34,6 +35,12 @@ Scale(capital_extra_rescale, 100, 0, 0)
 # make wide characters more smaller
 SelectSingletons(0u004D, 0u0057, 0u006D, 0u0077) # M, W, m, w
 Scale(mw_extra_rescale, 100, 0, 0)
+
+# ---- Weight
+
+Print("JISZ8903: Tweaking weight ...")
+SelectWorthOutputting()
+ExpandStroke(weight, 0, 0, 0, 1)
 
 # ---- Monospacify
 
