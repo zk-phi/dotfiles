@@ -2,7 +2,6 @@
 
 # ---- configurations
 
-weight           = 10
 ascii_rescale    = 95
 capital_rescale  = 80
 mw_extra_rescale = 80
@@ -19,12 +18,6 @@ one_kerning_offset      = -25
 
 Open("JISZ8903-Medium.otf")
 Reencode("unicode")
-
-# ---- Weight
-
-Print("JISZ8903: Tweaking weight ...")
-SelectWorthOutputting()
-ExpandStroke(weight, 0, 0, 0, 1)
 
 # ---- Rescaling
 
