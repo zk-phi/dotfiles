@@ -86,8 +86,51 @@ AutoHint()
 
 # ---- Font Generation
 
-Print("JISZ8903: Generating ...")
+Print("JISZ8903: Generating temporary font ...")
+Generate("JISZ8903-tmp.ttf")
+
+Close()
+
+# ---- Adjust RoundedM+1m to match with JISZ8903
+
+Open("RoundedMPlus-1m-Regular.ttf")
+
+Print("RoundedM+: Adjusting parameters ...")
 SelectWorthOutputting()
+ScaleToEm(800, 200)
+SetOS2Value("WinAscent", 1080)
+SetOS2Value("WinDescent", 120)
+SetOS2Value("HHeadAscent", 958)
+SetOS2Value("HHeadDescent", -203)
+SetOS2Value("HHeadLineGap", 90)
+SetOS2Value("TypoAscent", 800)
+SetOS2Value("TypoDescent", -200)
+SetOS2Value("TypoLineGap", 90)
+
+Print("RoundedM+: Adjusting weight ...")
+ExpandStroke(weight, 0, 0, 0, 1)
+
+Print("RoundedM+: Adjusting width ...")
+SetWidth(fullwidth)
+CenterInWidth()
+
+Print("RoundedM+: Hinting ...")
+SelectHintingNeeded()
+AutoHint()
+
+Print("JISZ8903: Generating temporary font ...")
+Generate("RoundedMPlus-1m-tmp.ttf")
+
+Close()
+
+# ---- Merge Fonts
+
+Open("JISZ8903-tmp.ttf")
+
+Print("JISZ8903-phi: Merging ...")
+MergeFonts("RoundedMPlus-1m-tmp.ttf")
+
+Print("JISZ8903-phi: Generating the font ...")
 SetFontNames("JISZ8903_phi", "JISZ8903 phi", "JISZ8903 phi")
 SetUniqueID(0)
 Generate("JISZ8903phi-Medium.ttf")
