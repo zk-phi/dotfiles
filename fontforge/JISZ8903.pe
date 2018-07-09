@@ -3,6 +3,12 @@
 Open("JISZ8903-Medium.otf")
 Reencode("unicode")
 
+# ---- Weight
+
+Print("JISZ8903: Tweaking weight ...")
+SelectWorthOutputting()
+ExpandStroke(weight, 0, 0, 0, 1)
+
 # ---- Rescaling
 
 Print("JISZ8903: Rescaling some glyphs ...")
@@ -60,12 +66,6 @@ SetWidth(650)
 SelectSingletons(0u0031) # "1"
 Move(-30, 0)
 SetWidth(650)
-
-# ---- Weight
-
-Print("JISZ8903: Tweaking weight ...")
-SelectWorthOutputting()
-ExpandStroke(15, 0, 0, 0, 1)
 
 # ---- Font Generation
 
