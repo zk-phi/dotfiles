@@ -2,6 +2,7 @@
 
 # ---- Configurations
 
+weight                = 10
 capital_extra_rescale = 80
 mw_extra_rescale      = 80
 halfwidth             = 625
@@ -32,6 +33,12 @@ Scale(capital_extra_rescale, 100, 0, 0)
 # make wide characters more smaller
 SelectSingletons(0u004D, 0u0057, 0u006D, 0u0077) # M, W, m, w
 Scale(mw_extra_rescale, 100, 0, 0)
+
+# ---- Weight
+
+Print("JISZ8903: Tweaking weight ...")
+SelectWorthOutputting()
+ExpandStroke(weight, 0, 0, 0, 1)
 
 # ---- Monospacify
 
@@ -106,6 +113,9 @@ SetOS2Value("TypoLineGap", 90)
 Print("RoundedM+: Adjusting sacle and baseline ...")
 Scale(roundedmp_rescale_ratio)
 Move(0, roundedmp_baseline_offset)
+
+Print("RoundedM+: Adjusting weight ...")
+ExpandStroke(weight, 0, 0, 0, 1)
 
 Print("RoundedM+: Adjusting width ...")
 SetWidth(fullwidth)
