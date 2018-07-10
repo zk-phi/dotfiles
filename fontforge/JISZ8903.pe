@@ -13,8 +13,8 @@ r_kerning_offset        = 35
 j_kerning_offset        = -50
 one_kerning_offset      = -25
 
-roundedmp_rescale_ratio   = 104
-roundedmp_baseline_offset = 19
+roundedmp_rescale_ratio   = 102
+roundedmp_baseline_offset = 20
 
 # ---- Reencode
 
