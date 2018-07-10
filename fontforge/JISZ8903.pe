@@ -2,11 +2,11 @@
 
 # ---- Configurations
 
-# weight                = 10
-capital_extra_rescale = 80
-mw_extra_rescale      = 80
-halfwidth             = 625
-fullwidth             = 1250
+# weight           = 10
+capital_rescale  = 80
+mw_extra_rescale = 80
+halfwidth        = 625
+fullwidth        = 1250
 
 ja_punct_kerning_offset = -400
 l_kerning_offset        = 25
@@ -26,9 +26,9 @@ Reencode("unicode")
 
 Print("JISZ8903: Rescaling some glyphs ...")
 
-# make numbers and capital letters more smaller
+# make numbers and capital letters smaller
 Select(0u0030, 0u0039, 0u0041, 0u005A) # 0-9, A-Z
-Scale(capital_extra_rescale, 100, 0, 0)
+Scale(capital_rescale, 100, 0, 0)
 
 # make wide characters more smaller
 SelectSingletons(0u004D, 0u0057, 0u006D, 0u0077) # M, W, m, w
