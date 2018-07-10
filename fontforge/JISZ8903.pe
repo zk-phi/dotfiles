@@ -1,12 +1,10 @@
 #!/usr/bin/fontforge -script
 
-# TODO: Rescale #, @, &, %
-
 # ---- Configurations
 
 # weight           = 10
-capital_rescale  = 80
-mw_extra_rescale = 80
+capital_rescale  = 90
+mw_extra_rescale = 85
 halfwidth        = 625
 fullwidth        = 1250
 
