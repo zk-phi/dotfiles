@@ -13,6 +13,9 @@ r_kerning_offset        = 35
 j_kerning_offset        = -50
 one_kerning_offset      = -25
 
+roundedmp_rescale_ratio   = 104
+roundedmp_baseline_offset = 19
+
 # ---- Reencode
 
 Open("JISZ8903-Medium.otf")
@@ -99,6 +102,10 @@ SetOS2Value("HHeadLineGap", 90)
 SetOS2Value("TypoAscent", 800)
 SetOS2Value("TypoDescent", -200)
 SetOS2Value("TypoLineGap", 90)
+
+Print("RoundedM+: Adjusting sacle and baseline ...")
+Scale(roundedmp_rescale_ratio)
+Move(0, roundedmp_baseline_offset)
 
 Print("RoundedM+: Adjusting width ...")
 SetWidth(fullwidth)
