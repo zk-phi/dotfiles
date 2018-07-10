@@ -5,6 +5,9 @@
 # weight           = 10
 capital_rescale  = 90
 mw_extra_rescale = 85
+amp_rescale      = 85
+at_rescale       = 70
+perc_rescale     = 80
 halfwidth        = 625
 fullwidth        = 1250
 
@@ -26,14 +29,21 @@ Reencode("unicode")
 
 Print("JISZ8903: Rescaling some glyphs ...")
 
-# make numbers and capital letters smaller
 Select(0u0030, 0u0039, 0u0041, 0u005A) # 0-9, A-Z
 SelectFewer(0u0049)                    # I
 Scale(capital_rescale, 100, 0, 0)
 
-# make wide characters more smaller
 SelectSingletons(0u004D, 0u0057, 0u006D, 0u0077) # M, W, m, w
 Scale(mw_extra_rescale, 100, 0, 0)
+
+SelectSingletons(0u0025) # %
+Scale(perc_rescale, 100, 0, 0)
+
+SelectSingletons(0u0026) # &
+Scale(amp_rescale, 100, 0, 0)
+
+SelectSingletons(0u0040) # @
+Scale(at_rescale, 100, 0, 0)
 
 # # ---- Weight
 #
