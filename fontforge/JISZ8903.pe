@@ -1,5 +1,7 @@
 #!/usr/bin/fontforge -script
 
+# TODO: Rescale #, @, &, %
+
 # ---- Configurations
 
 # weight           = 10
