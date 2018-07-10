@@ -487,18 +487,24 @@ cons of two integers which defines a range of the codepoints."
 ;; font settings (mac)
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
 (!when (eq system-type 'darwin)
+  ;; ascii
   (!cond
+   ((member "JISZ8903 phi" (font-family-list))
+    (set-face-attribute 'default nil :family "JISZ8903 phi" :height 130)
+    (setq-default line-spacing 0.1))
    ((member "Hack phi" (font-family-list))
     (set-face-attribute 'default nil :family "Hack phi" :height 140)
-    (setq-default line-spacing 0.1))
-   ((member "Hack" (font-family-list))
-    (set-face-attribute 'default nil :family "Hack" :height 140)
     (setq-default line-spacing 0.1))
    (t
     (set-face-attribute 'default nil :family "Monaco" :height 130)
     (setq-default line-spacing 0)))
-  (when (member "SawarabiGothic phi" (font-family-list))
-    (my-set-fontset-font "SawarabiGothic phi" 'unicode nil))
+  ;; unicode (fallback)
+  (!cond
+   ((member "JISZ8903 phi" (font-family-list))
+    (my-set-fontset-font "JISZ8903 phi" 'unicode nil))
+   ((member "SawarabiGothic phi" (font-family-list))
+    (my-set-fontset-font "SawarabiGothic phi" 'unicode nil)))
+  ;; unicode (emoji)
   (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95 'prepend))
 
 ;; font settings (windows)
@@ -508,11 +514,11 @@ cons of two integers which defines a range of the codepoints."
               '("Source Code Pro" "Unifont" ;; "Arial Unicode MS"
                 "Symbola" "VLゴシック phi" "さわらびゴシック phi"))
     (set-face-attribute 'default nil :family "Source Code Pro" :height 90) ; base
-    (my-set-fontset-font "Unifont" 'unicode) ; unicode fallback 2
-    (my-set-fontset-font "Arial Unicode MS" 'unicode nil 'prepend) ; unicode fallback
-    (my-set-fontset-font "Symbola" 'unicode nil 'prepend) ; unicode symbols
-    (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend) ; unicode
-    (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend)))) ; japanese
+    (my-set-fontset-font "Unifont" 'unicode) ; unicode (fallback 4)
+    (my-set-fontset-font "Arial Unicode MS" 'unicode nil 'prepend) ; unicode (fallback 3)
+    (my-set-fontset-font "Symbola" 'unicode nil 'prepend) ; unicode (fallback 2)
+    (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend) ; unicode (fallback)
+    (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend)))) ; unicode (japanese)
 
 ;; settings for the byte-compiler
 (eval-when-compile
