@@ -489,8 +489,8 @@ cons of two integers which defines a range of the codepoints."
 (!when (eq system-type 'darwin)
   ;; ascii
   (!cond
-   ((member "JISZ8903 phi" (font-family-list))
-    (set-face-attribute 'default nil :family "JISZ8903 phi" :height 130)
+   ((member "code8903" (font-family-list))
+    (set-face-attribute 'default nil :family "code8903" :height 130)
     (setq-default line-spacing 0.1))
    ((member "Hack phi" (font-family-list))
     (set-face-attribute 'default nil :family "Hack phi" :height 140)
