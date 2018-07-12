@@ -500,8 +500,8 @@ cons of two integers which defines a range of the codepoints."
     (setq-default line-spacing 0)))
   ;; unicode (fallback)
   (!cond
-   ((member "JISZ8903 phi" (font-family-list))
-    (my-set-fontset-font "JISZ8903 phi" 'unicode nil))
+   ((member "code8903" (font-family-list))
+    (my-set-fontset-font "code8903" 'unicode nil))
    ((member "SawarabiGothic phi" (font-family-list))
     (my-set-fontset-font "SawarabiGothic phi" 'unicode nil)))
   ;; unicode (emoji)
