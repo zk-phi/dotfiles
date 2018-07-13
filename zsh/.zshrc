@@ -377,6 +377,7 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias -g C='| cut -d " " -f'
     abbrev-alias -g S='| tr -s " "'
     abbrev-alias -f B="git symbolic-ref --short HEAD 2>/dev/null"
+    abbrev-alias -f M="git merge-base HEAD master"
 else
     echo "[.zshrc] abbrev-alias is not unavailable."
 fi
