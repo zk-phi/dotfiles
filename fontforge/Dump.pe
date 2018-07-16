@@ -1,17 +1,28 @@
 #!/usr/bin/fontforge -script
 
 Open($1)
-Print(GetOS2Value("WinAscent"))
-Print(GetOS2Value("WinDescent"))
-Print(GetOS2Value("HHeadAscent"))
-Print(GetOS2Value("HHeadDescent"))
-Print(GetOS2Value("HHeadLineGap"))
-Print(GetOS2Value("TypoAscent"))
-Print(GetOS2Value("TypoDescent"))
-Print(GetOS2Value("TypoLineGap"))
 
+Print("<< Font properties >>")
+Print("WinAscent:    ", GetOS2Value("WinAscent"))
+Print("WinDescent:   ", GetOS2Value("WinDescent"))
+Print("HHeadAscent:  ", GetOS2Value("HHeadAscent"))
+Print("HHeadDescent: ", GetOS2Value("HHeadDescent"))
+Print("HHeadLineGap: ", GetOS2Value("HHeadLineGap"))
+Print("TypoAscent:   ", GetOS2Value("TypoAscent"))
+Print("TypoDescent:  ", GetOS2Value("TypoDescent"))
+Print("TypoLineGap:  ", GetOS2Value("TypoLineGap"))
+
+Print("<< Char widths >>")
 SelectSingletons(0u0057) # W
-Print(GlyphInfo('Width'))
-
+Print("'W' width:  ", GlyphInfo('Width'))
 SelectSingletons(0u3042) # あ
-Print(GlyphInfo('Width'))
+Print("'あ' width: ", GlyphInfo('Width'))
+
+Print("<< GSUB subtables >>")
+lookups = GetLookups("GSUB")
+size    = SizeOf(lookups)
+i       = 0
+while (i < size)
+  Print(GetLookupSubtables(lookups[i]))
+  i++
+endloop
