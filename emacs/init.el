@@ -2088,7 +2088,7 @@ lines far from the cursor."
   "Toggle transparency."
   (interactive)
   (let* ((current-alpha (or (cdr (assoc 'alpha (frame-parameters))) 100))
-         (new-alpha (cl-case current-alpha ((100) 93) ((93) 91) ((91) 78) ((78) 66) (t 100))))
+         (new-alpha (cl-case current-alpha ((100) 93) ((93) 91) ((91) 78) ((78) 66) ((66) 43) (t 100))))
     (set-frame-parameter nil 'alpha new-alpha)))
 
 ;; URL encode / decode region
