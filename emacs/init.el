@@ -3744,7 +3744,7 @@ emacs-lisp-mode."
   (setq web-mode-script-padding                   nil
         web-mode-style-padding                    nil
         web-mode-markup-indent-offset             2
-        web-mode-css-indent-offset                4
+        web-mode-css-indent-offset                2
         web-mode-code-indent-offset               4
         web-mode-enable-control-block-indentation nil
         web-mode-enable-auto-quoting              nil)
