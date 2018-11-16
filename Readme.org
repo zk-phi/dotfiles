@@ -1,0 +1,33 @@
+* zk-phi's Dotfiles
+** zsh
+
+Symlink .zshrc and .zsh.d
+
+: cd ~
+: ln -s ~/dotfiles/zsh/.zshrc
+: ln -s ~/dotfiles/zsh/.zsh.d
+
+** hyper terminal
+
+Symlink .hyper.js
+
+: cd ~
+: ln -s ~/dotfiles/hyper/.hyper.js
+
+** git
+
+Symlink .gitconfig
+
+: cd ~
+: ln -s ~/dotfiles/git/.gitconfig
+
+** emacs
+
+Symlink init.el and snippets, site-lisp
+
+: cd ~/.emacs.d
+: ln -s ~/dotfiles/emacs/.emacs.d/init.el
+: ln -s ~/dotfiles/emacs/.emacs.d/snippets
+
+: cd /Applications/Emacs.app/Contents/Resources
+: ln -s ~/dotfiles/emacs/site-lisp
