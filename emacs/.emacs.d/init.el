@@ -5610,6 +5610,11 @@ displayed, use substring of the buffer."
 ;; - C-[ is ESC
 (keyboard-translate ?\C-h ?\C-?)
 
+;; Use command (super) key as meta on mac systems
+(!when (eq system-type 'darwin)
+  (setq ns-command-modifier   'meta
+        ns-alternate-modifier 'super))
+
 ;;   + mouse buttons
 
 ;; <mouse-1>, <wheel-up>, <wheel-down> are not disabled
