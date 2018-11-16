@@ -834,6 +834,7 @@ cons of two integers which defines a range of the codepoints."
 
 ;;   + | keyboards
 
+;; not key-chord in MELPA but my own fork of key-chord
 (!-
  (setup "key-chord"
    (key-chord-mode 1)
