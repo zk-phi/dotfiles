@@ -71,6 +71,7 @@ module.exports = {
     css: CSS,
 
     // shell process
+    shell: "zsh",
     shellArgs: ['--login'],
     env: {},
 
