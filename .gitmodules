@@ -1,0 +1,9 @@
+[submodule "zsh/.zsh.d/plugins/per-directory-history"]
+	path = zsh/.zsh.d/plugins/per-directory-history
+	url = https://github.com/zk-phi/per-directory-history.git
+[submodule "zsh/.zsh.d/plugins/zsh-autosuggestions"]
+	path = zsh/.zsh.d/plugins/zsh-autosuggestions
+	url = https://github.com/zsh-users/zsh-autosuggestions.git
+[submodule "zsh/.zsh.d/plugins/zsh-abbrev-alias"]
+	path = zsh/.zsh.d/plugins/zsh-abbrev-alias
+	url = https://github.com/momo-lab/zsh-abbrev-alias.git
