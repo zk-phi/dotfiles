@@ -765,9 +765,10 @@ cons of two integers which defines a range of the codepoints."
 
 ;;   + | edit
 
-(setup-include "phi-autopair"
-  (nconc phi-autopair-lispy-modes my-lispy-modes)
-  (phi-autopair-global-mode 1))
+(setup-expecting "paredit"
+  (setup-include "phi-autopair"
+    (nconc phi-autopair-lispy-modes my-lispy-modes)
+    (phi-autopair-global-mode 1)))
 
 (setup-lazy '(electric-align-mode) "electric-align"
   :prepare (setup-hook 'prog-mode-hook 'electric-align-mode)
