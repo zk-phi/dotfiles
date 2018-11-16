@@ -7,3 +7,258 @@
 [submodule "zsh/.zsh.d/plugins/zsh-abbrev-alias"]
 	path = zsh/.zsh.d/plugins/zsh-abbrev-alias
 	url = https://github.com/momo-lab/zsh-abbrev-alias.git
+[submodule "emacs/site-lisp/plugins/popwin-el"]
+	path = emacs/site-lisp/plugins/popwin-el
+	url = https://github.com/m2ym/popwin-el.git
+[submodule "emacs/site-lisp/my-plugins/scratch-pop"]
+	path = emacs/site-lisp/my-plugins/scratch-pop
+	url = https://github.com/zk-phi/scratch-pop.git
+[submodule "emacs/site-lisp/plugins/undohist-el"]
+	path = emacs/site-lisp/plugins/undohist-el
+	url = https://github.com/m2ym/undohist-el.git
+[submodule "emacs/site-lisp/plugins/docker-tramp.el"]
+	path = emacs/site-lisp/plugins/docker-tramp-el
+	url = https://github.com/emacs-pe/docker-tramp.el.git
+[submodule "emacs/site-lisp/plugins/smooth-scrolling"]
+	path = emacs/site-lisp/plugins/smooth-scrolling
+	url = https://github.com/aspiers/smooth-scrolling.git
+[submodule "emacs/site-lisp/plugins/maxframe.el"]
+	path = emacs/site-lisp/plugins/maxframe-el
+	url = https://github.com/rmm5t/maxframe.el.git
+[submodule "emacs/site-lisp/my-plugins/phi-rectangle"]
+	path = emacs/site-lisp/my-plugins/phi-rectangle
+	url = https://github.com/zk-phi/phi-rectangle.git
+[submodule "emacs/site-lisp/my-plugins/mark-hacks"]
+	path = emacs/site-lisp/my-plugins/mark-hacks
+	url = https://github.com/zk-phi/mark-hacks.git
+[submodule "emacs/site-lisp/my-plugins/phi-grep"]
+	path = emacs/site-lisp/my-plugins/phi-grep
+	url = https://github.com/zk-phi/phi-grep.git
+[submodule "emacs/site-lisp/my-plugins/phi-autopair"]
+	path = emacs/site-lisp/my-plugins/phi-autopair
+	url = https://github.com/zk-phi/phi-autopair.git
+[submodule "emacs/site-lisp/my-plugins/electric-align"]
+	path = emacs/site-lisp/my-plugins/electric-align
+	url = https://github.com/zk-phi/electric-align.git
+[submodule "emacs/site-lisp/my-plugins/electric-spacing"]
+	path = emacs/site-lisp/my-plugins/electric-spacing
+	url = https://github.com/zk-phi/electric-spacing.git
+[submodule "emacs/site-lisp/my-plugins/jaword"]
+	path = emacs/site-lisp/my-plugins/jaword
+	url = https://github.com/zk-phi/jaword.git
+[submodule "emacs/site-lisp/plugins/popup-el"]
+	path = emacs/site-lisp/plugins/popup-el
+	url = https://github.com/auto-complete/popup-el.git
+[submodule "emacs/site-lisp/plugins/auto-complete"]
+	path = emacs/site-lisp/plugins/auto-complete
+	url = https://github.com/auto-complete/auto-complete.git
+[submodule "emacs/site-lisp/plugins/guess-style"]
+	path = emacs/site-lisp/plugins/guess-style
+	url = https://github.com/nschum/guess-style.git
+[submodule "emacs/site-lisp/my-plugins/ac-last-session"]
+	path = emacs/site-lisp/my-plugins/ac-last-session
+	url = https://github.com/zk-phi/ac-last-session.git
+[submodule "emacs/site-lisp/plugins/key-combo"]
+	path = emacs/site-lisp/plugins/key-combo
+	url = https://github.com/uk-ar/key-combo.git
+[submodule "emacs/site-lisp/plugins/outline-magic"]
+	path = emacs/site-lisp/plugins/outline-magic
+	url = https://github.com/tj64/outline-magic.git
+[submodule "emacs/site-lisp/my-plugins/commentize-conflict"]
+	path = emacs/site-lisp/my-plugins/commentize-conflict
+	url = https://github.com/zk-phi/commentize-conflict.git
+[submodule "emacs/site-lisp/my-plugins/key-chord"]
+	path = emacs/site-lisp/my-plugins/key-chord
+	url = https://github.com/zk-phi/key-chord.git
+[submodule "emacs/site-lisp/my-plugins/symon"]
+	path = emacs/site-lisp/my-plugins/symon
+	url = https://github.com/zk-phi/symon.git
+[submodule "emacs/site-lisp/plugins/sdic"]
+	path = emacs/site-lisp/plugins/sdic
+	url = https://github.com/emacsattic/sdic.git
+[submodule "emacs/site-lisp/plugins/flx"]
+	path = emacs/site-lisp/plugins/flx
+	url = https://github.com/lewang/flx.git
+[submodule "emacs/site-lisp/plugins/anything-config"]
+	path = emacs/site-lisp/plugins/anything
+	url = http://repo.or.cz/r/anything-config.git
+[submodule "emacs/site-lisp/my-plugins/setup"]
+	path = emacs/site-lisp/my-plugins/setup
+	url = https://github.com/zk-phi/setup.git
+[submodule "emacs/site-lisp/plugins/yasnippet"]
+	path = emacs/site-lisp/plugins/yasnippet
+	url = https://github.com/joaotavora/yasnippet.git
+[submodule "emacs/site-lisp/my-plugins/git-complete"]
+	path = emacs/site-lisp/my-plugins/git-complete
+	url = https://github.com/zk-phi/git-complete.git
+[submodule "emacs/site-lisp/plugins/multiple-cursors.el"]
+	path = emacs/site-lisp/plugins/multiple-cursors-el
+	url = https://github.com/magnars/multiple-cursors.el.git
+[submodule "emacs/site-lisp/plugins/paredit"]
+	path = emacs/site-lisp/plugins/paredit
+	url = http://mumble.net/~campbell/git/paredit.git
+[submodule "emacs/site-lisp/my-plugins/cedit"]
+	path = emacs/site-lisp/my-plugins/cedit
+	url = https://github.com/zk-phi/cedit.git
+[submodule "emacs/site-lisp/plugins/japanese-holidays"]
+	path = emacs/site-lisp/plugins/japanese-holidays
+	url = https://github.com/emacs-jp/japanese-holidays.git
+[submodule "emacs/site-lisp/plugins/iy-go-to-char"]
+	path = emacs/site-lisp/plugins/iy-go-to-char
+	url = https://github.com/doitian/iy-go-to-char.git
+[submodule "emacs/site-lisp/plugins/pager"]
+	path = emacs/site-lisp/plugins/pager
+	url = https://github.com/emacsorphanage/pager.git
+[submodule "emacs/site-lisp/my-plugins/phi-search"]
+	path = emacs/site-lisp/my-plugins/phi-search
+	url = https://github.com/zk-phi/phi-search.git
+[submodule "emacs/site-lisp/plugins/phi-search-mc.el"]
+	path = emacs/site-lisp/plugins/phi-search-mc-el
+	url = https://github.com/knu/phi-search-mc.el.git
+[submodule "emacs/site-lisp/my-plugins/phi-search-migemo"]
+	path = emacs/site-lisp/my-plugins/phi-search-migemo
+	url = https://github.com/zk-phi/phi-search-migemo.git
+[submodule "emacs/site-lisp/plugins/expand-region.el"]
+	path = emacs/site-lisp/plugins/expand-region-el
+	url = https://github.com/magnars/expand-region.el.git
+[submodule "emacs/site-lisp/my-plugins/include-anywhere"]
+	path = emacs/site-lisp/my-plugins/include-anywhere
+	url = https://github.com/zk-phi/include-anywhere.git
+[submodule "emacs/site-lisp/my-plugins/scratch-palette"]
+	path = emacs/site-lisp/my-plugins/scratch-palette
+	url = https://github.com/zk-phi/scratch-palette.git
+[submodule "emacs/site-lisp/plugins/shell-pop-el"]
+	path = emacs/site-lisp/plugins/shell-pop-el
+	url = https://github.com/kyagi/shell-pop-el.git
+[submodule "emacs/site-lisp/my-plugins/rpn-calc"]
+	path = emacs/site-lisp/my-plugins/rpn-calc
+	url = https://github.com/zk-phi/rpn-calc.git
+[submodule "emacs/site-lisp/plugins/sudden-death.el"]
+	path = emacs/site-lisp/plugins/sudden-death-el
+	url = https://github.com/yewton/sudden-death.el.git
+[submodule "emacs/site-lisp/plugins/2048-game"]
+	path = emacs/site-lisp/plugins/2048-game
+	url = https://github.com/emacsmirror/2048-game.git
+[submodule "emacs/site-lisp/plugins/ipretty"]
+	path = emacs/site-lisp/plugins/ipretty
+	url = https://framagit.org/steckerhalter/ipretty.git
+[submodule "emacs/site-lisp/plugins/smex"]
+	path = emacs/site-lisp/plugins/smex
+	url = https://github.com/nonsequitur/smex.git
+[submodule "emacs/site-lisp/my-plugins/download-region"]
+	path = emacs/site-lisp/my-plugins/download-region
+	url = https://github.com/zk-phi/download-region.git
+[submodule "emacs/site-lisp/plugins/emacs-web-server"]
+	path = emacs/site-lisp/plugins/emacs-web-server
+	url = https://github.com/skeeto/emacs-web-server.git
+[submodule "emacs/site-lisp/plugins/ace-link"]
+	path = emacs/site-lisp/plugins/ace-link
+	url = https://github.com/abo-abo/ace-link.git
+[submodule "emacs/site-lisp/plugins/avy"]
+	path = emacs/site-lisp/plugins/avy
+	url = https://github.com/abo-abo/avy.git
+[submodule "emacs/site-lisp/plugins/emacs-htmlize"]
+	path = emacs/site-lisp/plugins/emacs-htmlize
+	url = https://github.com/hniksic/emacs-htmlize.git
+[submodule "emacs/site-lisp/my-plugins/togetherly"]
+	path = emacs/site-lisp/my-plugins/togetherly
+	url = https://github.com/zk-phi/togetherly.git
+[submodule "emacs/site-lisp/plugins/rainbow-delimiters"]
+	path = emacs/site-lisp/plugins/rainbow-delimiters
+	url = https://github.com/Fanael/rainbow-delimiters.git
+[submodule "emacs/site-lisp/plugins/rainbow-mode"]
+	path = emacs/site-lisp/plugins/rainbow-mode
+	url = https://github.com/emacsmirror/rainbow-mode.git
+[submodule "emacs/site-lisp/plugins/cl-lib-highlight"]
+	path = emacs/site-lisp/plugins/cl-lib-highlight
+	url = https://github.com/skeeto/cl-lib-highlight.git
+[submodule "emacs/site-lisp/plugins/gauche-mode"]
+	path = emacs/site-lisp/plugins/gauche-mode
+	url = https://github.com/leque/gauche-mode.git
+[submodule "emacs/site-lisp/plugins/scheme-complete"]
+	path = emacs/site-lisp/plugins/scheme-complete
+	url = https://github.com/ashinn/scheme-complete.git
+[submodule "emacs/site-lisp/my-plugins/ac-c-headers"]
+	path = emacs/site-lisp/my-plugins/ac-c-headers
+	url = https://github.com/zk-phi/ac-c-headers.git
+[submodule "emacs/site-lisp/plugins/c-eldoc"]
+	path = emacs/site-lisp/plugins/c-eldoc
+	url = https://github.com/nflath/c-eldoc.git
+[submodule "emacs/site-lisp/plugins/php-mode"]
+	path = emacs/site-lisp/plugins/php-mode
+	url = https://github.com/emacs-php/php-mode.git
+[submodule "emacs/site-lisp/my-plugins/scad-preview"]
+	path = emacs/site-lisp/my-plugins/scad-preview
+	url = https://github.com/zk-phi/scad-preview.git
+[submodule "emacs/site-lisp/plugins/arduino-mode"]
+	path = emacs/site-lisp/plugins/arduino-mode
+	url = https://github.com/stardiviner/arduino-mode.git
+[submodule "emacs/site-lisp/plugins/bison-mode"]
+	path = emacs/site-lisp/plugins/bison-mode
+	url = https://github.com/Wilfred/bison-mode.git
+[submodule "emacs/site-lisp/plugins/ruby-end.el"]
+	path = emacs/site-lisp/plugins/ruby-end-el
+	url = https://github.com/rejeep/ruby-end.el.git
+[submodule "emacs/site-lisp/plugins/haskell-mode"]
+	path = emacs/site-lisp/plugins/haskell-mode
+	url = https://github.com/haskell/haskell-mode.git
+[submodule "emacs/site-lisp/plugins/emacs-scala-mode"]
+	path = emacs/site-lisp/plugins/emacs-scala-mode
+	url = https://github.com/ensime/emacs-scala-mode.git
+[submodule "emacs/site-lisp/plugins/PG"]
+	path = emacs/site-lisp/plugins/proof-general
+	url = https://github.com/ProofGeneral/PG.git
+[submodule "emacs/site-lisp/my-plugins/bfbuilder"]
+	path = emacs/site-lisp/my-plugins/bfbuilder
+	url = https://github.com/zk-phi/bfbuilder.git
+[submodule "emacs/site-lisp/plugins/ahk-mode"]
+	path = emacs/site-lisp/plugins/ahk-mode
+	url = https://github.com/ralesi/ahk-mode.git
+[submodule "emacs/site-lisp/plugins/typescript.el"]
+	path = emacs/site-lisp/plugins/typescript-el
+	url = https://github.com/ananthakumaran/typescript.el.git
+[submodule "emacs/site-lisp/plugins/web-mode"]
+	path = emacs/site-lisp/plugins/web-mode
+	url = https://github.com/fxbois/web-mode.git
+[submodule "emacs/site-lisp/plugins/jquery-doc.el"]
+	path = emacs/site-lisp/plugins/jquery-doc-el
+	url = https://github.com/ananthakumaran/jquery-doc.el.git
+[submodule "emacs/site-lisp/my-plugins/key-combo-web"]
+	path = emacs/site-lisp/my-plugins/key-combo-web
+	url = https://github.com/zk-phi/key-combo-web.git
+[submodule "emacs/site-lisp/plugins/dockerfile-mode"]
+	path = emacs/site-lisp/plugins/dockerfile-mode
+	url = https://github.com/spotify/dockerfile-mode.git
+[submodule "emacs/site-lisp/my-plugins/magic-latex-buffer"]
+	path = emacs/site-lisp/my-plugins/magic-latex-buffer
+	url = https://github.com/zk-phi/magic-latex-buffer.git
+[submodule "emacs/site-lisp/plugins/markdown-mode"]
+	path = emacs/site-lisp/plugins/markdown-mode
+	url = https://github.com/jrblevin/markdown-mode.git
+[submodule "emacs/site-lisp/plugins/stripe-buffer"]
+	path = emacs/site-lisp/plugins/stripe-buffer
+	url = https://github.com/sabof/stripe-buffer.git
+[submodule "emacs/site-lisp/my-plugins/phi-search-dired"]
+	path = emacs/site-lisp/my-plugins/phi-search-dired
+	url = https://github.com/zk-phi/phi-search-dired.git
+[submodule "emacs/site-lisp/my-plugins/howm"]
+	path = emacs/site-lisp/plugins/howm
+	url = https://scm.osdn.net/gitroot/howm/howm.git
+[submodule "emacs/site-lisp/my-plugins/sky-color-clock"]
+	path = emacs/site-lisp/my-plugins/sky-color-clock
+	url = https://github.com/zk-phi/sky-color-clock.git
+[submodule "emacs/site-lisp/my-plugins/elemental-theme"]
+	path = emacs/site-lisp/my-plugins/elemental-theme
+	url = https://github.com/zk-phi/elemental-theme.git
+[submodule "emacs/site-lisp/plugins/highlight-indent-guides"]
+	path = emacs/site-lisp/plugins/highlight-indent-guides
+	url = https://github.com/DarthFennec/highlight-indent-guides.git
+[submodule "emacs/site-lisp/plugins/highlight-parentheses.el"]
+	path = emacs/site-lisp/plugins/highlight-parentheses-el
+	url = https://github.com/tsdh/highlight-parentheses.el.git
+[submodule "emacs/site-lisp/plugins/highlight-stages"]
+	path = emacs/site-lisp/my-plugins/highlight-stages
+	url = https://github.com/zk-phi/highlight-stages.git
+[submodule "emacs/site-lisp/my-plugins/sublimity"]
+	path = emacs/site-lisp/my-plugins/sublimity
+	url = https://github.com/zk-phi/sublimity.git
