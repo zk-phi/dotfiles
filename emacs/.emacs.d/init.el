@@ -422,7 +422,7 @@
 
 (setq-default indent-tabs-mode      nil
               tab-width             4
-              truncate-lines        t
+              truncate-lines        nil
               line-move-visual      t
               cursor-type           'bar
               indicate-empty-lines  t
