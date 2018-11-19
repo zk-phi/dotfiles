@@ -1,0 +1,22 @@
+Following plugins are not from git:
+
+= auto-complete-latex.el
+  - https://bitbucket.org/tequilasunset/auto-complete-latex/raw/6c534e7733747ffb5deb9138f874216d4a6c5daa/auto-complete-latex.el
+  - this plugin is hosted on Bitbucket, from which I don't know how to add as a submodule
+
+- scad-mode.el
+  - https://raw.githubusercontent.com/openscad/openscad/d500d8b3bdd7eb26e4e33451c0bab18a2552a1fb/contrib/scad-mode.el
+  - this plugin is a part of OpenSCAD
+
+- dmacro.el
+  - https://www.pitecan.com/DynamicMacro/dmacro.el
+  - this plugin seems also hosted on GitHub, but is older version
+
+- smart-compile.el
+  - https://raw.githubusercontent.com/zenitani/elisp/master/smart-compile.el
+  - this plugin is a part of the zenitani/elisp repo
+
+- undo-tree.el
+  - https://elpa.gnu.org/packages/undo-tree-0.6.5.el
+  - this plugin is a part of ELPA
+
