@@ -4646,7 +4646,7 @@ emacs-lisp-mode."
 ;;   + others
 ;;     + fundamental-mode
 
-(setup-after "fundamental-mode"
+(setup-after "simple"
   (setup-after "mark-hacks"
     (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes)))
 
