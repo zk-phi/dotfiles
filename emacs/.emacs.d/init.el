@@ -3715,7 +3715,7 @@ emacs-lisp-mode."
 ;;     + web
 ;;       + typescript-mode
 
-(setup-lazy '(typescript-mode) "typescript"
+(setup-lazy '(typescript-mode) "typescript-mode"
   :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
 
 ;;       + web-mode
