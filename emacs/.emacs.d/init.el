@@ -3702,15 +3702,15 @@ emacs-lisp-mode."
 
 ;;         + DOS
 
-(setup-lazy '(dos-mode) "dos"
+(setup-lazy '(bat-mode) "bat-mode"
   :prepare (setq auto-mode-alist
                  (nconc
-                  '(("\\.\\(?:[bB][aA][tT]\\|[cC][mM][dD]\\)\\'" . dos-mode)
-                    ("\\`[cC][oO][nN][fF][iI][gG]\\." . dos-mode)
-                    ("\\`[aA][uU][tT][oO][eE][xX][eE][cC]\\." . dos-mode))
+                  '(("\\.\\(?:[bB][aA][tT]\\|[cC][mM][dD]\\)\\'" . bat-mode)
+                    ("\\`[cC][oO][nN][fF][iI][gG]\\." . bat-mode)
+                    ("\\`[aA][uU][tT][oO][eE][xX][eE][cC]\\." . bat-mode))
                   auto-mode-alist))
   (setup-after "auto-complete"
-    (push 'dos-mode ac-modes)))
+    (push 'bat-mode ac-modes)))
 
 ;;     + web
 ;;       + typescript-mode
