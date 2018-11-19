@@ -3353,10 +3353,10 @@ emacs-lisp-mode."
   :prepare (progn (push '("\\.hs$" . haskell-mode) auto-mode-alist)
                   (push '("\\.lhs$" . literate-haskell-mode) auto-mode-alist))
 
-  ;; FOR INSTALLATION :
+  ;; USE FOLLOWING SEXP TO GENERATE haskell-mode-autoloads.el:
   ;; (let ((generated-autoload-file
-  ;;        "../site-lisp/plugins/haskell-mode/haskell-mode-autoloads.el"))
-  ;;   (update-directory-autoloads "../site-lisp/plugins/haskell-mode/"))
+  ;;        "~/Documents/dotfiles/emacs/site-lisp/plugins/haskell-mode/haskell-mode-autoloads.el"))
+  ;;   (update-directory-autoloads "~/Documents/dotfiles/emacs/site-lisp/plugins/haskell-mode/"))
   (require 'haskell-mode-autoloads)
 
   (setup-keybinds haskell-mode-map
