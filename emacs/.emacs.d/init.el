@@ -1557,7 +1557,7 @@ unary operators which can also be binary."
                (kill-region beg (point-max)))
               (t                        ; in paren
                (up-list)
-               (backward-down-list)
+               (down-list -1)
                (kill-region beg (point))))))
 
     (defun my-paredit-wrap-round ()
