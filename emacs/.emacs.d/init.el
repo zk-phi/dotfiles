@@ -4012,60 +4012,58 @@ emacs-lisp-mode."
     (push '(org-mode . (org-export-as-html-and-open nil))
           smart-compile-alist))
 
-  (setup-after "org-exp"
+  (setq org-export-with-section-numbers     nil
+        org-export-with-toc                 nil
+        org-export-mark-todo-in-toc         t
+        org-export-email-info               nil
+        org-export-author-info              nil
+        org-export-creator-info             nil
+        org-export-time-stamp-file          nil
+        org-export-table-remove-empty-lines nil)
 
-    (setq org-export-with-section-numbers     nil
-          org-export-with-toc                 nil
-          org-export-mark-todo-in-toc         t
-          org-export-email-info               nil
-          org-export-author-info              nil
-          org-export-creator-info             nil
-          org-export-time-stamp-file          nil
-          org-export-table-remove-empty-lines nil)
+  ;; Remove newlines between Japanese letters before exporting.
+  ;; reference | http://qiita.com/kawabata@github/items/1b56ec8284942ff2646b
+  (setup-hook 'org-export-preprocess-hook
+    (goto-char (point-min))
+    (while (search-forward-regexp "^\\([^|#*\n].+\\)\\(.\\)\n *\\(.\\)" nil t)
+      (and (> (string-to-char (match-string 2)) #x2000)
+           (> (string-to-char (match-string 3)) #x2000)
+           (replace-match "\\1\\2\\3"))
+      (goto-char (point-at-bol))))
 
-    ;; Remove newlines between Japanese letters before exporting.
-    ;; reference | http://qiita.com/kawabata@github/items/1b56ec8284942ff2646b
-    (setup-hook 'org-export-preprocess-hook
-      (goto-char (point-min))
-      (while (search-forward-regexp "^\\([^|#*\n].+\\)\\(.\\)\n *\\(.\\)" nil t)
-        (and (> (string-to-char (match-string 2)) #x2000)
-             (> (string-to-char (match-string 3)) #x2000)
-             (replace-match "\\1\\2\\3"))
-        (goto-char (point-at-bol))))
+  ;; babel
+  (setup-after "ob-exp"
+    (setq org-export-babel-evaluate nil))
 
-    ;; babel
-    (setup-after "ob-exp"
-      (setq org-export-babel-evaluate nil))
+  ;; TODO: org-html seems no longer existing. inspect and update as needed.
+  (setup-after "org-html"
 
-    (setup-after "org-html"
+    (setq org-export-html-link-org-files-as-html nil
+          org-export-html-validation-link        nil
+          org-export-html-style-include-scripts  nil
+          org-export-html-style-include-default  nil
+          org-export-html-inline-image-extensions
+          '("png" "jpeg" "jpg" "gif" "svg" "bmp")
+          org-export-html-mathjax-options
+          '((path  "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML")
+            (scale "100")
+            (align "center")
+            (indent "2em")
+            (mathml nil)))
 
-      (setq org-export-html-link-org-files-as-html nil
-            org-export-html-validation-link        nil
-            org-export-html-style-include-scripts  nil
-            org-export-html-style-include-default  nil
-            org-export-html-inline-image-extensions
-            '("png" "jpeg" "jpg" "gif" "svg" "bmp")
-            org-export-html-mathjax-options
-            '((path  "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML")
-              (scale "100")
-              (align "center")
-              (indent "2em")
-              (mathml nil)))
+    ;; use htmlize in "org-export-as-html"
+    (setup-lazy '(htmlize-buffer) "htmlize"
+      :prepare (setup-after "org" (setup "htmlize"))
+      (setq org-export-html-style-extra
+            (format "<style>pre.src { background-color: %s; color: %s; }</style>"
+                    (face-background 'default)
+                    (face-foreground 'default))))
 
-      ;; use htmlize in "org-export-as-html"
-      (setup-lazy '(htmlize-buffer) "htmlize"
-        :prepare (setup-after "org" (setup "htmlize"))
-        (setq org-export-html-style-extra
-              (format "<style>pre.src { background-color: %s; color: %s; }</style>"
-                      (face-background 'default)
-                      (face-foreground 'default))))
-
-      ;; electric-spacing workaround
-      (setup-after "electric-spacing"
-        (defadvice org-export-as-html (around my-electric-spacing-workaround activate)
-          (let ((electric-spacing-regexp-pairs nil))
-            ad-do-it)))
-      )
+    ;; electric-spacing workaround
+    (setup-after "electric-spacing"
+      (defadvice org-export-as-html (around my-electric-spacing-workaround activate)
+        (let ((electric-spacing-regexp-pairs nil))
+          ad-do-it)))
     )
 
   (defun my-org-edit-special ()
