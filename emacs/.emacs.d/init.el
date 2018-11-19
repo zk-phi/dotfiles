@@ -1357,6 +1357,8 @@ unary operators which can also be binary."
     ;; (mc--in-defun) sometimes seems not work (why?)
     ;; so make him return always non-nil
     (setup "mc-mark-more" (defun mc--in-defun () t))
+    ;; disable fake bar-cursor (implemented in #253)
+    (defun mc/cursor-is-bar () nil)
 
     ;; dwim commnad (mark-next or edit-lines)
     (defun my-mc/mark-next-dwim ()
