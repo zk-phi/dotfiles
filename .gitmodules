@@ -262,3 +262,6 @@
 [submodule "emacs/site-lisp/my-plugins/sublimity"]
 	path = emacs/site-lisp/my-plugins/sublimity
 	url = https://github.com/zk-phi/sublimity.git
+[submodule "emacs/site-lisp/my-plugins/dired-explore"]
+	path = emacs/site-lisp/my-plugins/dired-explore
+	url = https://github.com/zk-phi/dired-explore.git
