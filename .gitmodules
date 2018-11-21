@@ -274,3 +274,6 @@
 [submodule "emacs/site-lisp/plugins/spinner.el"]
 	path = emacs/site-lisp/plugins/spinner-el
 	url = https://github.com/Malabarba/spinner.el.git
+[submodule "emacs/site-lisp/plugins/s.el"]
+	path = emacs/site-lisp/plugins/s-el
+	url = https://github.com/magnars/s.el.git
