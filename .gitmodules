@@ -271,3 +271,6 @@
 [submodule "emacs/site-lisp/plugins/migemo"]
 	path = emacs/site-lisp/plugins/migemo
 	url = https://github.com/emacs-jp/migemo.git
+[submodule "emacs/site-lisp/plugins/spinner.el"]
+	path = emacs/site-lisp/plugins/spinner-el
+	url = https://github.com/Malabarba/spinner.el.git
