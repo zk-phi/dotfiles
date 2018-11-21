@@ -265,3 +265,6 @@
 [submodule "emacs/site-lisp/my-plugins/dired-explore"]
 	path = emacs/site-lisp/my-plugins/dired-explore
 	url = https://github.com/zk-phi/dired-explore.git
+[submodule "emacs/site-lisp/plugins/tinysegmenter.el"]
+	path = emacs/site-lisp/plugins/tinysegmenter-el
+	url = https://github.com/myuhe/tinysegmenter.el.git
