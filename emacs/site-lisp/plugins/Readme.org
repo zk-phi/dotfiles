@@ -1,6 +1,6 @@
 Following plugins are not from git:
 
-= auto-complete-latex.el
+- auto-complete-latex.el
   - https://bitbucket.org/tequilasunset/auto-complete-latex/raw/6c534e7733747ffb5deb9138f874216d4a6c5daa/auto-complete-latex.el
   - this plugin is hosted on Bitbucket, from which I don't know how to add as a submodule
 

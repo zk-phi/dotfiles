@@ -31,3 +31,7 @@ Symlink init.el and snippets, site-lisp
 
 : cd /Applications/Emacs.app/Contents/Resources
 : ln -s ~/dotfiles/emacs/site-lisp
+
+Do not forget to symlink init.elc too, when you bytecompile it.
+
+: ln -s ~/dotfiles/emacs/.emacs.d/init.elc
