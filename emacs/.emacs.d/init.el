@@ -2218,7 +2218,9 @@ emacs-lisp-mode."
   ;; mark japanese holidays
   (setup "japanese-holidays"
     (setq mark-holidays-in-calendar t
-          calendar-holidays (append japanese-holidays local-holidays other-holidays))))
+          calendar-holidays (append japanese-holidays
+                                    holiday-local-holidays
+                                    holiday-other-holidays))))
 
 ;;   + Misc: plug-ins
 ;;   + | jump around
