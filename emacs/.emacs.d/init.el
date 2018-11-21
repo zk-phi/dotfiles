@@ -504,8 +504,10 @@ cons of two integers which defines a range of the codepoints."
     (my-set-fontset-font "code8903" 'unicode nil))
    ((member "SawarabiGothic phi" (font-family-list))
     (my-set-fontset-font "SawarabiGothic phi" 'unicode nil)))
-  ;; unicode (emoji)
-  (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95 'prepend))
+  ;; ;; TODO: Uncomment when "multicolor fonts are supported on a free system too".
+  ;; ;; unicode (emoji)
+  ;; (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95 'prepend)
+  )
 
 ;; font settings (windows)
 (!when (eq system-type 'windows-nt)
@@ -5138,7 +5140,8 @@ displayed, use substring of the buffer."
   (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face))
 (setup "sky-color-clock"
   (sky-color-clock-initialize 35.40)
-  (setq sky-color-clock-enable-emoji-icon t)
+  ;; TODO: Enable when "multicolor fonts are supported on a free system too".
+  (setq sky-color-clock-enable-emoji-icon nil)
   (when my-openweathermap-api-key
     (sky-color-clock-initialize-openweathermap-client my-openweathermap-api-key 1850144))
   (defun my-time-string () (sky-color-clock)))
