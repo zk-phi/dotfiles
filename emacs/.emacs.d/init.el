@@ -2522,10 +2522,6 @@ emacs-lisp-mode."
         (turn-on-eldoc-mode)
         (setq-local eldoc-documentation-function 'scheme-get-current-symbol-info))))
 
-  (setup-after "rainbow-delimiters"
-    (push '(gauche-mode . rainbow-delimiters-escaped-char-predicate-lisp)
-          rainbow-delimiters-escaped-char-predicate-list))
-
   ;; run scheme REPL in another window
   (defun my-run-scheme-other-window ()
     (interactive)
