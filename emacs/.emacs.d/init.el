@@ -3453,46 +3453,6 @@ emacs-lisp-mode."
     (setup-hook 'literate-haskell-mode-hook 'my-install-haskell-smartchr))
   )
 
-;;         + Scala
-
-(setup-lazy '(scala-mode) "scala-mode"
-  :prepare (push '("\\.scala$" . scala-mode) auto-mode-alist)
-
-  (require 'scala-mode-auto)
-  (autoload 'scala-mode-inf "scala-mode-inf")
-
-  (defun my-run-scala-other-window ()
-    (interactive)
-    (with-selected-window (split-window-vertically -10)
-      (switch-to-buffer (make-comint "inferior-scala" "scala"))
-      (scala-mode-inf))
-    (when buffer-file-name
-      (scala-load-file buffer-file-name)))
-
-  ;; *FIXME* not DWIM for multi-line defuns
-  (defun my-scala-eval-dwim ()
-    (interactive)
-    (if (use-region-p)
-        (scala-eval-region (region-beginning) (region-end))
-      (save-excursion
-        (let ((beg (search-backward-regexp "^[^\s\t\n]" nil t)))
-          (when beg
-            (let* ((end (progn
-                          (forward-char)
-                          (search-forward-regexp "^[^\s\t\n]" nil t)))
-                   (end (if end (1- end) (point-max))))
-              (scala-eval-region beg end)))))))
-
-  (setup-keybinds scala-mode-map
-    "C-c C-l" 'scala-load-file
-    "C-c C-e" 'my-scala-eval-dwim
-    "C-c C-s" 'my-run-scala-other-window
-    "<f1>"    nil)
-
-  (setup-after "auto-complete"
-    (push 'scala-mode ac-modes))
-  )
-
 ;;         + Coq (proof-general)
 
 (setup-lazy '(coq-mode) "proof-site"
