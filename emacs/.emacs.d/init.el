@@ -527,6 +527,11 @@ cons of two integers which defines a range of the codepoints."
   (setq byte-compile-warnings '(not make-local)
         byte-compile-dynamic  t))
 
+;; make the main frame maximized by default
+
+(setup-hook 'after-init-hook
+  (set-frame-parameter nil 'fullscreen 'maximized))
+
 ;;   + | backup, autosave
 
 ;; backup directory
@@ -713,17 +718,6 @@ cons of two integers which defines a range of the codepoints."
 (!-
  (setup "smooth-scrolling"
    (setq smooth-scroll-margin 3)))
-
-;; maximize frame on setup
-(setup-include "maxframe"
-  (!when (string= window-system "x")
-    ;; send X messages
-    (defadvice maximize-frame (after my-x-maximize-frame activate)
-      (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
-                             '(2 "_NET_WM_STATE_MAXIMIZED_VERT" 0))
-      (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
-                             '(2 "_NET_WM_STATE_MAXIMIZED_HORZ" 0))))
-  (setup-hook 'window-setup-hook 'maximize-frame))
 
 (setup "popwin"
   (setq popwin:reuse-window nil

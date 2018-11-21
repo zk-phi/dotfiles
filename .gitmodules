@@ -30,10 +30,6 @@
 	path = emacs/site-lisp/plugins/smooth-scrolling
 	url = https://github.com/aspiers/smooth-scrolling.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/maxframe.el"]
-	path = emacs/site-lisp/plugins/maxframe-el
-	url = https://github.com/rmm5t/maxframe.el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/phi-rectangle"]
 	path = emacs/site-lisp/my-plugins/phi-rectangle
 	url = https://github.com/zk-phi/phi-rectangle.git
