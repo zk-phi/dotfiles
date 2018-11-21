@@ -82,7 +82,8 @@ module.exports = {
   plugins: [
     'hyper-tab-icons-plus',
     'hyper-search',
-    'hyperlinks'
+    'hyperlinks',
+    'hyper-dialog'
   ],
 
   keymaps: {
