@@ -268,3 +268,6 @@
 [submodule "emacs/site-lisp/plugins/tinysegmenter.el"]
 	path = emacs/site-lisp/plugins/tinysegmenter-el
 	url = https://github.com/myuhe/tinysegmenter.el.git
+[submodule "emacs/site-lisp/plugins/migemo"]
+	path = emacs/site-lisp/plugins/migemo
+	url = https://github.com/emacs-jp/migemo.git
