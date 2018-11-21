@@ -5547,14 +5547,13 @@ displayed, use substring of the buffer."
 
 ;; make GUI modern
 (setup-include "sublimity"
-  (sublimity-mode 1)
   (setup-include "sublimity-scroll"
     (setq sublimity-scroll-weight       4
           sublimity-scroll-drift-length 3))
   (setup-include "sublimity-attractive"
-    (setup-hook 'after-init-hook
-      (setq sublimity-attractive-centering-width 100)
-      (sublimity-attractive-hide-bars))))
+    (setq sublimity-attractive-centering-width 100)
+    (sublimity-attractive-hide-bars))
+  (sublimity-mode 1))
 
 ;; + | Keybinds
 ;;   + translations
