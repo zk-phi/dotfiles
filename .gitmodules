@@ -202,9 +202,6 @@
 [submodule "emacs/site-lisp/plugins/haskell-mode"]
 	path = emacs/site-lisp/plugins/haskell-mode
 	url = https://github.com/haskell/haskell-mode.git
-[submodule "emacs/site-lisp/plugins/emacs-scala-mode"]
-	path = emacs/site-lisp/plugins/emacs-scala-mode
-	url = https://github.com/ensime/emacs-scala-mode.git
 [submodule "emacs/site-lisp/plugins/PG"]
 	path = emacs/site-lisp/plugins/proof-general
 	url = https://github.com/ProofGeneral/PG.git
