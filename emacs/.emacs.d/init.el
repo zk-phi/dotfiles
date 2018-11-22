@@ -587,12 +587,6 @@ cons of two integers which defines a range of the codepoints."
 ;;   + Misc: built-ins
 ;;   + | buffers / windows
 
-;; uniquify buffer name
-(!-
- (setup "uniquify"
-   (setq uniquify-buffer-name-style 'post-forward-angle-brackets
-         uniquify-ignore-buffers-re "*[^*]+*")))
-
 (setup-include "saveplace"
   (setq save-place-file my-save-place-file)
   (setq-default save-place t)
