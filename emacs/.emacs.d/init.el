@@ -589,7 +589,7 @@ cons of two integers which defines a range of the codepoints."
 
 (setup-include "saveplace"
   (setq save-place-file my-save-place-file)
-  (setq-default save-place t)
+  (save-place-mode)
   ;; open invisible automatically
   (defadvice save-place-find-file-hook (after save-place-open-invisible activate)
     (mapc (lambda (ov)
