@@ -2105,7 +2105,7 @@ lines far from the cursor."
 (setup-lazy '(my-restore-from-backup) "diff"
   (defun my--previous-backup (backup-file)
     (when (string-match "~\\([0-9]+\\)~$" backup-file)
-      (let* ((version (string-to-int (match-string 1 backup-file)))
+      (let* ((version (string-to-number (match-string 1 backup-file)))
              (previous (replace-match (int-to-string (1- version)) t t backup-file 1)))
         (when (file-exists-p previous) previous))))
   (defun my-restore-from-backup ()
@@ -4877,8 +4877,8 @@ displayed, use substring of the buffer."
       (interactive)
       (let ((day nil)
             (calendar-date-display-form
-             '("[" year "-" (format "%02d" (string-to-int month))
-               "-" (format "%02d" (string-to-int day)) "]")))
+             '("[" year "-" (format "%02d" (string-to-number month))
+               "-" (format "%02d" (string-to-number day)) "]")))
         (setq day (calendar-date-string
                    (calendar-cursor-to-date t)))
         (calendar-exit t)
