@@ -3140,6 +3140,7 @@ emacs-lisp-mode."
 ;; *NOTE* "scad-mode.el" provides "scad" feature (!!!)
 ;; So it's not good idea to specify "scad-mode" here.
 (setup-lazy '(scad-mode) "scad-preview"
+  :prepare (push '("\\.scad$" . scad-mode) auto-mode-alist)
   (setup-keybinds scad-mode-map
     "C-c C-p" 'scad-preview-mode
     "C-c C-r" 'scad-preview-rotate
