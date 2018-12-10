@@ -241,7 +241,8 @@
     "x"   'eww-browse-with-external-browser
     "v"   'eww-view-source
     "C"   'url-cookie-list
-    "H"   'eww-list-histories)
+    "H"   'eww-list-histories
+    "R"   'eww-readable)
   )
 
 ;; ---- eww: ace-link
