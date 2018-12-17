@@ -5307,12 +5307,12 @@ displayed, use substring of the buffer."
       (set-face-foreground 'elemental-bright-fg-face bright-fg)
       (set-face-foreground 'elemental-accent-fg-1-face link-violet)
       (set-face-foreground 'elemental-accent-fg-2-face visited-magenta)
-      (set-face-foreground 'elemental-yellow-face type-yellow)
+      (set-face-foreground 'elemental-accent-fg-3-face type-yellow)
+      (set-face-foreground 'elemental-accent-fg-4-face string-cyan)
       (set-face-foreground 'elemental-red-face error-red)
       (set-face-foreground 'elemental-blue-face identifier-blue)
       (set-face-foreground 'elemental-green-face keyword-green)
       (set-face-foreground 'elemental-orange-face warning-orange)
-      (set-face-foreground 'elemental-cyan-face string-cyan)
       (run-hooks 'my-elemental-theme-change-palette-hook))))
 
 (setup-expecting "elemental-theme"
@@ -5412,14 +5412,14 @@ displayed, use substring of the buffer."
    :inherit 'elemental-dark-fg-face)
   (set-face-attribute
    'mode-line-highlight-face nil
-   :inherit 'elemental-yellow-face
+   :inherit 'elemental-accent-fg-3-face
    :weight  'bold)
   (set-face-attribute
    'mode-line-warning-face nil
-   :inherit '(elemental-yellow-face elemental-bright-bg-face))
+   :inherit '(elemental-accent-fg-3-face elemental-bright-bg-face))
   (set-face-attribute
    'mode-line-special-mode-face nil
-   :inherit 'elemental-cyan-face
+   :inherit 'elemental-accent-fg-4-face
    :weight  'bold)
   (set-face-attribute
    'mode-line-git-branch-face nil
@@ -5432,13 +5432,13 @@ displayed, use substring of the buffer."
    :inherit '(elemental-blue-face elemental-bright-bg-face))
   (set-face-attribute
    'mode-line-narrowed-face nil
-   :inherit '(elemental-cyan-face elemental-bright-bg-face))
+   :inherit '(elemental-accent-fg-4-face elemental-bright-bg-face))
   (set-face-attribute
    'mode-line-mc-face nil
    :inherit '(elemental-bright-fg-face elemental-bright-bg-face))
   (set-face-attribute
    'mode-line-palette-face nil
-   :inherit 'elemental-cyan-face
+   :inherit 'elemental-accent-fg-4-face
    :weight  'bold)
 
   (setup-after "highlight-indent-guides"
