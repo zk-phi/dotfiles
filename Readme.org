@@ -16,10 +16,11 @@ Symlink .hyper.js
 
 ** git
 
-Symlink .gitconfig
+Symlink .gitconfig and .gitignore_global
 
 : cd ~
 : ln -s ~/dotfiles/git/.gitconfig
+: ln -s ~/dotfiles/git/.gitignore_global
 
 ** emacs
 
