@@ -1,5 +1,7 @@
 # gitconfig for git >=2.11
 
+[core]
+    excludesfile = ~/.gitignore_global
 [filter "lfs"]
     smudge = git-lfs smudge %f
     required = true
