@@ -5,6 +5,8 @@
     required = true
     clean = git-lfs clean %f
 [alias]
+    # ---- initialize and configure user profile
+    initialize = "!f(){ git init; git config --local user.name p; git config --local user.email _; }; f"
     # ---- mark new files as tracked
     touch = add -N
     # ---- patch/unpatch a commit
