@@ -33,7 +33,6 @@ module.exports = {
 
     // font
     fontSize: 12,
-    lineHeight: 1.1,
     fontFamily: 'code8903, Monaco, Menlo, "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
     padding: '6px',
 
