@@ -710,6 +710,13 @@ cons of two integers which defines a range of the codepoints."
   (when my-ftp-executable
     (setq ange-ftp-ftp-program-name my-ftp-executable)))
 
+;;   + | vcs
+
+;; Disable smerge-mode, which automatically starts when a file is conflicted.
+(setup-after "smerge-mode"
+  (defadvice smerge-start-session (around disable-smerge activate)
+    nil))
+
 ;;   + Misc: plug-ins
 ;;   + | buffers / windows
 
