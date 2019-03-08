@@ -712,10 +712,8 @@ cons of two integers which defines a range of the codepoints."
 
 ;;   + | vcs
 
-;; Disable smerge-mode, which automatically starts when a file is conflicted.
-(setup-after "smerge-mode"
-  (defadvice smerge-start-session (around disable-smerge activate)
-    nil))
+;; disable vcs integration
+(setq vc-handled-backends nil)
 
 ;;   + Misc: plug-ins
 ;;   + | buffers / windows
