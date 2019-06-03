@@ -5320,6 +5320,18 @@ displayed, use substring of the buffer."
     ;; and kindly-view-mode-map as the major-mode bindings
     (use-local-map my-kindly-view-mode-map)))
 
+;;   + prettify ansi-colored output
+
+(setup-lazy '(ansi-color-mode) "ansi-color"
+  (define-minor-mode ansi-color-mode
+    "Apply ansi color on-the-fly."
+    :init-value nil
+    :lighter "Ancl"
+    :global nil
+    (if ansi-color-mode
+        (jit-lock-register 'ansi-color-apply-on-region)
+      (jit-lock-unregister 'ansi-color-apply-on-region))))
+
 ;;   + "secret-words" minor-mode
 
 (defvar my-secret-words nil)
