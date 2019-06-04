@@ -5323,14 +5323,16 @@ displayed, use substring of the buffer."
 ;;   + prettify ansi-colored output
 
 (setup-lazy '(ansi-color-mode) "ansi-color"
+  (defun ansi-color-highlighter (b e)
+    (ignore-errors (ansi-color-apply-on-region b e)))
   (define-minor-mode ansi-color-mode
     "Apply ansi color on-the-fly."
     :init-value nil
     :lighter "Ancl"
     :global nil
     (if ansi-color-mode
-        (jit-lock-register 'ansi-color-apply-on-region)
-      (jit-lock-unregister 'ansi-color-apply-on-region))))
+        (jit-lock-register 'ansi-color-highlighter)
+      (jit-lock-unregister 'ansi-color-highlighter))))
 
 ;;   + "secret-words" minor-mode
 
