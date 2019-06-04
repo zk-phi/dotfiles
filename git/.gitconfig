@@ -9,7 +9,7 @@
 [alias]
     # ---- initialize and configure user profile
     configure = "!f(){ git config --local user.name p; git config --local user.email _; }; f"
-    initialize = "!f(){ git init; git configure; }; f"
+    initialize = "!f(){ git init; git configure; git commit --allow-empty -m 'Initial commit'; }; f"
     # ---- mark new files as tracked
     touch = add -N
     # ---- patch/unpatch a commit
