@@ -398,6 +398,7 @@
 (setq frame-title-format                    "%b - Emacs"
       completion-ignore-case                t
       read-file-name-completion-ignore-case t
+      create-lockfiles                      t
       ;; gc-cons-threshold                     (! (* 128 1024 1024))
       ;; gc-cons-percentage                    0.5
       message-log-max                       1000
