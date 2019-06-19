@@ -7,6 +7,8 @@
     required = true
     clean = git-lfs clean %f
 [alias]
+    # ---- git-context-switch
+    context = "!f(){ git-context-switch.el $*; }; f"
     # ---- initialize and configure user profile
     configure = "!f(){ git config --local user.name p; git config --local user.email _; }; f"
     initialize = "!f(){ git init; git configure; git commit --allow-empty -m 'Initial commit'; }; f"
