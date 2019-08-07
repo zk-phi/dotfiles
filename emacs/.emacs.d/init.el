@@ -5495,26 +5495,21 @@ displayed, use substring of the buffer."
   ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#9b744c" "#aa6b6b"
   ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
 
-  ;; ;; sakura ("monochrome" inspired palette 2)
-  ;; (my-elemental-theme-apply-colors
-  ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#B0D391" "#FB9A85"
-  ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
-
   ;; ;; green ("monochrome" inspired palette 3)
   ;; (my-elemental-theme-apply-colors
   ;;   "#000000" "#007100" "#00c000" "#00b000" "#00ca00"
   ;;   "#00b000" "#00b000" "#00ca00" "#00df00" "#00c000")
 
-  ;; ;; less colorful "planet" theme based on "monochrome"
-  ;; (my-elemental-theme-apply-colors
-  ;;   "#192129" "#7d7d7d" "#e0b776" "#729fcf" "#ff8683"
-  ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#649d8a" "#9e9e9e")
-
-  ;; icecream
-  ;; https://www.pinterest.jp/pin/176555247871619456
+  ;; less colorful "planet" theme based on "monochrome"
   (my-elemental-theme-apply-colors
-    "#192129" "#7d7d7d" "#fef187" "#f8c3a4" "#f9c9cf"
-    "#c0c0c0" "#c0c0c0" "#c0c0c0" "#aee2c9" "#9e9e9e")
+    "#192129" "#7d7d7d" "#e0b776" "#729fcf" "#ff8683"
+    "#c0c0c0" "#c0c0c0" "#c0c0c0" "#649d8a" "#9e9e9e")
+
+  ;; ;; icecream
+  ;; ;; https://www.pinterest.jp/pin/176555247871619456
+  ;; (my-elemental-theme-apply-colors
+  ;;   "#192129" "#7d7d7d" "#fef187" "#f8c3a4" "#f9c9cf"
+  ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#aee2c9" "#9e9e9e")
 
   ;; switch mode-line color while recording macros
   (defadvice kmacro-start-macro (after my-recording-mode-line activate)
