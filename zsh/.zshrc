@@ -19,7 +19,7 @@ export EDITOR="vim"
 export PAGER="less"
 export LSCOLORS="Gxfxcxdxbxegedabagacad" # enable colors in "ls"
 
-export PATH="/usr/local/share/git-core/contrib/diff-highlight:$HOME/Documents/git-context-switch:$HOME/perl5/bin:$HOME/.ndenv/bin:$HOME/.plenv/bin:$HOME/go/bin:$PATH:$HOME/go/bin"
+export PATH="/usr/local/share/git-core/contrib/diff-highlight:$HOME/Documents/git-submodule-update-checker:$HOME/Documents/git-context-switch:$HOME/perl5/bin:$HOME/.ndenv/bin:$HOME/.plenv/bin:$HOME/go/bin:$PATH:$HOME/go/bin"
 export FPATH="$ZSH/functions:$FPATH"
 export SSH_KEY_PATH="$HOME/.ssh"
 export PGDATA="/usr/local/var/postgres"
