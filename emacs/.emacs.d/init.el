@@ -3422,7 +3422,7 @@ emacs-lisp-mode."
     (setq ruby-end-insert-newline nil))
   )
 
-;;       + declarative
+;;       + prolog-ilke
 ;;         + (common)
 
 (setup-expecting "key-combo"
