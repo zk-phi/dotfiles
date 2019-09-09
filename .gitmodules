@@ -266,10 +266,6 @@
 	path = emacs/site-lisp/plugins/haskell-mode
 	url = https://github.com/haskell/haskell-mode.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/PG"]
-	path = emacs/site-lisp/plugins/proof-general
-	url = https://github.com/ProofGeneral/PG.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/bfbuilder"]
 	path = emacs/site-lisp/my-plugins/bfbuilder
 	url = https://github.com/zk-phi/bfbuilder.git
