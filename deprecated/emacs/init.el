@@ -1,4 +1,4 @@
-;; ---- flyspell: core
+;; + flyspell: core
 
 (setup-lazy '(my-turn-on-flyspell) "flyspell-lazy"
   :prepare (add-hook 'find-file-hook 'my-turn-on-flyspell t)
@@ -69,7 +69,7 @@
     '(ac-flyspell-workaround))
   )
 
-;; ---- flyspell: appearance
+;; + flyspell: appearance
 
 (setup-after "flyspell"
   (set-face-attribute
@@ -78,14 +78,14 @@
    :background 'unspecified
    :underline  (! `(:style wave :color ,(face-foreground 'term-color-red)))))
 
-;; ---- flycheck: core
+;; + flycheck: core
 
 (setup-lazy '(flycheck-mode) "flycheck"
   :prepare (add-hook 'prog-mode-hook 'flycheck-mode)
   (setq flycheck-display-errors-delay 0.1
         flycheck-highlighting-mode    'lines))
 
-;; ---- flycheck: anything source
+;; + flycheck: anything source
 
 (setup-lazy '(my-anything-jump) "anything"
 
@@ -115,7 +115,7 @@
                                  (flycheck-error-buffer err)))))))))
   )
 
-;; ---- flycheck: cc-mode
+;; + flycheck: cc-mode
 
 (setup-after "cc-mode"
 
@@ -151,7 +151,7 @@
     (add-to-list 'flycheck-checkers 'c99-gcc))
   )
 
-;; ---- highlight-changes-mode: core
+;; + highlight-changes-mode: core
 
 (setup-lazy '(highlight-changes-mode) "hilit-chg"
   :prepare (setup-hook 'find-file-hook 'highlight-changes-mode)
@@ -176,7 +176,7 @@
       (hilit-chg-set-face-on-change yas-snippet-beg yas-snippet-end 0)))
   )
 
-;; ---- highlight-changes-mode: anything source
+;; + highlight-changes-mode: anything source
 
 (setup-after "hilit-chg"
   (defun my-change-search-next (point)
@@ -226,7 +226,7 @@
       (action . (lambda (num) (goto-char num)))
       (multiline))))
 
-;; ---- window-undo: core
+;; + window-undo: core
 
 ;; seems not working :(
 
@@ -256,12 +256,12 @@
           (message "No further undo information")
         (set-window-configuration (cdar my-window-undo-list))))))
 
-;; ---- window-undo: kaybinds
+;; + window-undo: kaybinds
 
 (setup-keybinds nil
   "C-x C--" 'my-window-undo)
 
-;; ---- joke commands.
+;; + joke commands.
 
 ;; Emacs sɔɐɯƎ
 (!-
@@ -305,7 +305,7 @@
        (floor (* 20 (+ (sin (* 2 (float-time))) 2)))
        (floor (* 10 (+ (cos (* 2 (float-time))) 2)))))))
 
-;; ---- add-log: core
+;; + add-log: core
 
 ;; add change-lod entry
 (setup-lazy '(my-add-change-log-entry) "add-log"
@@ -325,25 +325,25 @@
     "C-x C-s" 'my-change-log-save-and-kill
     "C-g"     'my-change-log-save-and-kill))
 
-;; ---- add-log: keybinds
+;; + add-log: keybinds
 
 (setup-keybinds nil
   "C-x C-l"   'my-add-change-log-entry)
 
-;; ---- multifiles: core
+;; + multifiles: core
 
 (setup-lazy '(mf/mirror-region-in-multifile) "multifiles")
 
-;; ---- multifiles: keybinds
+;; + multifiles: keybinds
 
 (setup-keybinds nil
   "C-x C-a"   '("multifiles" mf/mirror-region-in-multifile))
 
-;; ---- simple-demo: core
+;; + simple-demo: core
 
 (setup-lazy '(simple-demo-set-up) "simple-demo")
 
-;; ---- languages/CommonLisp: core
+;; + languages/CommonLisp: core
 
 (setup-after "lisp-mode"
 
@@ -388,13 +388,13 @@
     "C-c C-l" 'my-lisp-load)
   )
 
-;; languages/Clojure: directories
+;; + languages/Clojure: directories
 
 (defconst my-clojure-jar-file
   (when (boundp 'my-clojure-jar-file) my-clojure-jar-file)
   "Path to clojure.jar executable.")
 
-;; languages/Clojure: core
+;; + languages/Clojure: core
 
 (setup-lazy '(clojure-mode) "clojure-mode"
   :prepare (progn (push '("\\.clj$" . clojure-mode) auto-mode-alist))
@@ -426,7 +426,7 @@
     "C-c C-l" 'clojure-load-file)
   )
 
-;; languages/Egison: core
+;; + languages/Egison: core
 
 (setup-lazy '(egison-mode) "egison-mode"
   :prepare (push '("\\.egi$" . egison-mode) auto-mode-alist)
@@ -434,7 +434,7 @@
     (push 'egison-mode ac-modes))
   (setup-keybinds egison-mode-map "C-j" nil))
 
-;; languages/Racket: core
+;; + languages/Racket: core
 
 (setup-lazy '(racket-mode) "racket-mode"
   :prepare (push '("\\.rkt$" . racket-mode) auto-mode-alist)
@@ -507,7 +507,7 @@
       "<f1> s" 'racket-help)
   )
 
-;; ---- languages/OCaml: core
+;; + languages/OCaml: core
 
 (setup-lazy '(tuareg-mode) "tuareg"
   :prepare (push '("\\.ml[iylp]?$" . tuareg-mode) auto-mode-alist)
@@ -560,13 +560,13 @@
     (push 'tuareg-mode ac-modes))
   )
 
-;; languages/LMNtal: directories
+;; + languages/LMNtal: directories
 
 (defconst my-lmntal-home-directory
   (when (boundp 'my-lmntal-home-directory) my-lmntal-home-directory)
   "The LMNTAL_HOME Path.")
 
-;; languages/LMNtal: core
+;; + languages/LMNtal: core
 
 (setup-lazy '(lmntal-mode lmntal-slimcode-mode) "lmntal-mode"
   :prepare (progn
@@ -621,18 +621,18 @@
     (push 'lmntal-slimcode-mode mark-hacks-auto-indent-inhibit-modes))
   )
 
-;; languages/LMNtal: appearance
+;; + languages/LMNtal: appearance
 
 (setup-after "lmntal-mode"
   (set-face-background 'lmntal-link-name-face
                        (! (my-make-color (face-background 'default) 3.5 -10))))
 
-;; languages/ZOMBIE: core
+;; + languages/ZOMBIE: core
 
 (setup-lazy '(zombie-mode) "zombie"
   :prepare (push '("\\.zombie$" . zombie-mode) auto-mode-alist))
 
-;; languages/Promela: core
+;; + languages/Promela: core
 
 (setup-lazy '(promela-mode) "promela-mode"
   :prepare (progn (push '("\\.pml$" . promela-mode) auto-mode-alist)
@@ -690,7 +690,7 @@
     "C-m" 'promela-indent-newline-indent)
   )
 
-;; languages/Promela: cedit
+;; + languages/Promela: cedit
 
 (setup-lazy
   '(cedit-or-paredit-slurp
@@ -706,7 +706,7 @@
                  "M-U" 'cedit-or-paredit-splice-killing-backward
                  "M-R" 'cedit-or-paredit-raise)))
 
-;; ---- languages/Scala: core
+;; + languages/Scala: core
 
 ;; NOTE: scala-mode seems replaced with the new one
 ;; https://github.com/ensime/emacs-scala-mode.git
@@ -749,7 +749,7 @@
     (push 'scala-mode ac-modes))
   )
 
-;; ---- spray: core
+;; + spray: core
 
 ;; Spritz-like speed reading mode
 (setup-lazy '(spray-mode) "spray"
