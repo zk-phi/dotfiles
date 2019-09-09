@@ -242,10 +242,6 @@
 	path = emacs/site-lisp/plugins/c-eldoc
 	url = https://github.com/nflath/c-eldoc.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/php-mode"]
-	path = emacs/site-lisp/plugins/php-mode
-	url = https://github.com/emacs-php/php-mode.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/scad-preview"]
 	path = emacs/site-lisp/my-plugins/scad-preview
 	url = https://github.com/zk-phi/scad-preview.git
@@ -261,10 +257,6 @@
 [submodule "emacs/site-lisp/plugins/ruby-end.el"]
 	path = emacs/site-lisp/plugins/ruby-end-el
 	url = https://github.com/rejeep/ruby-end.el.git
-	ignore = dirty
-[submodule "emacs/site-lisp/plugins/haskell-mode"]
-	path = emacs/site-lisp/plugins/haskell-mode
-	url = https://github.com/haskell/haskell-mode.git
 	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/bfbuilder"]
 	path = emacs/site-lisp/my-plugins/bfbuilder

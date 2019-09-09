@@ -3222,24 +3222,6 @@ emacs-lisp-mode."
       "M-e" "M-j" "C-M-h" "C-M-j" "DEL") nil)
   )
 
-;;         + PHP
-
-;; *NOTE* PHP mode derives C mode
-(setup-lazy '(php-mode) "php-mode"
-  :prepare (push '("\\.php$" . php-mode) auto-mode-alist)
-
-  (setup-hook 'php-mode-hook
-    (c-set-style "php"))
-
-  (setup-keybinds php-mode-map
-    "C-M-h" nil
-    "<tab>" nil)
-
-  (setup-expecting "key-combo"
-    (setup-hook 'php-mode-hook
-      (key-combo-define-local (kbd "<?") "<?php\n")))
-  )
-
 ;;         + SCAD
 
 ;; *NOTE* "scad-mode.el" provides "scad" feature (!!!)
@@ -3438,111 +3420,6 @@ emacs-lisp-mode."
 
   (setup "ruby-end"
     (setq ruby-end-insert-newline nil))
-  )
-
-;;       + functional
-;;         + Haskell
-
-(setup-lazy '(haskell-mode literate-haskell-mode) "haskell-mode"
-  :prepare (progn (push '("\\.hs$" . haskell-mode) auto-mode-alist)
-                  (push '("\\.lhs$" . literate-haskell-mode) auto-mode-alist))
-
-  ;; USE FOLLOWING SEXP TO GENERATE haskell-mode-autoloads.el:
-  ;; (let ((generated-autoload-file
-  ;;        "~/Documents/dotfiles/emacs/site-lisp/plugins/haskell-mode/haskell-mode-autoloads.el"))
-  ;;   (update-directory-autoloads "~/Documents/dotfiles/emacs/site-lisp/plugins/haskell-mode/"))
-  (require 'haskell-mode-autoloads)
-
-  (setup-keybinds haskell-mode-map
-    "C-c C-s" 'my-run-haskell-other-window
-    "C-c C-l" 'inferior-haskell-reload-file
-    "C-c C-e" 'my-haskell-send-decl-dwim)
-
-  (defun my-run-haskell-other-window ()
-    (interactive)
-    (with-selected-window (split-window-vertically -10)
-      (switch-to-buffer
-       (process-buffer (inferior-haskell-process nil))))
-    (when buffer-file-name
-      (inferior-haskell-load-file)))
-
-  (defun my-haskell-send-decl-dwim ()
-    (interactive)
-    (if (not (use-region-p))
-        (inferior-haskell-send-decl)
-      (save-excursion
-        (save-restriction
-          (narrow-to-region (region-beginning) (region-end))
-          (goto-char (point-min))
-          (while (progn
-                   (inferior-haskell-send-decl)
-                   (haskell-ds-forward-decl)))))))
-
-  (setup-hook 'haskell-mode-hook
-    (turn-on-haskell-indentation)
-    (turn-on-haskell-doc-mode))
-
-  (setup-after "auto-complete"
-    (push 'haskell-mode ac-modes)
-    (push 'literate-haskell-mode ac-modes))
-
-  (setup-after "smart-compile"
-    (push '(haskell-mode . "ghc -Wall -fwarn-missing-import-lists %f")
-          smart-compile-alist))
-
-  (setup-expecting "key-combo"
-    (defun my-install-haskell-smartchr ()
-      (key-combo-mode 1)
-      ;; types
-      (key-combo-define-local (kbd ":") '(":" " :: "))
-      (key-combo-define-local (kbd "<-") " <- ")
-      (key-combo-define-local (kbd "->") " -> ")
-      (key-combo-define-local (kbd "=>") " => ")
-      ;; boolean
-      (key-combo-define-local (kbd "|") '(" | " " || " " ||| "))
-      (key-combo-define-local (kbd "&&") '(" & " " && " " &&& "))
-      ;; compare
-      (key-combo-define-local (kbd "=") '(" = " " == "))
-      (key-combo-define-local (kbd "/=") " /= ")
-      (key-combo-define-local (kbd "<") '(" < " " << " " <<< "))
-      (key-combo-define-local (kbd ">") '(" > " " >> " " >>> "))
-      (key-combo-define-local (kbd "<=") " <= ")
-      (key-combo-define-local (kbd ">=") " >= ")
-      ;; operation
-      (key-combo-define-local (kbd "+") `(,(my-unary "+") " ++ " " +++ "))
-      (key-combo-define-local (kbd "-") (my-unary "-"))
-      (key-combo-define-local (kbd "*") '(" * " " ** "))
-      (key-combo-define-local (kbd "/") '(" / " " // "))
-      (key-combo-define-local (kbd "%") " % ")
-      (key-combo-define-local (kbd "^") '(" ^ " " ^^ " " ^^^ "))
-      ;; bits
-      (key-combo-define-local (kbd ".|.") " .|. ")
-      (key-combo-define-local (kbd ".&.") " .&. ")
-      ;; list
-      (key-combo-define-local (kbd ".") '(" . " ".."))
-      (key-combo-define-local (kbd "!") '("!" " !! "))
-      (key-combo-define-local (kbd "\\\\") " \\\\ ")
-      ;; monad
-      (key-combo-define-local (kbd ">>=") " >>= ")
-      (key-combo-define-local (kbd "=<") " =< ") ; required to make =<< work
-      (key-combo-define-local (kbd "=<<") " =<< ")
-      ;; arrow : does not work ...
-      ;; (key-combo-define-local (kbd "^>>") " ^>> ")
-      ;; (key-combo-define-local (kbd ">>^") " >>^ ")
-      ;; (key-combo-define-local (kbd "<<^") " <<^ ")
-      ;; (key-combo-define-local (kbd "^<<") " ^<< ")
-      ;; sequence
-      (key-combo-define-local (kbd "><") " >< ")
-      (key-combo-define-local (kbd ":>") " :> ")
-      (key-combo-define-local (kbd ":<") " :< ")
-      ;; others
-      (key-combo-define-local (kbd "?") " ? ")
-      (key-combo-define-local (kbd "@") " @ ")
-      (key-combo-define-local (kbd "~") " ~ ")
-      (key-combo-define-local (kbd "$") " $ ")
-      (key-combo-define-local (kbd "$!") " $! "))
-    (setup-hook 'haskell-mode-hook 'my-install-haskell-smartchr)
-    (setup-hook 'literate-haskell-mode-hook 'my-install-haskell-smartchr))
   )
 
 ;;       + declarative
