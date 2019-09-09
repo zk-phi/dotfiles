@@ -8,7 +8,7 @@
     clean = git-lfs clean %f
 [alias]
     # ---- git-submodule-update-checker
-    submodule-updates = "!f(){ git-submodule-update-checker.el $*; }; f"
+    submodule-updates = "!f(){ git submodule foreach 'git fetch origin master &> /dev/null; git --no-pager log --oneline HEAD..origin/master'; }; f"
     # ---- git-context-switch
     context = "!f(){ git-context-switch.el $*; }; f"
     # ---- initialize and configure user profile
