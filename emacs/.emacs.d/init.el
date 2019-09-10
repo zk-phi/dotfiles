@@ -2204,6 +2204,16 @@ lines far from the cursor."
     (delete-region beg end)
     (insert (url-hexify-string (encode-coding-string str 'utf-8)))))
 
+;; byte-compile directory recursively
+(defun my-byte-compile-dir (dir)
+  (interactive (list (read-directory-name "DIR: ")))
+  (let ((errors nil))
+    (dolist (file (directory-files-recursively dir "\\.el$"))
+      (unless (byte-compile-file file t)
+        (push file errors)))
+    (message "Following files have failed to compile: %s"
+             (mapcar (lambda (x) (file-name-nondirectory x)) errors))))
+
 ;;   + Misc: built-ins
 ;;   + | files
 
