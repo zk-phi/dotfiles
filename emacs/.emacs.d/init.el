@@ -766,9 +766,8 @@ cons of two integers which defines a range of the codepoints."
 
 ;; an Elisp implementation of "rgrep"
 (setup-lazy
-  '(phi-grep-in-directory
-    phi-grep-in-file
-    phi-grep-find-file-flat) "phi-grep")
+  '(phi-grep-in-directory phi-grep-in-file phi-grep-find-file-flat) "phi-grep"
+  (setq phi-grep-enable-syntactic-regex nil))
 
 ;;   + | edit
 
