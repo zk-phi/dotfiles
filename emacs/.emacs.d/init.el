@@ -2429,8 +2429,8 @@ emacs-lisp-mode."
 
 ;;   + | others
 
-;; autoload git-blamer
-(setup-lazy '(git-blamer) "git-blamer")
+;; autoload gitmole
+(setup-lazy '(gitmole-interactive-blame) "gitmole")
 
 ;; autoload smart-compile
 (setup-lazy '(smart-compile) "smart-compile")
