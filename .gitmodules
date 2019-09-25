@@ -350,3 +350,6 @@
 	path = emacs/site-lisp/plugins/s-el
 	url = https://github.com/magnars/s.el.git
 	ignore = dirty
+[submodule "emacs/site-lisp/my-plugins/gitmole"]
+	path = emacs/site-lisp/my-plugins/gitmole
+	url = https://github.com/zk-phi/gitmole.git
