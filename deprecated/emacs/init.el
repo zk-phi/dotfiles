@@ -226,6 +226,28 @@
       (action . (lambda (num) (goto-char num)))
       (multiline))))
 
+;; + highlight-indent-guides: core
+
+(!-
+ (setup "highlight-indent-guides"
+   (setq highlight-indent-guides-method       'character
+         highlight-indent-guides-character    ?|
+         highlight-indent-guides-responsive   'top
+         highlight-indent-guides-delay        0
+         highlight-indent-guides-auto-enabled nil)
+   (setup-hook 'prog-mode-hook
+     (highlight-indent-guides-mode 1))))
+
+;; + highlight-indent-guides: appearance
+
+(setup-after "highlight-indent-guides"
+  (set-face-attribute 'highlight-indent-guides-character-face nil
+                      :foreground 'unspecified
+                      :inherit 'elemental-hidden-fg-face)
+  (set-face-attribute 'highlight-indent-guides-top-character-face nil
+                      :foreground 'unspecified
+                      :inherit 'elemental-darker-fg-face))
+
 ;; + window-undo: core
 
 ;; seems not working :(
