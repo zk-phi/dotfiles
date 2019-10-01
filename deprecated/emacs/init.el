@@ -970,3 +970,37 @@
 ;; Spritz-like speed reading mode
 (setup-lazy '(spray-mode) "spray"
   (setq spray-wpm 400))
+
+;; + symon: core
+
+(!-
+ (setup "symon"
+   (setq symon-sparkline-ascent (!if my-home-system-p 97 100))
+   (symon-mode 1)))
+
+;; + symon-lingr: file
+
+(defconst my-lingr-account
+  (when (boundp 'my-lingr-account) my-lingr-account)
+  "My Lingr account.")
+
+(defconst my-lingr-log-file
+  (! (concat my-dat-directory "lingr"))
+  "File to save `symon-lingr' log in.")
+
+;; + symon-lingr: core
+
+(setup-after "symon"
+  (when my-lingr-account
+    (setup-in-idle "symon-lingr")
+    (setup-after "symon-lingr"
+      (setup-after "popwin"
+        (push '("*symon-lingr*") popwin:special-display-config))
+      (setq symon-lingr-user-name (car my-lingr-account)
+            symon-lingr-password  (cdr my-lingr-account)
+            symon-lingr-log-file  my-lingr-log-file
+            symon-lingr-app-key   "pvCm1t")
+      (add-to-list 'symon-monitors 'symon-lingr-monitor t)
+      ;; restart symon
+      (symon-mode -1)
+      (symon-mode 1))))

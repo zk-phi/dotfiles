@@ -114,9 +114,6 @@
   (defconst my-migemo-dictionary
     (when (boundp 'my-migemo-dictionary) my-migemo-dictionary)
     "Dictionary file for migemo.")
-  (defconst my-lingr-account
-    (when (boundp 'my-lingr-account) my-lingr-account)
-    "My Lingr account.")
   (defconst my-openweathermap-api-key
     (when (boundp 'my-openweathermap-api-key) my-openweathermap-api-key)
     "Access token for openweathermap API.")
@@ -205,10 +202,6 @@
 (defconst my-ispell-repl
   (! (concat my-dat-directory "ispell-repl"))
   "File name of personal ispell replacement dictionary.")
-
-;; (defconst my-lingr-log-file
-;;   (! (concat my-dat-directory "lingr"))
-;;   "File to save `symon-lingr' log in.")
 
 ;; Howm Datas
 
@@ -907,25 +900,6 @@ unary operators which can also be binary."
 
 (setup "commentize-conflict"
   (add-hook 'prog-mode-hook 'commentize-conflict-mode))
-
-;; (!-
-;;  (setup "symon"
-;;    (setq symon-sparkline-ascent (!if my-home-system-p 97 100))
-;;    (symon-mode 1)
-;;    ;; (when my-lingr-account
-;;    ;;   (setup-in-idle "symon-lingr")
-;;    ;;   (setup-after "symon-lingr"
-;;    ;;     (setup-after "popwin"
-;;    ;;       (push '("*symon-lingr*") popwin:special-display-config))
-;;    ;;     (setq symon-lingr-user-name (car my-lingr-account)
-;;    ;;           symon-lingr-password  (cdr my-lingr-account)
-;;    ;;           symon-lingr-log-file  my-lingr-log-file
-;;    ;;           symon-lingr-app-key   "pvCm1t")
-;;    ;;     (add-to-list 'symon-monitors 'symon-lingr-monitor t)
-;;    ;;     ;; restart symon
-;;    ;;     (symon-mode -1)
-;;    ;;     (symon-mode 1)))
-;;    ))
 
 ;; + | Commands
 ;;   + web browser [eww]
