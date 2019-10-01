@@ -501,6 +501,9 @@ cons of two integers which defines a range of the codepoints."
 (!when (eq system-type 'darwin)
   ;; ascii
   (!cond
+   ((member "Cica" (font-family-list))
+    (set-face-attribute 'default nil :family "Cica" :height 160)
+    (setq-default line-spacing 0.1))
    ((member "code8903" (font-family-list))
     (set-face-attribute 'default nil :family "code8903" :height 130)
     (setq-default line-spacing 0.1))
@@ -512,6 +515,8 @@ cons of two integers which defines a range of the codepoints."
     (setq-default line-spacing 0)))
   ;; unicode (fallback)
   (!cond
+   ((member "Cica" (font-family-list))
+    (my-set-fontset-font "Cica" 'unicode nil))
    ((member "code8903" (font-family-list))
     (my-set-fontset-font "code8903" 'unicode nil))
    ((member "SawarabiGothic phi" (font-family-list))
