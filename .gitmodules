@@ -90,10 +90,6 @@
 	path = emacs/site-lisp/my-plugins/key-chord
 	url = https://github.com/zk-phi/key-chord.git
 	ignore = dirty
-[submodule "emacs/site-lisp/my-plugins/symon"]
-	path = emacs/site-lisp/my-plugins/symon
-	url = https://github.com/zk-phi/symon.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/sdic"]
 	path = emacs/site-lisp/plugins/sdic
 	url = https://github.com/emacsattic/sdic.git
