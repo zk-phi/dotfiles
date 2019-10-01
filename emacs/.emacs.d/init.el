@@ -5225,7 +5225,7 @@ displayed, use substring of the buffer."
     (custom-theme-set-variables 'elemental-theme `(frame-background-mode ',mode))
     (let* ((bright-bg      (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 7))
            (brighter-bg    (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 14))
-           (highlight-bg-1 (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 21))
+           (highlight-bg-1 (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 25))
            (highlight-bg-2 (my-blend-colors highlight-bg-1 "red" 30))
            (darker-fg      (my-blend-colors fg-base bg-base 65))
            (dark-fg        (my-blend-colors fg-base bg-base 27))
