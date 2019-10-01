@@ -314,10 +314,6 @@
 	path = emacs/site-lisp/my-plugins/elemental-theme
 	url = https://github.com/zk-phi/elemental-theme.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/highlight-indent-guides"]
-	path = emacs/site-lisp/plugins/highlight-indent-guides
-	url = https://github.com/DarthFennec/highlight-indent-guides.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/highlight-parentheses.el"]
 	path = emacs/site-lisp/plugins/highlight-parentheses-el
 	url = https://github.com/tsdh/highlight-parentheses.el.git
