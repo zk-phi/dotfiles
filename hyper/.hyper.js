@@ -32,8 +32,8 @@ module.exports = {
     updateChannel: 'canary', // available: stable, canary
 
     // font
-    fontSize: 15,
-    fontFamily: 'Cica, code8903, Monaco, Menlo, "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
+    fontSize: 13,
+    fontFamily: 'nasia, code8903, Monaco, Menlo, "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
     padding: '6px',
 
     // colors
