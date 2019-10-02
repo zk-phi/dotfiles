@@ -3285,6 +3285,7 @@ emacs-lisp-mode."
       (2 'cperl-hash-key-face t)
       ("\\=[ \t]*{[ \t]*\\(-?[a-zA-Z0-9_:]+\\)[ \t]*}" nil nil (1 'cperl-hash-key-face t))))
    t)
+  (push '(cperl-mode . 1) font-lock-maximum-decoration)
 
   ;; make basic sigils part of a symbol
   (modify-syntax-entry ?$ "_" cperl-mode-syntax-table)
@@ -4914,6 +4915,10 @@ displayed, use substring of the buffer."
   )
 
 ;; + | Appearance
+;;   + font-lock level
+
+(setq font-lock-maximum-decoration '((t . t)))
+
 ;;   + mode-line settings
 ;;   + | faces
 
