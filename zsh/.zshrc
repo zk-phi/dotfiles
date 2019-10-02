@@ -378,6 +378,7 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias -g L='| less -R'
     abbrev-alias -g C='| cut -d " " -f'
     abbrev-alias -g S='| tr -s " "'
+    abbrev-alias -g NV='--no-verify'
     abbrev-alias -g -e B='$(git symbolic-ref --short HEAD 2>/dev/null)'
     abbrev-alias -g -e M='$(git log --graph --pretty=format:"%h %d" HEAD^ | grep "^* \+[0-9a-f]\+ \+(" | head -n 1 | sed "s/^.*(\([^,)]*\)[,)].*$/\1/")'
 else
