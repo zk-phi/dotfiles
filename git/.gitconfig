@@ -38,6 +38,8 @@
     ignored = "!f() { git ls-files -v | grep '^[[:lower:]]'; }; f"
     # ---- DWIM abort rebase, merge or cherry-pick
     abort = "!f() { local command=$(git status | grep -o \"git \\w* --abort\"); echo $command; $($command); }; f"
+    # ---- fetch and checkout remote branch
+    checkout-origin = "!f() { git fetch origin $1 && git checkout origin/$1; }; f"
     # ---- fix typos
     chekcout = checkout
     hcekcout = checkout

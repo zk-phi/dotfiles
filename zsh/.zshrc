@@ -348,6 +348,7 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias gcm='git commit -m'
     abbrev-alias gco='git checkout'
     abbrev-alias gcob='git checkout -b'
+    abbrev-alias gcoo='git checkout-origin'
     abbrev-alias gb='git branch'
     abbrev-alias gd='git diff'
     abbrev-alias gds='git diff --staged'
