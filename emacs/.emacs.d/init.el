@@ -394,6 +394,7 @@
 ;;   + | system
 
 (defalias 'yes-or-no-p 'y-or-n-p)
+(define-key query-replace-map (kbd "SPC") nil)
 
 (setq frame-title-format                    "%b - Emacs"
       completion-ignore-case                t
