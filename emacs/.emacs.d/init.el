@@ -5297,6 +5297,11 @@ displayed, use substring of the buffer."
   ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#9b744c" "#aa6b6b"
   ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
 
+  ;; ;; sakura
+  ;; (my-elemental-theme-apply-colors
+  ;;   "#192129" "#7d7d7d" "#9e9e9e" "#B0D391" "#FB9A85"
+  ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
+
   ;; ;; green ("monochrome" inspired palette 3)
   ;; (my-elemental-theme-apply-colors
   ;;   "#000000" "#007100" "#00c000" "#00b000" "#00ca00"
