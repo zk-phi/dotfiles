@@ -21,6 +21,7 @@
     patch = "!f(){ git diff $1^ $1 | git apply; }; f"
     unpatch = "!f(){ git diff $1^ $1 | git apply --reverse; }; f"
     stack = "!f(){ git diff HEAD...$1 | git apply; }; f"
+    merge-stash = "!f(){ git diff stash@{0}^ stash@{0} | git apply && git stash drop; }; f"
     # ---- reset current branch to the last commit we've checked out
     undo = "!f() { git reset $(git rev-parse --abbrev-ref HEAD)@{${1-1}}; }; f"
     # ---- compare two branches excluding commits from other branches

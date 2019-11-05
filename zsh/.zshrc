@@ -358,6 +358,8 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias gs='git show'
     abbrev-alias gst='git status'
     abbrev-alias gsta='git stash'
+    abbrev-alias gstap='git stash pop'
+    abbrev-alias gstam='git merge-stash'
     abbrev-alias gsub='git submodule update --init'
     abbrev-alias -e gpu='git pull origin $(git symbolic-ref --short HEAD 2>/dev/null) --ff-only'
 
