@@ -12,7 +12,7 @@
     # ---- git-context-switch
     context = "!f(){ git-context-switch.el $*; }; f"
     # ---- initialize and configure user profile
-    configure = "!f(){ git config --local user.name p; git config --local user.email _; }; f"
+    configure = "!f(){ git config --local user.name "zk-phi"; git config --local user.email "zk-phi@users.noreply.github.com"; }; f"
     initialize = "!f(){ git init; git configure; git commit --allow-empty -m 'Initial commit'; }; f"
     # ---- mark new files as tracked
     touch = add -N
