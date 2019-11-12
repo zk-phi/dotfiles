@@ -492,9 +492,11 @@ cons of two integers which defines a range of the codepoints."
 (!when (eq system-type 'darwin)
   ;; ascii
   (!cond
+   ;; https://github.com/zk-phi/nasia
    ((member "nasia" (font-family-list))
     (set-face-attribute 'default nil :family "nasia" :height 140)
     (setq-default line-spacing 0.1))
+   ;; https://github.com/zk-phi/code8903
    ((member "code8903" (font-family-list))
     (set-face-attribute 'default nil :family "code8903" :height 130)
     (setq-default line-spacing 0.1))
