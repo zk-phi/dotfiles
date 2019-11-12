@@ -93,9 +93,6 @@
 ;; can write system-specific settings not in this file but in it.
 ;; Note that we need some of these values also during compilation.
 (eval-and-compile
-  (defconst my-home-system-p
-    (when (boundp 'my-home-system-p) my-home-system-p)
-    "Whether Emacs is running on my home system.")
   (defconst my-additional-include-directories
     (when (boundp 'my-additional-include-directories) my-additional-include-directories)
     "List of directories counted as additional info directory.")
