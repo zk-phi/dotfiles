@@ -500,9 +500,6 @@ cons of two integers which defines a range of the codepoints."
    ((member "code8903" (font-family-list))
     (set-face-attribute 'default nil :family "code8903" :height 130)
     (setq-default line-spacing 0.1))
-   ((member "Hack phi" (font-family-list))
-    (set-face-attribute 'default nil :family "Hack phi" :height 140)
-    (setq-default line-spacing 0.1))
    (t
     (set-face-attribute 'default nil :family "Monaco" :height 130)
     (setq-default line-spacing 0)))
