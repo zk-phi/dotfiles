@@ -317,6 +317,9 @@ alias money="ruby -e 'C=\`stty size\`.scan(/\d+/)[1].to_i;S=\"\xF0\x9F\x92\xB4\"
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=yellow'
 ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(forward-char-or-accept-suggested-word)
 
+# count [_-/] as word delimters
+WORDCHARS='*?.[]~=&;!#$%^(){}<>'
+
 # If CURSOR is at the end of the BUFFER, excluding POSTDISPLAY (which
 # zsh-autosuggestions temporarilly adds at the end of the BUFFER),
 # invoke forward-word to complete a word. Otherwise just invoke
