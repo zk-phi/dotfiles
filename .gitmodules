@@ -234,10 +234,6 @@
 	path = emacs/site-lisp/my-plugins/ac-c-headers
 	url = https://github.com/zk-phi/ac-c-headers.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/c-eldoc"]
-	path = emacs/site-lisp/plugins/c-eldoc
-	url = https://github.com/nflath/c-eldoc.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/scad-preview"]
 	path = emacs/site-lisp/my-plugins/scad-preview
 	url = https://github.com/zk-phi/scad-preview.git

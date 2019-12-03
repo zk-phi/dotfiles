@@ -1004,3 +1004,31 @@
       ;; restart symon
       (symon-mode -1)
       (symon-mode 1))))
+
+;; + eldoc
+
+(setup-lazy '(turn-on-eldoc-mode) "eldoc"
+  (setq eldoc-idle-delay                0.1
+        eldoc-echo-area-use-multiline-p nil))
+
+(setup-after "lisp-mode"
+  (setup-expecting "eldoc"
+    (setup-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)))
+
+(setup-after "gauche-mode"
+  (setup-after "scheme-complete"
+    (setup-expecting "eldoc"
+      (setup-hook 'gauche-mode-hook
+        (turn-on-eldoc-mode)
+        (setq-local eldoc-documentation-function 'scheme-get-current-symbol-info)))))
+
+(setup-after "cc-mode"
+  (setup-expecting "eldoc"
+    (setup "c-eldoc"
+      (setq c-eldoc-buffer-regenerate-time 15)
+      (setup "find-file"
+        (setq c-eldoc-cpp-command "cpp"
+              c-eldoc-includes (mapconcat (lambda (s) (format "-I\"%s\"" s))
+                                          cc-search-directories " ")))
+      (setup-hook 'c++-mode-hook 'c-turn-on-eldoc-mode)
+      (setup-hook 'c-mode-hook 'c-turn-on-eldoc-mode))))

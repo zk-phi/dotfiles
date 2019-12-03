@@ -667,12 +667,6 @@ cons of two integers which defines a range of the codepoints."
 (setup-after "newcomment"
   (setq comment-empty-lines t))
 
-;;   + | assistants
-
-(setup-lazy '(turn-on-eldoc-mode) "eldoc"
-  (setq eldoc-idle-delay                0.1
-        eldoc-echo-area-use-multiline-p nil))
-
 ;;   + | network
 
 ;; tramp settings
@@ -2538,8 +2532,6 @@ emacs-lisp-mode."
   (font-lock-add-keywords
    'emacs-lisp-mode '(("(\\(defvar-local\\)" 1 font-lock-keyword-face)))
   (setup-keybinds emacs-lisp-mode-map '("M-TAB" "C-j") nil)
-  (setup-expecting "eldoc"
-    (setup-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode))
   (setup-after "smart-compile"
     ;; we may assume that setup.el is already loaded
     (setq smart-compile-alist
@@ -2586,7 +2578,7 @@ emacs-lisp-mode."
   (setup-hook 'gauche-mode-hook
     (setq scheme-program-name "gosh -i"))
 
-  ;; use auto-complete and eldoc in gauche-mode buffers
+  ;; use auto-complete in gauche-mode buffers
   (setup "scheme-complete"
     (setq scheme-default-implementation              'gauche
           scheme-always-use-default-implementation-p t)
@@ -2598,11 +2590,7 @@ emacs-lisp-mode."
         '((candidates . (all-completions ac-target (apply 'append (scheme-current-env))))))
       (setup-hook 'gauche-mode-hook
         (make-local-variable 'ac-sources)
-        (add-to-list 'ac-sources 'my-ac-source-scheme-complete t)))
-    (setup-expecting "eldoc"
-      (setup-hook 'gauche-mode-hook
-        (turn-on-eldoc-mode)
-        (setq-local eldoc-documentation-function 'scheme-get-current-symbol-info))))
+        (add-to-list 'ac-sources 'my-ac-source-scheme-complete t))))
 
   ;; run scheme REPL in another window
   (defun my-run-scheme-other-window ()
@@ -3105,16 +3093,6 @@ emacs-lisp-mode."
     (setup-after "ac-c-headers"
       (setup-hook 'c-mode-hook 'my-ac-install-c-sources)
       (setup-hook 'c++-mode-hook 'my-ac-install-c-sources)))
-
-  (setup-expecting "eldoc"
-    (setup "c-eldoc"
-      (setq c-eldoc-buffer-regenerate-time 15)
-      (setup "find-file"
-        (setq c-eldoc-cpp-command "cpp"
-              c-eldoc-includes (mapconcat (lambda (s) (format "-I\"%s\"" s))
-                                          cc-search-directories " ")))
-      (setup-hook 'c++-mode-hook 'c-turn-on-eldoc-mode)
-      (setup-hook 'c-mode-hook 'c-turn-on-eldoc-mode)))
 
   (setup-after "smart-compile"
     (push `(c-mode . ,(concat "gcc -ansi -pedantic -Wall -W"
