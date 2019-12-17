@@ -830,10 +830,9 @@ cons of two integers which defines a range of the codepoints."
 ;;   + | keyboards
 
 ;; not key-chord in MELPA but my own fork of key-chord
-(!-
- (setup "key-chord"
-   (key-chord-mode 1)
-   (setq key-chord-safety-interval-forward 0.55)))
+(setup "key-chord"
+  (key-chord-mode 1)
+  (setq key-chord-safety-interval-forward 0.55))
 
 (setup-lazy '(key-combo-mode key-combo-define-local) "key-combo"
   ;; input-method (and multiple-cursors) is incompatible with key-combo
@@ -2370,19 +2369,18 @@ emacs-lisp-mode."
 ;;   + | trace changes
 
 ;; tree-like undo history browser
-(!-
- (setup "diff")                ; dependency
- (setup "undo-tree"
-   (global-undo-tree-mode 1)
-   (setup-keybinds undo-tree-visualizer-mode-map
-     "j" 'undo-tree-visualize-redo
-     "k" 'undo-tree-visualize-undo
-     "l" 'undo-tree-visualize-switch-branch-right
-     "h" 'undo-tree-visualize-switch-branch-left
-     "RET" 'undo-tree-visualizer-quit
-     "C-g" 'undo-tree-visualizer-abort
-     "q" 'undo-tree-visualizer-abort)
-   (setup-keybinds undo-tree-map '("M-_") nil)))
+(setup "undo-tree"
+  (setup "diff")                ; dependency
+  (global-undo-tree-mode 1)
+  (setup-keybinds undo-tree-visualizer-mode-map
+    "j" 'undo-tree-visualize-redo
+    "k" 'undo-tree-visualize-undo
+    "l" 'undo-tree-visualize-switch-branch-right
+    "h" 'undo-tree-visualize-switch-branch-left
+    "RET" 'undo-tree-visualizer-quit
+    "C-g" 'undo-tree-visualizer-abort
+    "q" 'undo-tree-visualizer-abort)
+  (setup-keybinds undo-tree-map '("M-_") nil))
 
 ;;   + | assistants
 
