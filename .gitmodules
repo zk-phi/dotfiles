@@ -341,3 +341,9 @@
 [submodule "emacs/site-lisp/my-plugins/gitmole"]
 	path = emacs/site-lisp/my-plugins/gitmole
 	url = https://github.com/zk-phi/gitmole.git
+[submodule "emacs/site-lisp/plugins/nim-mode"]
+	path = emacs/site-lisp/plugins/nim-mode
+	url = https://github.com/nim-lang/nim-mode.git
+[submodule "emacs/site-lisp/plugins/commenter"]
+	path = emacs/site-lisp/plugins/commenter
+	url = https://github.com/yuutayamada/commenter.git
