@@ -3503,6 +3503,11 @@ emacs-lisp-mode."
   :prepare (push '("\\.bf" . bfbuilder-mode) auto-mode-alist))
 
 ;;       + other
+;;         + Nim
+
+(setup-lazy '(nim-mode) "nim-mode"
+  :prepare (push '("\\.nim$" . nim-mode) auto-mode-alist))
+
 ;;         + AHK
 
 (setup-lazy '(ahk-mode) "ahk-mode"
