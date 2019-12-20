@@ -3506,7 +3506,9 @@ emacs-lisp-mode."
 ;;         + Nim
 
 (setup-lazy '(nim-mode) "nim-mode"
-  :prepare (push '("\\.nim$" . nim-mode) auto-mode-alist))
+  :prepare (push '("\\.nim$" . nim-mode) auto-mode-alist)
+  (setup-after "phi-autopair"
+    (push (cons 'nim-mode nim-indent-offset) phi-autopair-indent-offset-alist)))
 
 ;;         + AHK
 
