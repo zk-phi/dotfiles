@@ -2433,8 +2433,8 @@ emacs-lisp-mode."
     anything-manage-advice) "anything-config")
 
 ;; start a HTTPd for this directory
-(setup-lazy '(my-start-httpd) "simple-httpd"
-  (defun my-start-httpd ()
+(setup-lazy '(my-start-httpd-web-server) "simple-httpd"
+  (defun my-start-httpd-web-server ()
     (interactive)
     (httpd-stop)
     (let* ((root (read-directory-name "Root Directory: " nil nil t))
