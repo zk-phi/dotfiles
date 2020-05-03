@@ -1776,7 +1776,7 @@ unary operators which can also be binary."
                       (set-window-buffer w1 (window-buffer w2))
                       (set-window-buffer w2 tmp)))))
         (dolist (key keys) (define-key m key def))))
-    (set-temporary-overlay-map m t)))
+    (set-transient-map m t)))
 
 (defun my-kill-this-buffer (&optional force)
   "Like kill-this-buffer but accepts FORCE argument to skip
@@ -2000,10 +2000,11 @@ kill-buffer-query-functions."
              (goto-char marker)
              (let ((repeat-key (vector last-input-event)))
                (message "(Type %s to repeat)" (edmacro-format-keys repeat-key))
-               (set-temporary-overlay-map
+               (set-transient-map
                 (let ((km (make-sparse-keymap)))
                   (define-key km repeat-key 'my-jump-back!)
-                  km) t)))))))
+                  km)
+                t)))))))
 
 ;;   + | edit
 
