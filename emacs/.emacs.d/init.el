@@ -684,7 +684,7 @@ cons of two integers which defines a range of the codepoints."
   (define-abbrev-table 'my-tramp-abbrev-table my-tramp-abbrevs)
   (setup-hook 'minibuffer-setup-hook
     (abbrev-mode 1)
-    (setq local-abbrev-table my-tramp-abbrev-table)))
+    (setq local-abbrev-table (symbol-value 'my-tramp-abbrev-table))))
 
 ;; use SSH over fakecygpty on Windows
 (!when (executable-find "fakecygpty")
