@@ -608,6 +608,10 @@ cons of two integers which defines a range of the codepoints."
 
 ;;   + | compilation
 
+;; get $PATH from the shell
+(setup-lazy "exec-path-from-shell"
+  (exec-path-from-shell-initialize))
+
 ;; setting for compilation result buffer
 (setup-after "compile"
   (setq compilation-scroll-output  'first-error
