@@ -308,7 +308,7 @@
 (setup-lazy '(my-make-color-name) "color"
   (defun my-make-color-name (r g b)
     (interactive (list (read-number "R: ") (read-number "G: ") (read-number "B: ")))
-    (funcall (if (called-interactively-p) 'insert 'identity)
+    (funcall (if (called-interactively-p 'any) 'insert 'identity)
              (color-rgb-to-hex (/ r 255.0) (/ g 255.0) (/ b 255.0) 2))))
 
 ;; + | System
