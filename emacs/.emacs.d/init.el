@@ -1,6 +1,7 @@
 ;; init.el (for Emacs 24.4) | 2012- zk_phi
 
 (require 'setup)
+(setq setup-delay-interval 1)
 (setup-initialize)
 
 (setup-include "cl-lib")
@@ -720,9 +721,8 @@ cons of two integers which defines a range of the codepoints."
 ;;   + Misc: plug-ins
 ;;   + | buffers / windows
 
-(!-
- (setup "smooth-scrolling"
-   (setq smooth-scroll-margin 3)))
+(setup "smooth-scrolling"
+  (setq smooth-scroll-margin 3))
 
 (setup "popwin"
   (setq popwin:reuse-window nil
