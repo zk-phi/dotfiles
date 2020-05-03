@@ -2294,7 +2294,7 @@ emacs-lisp-mode."
   (add-hook 'calendar-today-visible-hook 'calendar-mark-today)
   ;; mark japanese holidays
   (setup "japanese-holidays"
-    (setq mark-holidays-in-calendar t
+    (setq calendar-mark-holidays-flag t
           calendar-holidays (append japanese-holidays
                                     holiday-local-holidays
                                     holiday-other-holidays))))
