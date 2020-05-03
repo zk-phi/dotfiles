@@ -2336,7 +2336,6 @@ emacs-lisp-mode."
 (setup-lazy '(er/expand-region) "expand-region")
 
 ;; autoload anything-show-kill-ring
-(!- (setup "anything-config"))
 (setup-lazy '(anything-show-kill-ring) "anything-config"
   :prepare (setup-in-idle "anything-config")
   (setup-after "popwin"
