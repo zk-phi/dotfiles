@@ -850,10 +850,10 @@ cons of two integers which defines a range of the codepoints."
 unary operators which can also be binary."
   `(lambda ()
      (interactive)
-     (if (and (looking-back "[])\"a-zA-Z0-9_] *")
-              (not (looking-back "\\(return\\|my\\|our\\) *")))
-         (let ((back (unless (looking-back " ") " "))
-               (forward (unless (looking-at " ") " ")))
+     (if (and (looking-back "[])\"a-zA-Z0-9_] *" (point-at-bol))
+              (not (looking-back "\\(return\\|my\\|our\\) *" (point-at-bol))))
+         (let ((back (unless (= (char-before) ?\s) " "))
+               (forward (unless (= (char-after) ?\s) " ")))
            (insert (concat back ,str forward)))
        (insert ,str))))
 
@@ -1483,7 +1483,7 @@ unary operators which can also be binary."
                    ((and (save-excursion  ; whole word is selected
                            (goto-char (region-beginning)) (looking-at "\\<"))
                          (save-excursion
-                           (goto-char (region-end)) (looking-back "\\>")))
+                           (goto-char (region-end)) (looking-back "\\>" (point-at-bol))))
                     (setq my-mc/mark-all-last-executed 'words-defun)
                     (mc/mark-all-words-like-this-in-defun)
                     (message "[WORDS defun] -> WORDS -> ALL"))
@@ -1722,7 +1722,7 @@ unary operators which can also be binary."
   (interactive)
   (cond ((use-region-p)
          (capitalize-region (region-beginning) (region-end)))
-        ((looking-at "[a-z]")
+        ((<= ?a (char-after) ?z)
          (capitalize-word 1))
         (t
          (capitalize-word -1))))
@@ -1919,13 +1919,13 @@ kill-buffer-query-functions."
 (defun my-next-line (n)
   (interactive "p")
   (call-interactively 'next-line)
-  (when (looking-back "^[\s\t]*")
+  (when (looking-back "^[\s\t]*" (point-at-bol))
     (let (goal-column) (back-to-indentation))))
 
 (defun my-previous-line (n)
   (interactive "p")
   (call-interactively 'previous-line)
-  (when (looking-back "^[\s\t]*")
+  (when (looking-back "^[\s\t]*" (point-at-bol))
     (let (goal-column) (back-to-indentation))))
 
 (defun my-smart-bol ()
@@ -2043,9 +2043,9 @@ kill-buffer-query-functions."
 (defun my-transpose-chars ()
   (interactive)
   (let ((replacement
-         (or (cl-some (lambda (pair) (and (looking-back (car pair)) (cdr pair)))
+         (or (cl-some (lambda (pair) (and (looking-back (car pair) (point-at-bol)) (cdr pair)))
                       my-transpose-chars-list)
-             (and (looking-back "\\(.\\)\\(.\\)") "\\2\\1"))))
+             (and (looking-back "\\(.\\)\\(.\\)" (max 0 (- (point) 2))) "\\2\\1"))))
     (when replacement
       (replace-match replacement))))
 
@@ -2080,8 +2080,8 @@ kill-buffer-query-functions."
     (cl-labels ((maybe-insert-space ()
                                     ;; (foo
                                     ;;  ^ we do not need space here
-                                    (and (looking-at "[^])}]")
-                                         (looking-back "[^[({]")
+                                    (and (not (memq (char-after) '(?\] ?\) ?\} nil)))
+                                         (not (memq (char-before) '(?\[ ?\( ?\{ nil)))
                                          (insert " "))))
       (cond ((= bol eol)              ; blank-line(s) : shrink => join
              (if (< (- (line-number-at-pos eos)
@@ -2119,7 +2119,7 @@ kill-buffer-query-functions."
 prefix. When LINES is specified, matches must be at most LINES
 lines far from the cursor."
   (interactive)
-  (or (and (looking-back "\\_<\\(?:\\sw\\|\\s_\\)*")
+  (or (and (looking-back "\\_<\\(?:\\sw\\|\\s_\\)*" (point-at-bol))
            (save-excursion
              (search-backward-regexp
               (concat (regexp-quote (match-string 0)) "\\(\\(?:\\sw\\|\\s_\\)*\\)\\_>")
@@ -2259,7 +2259,7 @@ emacs-lisp-mode."
            (flyspell-correct-word-before-point))
           ((and (not (eq this-command last-command))
                 (eq major-mode 'emacs-lisp-mode)
-                (looking-back "[[(\s,'`@]")
+                (memq (char-before) '(?\[ ?\( ?\s ?, ?' ?` ?@))
                 buffer-file-name)
            (insert (file-name-base buffer-file-name) "-")
            (dabbrev--reset-global-variables))
@@ -2517,7 +2517,7 @@ emacs-lisp-mode."
 (setup-expecting "key-combo"
   (defun my-lisp-smart-dot ()
     (interactive)
-    (insert (cond ((looking-back "[0-9]") ".")
+    (insert (cond ((<= ?0 (char-before) ?9) ".")
                   ((= (char-before) ?\s) ". ")
                   (t " . "))))
   (setup-hook 'my-lispy-mode-common-hook
@@ -3012,7 +3012,7 @@ emacs-lisp-mode."
                (goto-char (+ 2 end))
                (insert (if one-liner " }" "\n}"))
                (indent-region beg (point))))
-            ((looking-back "\s")         ; insert {`!!'}
+            ((= (char-before) ?\s)         ; insert {`!!'}
              (indent-region (point) (progn (insert "{  }") (point)))
              (backward-char 2))
             (t                           ; insert {\n`!!'\n}
@@ -3104,12 +3104,12 @@ emacs-lisp-mode."
   (setup-expecting "key-combo"
     (defun my-c-smart-angles ()
       (interactive)
-      (if (looking-back "#include *")
+      (if (looking-back "#include *" (point-at-bol))
           (progn
             (insert "<>")
             (backward-char 1))
-        (let ((back (unless (looking-back " ") " "))
-              (forward (unless (looking-at " ") " ")))
+        (let ((back (unless (= (char-before) ?\s) " "))
+              (forward (unless (= (char-after) ?\s) " ")))
           (insert (concat back "<" forward)))))
     (defun my-c-smart-pointer (str)
       (eval `(lambda ()
@@ -3129,8 +3129,8 @@ emacs-lisp-mode."
                                                (match-beginning 0) (match-end 0)
                                                'face 'font-lock-type-face))))))))
                    (insert ,str)
-                 (let ((back (unless (looking-back " ") " "))
-                       (forward (unless (looking-at " ") " ")))
+                 (let ((back (unless (= (char-before) ?\s) " "))
+                       (forward (unless (= (char-after) ?\s) " ")))
                    (insert (concat back ,str forward)))))))
     (setup-hook 'c-mode-hook
       (my-install-c-common-smartchr)
@@ -3398,11 +3398,11 @@ emacs-lisp-mode."
   (defun my-prolog-smart-pipes ()
     "insert pipe surrounded by spaces"
     (interactive)
-    (if (looking-back "\\[")
+    (if (= (char-before) ?\[)
         (insert "| ")
-      (insert (concat (unless (looking-back " ") " ")
+      (insert (concat (unless (= (char-before) ?\s) " ")
                       "|"
-                      (unless (looking-at " ") " ")))))
+                      (unless (= (char-after) ?\s) " ")))))
   (defun my-install-prolog-common-smartchr ()
     (key-combo-mode 1)
     ;; comments, periods
@@ -4365,7 +4365,7 @@ emacs-lisp-mode."
     (interactive "P")
     (let ((dired-marker-char
            (if (save-excursion (beginning-of-line)
-                               (looking-at " "))
+                               (= (char-after) ?\s))
                dired-marker-char ?\040)))
       (dired-mark arg)))
 
@@ -4451,7 +4451,7 @@ emacs-lisp-mode."
                              files (1+ files))
                        (while (ignore-errors
                                 (let* ((beg (goto-char (comment-search-forward (point-max))))
-                                       (beg-okay (looking-back "^[\s\t]*")))
+                                       (beg-okay (looking-back "^[\s\t]*" (point-at-bol))))
                                   (forward-comment 1)
                                   (when (and beg-okay (looking-at "^[\s\t]*\\|[\s\t]*$"))
                                     (setq comments (+ (count-lines beg (point)) comments))))
@@ -4502,7 +4502,7 @@ emacs-lisp-mode."
   (setup-after "paren"
     (defadvice show-paren-function (around vi-show-paren activate)
       (if (and (eq major-mode 'vi-mode)
-               (looking-back "\\s)"))
+               (looking-back "\\s)" (max 0 (- (point) 2))))
           (save-excursion (forward-char) ad-do-it)
         ad-do-it)))
 
