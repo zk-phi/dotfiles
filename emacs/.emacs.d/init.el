@@ -3098,6 +3098,7 @@ emacs-lisp-mode."
 
   (setup-after "smart-compile"
     (setup "quickrun"
+      (quickrun-set-default "c" "c/gcc")
       (push `(c-mode . (quickrun-shell)) smart-compile-alist)))
 
   (setup-expecting "key-combo"
