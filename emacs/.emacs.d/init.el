@@ -609,8 +609,9 @@ cons of two integers which defines a range of the codepoints."
 ;;   + | compilation
 
 ;; get $PATH from the shell
-(setup-lazy "exec-path-from-shell"
-  (exec-path-from-shell-initialize))
+(!-
+ (setup "exec-path-from-shell"
+   (exec-path-from-shell-initialize)))
 
 ;; setting for compilation result buffer
 (setup-after "compile"
@@ -4975,13 +4976,14 @@ displayed, use substring of the buffer."
 
 (defun my-time-string ()
   (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face))
-(setup "sky-color-clock"
-  (sky-color-clock-initialize 35.40)
-  ;; TODO: Enable when "multicolor fonts are supported on a free system too".
-  (setq sky-color-clock-enable-emoji-icon nil)
-  (when my-openweathermap-api-key
-    (sky-color-clock-initialize-openweathermap-client my-openweathermap-api-key 1850144))
-  (defun my-time-string () (sky-color-clock)))
+(!-
+ (setup "sky-color-clock"
+   (sky-color-clock-initialize 35.40)
+   ;; TODO: Enable when "multicolor fonts are supported on a free system too".
+   (setq sky-color-clock-enable-emoji-icon nil)
+   (when my-openweathermap-api-key
+     (sky-color-clock-initialize-openweathermap-client my-openweathermap-api-key 1850144))
+   (defun my-time-string () (sky-color-clock))))
 
 (defvar-local my-current-branch-name nil)
 (setup-hook 'find-file-hook
