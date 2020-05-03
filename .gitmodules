@@ -350,3 +350,6 @@
 [submodule "emacs/site-lisp/plugins/exec-path-from-shell"]
 	path = emacs/site-lisp/plugins/exec-path-from-shell
 	url = https://github.com/purcell/exec-path-from-shell.git
+[submodule "emacs/site-lisp/plugins/quickrun"]
+	path = emacs/site-lisp/plugins/quickrun
+	url = https://github.com/emacsorphanage/quickrun.git
