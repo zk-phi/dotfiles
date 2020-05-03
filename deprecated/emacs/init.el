@@ -219,7 +219,7 @@
           ;; change start position of search
           (setq start (cadr tmp)))
         (reverse candidates))))
-  (defvar anything-source-highlight-changes-mode
+  (defvar my-anything-source-highlight-changes-mode
     '((name . "Changes")
       (init . (lambda () (setq my-change-buffer (current-buffer))))
       (candidates . my-change-candidates)

@@ -1296,11 +1296,12 @@ unary operators which can also be binary."
     "My 'anything'."
     (interactive)
     (anything
-     :sources (list (and (boundp 'anything-source-highlight-changes-mode)
-                         anything-source-highlight-changes-mode)
-                    (and (boundp 'my-anything-source-flycheck)
-                         my-anything-source-flycheck)
-                    anything-c-source-imenu)
+     :sources `(,@(and (boundp 'my-anything-source-highlight-changes-mode)
+                       '(my-anything-source-highlight-changes-mode))
+                ,@(and (boundp 'my-anything-source-flycheck)
+                       '(my-anything-source-flycheck))
+                ,@ (and (boundp 'anything-c-source-imenu)
+                        '(anything-c-source-imenu)))
      :input nil ;; (thing-at-point 'symbol)
      :prompt "symbol : "))
 
