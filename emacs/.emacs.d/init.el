@@ -53,8 +53,8 @@
 ;;
 ;; - sf : iy-go-to-char-backward
 ;; - jl : iy-go-to-char
-;; - fe,fr : git-complete / yas-next-field
-;; - ji,jo : git-complete / yas-next-field
+;; - fe,fr : dabbrev (git-complete) / yas-next-field
+;; - ji,jo : dabbrev (git-complete) / yas-next-field
 
 ;; special keys
 ;;
@@ -1325,7 +1325,7 @@ unary operators which can also be binary."
 ;;   + yasnippet settings [yasnippet]
 
 (setup-lazy
-  '(my-yas-next-field-or-git-complete
+  '(my-yas-next-field-or-dabbrev-expand
     yas--expand-or-prompt-for-template) "yasnippet"
   :prepare (setup-in-idle "yasnippet")
 
@@ -1357,12 +1357,10 @@ unary operators which can also be binary."
           (move-beginning-of-line 1)
         (goto-char pos))))
 
-  (defun my-yas-next-field-or-git-complete ()
+  (defun my-yas-next-field-or-dabbrev-expand ()
     (interactive)
     (cond ((yas-active-snippets)
            (yas-next-field))
-          ((fboundp 'git-complete)
-           (git-complete))
           (t
            (my-dabbrev-expand))))
 
@@ -2102,7 +2100,7 @@ kill-buffer-query-functions."
              (just-one-space))))))
 
 ;; delimited dabbrev expand
-(defvar my-dabbrev-expand-fallback nil)
+(defvar my-dabbrev-expand-fallback 'my-expand-dwim)
 (defun my-dabbrev-expand (&optional lines)
   "Expands to the most recent, preceding word for which this is a
 prefix. When LINES is specified, matches must be at most LINES
@@ -2332,10 +2330,13 @@ emacs-lisp-mode."
     (push '("*Kill Ring*") popwin:special-display-config)))
 
 ;; completion via `git grep'
+(setup-in-idle "git-complete")
 (setup-lazy '(git-complete) "git-complete"
-  :prepare (setup-in-idle "git-complete")
+  ;; create the fallback chain (my-dabbrev-expand -> git-complete -> my-expand-dwim)
+  :prepare (setq my-dabbrev-expand-fallback 'git-complete)
   (setq git-complete-limit-extension   t
-        git-complete-repeat-completion t)
+        git-complete-repeat-completion t
+        git-complete-fallback-function 'my-expand-dwim)
   (push '(web-mode "jsx" "js"
                    "scss" "css"
                    "html" "html.ep")
@@ -5716,23 +5717,22 @@ displayed, use substring of the buffer."
   (key-chord-define-global "hh" 'my-capitalize-word-dwim)
   (key-chord-define-global "jj" 'my-upcase-previous-word)
   (key-chord-define-global "kk" 'my-downcase-previous-word)
-  (setup-expecting "git-complete"
-    (setup-hook 'prog-mode-hook
-      (key-chord-define-local "fr" 'git-complete)
-      (key-chord-define-local "fe" 'git-complete)
-      (key-chord-define-local "ji" 'git-complete)
-      (key-chord-define-local "jo" 'git-complete)))
+  (setup-hook 'prog-mode-hook
+    (key-chord-define-local "fr" 'my-dabbrev-expand)
+    (key-chord-define-local "fe" 'my-dabbrev-expand)
+    (key-chord-define-local "ji" 'my-dabbrev-expand)
+    (key-chord-define-local "jo" 'my-dabbrev-expand))
   (setup-after "yasnippet"
-    (key-chord-define yas-keymap "fr" 'my-yas-next-field-or-git-complete)
-    (key-chord-define yas-keymap "fe" 'my-yas-next-field-or-git-complete)
-    (key-chord-define yas-keymap "ji" 'my-yas-next-field-or-git-complete)
-    (key-chord-define yas-keymap "jo" 'my-yas-next-field-or-git-complete)
+    (key-chord-define yas-keymap "fr" 'my-yas-next-field-or-dabbrev-expand)
+    (key-chord-define yas-keymap "fe" 'my-yas-next-field-or-dabbrev-expand)
+    (key-chord-define yas-keymap "ji" 'my-yas-next-field-or-dabbrev-expand)
+    (key-chord-define yas-keymap "jo" 'my-yas-next-field-or-dabbrev-expand)
     ;; move to the next field even while auto-complete is in action
     (setup-after "auto-complete"
-      (key-chord-define ac-completing-map "fr" 'my-yas-next-field-or-git-complete)
-      (key-chord-define ac-completing-map "fe" 'my-yas-next-field-or-git-complete)
-      (key-chord-define ac-completing-map "ji" 'my-yas-next-field-or-git-complete)
-      (key-chord-define ac-completing-map "jo" 'my-yas-next-field-or-git-complete)))
+      (key-chord-define ac-completing-map "fr" 'my-yas-next-field-or-dabbrev-expand)
+      (key-chord-define ac-completing-map "fe" 'my-yas-next-field-or-dabbrev-expand)
+      (key-chord-define ac-completing-map "ji" 'my-yas-next-field-or-dabbrev-expand)
+      (key-chord-define ac-completing-map "jo" 'my-yas-next-field-or-dabbrev-expand)))
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "fd" 'iy-go-to-char-backward)
     (key-chord-define-global "jk" 'iy-go-to-char)))
