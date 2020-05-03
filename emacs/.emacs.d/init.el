@@ -405,7 +405,7 @@
       echo-keystrokes                       0.1
       delete-by-moving-to-trash             t
       ;; common-win.el
-      x-select-enable-clipboard             t
+      select-enable-clipboard               t
       ;; mule-cmds.el
       default-input-method                  "japanese"
       ;; startup.el
