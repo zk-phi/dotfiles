@@ -4,6 +4,7 @@
 Symlink .zshrc and .zsh.d
 
 : cd ~
+: ln -s ~/dotfiles/zsh/.zshenv
 : ln -s ~/dotfiles/zsh/.zshrc
 : ln -s ~/dotfiles/zsh/.zsh.d
 
