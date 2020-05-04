@@ -20,7 +20,7 @@
 	ignore = dirty
 [submodule "emacs/site-lisp/plugins/undohist-el"]
 	path = emacs/site-lisp/plugins/undohist-el
-	url = https://github.com/m2ym/undohist-el.git
+	url = https://github.com/zk-phi/undohist.git
 	ignore = dirty
 [submodule "emacs/site-lisp/plugins/docker-tramp.el"]
 	path = emacs/site-lisp/plugins/docker-tramp-el
