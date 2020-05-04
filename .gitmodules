@@ -347,9 +347,6 @@
 [submodule "emacs/site-lisp/plugins/commenter"]
 	path = emacs/site-lisp/plugins/commenter
 	url = https://github.com/yuutayamada/commenter.git
-[submodule "emacs/site-lisp/plugins/exec-path-from-shell"]
-	path = emacs/site-lisp/plugins/exec-path-from-shell
-	url = https://github.com/purcell/exec-path-from-shell.git
 [submodule "emacs/site-lisp/plugins/quickrun"]
 	path = emacs/site-lisp/plugins/quickrun
 	url = https://github.com/emacsorphanage/quickrun.git
