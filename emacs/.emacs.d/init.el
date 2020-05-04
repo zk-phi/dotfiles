@@ -5184,51 +5184,53 @@ displayed, use substring of the buffer."
 ;;   + colorscheme
 
 ;; utility to mix two colors
-(setup-include "color")
-(defun my-blend-colors (basecolor mixcolor percent)
-  "Mix two colors."
-  (cl-destructuring-bind (r g b) (color-name-to-rgb basecolor)
-    (cl-destructuring-bind (r2 g2 b2) (color-name-to-rgb mixcolor)
-      (let* ((x (/ percent 100.0))
-             (y (- 1 x)))
-        (color-rgb-to-hex (+ (* r y) (* r2 x)) (+ (* g y) (* g2 x)) (+ (* b y) (* b2 x)))))))
+(eval-and-compile
+  (setup-include "color")
+  (defun my-blend-colors (basecolor mixcolor percent)
+    "Mix two colors."
+    (cl-destructuring-bind (r g b) (color-name-to-rgb basecolor)
+      (cl-destructuring-bind (r2 g2 b2) (color-name-to-rgb mixcolor)
+        (let* ((x (/ percent 100.0))
+               (y (- 1 x)))
+          (color-rgb-to-hex (+ (* r y) (* r2 x)) (+ (* g y) (* g2 x)) (+ (* b y) (* b2 x))))))))
 
 ;; utility to apply color palette to the elemental-theme
 (setup-include "elemental-theme")
-(defun my-elemental-theme-apply-colors
-  (bg-base fg-base
-           type-yellow warning-orange error-red visited-magenta
-           link-violet identifier-blue string-cyan keyword-green)
+(defmacro my-elemental-theme-apply-colors
+    (bg-base fg-base
+             type-yellow warning-orange error-red visited-magenta
+             link-violet identifier-blue string-cyan keyword-green)
   (declare (indent defun))
-  (let ((mode (if (string< bg-base fg-base) 'dark 'light)))
-    (custom-theme-set-variables 'elemental-theme `(frame-background-mode ',mode))
-    (let* ((bright-bg      (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 7))
-           (brighter-bg    (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 14))
-           (highlight-bg-1 (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 25))
-           (highlight-bg-2 (my-blend-colors highlight-bg-1 "red" 30))
-           (darker-fg      (my-blend-colors fg-base bg-base 65))
-           (dark-fg        (my-blend-colors fg-base bg-base 27))
-           (bright-fg      (my-blend-colors fg-base bg-base -40)))
-      (set-face-background 'default bg-base)
-      (set-face-background 'cursor fg-base)
-      (set-face-background 'elemental-bright-bg-face bright-bg)
-      (set-face-background 'elemental-brighter-bg-face brighter-bg)
-      (set-face-background 'elemental-highlight-bg-1-face highlight-bg-1)
-      (set-face-background 'elemental-highlight-bg-2-face highlight-bg-2)
-      (set-face-foreground 'elemental-hidden-fg-face bg-base)
-      (set-face-foreground 'elemental-darker-fg-face darker-fg)
-      (set-face-foreground 'elemental-dark-fg-face dark-fg)
-      (set-face-foreground 'default fg-base)
-      (set-face-foreground 'elemental-bright-fg-face bright-fg)
-      (set-face-foreground 'elemental-accent-fg-1-face link-violet)
-      (set-face-foreground 'elemental-accent-fg-2-face visited-magenta)
-      (set-face-foreground 'elemental-accent-fg-3-face type-yellow)
-      (set-face-foreground 'elemental-accent-fg-4-face string-cyan)
-      (set-face-foreground 'elemental-red-face error-red)
-      (set-face-foreground 'elemental-blue-face identifier-blue)
-      (set-face-foreground 'elemental-green-face keyword-green)
-      (set-face-foreground 'elemental-orange-face warning-orange)
-      (run-hooks 'my-elemental-theme-change-palette-hook))))
+  (let* ((mode (if (string< bg-base fg-base) 'dark 'light))
+         (bright-bg      (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 7))
+         (brighter-bg    (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 14))
+         (highlight-bg-1 (my-blend-colors bg-base (if (eq mode 'dark) "#fff" "#000") 25))
+         (highlight-bg-2 (my-blend-colors highlight-bg-1 "red" 30))
+         (darker-fg      (my-blend-colors fg-base bg-base 65))
+         (dark-fg        (my-blend-colors fg-base bg-base 27))
+         (bright-fg      (my-blend-colors fg-base bg-base -40)))
+    `(progn
+       (custom-theme-set-variables 'elemental-theme '(frame-background-mode ',mode))
+       (set-face-background 'default ,bg-base)
+       (set-face-background 'cursor ,fg-base)
+       (set-face-background 'elemental-bright-bg-face ,bright-bg)
+       (set-face-background 'elemental-brighter-bg-face ,brighter-bg)
+       (set-face-background 'elemental-highlight-bg-1-face ,highlight-bg-1)
+       (set-face-background 'elemental-highlight-bg-2-face ,highlight-bg-2)
+       (set-face-foreground 'elemental-hidden-fg-face ,bg-base)
+       (set-face-foreground 'elemental-darker-fg-face ,darker-fg)
+       (set-face-foreground 'elemental-dark-fg-face ,dark-fg)
+       (set-face-foreground 'default ,fg-base)
+       (set-face-foreground 'elemental-bright-fg-face ,bright-fg)
+       (set-face-foreground 'elemental-accent-fg-1-face ,link-violet)
+       (set-face-foreground 'elemental-accent-fg-2-face ,visited-magenta)
+       (set-face-foreground 'elemental-accent-fg-3-face ,type-yellow)
+       (set-face-foreground 'elemental-accent-fg-4-face ,string-cyan)
+       (set-face-foreground 'elemental-red-face ,error-red)
+       (set-face-foreground 'elemental-blue-face ,identifier-blue)
+       (set-face-foreground 'elemental-green-face ,keyword-green)
+       (set-face-foreground 'elemental-orange-face ,warning-orange)
+       (run-hooks 'my-elemental-theme-change-palette-hook))))
 
 (setup-expecting "elemental-theme"
 
