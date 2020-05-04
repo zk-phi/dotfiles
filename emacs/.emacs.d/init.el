@@ -5675,7 +5675,7 @@ displayed, use substring of the buffer."
   "M-d"     'my-dired-default-directory
   "M-f"     '("ido" ido-find-file find-file)
   "M-g"     '("phi-grep" phi-grep-in-directory rgrep)
-  "M-r"     'my-ido-recentf-open
+  "M-r"     '("ido" my-ido-recentf-open recentf-open-files)
   "C-x C-f" '("phi-grep" phi-grep-find-file-flat)
   "C-x C-=" '("ediff" ediff)
   "C-x C-d" '("ido" ido-dired dired)
