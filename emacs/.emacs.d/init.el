@@ -2,7 +2,7 @@
 
 (require 'setup)
 (eval-when-compile
-  (setq setup-delay-interval 1))
+  (setq setup-delay-interval 0.5))
 (setup-initialize)
 
 (setup-include "cl-lib")
