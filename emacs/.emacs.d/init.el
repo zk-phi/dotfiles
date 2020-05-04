@@ -624,7 +624,7 @@ cons of two integers which defines a range of the codepoints."
             ((progn
                (insert-file-contents "~/.zshenv")
                (goto-char (point-min))
-               (search-forward-regexp "export PATH=\"\\(.*\\):\\$PATH\"" nil t))
+               (search-forward-regexp "export PATH=\"\\(.*:\\)\\$PATH\"" nil t))
              (concat (match-string 1) (getenv "PATH")))
             (t
              (getenv "PATH"))))))
