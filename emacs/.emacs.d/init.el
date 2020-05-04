@@ -613,9 +613,20 @@ cons of two integers which defines a range of the codepoints."
 
 ;;   + | compilation
 
-;; get $PATH from the shell
-(setup-include "exec-path-from-shell"
-  (exec-path-from-shell-initialize))
+;; Parse .zshenv (during compile) and setenv $PATH
+(setenv
+ "PATH"
+ (! (with-temp-buffer
+      (cond ((not (file-exists-p "~/.zshenv"))
+             (warn "~/.zshenv does not exist")
+             (getenv "PATH"))
+            ((progn
+               (insert-file-contents "~/.zshenv")
+               (goto-char (point-min))
+               (search-forward-regexp "export PATH=\"\\(.*\\):\\$PATH\"" nil t))
+             (concat (match-string 1) (getenv "PATH")))
+            (t
+             (getenv "PATH"))))))
 
 ;; setting for compilation result buffer
 (setup-after "compile"
