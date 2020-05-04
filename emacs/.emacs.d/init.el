@@ -3105,9 +3105,8 @@ emacs-lisp-mode."
       (setup-hook 'c++-mode-hook 'my-ac-install-c-sources)))
 
   (setup-after "smart-compile"
-    (setup "quickrun"
-      (quickrun-set-default "c" "c/gcc")
-      (push `(c-mode . (quickrun-shell)) smart-compile-alist)))
+    (push `(c-mode . "gcc -ansi -pedantic -Wall -W -Wextra -Wunreachable-code %f")
+          smart-compile-alist))
 
   (setup-expecting "key-combo"
     (defun my-c-smart-angles ()
@@ -3179,8 +3178,7 @@ emacs-lisp-mode."
     (push 'java-mode ac-modes))
 
   (setup-after "smart-compile"
-    (setup "quickrun"
-      (push '(java-mode . (quickrun-shell)) smart-compile-alist)))
+    (push '(java-mode . "javac -Xlint:all -encoding UTF-8 %f") smart-compile-alist))
 
   (setup-expecting "key-combo"
     (setup-hook 'java-mode-hook
@@ -3521,8 +3519,7 @@ emacs-lisp-mode."
   (setup-after "phi-autopair"
     (push (cons 'nim-mode nim-indent-offset) phi-autopair-indent-offset-alist))
   (setup-after "smart-compile"
-    (setup "quickrun"
-      (push `(nim-mode . (quickrun-shell)) smart-compile-alist))))
+    (push `(nim-mode . "nim c %f") smart-compile-alist)))
 
 ;;         + AHK
 
