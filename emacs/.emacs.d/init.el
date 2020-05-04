@@ -877,7 +877,7 @@ unary operators which can also be binary."
 ;; org-like folding via outline-mode
 (setup-lazy '(outline-minor-mode) "outline")
 (setup-expecting "outline"
-  (defvar-local my-outline-minimum-heading-len 10000)
+  (defvar my-outline-minimum-heading-len 10000) ; define as a global variable to suppress warning
   (setup-hook 'prog-mode-hook
     (when comment-start
       (outline-minor-mode 1)
@@ -885,9 +885,9 @@ unary operators which can also be binary."
                                          "[" (regexp-quote comment-start) "]*\\)"
                                          "\s?\\(\s*\\++\\)\s"))
       (setq-local outline-level (lambda ()
-                                  (setq my-outline-minimum-heading-len
-                                        (min my-outline-minimum-heading-len
-                                             (- (match-end 0) (match-beginning 0))))
+                                  (setq-local my-outline-minimum-heading-len
+                                              (min my-outline-minimum-heading-len
+                                                   (- (match-end 0) (match-beginning 0))))
                                   (- (match-end 0) (match-beginning 0)
                                      my-outline-minimum-heading-len)))))
   (setup-lazy '(my-outline-cycle-dwim) "outline-magic"
@@ -5102,12 +5102,12 @@ displayed, use substring of the buffer."
     '(global-hl-line-mode show-paren-mode
                           key-chord-mode input-method-function)
     "list of variables that must be set nil locally.")
-  (defvar-local my-kindly-view-mode nil)
+  (defvar my-kindly-view-mode nil) ; define as a global variable to suppress warning
   (defun my-kindly-view-mode ()
     (interactive)
-    (setq my-kindly-view-mode t
-          line-spacing        0.3
-          cursor-type         'bar)
+    (setq-local my-kindly-view-mode t)
+    (setq line-spacing 0.3
+          cursor-type  'bar)
     (dolist (mode my-kindly-unsupported-minor-modes)
       (when (and (boundp mode) mode) (funcall mode -1)))
     (dolist (var my-kindly-unsupported-global-variables)
@@ -5123,17 +5123,17 @@ displayed, use substring of the buffer."
 
 ;;   + prettify ansi-colored output
 
-(setup-lazy '(ansi-color-mode) "ansi-color"
+(setup-lazy '(ansi-color-highlighter) "ansi-color"
   (defun ansi-color-highlighter (b e)
-    (ignore-errors (ansi-color-apply-on-region b e)))
-  (define-minor-mode ansi-color-mode
-    "Apply ansi color on-the-fly."
-    :init-value nil
-    :lighter "Ancl"
-    :global nil
-    (if ansi-color-mode
-        (jit-lock-register 'ansi-color-highlighter)
-      (jit-lock-unregister 'ansi-color-highlighter))))
+    (ignore-errors (ansi-color-apply-on-region b e))))
+(define-minor-mode ansi-color-mode
+  "Apply ansi color on-the-fly."
+  :init-value nil
+  :lighter "Ancl"
+  :global nil
+  (if ansi-color-mode
+      (jit-lock-register 'ansi-color-highlighter)
+    (jit-lock-unregister 'ansi-color-highlighter)))
 
 ;;   + "secret-words" minor-mode
 
