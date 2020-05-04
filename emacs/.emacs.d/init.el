@@ -875,7 +875,8 @@ unary operators which can also be binary."
 ;;   + | assistants
 
 ;; org-like folding via outline-mode
-(setup "outline"
+(setup-lazy '(outline-minor-mode) "outline")
+(setup-expecting "outline"
   (defvar-local my-outline-minimum-heading-len 10000)
   (setup-hook 'prog-mode-hook
     (when comment-start
@@ -890,7 +891,8 @@ unary operators which can also be binary."
                                   (- (match-end 0) (match-beginning 0)
                                      my-outline-minimum-heading-len)))))
   (setup-lazy '(my-outline-cycle-dwim) "outline-magic"
-    :prepare (setup-keybinds outline-minor-mode-map "TAB" 'my-outline-cycle-dwim)
+    :prepare (setup-after "outline"
+               (setup-keybinds outline-minor-mode-map "TAB" 'my-outline-cycle-dwim))
     (defun my-outline-cycle-dwim ()
       (interactive)
       (if (or (outline-on-heading-p) (= (point) 1))
@@ -1975,11 +1977,10 @@ kill-buffer-query-functions."
 
 ;; jump-back!
 
-(setup-include "ring")
-
 (defvar-local my-jump-back!--marker-ring nil)
 
 (defun my-jump-back!--ring-update ()
+  (require 'ring)
   (let ((marker (point-marker)))
     (unless my-jump-back!--marker-ring
       (setq my-jump-back!--marker-ring (make-ring 30)))
@@ -3401,7 +3402,7 @@ emacs-lisp-mode."
 ;;       + prolog-ilke
 ;;         + (common)
 
-(setup-expecting "key-combo"
+(setup-lazy '(my-install-prolog-common-smartchr) "key-combo"
   (defun my-prolog-smart-pipes ()
     "insert pipe surrounded by spaces"
     (interactive)
