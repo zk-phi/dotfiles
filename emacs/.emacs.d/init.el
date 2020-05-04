@@ -3833,22 +3833,22 @@ emacs-lisp-mode."
         org-startup-indented           t
         org-startup-with-inline-images t
         org-src-fontify-natively       t
-        org-src-tab-acts-natively      t
-        org-ditaa-jar-path (when my-ditaa-jar-file
-                             (expand-file-name my-ditaa-jar-file)))
+        org-src-tab-acts-natively      t)
 
   (setup-after "smart-compile"
-    (push '(org-mode . (org-export-as-html-and-open nil))
-          smart-compile-alist))
+    (setup-lazy '(my-org-export-as-html-and-open) "ox-html"
+      :prepare (push '(org-mode . (my-org-export-as-html-and-open)) smart-compile-alist)
+      (defun my-org-export-as-html-and-open ()
+        (interactive)
+        (browse-url (print (concat "file://" (expand-file-name (org-html-export-to-html))))))))
 
-  (setq org-export-with-section-numbers     nil
-        org-export-with-toc                 nil
-        org-export-mark-todo-in-toc         t
-        org-export-email-info               nil
-        org-export-author-info              nil
-        org-export-creator-info             nil
-        org-export-time-stamp-file          nil
-        org-export-table-remove-empty-lines nil)
+  (setup-after "ox"
+    (setq org-export-with-section-numbers nil
+          org-export-with-toc             nil
+          org-export-with-email           nil
+          org-export-with-author          nil
+          org-export-with-creator         nil
+          org-export-time-stamp-file      nil))
 
   ;; Remove newlines between Japanese letters before exporting.
   ;; reference | http://qiita.com/kawabata@github/items/1b56ec8284942ff2646b
@@ -3862,7 +3862,11 @@ emacs-lisp-mode."
 
   ;; babel
   (setup-after "ob-exp"
-    (setq org-export-babel-evaluate nil))
+    (setq org-export-use-babel nil))
+
+  ;; ditaa
+  (setup-after "ob-ditaa"
+    (setq org-ditaa-jar-path (when my-ditaa-jar-file (expand-file-name my-ditaa-jar-file))))
 
   ;; TODO: org-html seems no longer existing. inspect and update as needed.
   (setup-after "org-html"
