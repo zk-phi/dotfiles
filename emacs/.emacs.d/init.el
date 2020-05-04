@@ -138,11 +138,6 @@
     "~/.emacs.d/ac-dict/")
   "Dictionary directory for auto-complete.")
 
-(defconst my-latex-dictionary-directory
-  (!when (file-exists-p "~/.emacs.d/ac-l-dict/")
-    "~/.emacs.d/ac-l-dict/")
-  "Dictionary directory for auto-complete-latex.")
-
 (defconst my-sdic-eiwa-dictionary
   (!when (file-exists-p "~/.emacs.d/sdic/gene.sdic")
     "~/.emacs.d/sdic/gene.sdic")
@@ -3948,7 +3943,6 @@ emacs-lisp-mode."
     (setq magic-latex-enable-inline-image nil))
   (setup-after "auto-complete"
     (setup "auto-complete-latex"
-      (setq ac-l-dict-directory my-latex-dictionary-directory)
       (push 'latex-mode ac-modes)
       (setup-hook 'latex-mode-hook 'ac-l-setup))))
 
