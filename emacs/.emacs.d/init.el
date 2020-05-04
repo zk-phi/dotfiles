@@ -2244,9 +2244,10 @@ lines far from the cursor."
     "Expand either flyspell correction, dabbrev, or package name if
 emacs-lisp-mode."
     (interactive)
-    (cond ((cl-some (lambda (ov)
-                      (eq (overlay-get ov 'face) 'flyspell-incorrect))
-                    (overlays-in (1- (point)) (point)))
+    (cond ((and (cl-some (lambda (ov)
+                           (eq (overlay-get ov 'face) 'flyspell-incorrect))
+                         (overlays-in (1- (point)) (point)))
+                (fboundp 'flyspell-correct-word-before-point))
            (flyspell-correct-word-before-point))
           ((and (not (eq this-command last-command))
                 (eq major-mode 'emacs-lisp-mode)
