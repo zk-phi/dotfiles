@@ -1452,7 +1452,7 @@ unary operators which can also be binary."
              (cond ((eq last-command 'mc/mark-next-like-this)
                     (setq my-mc/mark-all-last-executed 'skip)
                     (mc/mark-next-like-this 0))
-                   ((and (boundp 'mc--no-region-and-in-sgmlish-mode)
+                   ((and (fboundp 'mc--no-region-and-in-sgmlish-mode)
                          (mc--no-region-and-in-sgmlish-mode)
                          (mc--on-tag-name-p))
                     (mc/mark-sgml-tag-pair)
