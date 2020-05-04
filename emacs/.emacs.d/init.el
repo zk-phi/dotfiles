@@ -1330,7 +1330,7 @@ unary operators which can also be binary."
 (setup-after "isearch"
   ;; isearch in japanese (for windows)
   ;; reference | http://d.hatena.ne.jp/myhobby20xx/20110228/1298865536
-  (when (string= window-system "w32")
+  (!when (string= window-system "w32")
     (defun my-isearch-update ()
       (interactive)
       (isearch-update))
