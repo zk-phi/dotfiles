@@ -1,7 +1,8 @@
 ;; init.el (for Emacs 24.4) | 2012- zk_phi
 
 (require 'setup)
-(setq setup-delay-interval 1)
+(eval-when-compile
+  (setq setup-delay-interval 1))
 (setup-initialize)
 
 (setup-include "cl-lib")
