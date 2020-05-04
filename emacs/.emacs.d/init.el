@@ -739,7 +739,7 @@ cons of two integers which defines a range of the codepoints."
 (setup "smooth-scrolling"
   (setq smooth-scroll-margin 3))
 
-(setup "popwin"
+(setup-include "popwin"
   (setq popwin:reuse-window nil
         popwin:special-display-config
         '(("*Warnings*")
@@ -2365,7 +2365,7 @@ emacs-lisp-mode."
 ;;   + | pop-up windows
 
 ;; make and popup scratch-notes for each files
-(setup "scratch-palette"
+(setup-include "scratch-palette"
   (setq scratch-palette-directory my-palette-directory)
   (setup-keybinds scratch-palette-minor-mode-map
     "M-w" 'scratch-palette-kill))
@@ -2380,8 +2380,7 @@ emacs-lisp-mode."
 ;;   + | trace changes
 
 ;; tree-like undo history browser
-(setup "undo-tree"
-  (setup "diff")                ; dependency
+(setup-include "undo-tree"
   (global-undo-tree-mode 1)
   (setup-keybinds undo-tree-visualizer-mode-map
     "j" 'undo-tree-visualize-redo
