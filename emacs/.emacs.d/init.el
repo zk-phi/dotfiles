@@ -320,7 +320,7 @@
 ;;   + *scratch* utilities [scratch-pop]
 ;;   + | backup/popup scratches
 
-(setup "scratch-pop"
+(setup-include "scratch-pop"
   (setq scratch-pop-backup-directory my-scratch-pop-directory)
   (setup-hook 'after-init-hook
     (scratch-pop-restore-scratches 1))
@@ -737,7 +737,7 @@ cons of two integers which defines a range of the codepoints."
 ;;   + Misc: plug-ins
 ;;   + | buffers / windows
 
-(setup "smooth-scrolling"
+(setup-include "smooth-scrolling"
   (setq smooth-scroll-margin 3))
 
 (setup-include "popwin"
@@ -781,10 +781,10 @@ cons of two integers which defines a range of the codepoints."
 
 ;;   + | edit
 
-(setup-expecting "paredit"
-  (setup "phi-autopair"
-    (nconc phi-autopair-lispy-modes my-lispy-modes)
-    (phi-autopair-global-mode 1)))
+(setup-include "paredit")               ; dependency
+(setup-include "phi-autopair"
+  (nconc phi-autopair-lispy-modes my-lispy-modes)
+  (phi-autopair-global-mode 1))
 
 (setup-lazy '(electric-align-mode) "electric-align"
   :prepare (setup-hook 'prog-mode-hook 'electric-align-mode)
@@ -851,8 +851,8 @@ cons of two integers which defines a range of the codepoints."
 ;;   + | keyboards
 
 ;; not key-chord in MELPA but my own fork of key-chord
-(setup "key-chord"
-  (key-chord-mode 1)
+(setup-include "key-chord"
+  (setup-silently (key-chord-mode 1))
   (setq key-chord-safety-interval-forward 0.55))
 
 (setup-lazy '(key-combo-mode key-combo-define-local) "key-combo"
@@ -911,7 +911,7 @@ unary operators which can also be binary."
 
 ;;   + | others
 
-(setup "commentize-conflict"
+(setup-include "commentize-conflict"
   (add-hook 'prog-mode-hook 'commentize-conflict-mode))
 
 ;; + | Commands
