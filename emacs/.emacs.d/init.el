@@ -541,7 +541,6 @@ cons of two integers which defines a range of the codepoints."
         byte-compile-dynamic  t))
 
 ;; make the main frame maximized by default
-
 (setup-hook 'after-init-hook
   (set-frame-parameter nil 'fullscreen 'maximized))
 
