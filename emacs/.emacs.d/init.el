@@ -4425,34 +4425,32 @@ emacs-lisp-mode."
 
       (defun my-dired-do-count-lines ()
         (interactive)
-        (let ((files 0) (lines 0) (comments 0)
-              (count-fn
-               (lambda (file)
+        (let ((num-files 0) (lines 0) (comments 0))
+          (dired-map-over-marks-check
+           (lambda ()
+             (let ((files (list (dired-get-filename))) file)
+               (while (setq file (pop files))
                  (unless (string-match "\\(?:^\\|/\\)\\.\\.?$" file)
                    (if (file-directory-p file)
-                       (mapc count-fn (directory-files file t))
+                       (setq files (nconc (directory-files file t) files))
                      (with-temp-buffer
                        (insert-file-contents file)
                        (goto-char (point-min))
                        (let ((buffer-file-name file))
                          (ignore-errors (set-auto-mode)))
                        (setq lines (+ (count-lines (point-min) (point-max)) lines)
-                             files (1+ files))
+                             num-files (1+ num-files))
                        (while (ignore-errors
                                 (let* ((beg (goto-char (comment-search-forward (point-max))))
                                        (beg-okay (looking-back "^[\s\t]*" (point-at-bol))))
                                   (forward-comment 1)
                                   (when (and beg-okay (looking-at "^[\s\t]*\\|[\s\t]*$"))
                                     (setq comments (+ (count-lines beg (point)) comments))))
-                                t))))))))
-          (dired-map-over-marks-check
-           (lambda ()
-             (let ((file (dired-get-filename)))
-               (funcall count-fn file)
-               nil))
+                                t)))))))
+             nil)
            nil 'count-lines t)
           (message "%d lines (including %d comment lines) in %s files."
-                   lines comments files)))
+                   lines comments num-files)))
       )
   )
 
