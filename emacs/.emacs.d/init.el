@@ -4533,17 +4533,20 @@ emacs-lisp-mode."
         (when lst (setq res (concat "…/" res)))
         res)))
 
-  (setq eshell-directory-name  my-eshell-directory
-        eshell-prompt-regexp   (regexp-opt '("（*>w<）? " "（*'-'）? " "（`;w;）! "))
-        eshell-prompt-function (lambda ()
-                                 (concat "\n"
-                                         (my-shorten-directory (eshell/pwd) 30) " "
-                                         (my-get-short-branch-name (eshell/pwd)) "\n"
-                                         (cond ((= (user-uid) 0) "（*>w<）? ")
-                                               ((= eshell-last-command-status 0) "（*'-'）? ")
-                                               (t "（`;w;）! ")))))
+  (setq eshell-directory-name  my-eshell-directory)
+
   (setup-hook 'eshell-mode-hook
     (setq eshell-last-command-status 0))
+
+  (setup-after "em-prompt"
+    (setq eshell-prompt-regexp   (regexp-opt '("（*>w<）? " "（*'-'）? " "（`;w;）! "))
+          eshell-prompt-function (lambda ()
+                                   (concat "\n"
+                                           (my-shorten-directory (eshell/pwd) 30) " "
+                                           (my-get-short-branch-name (eshell/pwd)) "\n"
+                                           (cond ((= (user-uid) 0) "（*>w<）? ")
+                                                 ((= eshell-last-command-status 0) "（*'-'）? ")
+                                                 (t "（`;w;）! "))))))
 
   (setup-after "mark-hacks"
     (push 'eshell-mode mark-hacks-auto-indent-inhibit-modes))
