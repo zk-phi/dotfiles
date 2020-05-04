@@ -4645,7 +4645,7 @@ displayed, use substring of the buffer."
               (when (file-regular-p abs-path)
                 (howm-remember)
                 (insert-file-contents abs-path)
-                (beginning-of-buffer)
+                (goto-char (point-min))
                 (cl-case (read-char-choice (format "import %s (y, n or x)? " file) '(?y ?n ?x))
                   ((?y)
                    (let ((howm-template (concat "* " (howm-reminder-today)
