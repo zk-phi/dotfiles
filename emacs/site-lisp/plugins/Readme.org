@@ -1,5 +1,9 @@
 Following plugins are not from git:
 
+- vi.el
+  - https://raw.githubusercontent.com/emacs-mirror/emacs/83bad90efe943e7c88431b7a71bc1d5cf1304c92/lisp/emulation/vi.el
+  - this plugin has been a built-in but removed in 24.5
+
 - auto-complete-latex.el
   - https://bitbucket.org/tequilasunset/auto-complete-latex/raw/6c534e7733747ffb5deb9138f874216d4a6c5daa/auto-complete-latex.el
   - this plugin is hosted on Bitbucket, from which I don't know how to add as a submodule

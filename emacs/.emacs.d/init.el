@@ -4477,7 +4477,7 @@ emacs-lisp-mode."
 
 ;;     + vi-mode
 
-(setup-after "vi"
+(setup-lazy '(vi-mode) "vi"
 
   ;; undo-tree integration
   (setup-expecting "undo-tree"
