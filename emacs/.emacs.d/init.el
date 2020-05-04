@@ -4710,7 +4710,7 @@ displayed, use substring of the buffer."
   (defun my-howm-export-ics (target)
     (let ((lst nil))
       (with-temp-buffer
-        (insert-string (my-howm-menu-reminder))
+        (insert (my-howm-menu-reminder))
         (goto-char 1)
         (while (search-forward-regexp
                 "\\[\\([0-9]+\\)-\\([0-9]+\\)-\\([0-9]+\\)\\][@!]\\([0-9]+\\)? \\(.+\\)$"
