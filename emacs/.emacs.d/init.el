@@ -349,10 +349,11 @@
       nil))))
 
 ;; make a new scratch buffer on save
-(setup-hook 'after-save-hook
-  (unless (get-buffer "*scratch*")
-    (generate-new-buffer "*scratch*")
-    (my-clean-scratch)))
+(!-
+ (setup-hook 'after-save-hook
+   (unless (get-buffer "*scratch*")
+     (generate-new-buffer "*scratch*")
+     (my-clean-scratch))))
 
 ;;   + hooks for save/open
 
@@ -671,18 +672,19 @@ cons of two integers which defines a range of the codepoints."
     (expand-file-name
      (subst-char-in-string ?/ ?! (replace-regexp-in-string "!" "!!" file))
      undohist-directory))
-  ;; delete old histories
-  (defun my-delete-old-undohists ()
-    (let ((threshold (* (/ 365 2) 24 60 60))
-          (current (float-time (current-time))))
-      (dolist (file (directory-files undohist-directory t))
-        (when (and (file-regular-p file)
-                   (> (- current (float-time (nth 5 (file-attributes file))))
-                      threshold))
-          (message "deleting old undohist: %s" (file-name-base file))
-          (delete-file file))))
-    (message "Old undohists deleted."))
-  (run-with-idle-timer 30 nil 'my-delete-old-undohists))
+  (!-
+   ;; delete old histories
+   (defun my-delete-old-undohists ()
+     (let ((threshold (* (/ 365 2) 24 60 60))
+           (current (float-time (current-time))))
+       (dolist (file (directory-files undohist-directory t))
+         (when (and (file-regular-p file)
+                    (> (- current (float-time (nth 5 (file-attributes file))))
+                       threshold))
+           (message "deleting old undohist: %s" (file-name-base file))
+           (delete-file file))))
+     (message "Old undohists deleted."))
+   (run-with-idle-timer 30 nil 'my-delete-old-undohists)))
 
 (setup-after "newcomment"
   (setq comment-empty-lines t))
@@ -751,9 +753,9 @@ cons of two integers which defines a range of the codepoints."
 ;;   + | mark / region
 
 ;; load phi-rectangle
-(setup-include "rect")                ; dependency
-(setup-include "phi-rectangle"
-  (setq phi-rectangle-collect-fake-cursors-kill-rings t))
+(!-
+ (setup "phi-rectangle"
+   (setq phi-rectangle-collect-fake-cursors-kill-rings t)))
 
 ;; load mark-hacks
 (!-
@@ -4948,7 +4950,8 @@ displayed, use substring of the buffer."
       (setq my-battery-status (cons percentile charging))
       (unless (equal last-stat my-battery-status)
         (force-mode-line-update)))))
-(run-with-timer 0 60 'my-update-battery-status)
+(!-
+ (run-with-timer 0 60 'my-update-battery-status))
 
 ;; scratch-palette status
 (defvar-local my-palette-available-p nil)
