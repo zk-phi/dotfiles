@@ -19,7 +19,7 @@
 	url = https://github.com/zk-phi/scratch-pop.git
 	ignore = dirty
 [submodule "emacs/site-lisp/plugins/undohist-el"]
-	path = emacs/site-lisp/plugins/undohist-el
+	path = emacs/site-lisp/my-plugins/undohist-el
 	url = https://github.com/zk-phi/undohist.git
 	ignore = dirty
 [submodule "emacs/site-lisp/plugins/docker-tramp.el"]
