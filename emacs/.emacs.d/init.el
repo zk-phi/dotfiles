@@ -5098,8 +5098,8 @@ displayed, use substring of the buffer."
       (when (and (boundp mode) mode) (funcall mode -1)))
     (dolist (var my-kindly-unsupported-global-variables)
       (set (make-local-variable var) nil))
-    (setq-local buffer-face-mode-face '(:family "Times New Roman" :width semi-condensed))
-    (buffer-face-mode 1)
+    (let ((buffer-face-mode-face '(:family "Times New Roman" :width semi-condensed)))
+      (buffer-face-mode 1))
     (text-scale-set +2)
     ;; use current major-mode's bindings as the minor-mode bindings
     (setq-local minor-mode-map-alist
