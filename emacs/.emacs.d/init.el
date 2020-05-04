@@ -300,6 +300,14 @@
          (outputfn (if (called-interactively-p 'any) 'insert 'identity)))
     (funcall outputfn str)))
 
+(defun my-open-file (file)
+  (!cond ((eq system-type 'windows-nt)
+          (w32-shell-execute "open" file))
+         ((eq system-type 'darwin)
+          (shell-command (concat "open '" file "'")))
+         (t
+          (error "unsupported system"))))
+
 ;; hexify 0-255 colorname
 (setup-lazy '(my-make-color-name) "color"
   (defun my-make-color-name (r g b)
@@ -4378,13 +4386,7 @@ emacs-lisp-mode."
   (defun my-dired-winstart ()
     "win-start the current line's file."
     (interactive)
-    (let ((file (dired-get-filename)))
-      (cond ((eq system-type 'windows-nt)
-             (w32-shell-execute "open" file))
-            ((eq system-type 'darwin)
-             (shell-command (concat "open '" file "'")))
-            (t
-             (error "unsupported system")))))
+    (my-open-file (dired-get-filename)))
 
   (setup-lazy
     '(my-dired-do-convert-coding-system
@@ -4578,7 +4580,7 @@ emacs-lisp-mode."
       "win-start the current line's file."
       (interactive)
       (unless (null file)
-        (w32-shell-execute "open" (expand-file-name file)))))
+        (my-open-file (expand-file-name file)))))
 
   ;; "eshell-mode-map" does not work (why?)
   (setup-hook 'eshell-mode-hook
