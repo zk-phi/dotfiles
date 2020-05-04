@@ -2539,8 +2539,9 @@ emacs-lisp-mode."
                          ac-source-variables
                          ac-source-features))))
   (setup-after "key-chord"
-    (setup-hook 'emacs-lisp-mode-hook
-      (key-chord-define-local "sk" (my-yas "kc-sk"))))
+    (setup-expecting "yasnippet"
+      (setup-hook 'emacs-lisp-mode-hook
+        (key-chord-define-local "sk" (my-yas "kc-sk")))))
   (setup-expecting "key-combo"
     (setup-hook 'emacs-lisp-mode-hook
       (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
