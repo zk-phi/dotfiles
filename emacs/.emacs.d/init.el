@@ -611,9 +611,8 @@ cons of two integers which defines a range of the codepoints."
 ;;   + | compilation
 
 ;; get $PATH from the shell
-(!-
- (setup "exec-path-from-shell"
-   (exec-path-from-shell-initialize)))
+(setup-include "exec-path-from-shell"
+  (exec-path-from-shell-initialize))
 
 ;; setting for compilation result buffer
 (setup-after "compile"
