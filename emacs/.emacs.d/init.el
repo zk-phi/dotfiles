@@ -4839,7 +4839,7 @@ displayed, use substring of the buffer."
         (howm-menu-refresh))))
 
   ;; redefine howm-action-lock-date to allow from~to style input
-  (defun howm-action-lock-interpret-input (str)
+  (defun howm-action-lock-interpret-input (str date future-p)
     (cond ((string-match "^[-+][0-9]+$" str) ; relative
            (howm-datestr-shift date 0 0 (string-to-number str)))
           ((string-match "^[0-9]+$" str)  ; absolute
@@ -4858,9 +4858,9 @@ displayed, use substring of the buffer."
           (error (format "Invalid input %s." str))
         (save-excursion
           (let ((d1 (save-match-data
-                      (howm-action-lock-interpret-input (match-string 1 str))))
+                      (howm-action-lock-interpret-input (match-string 1 str) date future-p)))
                 (d2 (when (match-beginning 2)
-                      (howm-action-lock-interpret-input (match-string 2 str)))))
+                      (howm-action-lock-interpret-input (match-string 2 str) date future-p))))
             (while (not (looking-at howm-date-regexp))
               (backward-char))
             (replace-match d1)
