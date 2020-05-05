@@ -2,7 +2,8 @@
 
 (require 'setup)
 (eval-when-compile
-  (setq setup-silent t))
+  (setq setup-silent t
+        setup-delay-interval 0.5))
 (setup-initialize)
 
 (setup-include "cl-lib")
@@ -320,6 +321,7 @@
 ;;   + | backup/popup scratches
 
 (!-
+ :prepend
  (setup "scratch-pop"
    (setq scratch-pop-backup-directory my-scratch-pop-directory)
    (scratch-pop-restore-scratches 1)
