@@ -751,10 +751,12 @@ cons of two integers which defines a range of the codepoints."
 
 ;;   + | mark / region
 
-;; load phi-rectangle
-(!-
- (setup "phi-rectangle"
-   (setq phi-rectangle-collect-fake-cursors-kill-rings t)))
+(setup-lazy
+  '(phi-rectangle-set-mark-command
+    phi-rectangle-kill-region
+    phi-rectangle-yank
+    phi-rectangle-kill-ring-save) "phi-rectangle"
+  (setq phi-rectangle-collect-fake-cursors-kill-rings t))
 
 ;; load mark-hacks
 (!-
