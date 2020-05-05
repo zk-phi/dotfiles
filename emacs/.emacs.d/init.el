@@ -2,8 +2,7 @@
 
 (require 'setup)
 (eval-when-compile
-  (setq setup-delay-interval 0.5
-        setup-silent t))
+  (setq setup-silent t))
 (setup-initialize)
 
 (setup-include "cl-lib")
@@ -320,11 +319,11 @@
 ;;   + *scratch* utilities [scratch-pop]
 ;;   + | backup/popup scratches
 
-(setup-include "scratch-pop"
-  (setq scratch-pop-backup-directory my-scratch-pop-directory)
-  (setup-hook 'after-init-hook
-    (scratch-pop-restore-scratches 1))
-  (setup-hook 'kill-emacs-hook 'scratch-pop-backup-scratches))
+(!-
+ (setup "scratch-pop"
+   (setq scratch-pop-backup-directory my-scratch-pop-directory)
+   (scratch-pop-restore-scratches 1)
+   (setup-hook 'kill-emacs-hook 'scratch-pop-backup-scratches)))
 
 ;;   + | make *scratch* persistent
 
