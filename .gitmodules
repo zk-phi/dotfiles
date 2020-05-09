@@ -174,10 +174,6 @@
 	path = emacs/site-lisp/plugins/sudden-death-el
 	url = https://github.com/yewton/sudden-death.el.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/2048-game"]
-	path = emacs/site-lisp/plugins/2048-game
-	url = https://github.com/emacsmirror/2048-game.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/ipretty"]
 	path = emacs/site-lisp/plugins/ipretty
 	url = https://framagit.org/steckerhalter/ipretty.git
