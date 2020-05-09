@@ -2522,10 +2522,7 @@ emacs-lisp-mode."
     (setup-hook 'emacs-lisp-mode-hook
       (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
   (setup-expecting "rainbow-mode"
-    (setup-hook 'emacs-lisp-mode-hook 'rainbow-mode))
-  (setup-include "cl-lib-highlight"
-    (setup-hook 'emacs-lisp-mode-hook 'cl-lib-highlight-initialize)
-    (setup-hook 'emacs-lisp-mode-hook 'cl-lib-highlight-warn-cl-initialize)))
+    (setup-hook 'emacs-lisp-mode-hook 'rainbow-mode)))
 
 ;;         + Gauche [scheme-complete]
 

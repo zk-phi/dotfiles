@@ -214,10 +214,6 @@
 	path = emacs/site-lisp/plugins/rainbow-mode
 	url = https://github.com/emacsmirror/rainbow-mode.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/cl-lib-highlight"]
-	path = emacs/site-lisp/plugins/cl-lib-highlight
-	url = https://github.com/skeeto/cl-lib-highlight.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/gauche-mode"]
 	path = emacs/site-lisp/plugins/gauche-mode
 	url = https://github.com/leque/gauche-mode.git
