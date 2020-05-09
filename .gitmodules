@@ -355,3 +355,7 @@
 	path = emacs/site-lisp/plugins/crm-custom
 	url = https://github.com/DarwinAwardWinner/crm-custom.git
 	ignore = dirty
+[submodule "emacs/site-lisp/plugins/emacs-memoize"]
+	path = emacs/site-lisp/plugins/emacs-memoize
+	url = https://github.com/skeeto/emacs-memoize.git
+	ignore = dirty
