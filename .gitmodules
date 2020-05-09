@@ -347,3 +347,11 @@
 [submodule "emacs/site-lisp/plugins/commenter"]
 	path = emacs/site-lisp/plugins/commenter
 	url = https://github.com/yuutayamada/commenter.git
+[submodule "emacs/site-lisp/plugins/ido-completing-read-plus"]
+	path = emacs/site-lisp/plugins/ido-completing-read-plus
+	url = https://github.com/DarwinAwardWinner/ido-completing-read-plus.git
+	ignore = dirty
+[submodule "emacs/site-lisp/plugins/crm-custom"]
+	path = emacs/site-lisp/plugins/crm-custom
+	url = https://github.com/DarwinAwardWinner/crm-custom.git
+	ignore = dirty
