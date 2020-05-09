@@ -399,7 +399,7 @@
 ;;   + | system
 
 (defalias 'yes-or-no-p 'y-or-n-p)
-(define-key query-replace-map (kbd "SPC") nil)
+(define-key query-replace-map (kbd "SPC") nil) ; do not accept SPC in y-or-n-p
 
 (setq frame-title-format                    "%b - Emacs"
       completion-ignore-case                t
