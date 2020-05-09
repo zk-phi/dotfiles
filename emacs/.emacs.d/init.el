@@ -1055,16 +1055,9 @@ unary operators which can also be binary."
   ;; taken from "ido-everywhere"
   (setq read-file-name-function 'ido-read-file-name
         read-buffer-function 'ido-read-buffer)
-  ;; taken from "ido-hacks"
-  (put 'elp-instrument-package 'ido 'ignore)
-  (setq completing-read-function 'my-completing-read-with-ido))
-
-;; advice some functions to use the normal `completing-read'
-(dolist (fn '(read-buffer-file-coding-system insert-char))
-  (eval
-   `(defadvice ,fn (around my-fix-completing-read activate)
-      (let ((completing-read-function 'completing-read-default))
-        ad-do-it))))
+  (setup-lazy '(ido-completing-read+) "ido-completing-read+"
+    ;; taken from "ido-ubiquitous-mode"
+    :prepare (setq completing-read-function 'ido-completing-read+)))
 
 ;;     + ido interface for recentf
 
@@ -1111,48 +1104,6 @@ unary operators which can also be binary."
           ido-save-directory-list-file           my-ido-save-file)
 
     (put 'dired-do-rename 'ido nil)       ; "'ignore" by default
-
-    ;; + | ido interface for "completing-read"
-
-    (defvar ido-hacks-completing-read-recursive nil)
-    (defun my-completing-read-with-ido (prompt collection &optional
-                                               predicate require-match initial-input
-                                               hist def inherit-input-method)
-      ;; workaround for info-lookup
-      (when (consp collection)
-        (setq collection
-              (apply 'vector
-                     (mapcar (lambda (x) (let ((obj (if (consp x) (car x) x)))
-                                           (if (stringp obj) (make-symbol obj) obj)))
-                             collection))))
-      ;; --------------------------
-      (if (or (symbolp collection)
-              (and (symbolp this-command)
-                   (eq (get this-command 'ido) 'ignore))
-              ;; ido does not support inherit-input-method
-              inherit-input-method
-              ;; recursive completing-read
-              ido-hacks-completing-read-recursive
-              ;; called from ido-read-internal
-              (and (listp collection)
-                   (equal '("dummy" . 1) (car collection))))
-          (completing-read-default prompt collection predicate require-match
-                                   initial-input hist def inherit-input-method)
-        ;; based on "ido-completing-read"
-        (let ((ido-hacks-completing-read-recursive t)
-              (ido-current-directory nil)
-              (ido-directory-nonreadable nil)
-              (ido-directory-too-big nil)
-              (ido-context-switch-command (or (and (symbolp this-command)
-                                                   (get this-command
-                                                        'ido-context-switch-command))
-                                              'ignore))
-              (ido-choice-list (let ((completions
-                                      (all-completions "" collection predicate)))
-                                 (when (or (hash-table-p collection)
-                                           (arrayp collection))
-                                   completions))))
-          (ido-read-internal 'list prompt hist def require-match initial-input))))
 
     ;; + | better flex matching [flx-ido]
 
