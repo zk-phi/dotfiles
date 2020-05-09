@@ -1,4 +1,4 @@
-;; init.el (for Emacs 24.4) | 2012- zk_phi
+;; init.el (for Emacs 26.1) | 2012- zk_phi
 
 (require 'setup)
 (eval-when-compile
