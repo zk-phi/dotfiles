@@ -3641,13 +3641,6 @@ emacs-lisp-mode."
         (key-chord-define-local "ch" (my-yas "kc-ch")) ; bootstrap/checkbox
         )))
 
-  (setup "jquery-doc"
-    (push 'ac-source-jquery (cdr (assoc "javascript" web-mode-ac-sources-alist)))
-    (setup-after "popwin"
-      (push '("^\\*jQuery doc" :regexp t) popwin:special-display-config))
-    (setup-after "key-combo-web"
-      (key-combo-web-define "javascript" (kbd "<f1> s") 'jquery-doc)))
-
   (setup "key-combo-web"
     (setup-hook 'web-mode-hook
       (key-combo-mode 1)

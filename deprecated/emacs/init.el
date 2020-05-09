@@ -965,6 +965,16 @@
     (push 'scala-mode ac-modes))
   )
 
+;; + languages/Web: jquery-doc
+
+(setup-after "web-mode"
+  (setup "jquery-doc"
+    (push 'ac-source-jquery (cdr (assoc "javascript" web-mode-ac-sources-alist)))
+    (setup-after "popwin"
+      (push '("^\\*jQuery doc" :regexp t) popwin:special-display-config))
+    (setup-after "key-combo-web"
+      (key-combo-web-define "javascript" (kbd "<f1> s") 'jquery-doc))))
+
 ;; + spray: core
 
 ;; Spritz-like speed reading mode
