@@ -343,3 +343,9 @@
 	path = emacs/site-lisp/plugins/emacs-memoize
 	url = https://github.com/skeeto/emacs-memoize.git
 	ignore = dirty
+[submodule "emacs/site-lisp/plugins/emacs-mini-modeline"]
+	path = emacs/site-lisp/plugins/emacs-mini-modeline
+	url = https://github.com/kiennq/emacs-mini-modeline.git
+[submodule "emacs/site-lisp/plugins/dash.el"]
+	path = emacs/site-lisp/plugins/dash-el
+	url = https://github.com/magnars/dash.el.git
