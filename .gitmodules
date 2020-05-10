@@ -349,3 +349,6 @@
 [submodule "emacs/site-lisp/plugins/dash.el"]
 	path = emacs/site-lisp/plugins/dash-el
 	url = https://github.com/magnars/dash.el.git
+[submodule "emacs/site-lisp/plugins/dimmer.el"]
+	path = emacs/site-lisp/plugins/dimmer-el
+	url = https://github.com/gonewest818/dimmer.el.git
