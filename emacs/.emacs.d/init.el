@@ -5026,7 +5026,7 @@ displayed, use substring of the buffer."
                   (my-mode-line--colnum) my-mode-line--separator
                   (my-mode-line--indicators) my-mode-line--separator
                   my-mode-line--filename (my-mode-line--branch)
-                  (my-mode-line--palette-status) my-mode-line--recur-status ))
+                  (my-mode-line--palette-status) my-mode-line--recur-status))
          (rstr
           ;; right half must not contain "%" notation otherwise we
           ;; cannot determine the size of right margin
