@@ -5296,7 +5296,7 @@ displayed, use substring of the buffer."
    :weight  'bold)
   (set-face-attribute
    'mode-line-warning-face nil
-   :inherit '(elemental-accent-fg-3-face elemental-bright-bg-face))
+   :inherit 'elemental-accent-fg-3-face)
   (set-face-attribute
    'mode-line-special-mode-face nil
    :inherit 'elemental-accent-fg-4-face
