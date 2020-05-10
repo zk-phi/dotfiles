@@ -4918,13 +4918,6 @@ displayed, use substring of the buffer."
          (setq my-ramen-start-time   (and (not my-ramen-start-time) (current-time))
                my-ramen-timer-object (run-with-timer 0 1 'force-mode-line-update)))))
 
-;; coding system
-(defun my-eol-type-mnemonic (coding-system)
-  (let ((eol-type (coding-system-eol-type coding-system)))
-    (if (vectorp eol-type) ?-
-      (cl-case eol-type
-        ((0) ?u) ((1) ?d) ((2) ?m) (else ?-)))))
-
 (defun my-time-string ()
   (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face))
 (!-
@@ -4941,88 +4934,111 @@ displayed, use substring of the buffer."
   (when buffer-file-name
     (setq my-current-branch-name (my-get-short-branch-name buffer-file-name))))
 
+(defconst my-mode-line--separator
+  (! (propertize " : " 'face 'mode-line-dark-face)))
+
+(defsubst my-mode-line--linum ()
+  (if (not mark-active)
+      (! (propertize "%5l" 'face 'mode-line-bright-face))
+    (propertize (format "%5d" (- (region-end) (region-beginning)))
+                'face 'mode-line-warning-face)))
+
+(defsubst my-mode-line--colnum ()
+  (if (not mark-active)
+      (propertize "%3c" 'face 'mode-line-bright-face)
+    (propertize (format "%3d" (count-lines (region-beginning) (region-end)))
+                'face 'mode-line-warning-face)))
+
+(defsubst my-mode-line--indicators ()
+  (concat
+   (if (buffer-narrowed-p)
+       (! (propertize "n" 'face 'mode-line-narrowed-face))
+     (! (propertize "n" 'face 'mode-line-dark-face)))
+   (if buffer-read-only
+       (! (propertize "%%" 'face 'mode-line-read-only-face))
+     (! (propertize "%%" 'face 'mode-line-dark-face)))
+   (if (buffer-modified-p)
+       (! (propertize "*" 'face 'mode-line-modified-face))
+     (! (propertize "*" 'face 'mode-line-dark-face)))
+   (if (and (boundp 'multiple-cursors-mode) multiple-cursors-mode)
+       (propertize (format "%02d" (mc/num-cursors)) 'face 'mode-line-mc-face)
+     (! (propertize "00" 'face 'mode-line-dark-face)))))
+
+(defconst my-mode-line--filename
+  (! (propertize "%b" 'face 'mode-line-highlight-face)))
+
+(defsubst my-mode-line--branch ()
+  (if my-current-branch-name
+      (propertize (concat "/" my-current-branch-name) 'face 'mode-line-git-branch-face)
+    ""))
+
+(defsubst my-mode-line--palette-status ()
+  (if my-palette-available-p
+      (! (propertize ":p" 'face 'mode-line-palette-face))
+    ""))
+
+(defconst my-mode-line--recur-status
+  (! (propertize "%]" 'face 'mode-line-dark-face)))
+
+(defsubst my-mode-line--mode-name ()
+  (cond ((and (boundp 'artist-mode) artist-mode)
+         (! (propertize "*Artist*" 'face 'mode-line-special-mode-face)))
+        ((and (boundp 'orgtbl-mode) orgtbl-mode)
+         (! (propertize "*OrgTbl*" 'face 'mode-line-special-mode-face)))
+        ((and (boundp 'follow-mode) follow-mode)
+         (! (propertize "*Follow*" 'face 'mode-line-special-mode-face)))
+        (t
+         (propertize
+          ;; mode-name may be a list in sgml modes
+          (if (consp mode-name) (cadr mode-name) mode-name)
+          'face 'mode-line-bright-face))))
+
+(defsubst my-mode-line--process ()
+  (propertize (format-mode-line mode-line-process) 'face 'mode-line-highlight-face))
+
+(defsubst my-mode-line--encoding ()
+  (propertize (format "(%c%c)"
+                      (coding-system-mnemonic buffer-file-coding-system)
+                      (let ((eol-type (coding-system-eol-type buffer-file-coding-system)))
+                        (if (vectorp eol-type) ?-
+                          (cl-case eol-type
+                            ((0) ?u) ((1) ?d) ((2) ?m) (else ?-)))))
+              'face 'mode-line-dark-face))
+
+(defsubst my-mode-line--clock ()
+  (if (null my-ramen-start-time)
+      (my-time-string)
+    (propertize
+     (format-time-string "%M:%S" (time-subtract (current-time) my-ramen-start-time))
+     'face 'mode-line-warning-face)))
+
+(defsubst my-mode-line--battery-status ()
+  (let* ((index (if my-battery-status (/ (floor (car my-battery-status)) 10) 11))
+         (str (nth index
+                   '("₀_" "₁▁" "₂▂" "₃▃" "₄▄" "₅▅" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█" "N/A"))))
+    (if (cdr my-battery-status)
+        (propertize str 'face 'mode-line-dark-face)
+      (propertize str 'face `(:foreground ,(nth index my-mode-line-battery-indicator-colors))))))
+
 (defun my-generate-mode-line-format ()
-  (let ((VBAR
-         (! (propertize " : " 'face 'mode-line-dark-face)))
-        (linum
-         (! (propertize "%5l" 'face 'mode-line-bright-face)))
-        (colnum-or-region
-         (if (not mark-active)
-             (propertize "%3c" 'face 'mode-line-bright-face)
-           (let ((rows (count-lines (region-beginning) (region-end))))
-             (if (= rows 1)
-                 (propertize (format "%3d" (- (region-end) (region-beginning)))
-                             'face 'mode-line-warning-face)
-               (propertize (format "%3d" rows) 'face 'mode-line-warning-face)))))
-        (i-narrowed
-         (propertize "n" 'face (if (buffer-narrowed-p)
-                                   'mode-line-narrowed-face 'mode-line-dark-face)))
-        (i-readonly
-         (propertize "%%" 'face (if buffer-read-only
-                                    'mode-line-narrowed-face 'mode-line-dark-face)))
-        (i-modified
-         (propertize "*" 'face (if (buffer-modified-p)
-                                   'mode-line-modified-face 'mode-line-dark-face)))
-        (i-mc
-         (if (and (boundp 'multiple-cursors-mode) multiple-cursors-mode)
-             (propertize (format "%02d" (mc/num-cursors)) 'face 'mode-line-mc-face)
-           (! (propertize "00" 'face 'mode-line-dark-face))))
-        (filename
-         (! (propertize "%b" 'face 'mode-line-highlight-face)))
-        (branch
-         (and my-current-branch-name
-              (propertize (concat "/" my-current-branch-name)
-                          'face 'mode-line-git-branch-face)))
-        (palette
-         (when my-palette-available-p
-           (! (propertize " :p" 'face 'mode-line-palette-face))))
-        (recur
-         (! (propertize " %]" 'face 'mode-line-dark-face)))
-        ;; right half must not contain "%" notation otherwise we
-        ;; cannot determine the size of right margin
-        (mode
-         (cond ((and (boundp 'artist-mode) artist-mode)
-                (! (propertize "*Artist*" 'face 'mode-line-special-mode-face)))
-               ((and (boundp 'orgtbl-mode) orgtbl-mode)
-                (! (propertize "*OrgTbl*" 'face 'mode-line-special-mode-face)))
-               ((and (boundp 'follow-mode) follow-mode)
-                (! (propertize "*Follow*" 'face 'mode-line-special-mode-face)))
-               (t
-                (propertize
-                 ;; mode-name may be a list in sgml modes
-                 (if (listp mode-name) (cadr mode-name) mode-name)
-                 'face 'mode-line-bright-face))))
-        (process
-         (propertize (format-mode-line mode-line-process) 'face 'mode-line-highlight-face))
-        (encoding
-         (propertize (format "(%c%c)"
-                             (coding-system-mnemonic buffer-file-coding-system)
-                             (my-eol-type-mnemonic buffer-file-coding-system))
-                     'face 'mode-line-dark-face))
-        (time
-         (if (null my-ramen-start-time)
-             (my-time-string)
-           (propertize (format-time-string
-                        "%M:%S" (time-subtract (current-time) my-ramen-start-time))
-                       'face 'mode-line-warning-face)))
-        (battery
-         (let* ((index (if my-battery-status (/ (floor (car my-battery-status)) 10) 11))
-                (str (nth index '("₀_" "₁▁" "₂▂" "₃▃" "₄▄" "₅▅" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█" "N/A")))
-                (color (nth index my-mode-line-battery-indicator-colors)))
-           (if (cdr my-battery-status)
-               (propertize str 'face 'mode-line-dark-face)
-             (propertize str 'face `(:foreground ,color))))))
-    (let* ((lstr
-            (concat linum VBAR colnum-or-region VBAR
-                    i-narrowed i-readonly i-modified i-mc VBAR
-                    filename branch palette recur))
-           (rstr
-            (concat VBAR mode process " " encoding VBAR time " " battery))
-           (lmargin
-            (propertize " " 'display '((space :align-to (+ 1 left-fringe)))))
-           (rmargin
-            (propertize " " 'display `((space :align-to (- right-fringe ,(length rstr)))))))
-      (concat lmargin lstr rmargin rstr))))
+  (let* ((lstr
+          (concat (my-mode-line--linum) my-mode-line--separator
+                  (my-mode-line--colnum) my-mode-line--separator
+                  (my-mode-line--indicators) my-mode-line--separator
+                  my-mode-line--filename (my-mode-line--branch)
+                  (my-mode-line--palette-status) my-mode-line--recur-status ))
+         (rstr
+          ;; right half must not contain "%" notation otherwise we
+          ;; cannot determine the size of right margin
+          (concat my-mode-line--separator
+                  (my-mode-line--mode-name) (my-mode-line--process) " "
+                  (my-mode-line--encoding) my-mode-line--separator
+                  (my-mode-line--clock) " " (my-mode-line--battery-status)))
+         (lmargin
+          (propertize " " 'display '((space :align-to (+ 1 left-fringe)))))
+         (rmargin
+          (propertize " " 'display `((space :align-to (- right-fringe ,(length rstr)))))))
+    (concat lmargin lstr rmargin rstr)))
 
 (setq-default mode-line-format '((:eval (my-generate-mode-line-format))))
 
