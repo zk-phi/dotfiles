@@ -274,7 +274,7 @@
   (when (apply 'derived-mode-p my-listy-modes)
     (run-hooks 'my-listy-mode-common-hook)))
 
-(defun my-get-short-branch-name (file)
+(defun my-get-branch-name (file)
   (let* ((project-root (locate-dominating-file file ".git"))
          (head-path (and project-root (concat project-root "/.git/HEAD"))))
     (when (and head-path (file-exists-p head-path))
@@ -282,9 +282,12 @@
         (insert-file-contents head-path)
         (goto-char (point-min))
         (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
-        (let ((str (replace-regexp-in-string
-                    "\\([aeiouAEIOU]\\)[aeiouAEIOU]" "\\1" (match-string 1))))
-          (if (> (length str) 4) (substring str 0 4) str))))))
+        (match-string 1)))))
+
+(defun my-abbrev-branch-name (name)
+  (and name
+       (let ((str (replace-regexp-in-string "\\([aeiouAEIOU]\\)[aeiouAEIOU]" "\\1" name)))
+         (if (> (length str) 4) (substring str 0 4) str))))
 
 (defun my-read-font-family ()
   (interactive)
@@ -4501,7 +4504,8 @@ emacs-lisp-mode."
           eshell-prompt-function (lambda ()
                                    (concat "\n"
                                            (my-shorten-directory (eshell/pwd) 30) " "
-                                           (my-get-short-branch-name (eshell/pwd)) "\n"
+                                           (my-abbrev-branch-name
+                                            (my-get-branch-name (eshell/pwd))) "\n"
                                            (cond ((= (user-uid) 0) "（*>w<）? ")
                                                  ((= eshell-last-command-status 0) "（*'-'）? ")
                                                  (t "（`;w;）! "))))))
@@ -4873,7 +4877,7 @@ displayed, use substring of the buffer."
   (set-face-attribute ,it nil :inherit 'mode-line))
 
 ;; disable inverse-video property of header-line
-(set-face-attribute 'header-line nil :inverse-video nil)
+(set-face-attribute 'header-line nil :inverse-video nil :inherit 'default)
 
 ;;   + | the mode-line-format
 
@@ -4923,9 +4927,11 @@ displayed, use substring of the buffer."
                my-ramen-timer-object (run-with-timer 0 1 'force-mode-line-update)))))
 
 (defvar-local my-current-branch-name nil)
+(defvar-local my-current-branch-full-name nil)
 (setup-hook 'find-file-hook
   (when buffer-file-name
-    (setq my-current-branch-name (my-get-short-branch-name buffer-file-name))))
+    (setq my-current-branch-full-name (my-get-branch-name buffer-file-name)
+          my-current-branch-name (my-abbrev-branch-name my-current-branch-full-name))))
 
 (defconst my-mode-line--separator
   (! (propertize " : " 'face 'mode-line-dark-face)))
@@ -4966,6 +4972,13 @@ displayed, use substring of the buffer."
 (defsubst my-mode-line--branch ()
   (if my-current-branch-name
       (propertize (concat "/" my-current-branch-name) 'face 'mode-line-git-branch-face)
+    ""))
+
+(defun all-the-icons-octicon (&rest _) nil) ; redefined later
+(defsubst my-header-line--full-branch ()
+  (if my-current-branch-full-name
+      (propertize (concat (all-the-icons-octicon "git-branch") " " my-current-branch-full-name)
+                  'face 'header-line-bg-face)
     ""))
 
 (defsubst my-mode-line--palette-status ()
@@ -5036,7 +5049,7 @@ displayed, use substring of the buffer."
               (my-mode-line--palette-status) my-mode-line--recur-status
               " " (my-mode-line--indicators)
               "  "
-              (propertize (concat " " (my-mode-line--branch)) 'face 'header-line-bg-face)
+              (propertize " "  'face 'header-line-bg-face) (my-header-line--full-branch)
               rmargin)))
   (defun my-mini-modeline-format ()
     (concat (my-mode-line--linum) my-mode-line--separator
