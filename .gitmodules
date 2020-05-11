@@ -352,3 +352,6 @@
 [submodule "emacs/site-lisp/plugins/dimmer.el"]
 	path = emacs/site-lisp/plugins/dimmer-el
 	url = https://github.com/gonewest818/dimmer.el.git
+[submodule "emacs/site-lisp/plugins/all-the-icons.el"]
+	path = emacs/site-lisp/plugins/all-the-icons-el
+	url = https://github.com/domtronn/all-the-icons.el.git

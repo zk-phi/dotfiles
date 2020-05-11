@@ -4943,11 +4943,14 @@ displayed, use substring of the buffer."
     (propertize (format "%5d" (- (region-end) (region-beginning)))
                 'face 'mode-line-warning-face)))
 
+;; either linum or colnum must be %-notated to be updated correctrly
 (defsubst my-mode-line--colnum ()
-  (if (not mark-active)
-      (propertize "%3c" 'face 'mode-line-bright-face)
-    (propertize (format "%3d" (count-lines (region-beginning) (region-end)))
-                'face 'mode-line-warning-face)))
+  (propertize "%3c" 'face 'mode-line-bright-face)
+  ;; (if (not mark-active)
+  ;;     (propertize "%3c" 'face 'mode-line-bright-face)
+  ;;   (propertize (format "%3d" (count-lines (region-beginning) (region-end)))
+  ;;               'face 'mode-line-warning-face))
+  )
 
 (defsubst my-mode-line--indicators ()
   (concat
