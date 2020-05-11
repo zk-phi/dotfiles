@@ -5472,6 +5472,11 @@ displayed, use substring of the buffer."
     (sublimity-attractive-hide-bars))
   (sublimity-mode 1))
 
+(!-
+ (setup "dimmer"
+   (setq dimmer-fraction 0.2)
+   (dimmer-mode 1)))
+
 ;; + | Keybinds
 ;;   + translations
 
