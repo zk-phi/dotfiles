@@ -4867,9 +4867,13 @@ displayed, use substring of the buffer."
             mode-line-read-only-face
             mode-line-narrowed-face
             mode-line-mc-face
-            mode-line-palette-face)
+            mode-line-palette-face
+            header-line-bg-face)
   (make-face ,it)
-  (set-face-attribute ,it nil :inherit 'mode-line-face))
+  (set-face-attribute ,it nil :inherit 'mode-line))
+
+;; disable inverse-video property of header-line
+(set-face-attribute 'header-line nil :inverse-video nil)
 
 ;;   + | the mode-line-format
 
@@ -4917,17 +4921,6 @@ displayed, use substring of the buffer."
         (t
          (setq my-ramen-start-time   (and (not my-ramen-start-time) (current-time))
                my-ramen-timer-object (run-with-timer 0 1 'force-mode-line-update)))))
-
-(defun my-time-string ()
-  (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face))
-(!-
- (setup "sky-color-clock"
-   (sky-color-clock-initialize 35.40)
-   ;; TODO: Enable when "multicolor fonts are supported on a free system too".
-   (setq sky-color-clock-enable-emoji-icon nil)
-   (when my-openweathermap-api-key
-     (sky-color-clock-initialize-openweathermap-client my-openweathermap-api-key 1850144))
-   (defun my-time-string () (sky-color-clock))))
 
 (defvar-local my-current-branch-name nil)
 (setup-hook 'find-file-hook
@@ -5008,9 +5001,12 @@ displayed, use substring of the buffer."
                             ((0) ?u) ((1) ?d) ((2) ?m) (else ?-)))))
               'face 'mode-line-dark-face))
 
+(defsubst my-mode-line--full-encoding ()
+  (propertize (format "(%s)" (symbol-name buffer-file-coding-system)) 'face 'mode-line-dark-face))
+
 (defsubst my-mode-line--clock ()
   (if (null my-ramen-start-time)
-      (my-time-string)
+      (propertize (format-time-string "%d %H:%M") 'face 'mode-line-bright-face)
     (propertize
      (format-time-string "%M:%S" (time-subtract (current-time) my-ramen-start-time))
      'face 'mode-line-warning-face)))
@@ -5023,30 +5019,61 @@ displayed, use substring of the buffer."
         (propertize str 'face 'mode-line-dark-face)
       (propertize str 'face `(:foreground ,(nth index my-mode-line-battery-indicator-colors))))))
 
-(defun my-generate-mode-line-format ()
-  (let* ((lstr
-          (concat (my-mode-line--linum) my-mode-line--separator
-                  (my-mode-line--colnum) my-mode-line--separator
-                  (my-mode-line--indicators) my-mode-line--separator
-                  my-mode-line--filename (my-mode-line--branch)
-                  (my-mode-line--palette-status) my-mode-line--recur-status))
-         (rstr
-          ;; right half must not contain "%" notation otherwise we
-          ;; cannot determine the size of right margin
-          (concat my-mode-line--separator
-                  (my-mode-line--mode-name) (my-mode-line--process) " "
-                  (my-mode-line--encoding) my-mode-line--separator
-                  (my-mode-line--clock) " " (my-mode-line--battery-status)))
-         (lmargin
-          (propertize " " 'display '((space :align-to (+ 1 left-fringe)))))
-         (rmargin
-          (propertize " " 'display `((space :align-to (- right-fringe ,(length rstr)))))))
-    (concat lmargin lstr rmargin rstr)))
+(setup-include "mini-modeline"
+  (defun all-the-icons-icon-for-buffer () nil)
+  (!-
+   (setup "all-the-icons"
+     (setq all-the-icons-scale-factor 1.0)))
+  (defun my-headerline-format ()
+    (let ((lmargin
+           (propertize " " 'display '((space :align-to left-fringe)) 'face 'header-line-bg-face))
+          (rmargin
+           (propertize " " 'display '((space :align-to (+ 1 scroll-bar))) 'face 'header-line-bg-face)))
+      (concat lmargin "  "
+              (all-the-icons-icon-for-buffer)
+              " "
+              my-mode-line--filename
+              (my-mode-line--palette-status) my-mode-line--recur-status
+              " " (my-mode-line--indicators)
+              "  "
+              (propertize (concat " " (my-mode-line--branch)) 'face 'header-line-bg-face)
+              rmargin)))
+  (defun my-mini-modeline-format ()
+    (concat (my-mode-line--linum) my-mode-line--separator
+            (my-mode-line--colnum) my-mode-line--separator
+            (my-mode-line--mode-name) (my-mode-line--process) " "
+            (my-mode-line--full-encoding) my-mode-line--separator
+            (my-mode-line--clock)
+            " " (my-mode-line--battery-status)))
+  (setq-default header-line-format '((:eval (my-headerline-format))))
+  (setq mini-modeline-r-format '((:eval (my-mini-modeline-format)))
+        mini-modeline-face-attr nil)
+  (setup-with-delayed-redisplay
+   (mini-modeline-mode 1)))
 
-(setq-default mode-line-format '((:eval (my-generate-mode-line-format))))
-
-;; force update mode-line every minutes
-(run-with-timer 60 60 'force-mode-line-update)
+(setup-fallback "mini-modeline"
+  (defun my-generate-mode-line-format ()
+    (let* ((lstr
+            (concat (my-mode-line--linum) my-mode-line--separator
+                    (my-mode-line--colnum) my-mode-line--separator
+                    (my-mode-line--indicators) my-mode-line--separator
+                    my-mode-line--filename (my-mode-line--branch)
+                    (my-mode-line--palette-status) my-mode-line--recur-status))
+           (rstr
+            ;; right half must not contain "%" notation otherwise we
+            ;; cannot determine the size of right margin
+            (concat my-mode-line--separator
+                    (my-mode-line--mode-name) (my-mode-line--process) " "
+                    (my-mode-line--encoding) my-mode-line--separator
+                    (my-mode-line--clock) " " (my-mode-line--battery-status)))
+           (lmargin
+            (propertize " " 'display '((space :align-to (+ 1 left-fringe)))))
+           (rmargin
+            (propertize " " 'display `((space :align-to (- right-fringe ,(length rstr)))))))
+      (concat lmargin lstr rmargin rstr)))
+  (setq-default mode-line-format '((:eval (my-generate-mode-line-format))))
+  ;; force update mode-line every minutes
+  (run-with-timer 60 60 'force-mode-line-update))
 
 ;;   + "kindly-view" minor-mode
 
@@ -5291,6 +5318,9 @@ displayed, use substring of the buffer."
 
   ;; extra mode-line faces
   (set-face-attribute
+   'mode-line-bright-face nil
+   :inherit 'default)
+  (set-face-attribute
    'mode-line-dark-face nil
    :inherit 'elemental-dark-fg-face)
   (set-face-attribute
@@ -5323,6 +5353,33 @@ displayed, use substring of the buffer."
    'mode-line-palette-face nil
    :inherit 'elemental-accent-fg-4-face
    :weight  'bold)
+  (set-face-attribute
+   'header-line-bg-face nil
+   :inherit 'elemental-brighter-bg-face)
+
+  (setup-after "mini-modeline"
+    (set-face-attribute
+     'mini-modeline-mode-line nil
+     :height 0.1
+     :background 'unspecified
+     :inherit 'elemental-highlight-bg-1-face)
+    (set-face-attribute
+     'mini-modeline-mode-line-inactive nil
+     :height 0.1
+     :background 'unspecified
+     :inherit 'elemental-brighter-bg-face)
+    (!-
+     (setup "sky-color-clock"
+       (defun my-set-borderline-color-with-scc ()
+         (let ((time (current-time))
+               (cloudiness (sky-color-clock--cloudiness)))
+           (set-face-attribute
+            'mini-modeline-mode-line nil
+            :background (sky-color-clock--pick-bg-color time cloudiness))))
+       (sky-color-clock-initialize 35.40)
+       (when my-openweathermap-api-key
+         (sky-color-clock-initialize-openweathermap-client my-openweathermap-api-key 1850144))
+       (run-with-timer 0 60 'my-set-borderline-color-with-scc))))
 
   (setup-after "highlight-parentheses"
     (hl-paren-set 'hl-paren-colors nil)
