@@ -5319,7 +5319,7 @@ displayed, use substring of the buffer."
   ;; extra mode-line faces
   (set-face-attribute
    'mode-line-bright-face nil
-   :inherit 'default)
+   :inherit 'elemental-bright-fg-face)
   (set-face-attribute
    'mode-line-dark-face nil
    :inherit 'elemental-dark-fg-face)
@@ -5336,7 +5336,8 @@ displayed, use substring of the buffer."
    :weight  'bold)
   (set-face-attribute
    'mode-line-git-branch-face nil
-   :weight 'bold)
+   :weight 'bold
+   :inherit 'elemental-bright-fg-face)
   (set-face-attribute
    'mode-line-modified-face nil
    :inherit '(elemental-red-face elemental-bright-bg-face))
