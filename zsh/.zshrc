@@ -355,7 +355,11 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias gsta='git stash'
     abbrev-alias gstap='git stash pop'
     abbrev-alias gstam='git merge-stash'
-    abbrev-alias gsub='git submodule update --init'
+    abbrev-alias gm='git mv'
+    abbrev-alias grm='git rm'
+    abbrev-alias gsyn='git submodule sync'
+    abbrev-alias gup='git submodule update --init'
+    abbrev-alias -e gun='git reset $(git symbolic-ref --short HEAD 2>/dev/null)@{1}'
     abbrev-alias -e gpu='git pull origin $(git symbolic-ref --short HEAD 2>/dev/null) --ff-only'
 
     # typos
