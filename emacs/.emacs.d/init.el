@@ -5110,15 +5110,15 @@ displayed, use substring of the buffer."
   (defun my-kindly-view-mode ()
     (interactive)
     (setq-local my-kindly-view-mode t)
-    (setq line-spacing 0.3
-          cursor-type  'bar)
+    (setq-local face-remapping-alist
+                (append face-remapping-alist
+                        '((default (:family "Times New Roman" :height 1.3 :width semi-condensed)))))
+    (setq-local line-spacing 0.3)
+    (setq-local cursor-type 'bar)
     (dolist (mode my-kindly-unsupported-minor-modes)
       (when (and (boundp mode) mode) (funcall mode -1)))
     (dolist (var my-kindly-unsupported-global-variables)
       (set (make-local-variable var) nil))
-    (let ((buffer-face-mode-face '(:family "Times New Roman" :width semi-condensed)))
-      (buffer-face-mode 1))
-    (text-scale-set +2)
     ;; use current major-mode's bindings as the minor-mode bindings
     (setq-local minor-mode-map-alist
                 (cons (cons 'my-kindly-view-mode (current-local-map)) minor-mode-map-alist))
