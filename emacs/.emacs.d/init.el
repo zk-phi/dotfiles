@@ -4876,8 +4876,12 @@ displayed, use substring of the buffer."
   (make-face ,it)
   (set-face-attribute ,it nil :inherit 'mode-line))
 
-;; disable inverse-video property of header-line
-(set-face-attribute 'header-line nil :inverse-video nil :inherit 'default)
+;; disable inverse-video property of header-line, and not affected by the kindly-view mode
+(set-face-attribute
+ 'header-line nil
+ :inverse-video nil
+ :inherit 'unspecified
+ :family 'unspecified)
 
 ;;   + | the mode-line-format
 
