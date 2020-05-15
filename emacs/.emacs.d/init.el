@@ -2084,7 +2084,7 @@ lines far from the cursor."
   (or (and (looking-back "\\_<\\(?:\\sw\\|\\s_\\)*" (point-at-bol))
            (save-excursion
              (search-backward-regexp
-              (concat (regexp-quote (match-string 0)) "\\(\\(?:\\sw\\|\\s_\\)*\\)\\_>")
+              (concat (regexp-quote (match-string 0)) "\\(\\(?:\\sw\\|\\s_\\)+\\)\\_>")
               (and lines (point-at-bol (- lines))) t 2))
            (progn (insert (match-string 1) " ") t))
       (if my-dabbrev-expand-fallback
