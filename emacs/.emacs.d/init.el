@@ -5529,13 +5529,13 @@ displayed, use substring of the buffer."
 
 ;;   + keyboard
 ;;   + | fundamental
-;;     + |ignored keys
+;;     + | ignored keys
 
 (setup-keybinds nil
   "C-M-N" 'ignore                       ; mute discord
   )
 
-;;     + |prefix arguments
+;;     + | prefix arguments
 
 (setup-keybinds nil
   '("C-1" "C-2" "C-3" "C-4" "C-5"
@@ -5545,7 +5545,7 @@ displayed, use substring of the buffer."
     "M-!" "M-@" "M-#" "M-$" "M-%"
     "M-^" "M-&" "M-*" "M-(" "M-)") 'digit-argument)
 
-;;     + |emacs
+;;     + | emacs
 
 (setup-keybinds nil
   "C-g"     'keyboard-quit
@@ -5561,7 +5561,7 @@ displayed, use substring of the buffer."
   "C-x RET" 'kmacro-end-and-call-macro
   "M-<f4>"  'save-buffers-kill-emacs)
 
-;;     + |buffer
+;;     + | buffer
 
 (setup-keybinds nil
   "M-b"     '("ido" ido-switch-buffer switch-to-buffer)
@@ -5573,7 +5573,7 @@ displayed, use substring of the buffer."
   "C-x C-e" 'set-buffer-file-coding-system
   "C-x C-r" 'revert-buffer-with-coding-system)
 
-;;     + |frame, window
+;;     + | frame, window
 
 (setup-keybinds nil
   "M-0" 'next-multiframe-window
