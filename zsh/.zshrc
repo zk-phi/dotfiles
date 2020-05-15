@@ -357,6 +357,7 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias gstam='git merge-stash'
     abbrev-alias gm='git mv'
     abbrev-alias grm='git rm'
+    abbrev-alias gg='git grep'
     abbrev-alias gsyn='git submodule sync'
     abbrev-alias gup='git submodule update --init'
     abbrev-alias -e gun='git reset $(git symbolic-ref --short HEAD 2>/dev/null)@{1}'
