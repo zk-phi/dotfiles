@@ -355,3 +355,9 @@
 [submodule "emacs/site-lisp/plugins/all-the-icons.el"]
 	path = emacs/site-lisp/plugins/all-the-icons-el
 	url = https://github.com/domtronn/all-the-icons.el.git
+[submodule "emacs/site-lisp/plugins/oj.el"]
+	path = emacs/site-lisp/plugins/oj-el
+	url = https://github.com/conao3/oj.el.git
+[submodule "emacs/site-lisp/plugins/quickrun"]
+	path = emacs/site-lisp/plugins/quickrun
+	url = https://github.com/emacsorphanage/quickrun.git
