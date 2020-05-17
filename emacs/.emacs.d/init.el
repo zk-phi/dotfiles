@@ -5038,9 +5038,12 @@ displayed, use substring of the buffer."
       (propertize str 'face `(:foreground ,(nth index my-mode-line-battery-indicator-colors))))))
 
 (setup-include "mini-modeline"
-  (defun all-the-icons-icon-for-buffer () nil)
+  (defun my-header-line--icon () nil)
   (!-
    (setup "all-the-icons"
+     (defun my-header-line--icon ()
+       (let ((icon (all-the-icons-icon-for-buffer)))
+         (and (stringp icon) icon)))
      (setq all-the-icons-scale-factor 1.0)))
   (defun my-headerline-format ()
     (let ((lmargin
@@ -5048,7 +5051,7 @@ displayed, use substring of the buffer."
           (rmargin
            (propertize " " 'display '((space :align-to (+ 1 scroll-bar))) 'face 'header-line-bg-face)))
       (concat lmargin "  "
-              (all-the-icons-icon-for-buffer)
+              (my-header-line--icon)
               " "
               my-mode-line--filename
               (my-mode-line--palette-status) my-mode-line--recur-status
