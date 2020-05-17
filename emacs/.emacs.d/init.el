@@ -1,6 +1,7 @@
-;; init.el (for Emacs 26.1) | 2012- zk_phi
+;; init.el (for Emacs 26.3) | 2012- zk_phi
 
 (require 'setup)
+
 (eval-when-compile
   (setq setup-silent t
         setup-delay-interval 0.5))
