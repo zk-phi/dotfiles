@@ -1,8 +1,7 @@
 ;; init.el (for Emacs 26.3) | 2012- zk_phi
 
-(require 'setup)
-
 (eval-when-compile
+  (require 'setup)
   (setq setup-silent t
         setup-delay-interval 0.5))
 (setup-initialize)
@@ -2494,18 +2493,18 @@ emacs-lisp-mode."
 (setup-expecting "rainbow-delimiters"
   (setup-hook 'my-lispy-mode-common-hook 'rainbow-delimiters-mode))
 
-;;         + Emacs Lisp [cl-lib-hl]
+;;         + Emacs Lisp [setup]
 
 (setup-after "lisp-mode"
   (font-lock-add-keywords
    'emacs-lisp-mode '(("(\\(defvar-local\\)" 1 font-lock-keyword-face)))
   (setup-keybinds emacs-lisp-mode-map '("M-TAB" "C-j") nil)
   (setup-after "smart-compile"
-    ;; we may assume that setup.el is already loaded
-    (setq smart-compile-alist
-          (nconc '(("init\\.el" . (setup-byte-compile-file))
-                   (emacs-lisp-mode . (emacs-lisp-byte-compile)))
-                 smart-compile-alist)))
+    (push '(emacs-lisp-mode . (emacs-lisp-byte-compile)) smart-compile-alist))
+  (!-
+   (setup "setup"
+     (setup-after "smart-compile"
+       (push '("init\\.el" . (setup-byte-compile-file)) smart-compile-alist))))
   (setup-after "auto-complete"
     (push 'emacs-lisp-mode ac-modes)
     (setup-hook 'emacs-lisp-mode-hook
