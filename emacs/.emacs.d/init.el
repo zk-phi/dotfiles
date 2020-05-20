@@ -5535,7 +5535,7 @@ displayed, use substring of the buffer."
 ;;     + | ignored keys
 
 (setup-keybinds nil
-  "C-M-N" 'ignore                       ; mute discord
+  "C-M-S-n" 'ignore                       ; mute discord
   )
 
 ;;     + | prefix arguments
