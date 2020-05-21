@@ -5531,13 +5531,13 @@ displayed, use substring of the buffer."
     "M-<double-drag-mouse-2>" "M-<triple-drag-mouse-2>") 'ignore)
 
 ;;   + keyboard
-;;   + | fundamental
-;;     + | ignored keys
+;;   + | ignored keys
 
 (setup-keybinds nil
-  "C-M-S-n" 'ignore                       ; mute discord
+  "C-M-S-n" 'ignore                     ; mute discord
   )
 
+;;   + | fundamental
 ;;     + | prefix arguments
 
 (setup-keybinds nil
