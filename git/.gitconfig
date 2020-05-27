@@ -10,6 +10,7 @@
     # ---- git-submodule-update-checker
     submodule-updates = "!f(){ git submodule foreach 'git fetch origin master &> /dev/null; git --no-pager log --oneline HEAD..origin/master'; }; f"
     # ---- initialize and configure user profile
+    # (do not use global setting to prevent from accidentally commiting with wrong accounts)
     configure = "!f(){ git config --local user.name "zk-phi"; git config --local user.email "zk-phi@users.noreply.github.com"; }; f"
     initialize = "!f(){ git init; git configure; git commit --allow-empty -m 'Initial commit'; }; f"
     # ---- mark new files as tracked
