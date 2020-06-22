@@ -621,17 +621,23 @@ cons of two integers which defines a range of the codepoints."
 ;; Parse .zshenv (during compile) and setenv $PATH
 (setenv
  "PATH"
- (! (with-temp-buffer
+ (!
+  (with-temp-buffer
+    (let ((default-path
+            (cond ((eq system-type 'darwin)
+                   "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin")
+                  (t
+                   (getenv "PATH")))))
       (cond ((not (file-exists-p "~/.zshenv"))
              (warn "~/.zshenv does not exist")
-             (getenv "PATH"))
+             default-path)
             ((progn
                (insert-file-contents "~/.zshenv")
                (goto-char (point-min))
                (search-forward-regexp "export PATH=\"\\(.*:\\)\\$PATH\"" nil t))
-             (concat (match-string 1) (getenv "PATH")))
+             (concat (match-string 1) default-path))
             (t
-             (getenv "PATH"))))))
+             (warn "~/.zshenv does not have any \"export PATH=...:$PATH\"")))))))
 
 ;; setting for compilation result buffer
 (setup-after "compile"
