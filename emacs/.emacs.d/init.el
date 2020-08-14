@@ -405,6 +405,7 @@
 (define-key query-replace-map (kbd "SPC") nil) ; do not accept SPC in y-or-n-p
 
 (setq frame-title-format                    "%b - Emacs"
+      frame-inhibit-implied-resize          t ; disable inplicit dyanmic resize for performance
       completion-ignore-case                t
       read-file-name-completion-ignore-case t
       create-lockfiles                      nil
