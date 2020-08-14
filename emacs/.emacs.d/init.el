@@ -5345,8 +5345,7 @@ displayed, use substring of the buffer."
   ;; extra mode-line faces
   (set-face-attribute
    'mode-line-bright-face nil
-   :inherit 'default
-   :background 'unspecified)
+   :inherit 'unspecified)
   (set-face-attribute
    'mode-line-dark-face nil
    :inherit 'elemental-dark-fg-face)
