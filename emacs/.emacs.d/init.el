@@ -871,7 +871,7 @@ cons of two integers which defines a range of the codepoints."
   ;; input-method (and multiple-cursors) is incompatible with key-combo
   (define-advice key-combo-post-command-function (:before-until (&rest _))
     (or current-input-method
-        (and (boundp 'multiple-cursors-mode) multiple-cursors-mode))))
+        (bound-and-true-p multiple-cursors-mode))))
 (defun my-unary (str)
   "a utility macro that generates smart insertion commands for
 unary operators which can also be binary."
@@ -4973,7 +4973,7 @@ displayed, use substring of the buffer."
    (if (buffer-modified-p)
        (! (propertize "*" 'face 'mode-line-modified-face))
      (! (propertize "*" 'face 'mode-line-dark-face)))
-   (if (and (boundp 'multiple-cursors-mode) multiple-cursors-mode)
+   (if (bound-and-true-p multiple-cursors-mode)
        (propertize (format "%02d" (mc/num-cursors)) 'face 'mode-line-mc-face)
      (! (propertize "00" 'face 'mode-line-dark-face)))))
 
@@ -5001,11 +5001,11 @@ displayed, use substring of the buffer."
   (! (propertize "%]" 'face 'mode-line-dark-face)))
 
 (defsubst my-mode-line--mode-name ()
-  (cond ((and (boundp 'artist-mode) artist-mode)
+  (cond ((bound-and-true-p artist-mode)
          (! (propertize "*Artist*" 'face 'mode-line-special-mode-face)))
-        ((and (boundp 'orgtbl-mode) orgtbl-mode)
+        ((bound-and-true-p orgtbl-mode)
          (! (propertize "*OrgTbl*" 'face 'mode-line-special-mode-face)))
-        ((and (boundp 'follow-mode) follow-mode)
+        ((bound-and-true-p follow-mode)
          (! (propertize "*Follow*" 'face 'mode-line-special-mode-face)))
         (t
          (propertize
