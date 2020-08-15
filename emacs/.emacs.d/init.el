@@ -4293,7 +4293,7 @@ emacs-lisp-mode."
     "j"       'dired-next-line                       ; (inspired by vi)
     "k"       'dired-previous-line                   ; (inspired by vi)
     "l"       'my-dired-find-alternate-file          ; (inspired by vi)
-    "z"       'dired-do-compress                     ; 'Z'ip
+    "z"       'dired-do-compress-to                  ; 'Z'ip
     "x"       'my-dired-winstart                     ; e'X'ecute
     "c"       'dired-do-copy                         ; 'C'opy
     "v"       'dired-view-file                       ; 'V'iew
