@@ -609,7 +609,7 @@ cons of two integers which defines a range of the codepoints."
   (setq save-place-file my-save-place-file)
   (save-place-mode)
   ;; open invisible automatically
-  (defadvice save-place-find-file-hook (after save-place-open-invisible activate)
+  (define-advice save-place-find-file-hook (:after (&rest _))
     (mapc (lambda (ov)
             (let ((ioit (overlay-get ov 'isearch-open-invisible-temporary)))
               (cond (ioit (funcall ioit ov nil))
@@ -838,17 +838,16 @@ cons of two integers which defines a range of the codepoints."
        '((candidates . (mapcar 'car ac-css-property-alist))
          (cache . 1)
          (prefix . "\\(?:^\\|;\\)[\s\t]*\\([^\s\t]*\\)")))
-     (defadvice ac-css-prefix (around my-disable-ac-after-semicolon activate)
-       (unless (= (char-before) ?\;) ad-do-it)))
+     (define-advice ac-css-prefix (:before-until (&rest _))
+       (= (char-before) ?\;)))
    ;; ;; complete words in the last sessions
    ;; (setup "ac-last-sessions"
    ;;   (setq ac-last-sessions-save-file my-ac-last-sessions-file)
    ;;   (add-hook 'kill-emacs-hook 'ac-last-sessions-save-completions)
    ;;   (!- (ac-last-sessions-load-completions)))
    ;; do not complete remote file names
-   (defadvice ac-filename-candidate (around my-disable-ac-for-remote-files activate)
-     (unless (file-remote-p ac-prefix)
-       ad-do-it))
+   (define-advice ac-filename-candidate (:before-until (&rest _))
+     (file-remote-p ac-prefix))
    ;; setup default sources
    (setq-default ac-sources '(ac-source-my-buffer-file-name
                               ac-source-dictionary
@@ -870,10 +869,9 @@ cons of two integers which defines a range of the codepoints."
 
 (setup-lazy '(key-combo-mode key-combo-define-local) "key-combo"
   ;; input-method (and multiple-cursors) is incompatible with key-combo
-  (defadvice key-combo-post-command-function (around mc-combo activate)
-    (unless (or current-input-method
-                (and (boundp 'multiple-cursors-mode) multiple-cursors-mode))
-      ad-do-it)))
+  (define-advice key-combo-post-command-function (:before-until (&rest _))
+    (or current-input-method
+        (and (boundp 'multiple-cursors-mode) multiple-cursors-mode))))
 (defun my-unary (str)
   "a utility macro that generates smart insertion commands for
 unary operators which can also be binary."
@@ -912,7 +910,8 @@ unary operators which can also be binary."
       (if (or (outline-on-heading-p) (= (point) 1))
           (outline-cycle)
         (call-interactively (global-key-binding "\t"))))
-    (defadvice outline-cycle (after outline-cycle-do-not-show-subtree activate)
+    ;; skip "subtree"
+    (define-advice outline-cycle (:after (&rest _))
       ;; change "folded -> children -> subtree"
       ;; to "folded -> children -> folded -> ..."
       (when (eq this-command 'outline-cycle-children)
@@ -939,10 +938,10 @@ unary operators which can also be binary."
   ;; disable colors by default
   ;; Reference | http://rubikitch.com/2014/11/19/eww-nocolor/
   (defvar my-eww-enable-colors nil)
-  (defadvice shr-colorize-region (around my-eww-colorize-ad activate)
-    (when my-eww-enable-colors ad-do-it))
-  (defadvice eww-colorize-region (around my-eww-colorize-ad activate)
-    (when my-eww-enable-colors ad-do-it))
+  (define-advice shr-colorize-region (:before-while (&rest _))
+    my-eww-enable-colors)
+  (define-advice eww-colorize-region (:before-while (&rest _))
+    my-eww-enable-colors)
   (defun my-eww-enable-colors ()
     "Enable colors in this eww buffer."
     (interactive)
@@ -1022,33 +1021,33 @@ unary operators which can also be binary."
 
   ;; implement mode-hook
   (defvar sdic-mode-hook nil)
-  (defadvice sdic-mode (after my-sdic-run-hooks activate)
+  (define-advice sdic-mode (:after (&rest _))
     (run-hooks 'sdic-mode-hook))
 
   ;; advice "word-at-point" to use "word-at-point"
   (setup "thingatpt"
-    (defadvice sdic-word-at-point (around my-fix-sdic-word-at-point activate)
+    (define-advice sdic-word-at-point (:override (&rest _))
       (let* ((str (or (word-at-point) ""))
              (len (length str)))
         (set-text-properties 0 len nil str)
-        (setq ad-return-value str))))
+        str)))
 
   ;; popwin workaround
   (setup-after "popwin"
     (push '("*sdic*") popwin:special-display-config)
     ;; redefine some functions so that popwin can work with
     ;; reference | http://aikotobaha.blogspot.jp/2013/04/popwinel.html
-    (defadvice sdic-display-buffer (around my-sdic-display-popwin activate)
-      (let ((p (or (ad-get-arg 0) (point))))
+    (define-advice sdic-display-buffer (:override (&optional start-point))
+      (let ((p (or start-point (point))))
         (and sdic-warning-hidden-entry
              (> p (point-min))
              (message "この前にもエントリがあります。"))
         (goto-char p)
         (display-buffer (get-buffer sdic-buffer-name))
         (set-window-start (get-buffer-window sdic-buffer-name) p)))
-    (defadvice sdic-other-window (around my-sdic-fix-other-window activate)
+    (define-advice sdic-other-window (:override (&rest _))
       (other-window 1))
-    (defadvice sdic-close-window (around my-sdic-fix-close-window activate)
+    (define-advice sdic-close-window (:override (&rest _))
       (bury-buffer sdic-buffer-name)))
 
   ;; settings
@@ -1151,31 +1150,33 @@ unary operators which can also be binary."
           (string-match regexp "")
           t))
 
-      (defadvice ido-set-matches-1 (after flx-ido-set-matches-1 activate)
-        (when (my-valid-regex-p ido-text)
-          (unless ad-return-value
-            (when ido-enable-prefix (my-ido-disable-prefix))
-            (unless ad-return-value
-              ;; if not found, try flex matching
-              (catch :too-big
-                (setq ad-return-value (flx-ido-match ido-text (ad-get-arg 0)))
-                ;; if not found, try super-flex matching
-                (unless ad-return-value
-                  (setq ad-return-value
-                        (my-super-flx-ido-match ido-text (ad-get-arg 0)))))))
-          (let ((rx (concat "^" ido-text))
-                prefixed prefixed-sans-dir not-prefixed)
-            (dolist (str ad-return-value)
-              (cond ((string-match rx str)
-                     (push str prefixed))
-                    ((and (string-match "\\(?:.+/\\)?\\([^/]*\\)" str)
-                          (string-match rx (match-string 1 str)))
-                     (push str prefixed-sans-dir))
-                    (t
-                     (push str not-prefixed))))
-            (setq ad-return-value (nconc (nreverse prefixed)
-                                         (nreverse prefixed-sans-dir)
-                                         (nreverse not-prefixed))))))
+      (define-advice ido-set-matches-1 (:around (fn items &optional do-full))
+        (let ((retval (funcall fn items do-full)))
+          (when (my-valid-regex-p ido-text)
+            (unless retval
+              (when ido-enable-prefix (my-ido-disable-prefix))
+              (unless retval
+                ;; if not found, try flex matching
+                (catch :too-big
+                  (setq retval (flx-ido-match ido-text items))
+                  ;; if not found, try super-flex matching
+                  (unless retval
+                    (setq retval
+                          (my-super-flx-ido-match ido-text items))))))
+            (let ((rx (concat "^" ido-text))
+                  prefixed prefixed-sans-dir not-prefixed)
+              (dolist (str retval)
+                (cond ((string-match rx str)
+                       (push str prefixed))
+                      ((and (string-match "\\(?:.+/\\)?\\([^/]*\\)" str)
+                            (string-match rx (match-string 1 str)))
+                       (push str prefixed-sans-dir))
+                      (t
+                       (push str not-prefixed))))
+              (setq retval (nconc (nreverse prefixed)
+                                  (nreverse prefixed-sans-dir)
+                                  (nreverse not-prefixed)))))
+          retval))
 
       ;; enable prefix initially, and disable after 1sec of idle-time
       (add-hook 'ido-setup-hook (setq ido-enable-prefix t))
@@ -1386,10 +1387,10 @@ unary operators which can also be binary."
 
     ;; keep mark active on "require" and "load"
     ;; reference | https://github.com/milkypostman/dotemacs/init.el
-    (defadvice require (around my-require-advice activate)
-      (save-excursion (let (deactivate-mark) ad-do-it)))
-    (defadvice load (around my-require-advice activate)
-      (save-excursion (let (deactivate-mark) ad-do-it)))
+    (define-advice require (:around (fn &rest args))
+      (save-excursion (let (deactivate-mark) (apply fn args))))
+    (define-advice load (:around (fn &rest args))
+      (save-excursion (let (deactivate-mark) (apply fn args))))
 
     ;; (mc--in-defun) sometimes seems not work (why?)
     ;; so make him return always non-nil
@@ -2030,10 +2031,10 @@ kill-buffer-query-functions."
 
 ;; shrink indentation on "kill-line"
 ;; reference | http://www.emacswiki.org/emacs/AutoIndentation
-(defadvice kill-line (around shrink-indent activate)
+(define-advice kill-line (:around (fn &rest args))
   (if (or (not (eolp)) (bolp))
-      ad-do-it
-    ad-do-it
+      (apply fn args)
+    (apply fn args)
     (save-excursion (just-one-space))))
 
 (defun my-shrink-whitespaces ()
@@ -2540,7 +2541,7 @@ emacs-lisp-mode."
   :prepare (push '("\\.scm$" . gauche-mode) auto-mode-alist)
 
   ;; hooks seems not working ...
-  (defadvice gauche-mode (after gauche-run-hooks activate)
+  (define-advice gauche-mode (:after (&rest _))
     (run-hooks 'gauche-mode-hook))
 
   ;; why "|" is whitespace in gauche-mode ?
@@ -3335,7 +3336,7 @@ emacs-lisp-mode."
 
   ;; fix that the poor close-paren indentation
   ;; reference | http://blog.willnet.in/entry/2012/06/16/212313
-  (defadvice ruby-indent-line (after my-unindent-closing-paren activate)
+  (define-advice ruby-indent-line (:after (&rest _))
     (let ((column (current-column)) indent offset)
       (save-excursion
         (back-to-indentation)
@@ -3863,9 +3864,9 @@ emacs-lisp-mode."
 
     ;; electric-spacing workaround
     (setup-after "electric-spacing"
-      (defadvice org-export-as-html (around my-electric-spacing-workaround activate)
+      (define-advice org-export-as-html (:around (fn &rest args))
         (let ((electric-spacing-regexp-pairs nil))
-          ad-do-it)))
+          (apply fn args))))
     )
 
   (defun my-org-edit-special ()
@@ -4098,23 +4099,22 @@ emacs-lisp-mode."
 
   ;; kill whole row with "org-table-cut-region"
   ;; reference | http://dev.ariel-networks.com/Members/matsuyama/tokyo-emacs-02/
-  (defadvice org-table-cut-region (around cut-region-or-kill-row activate)
+  (define-advice org-table-cut-region (:around (fn &rest args))
     (if (use-region-p)
         (org-table-kill-row)
-      ad-do-it))
+      (apply fn args)))
 
   ;; enable overlay while editing formulas
-  (defadvice org-table-eval-formula (around my-table-formula-helper activate)
-    "enable overlays while editing formulas"
+  (define-advice org-table-eval-formula (:around (fn &rest args))
     (unless org-table-coordinate-overlays
       (org-table-toggle-coordinate-overlays))
-    (unwind-protect ad-do-it
+    (unwind-protect (apply fn args)
       (org-table-toggle-coordinate-overlays)))
-  (defadvice orgtbl-mode (around overlay-reset activate)
-    "if overlays are active, remove them instead of leaving orgtbl-mode"
+  ;; if overlays are active, remove them instead of leaving orgtbl-mode
+  (define-advice orgtbl-mode (:around (fn &rest args))
     (if org-table-coordinate-overlays
         (org-table-toggle-coordinate-overlays)
-      ad-do-it))
+      (apply fn args)))
 
   ;; my commands
   (defun my-orgtbl-hard-next-field ()
@@ -4455,24 +4455,24 @@ emacs-lisp-mode."
 
   ;; vi-like paren-matching
   (setup-after "paren"
-    (defadvice show-paren-function (around vi-show-paren activate)
+    (define-advice show-paren-function (:around (fn &rest args))
       (if (and (eq major-mode 'vi-mode)
                (looking-back "\\s)" (max 0 (- (point) 2))))
-          (save-excursion (forward-char) ad-do-it)
-        ad-do-it)))
+          (save-excursion (forward-char) (apply fn args))
+        (apply fn args))))
 
   ;; make cursor "box" while in vi-mode
-  (defadvice vi-mode (after make-cursor-box-while-vi activate)
+  (define-advice vi-mode (:after (&rest _))
     (setq cursor-type 'box))
-  (defadvice vi-goto-insert-state (after make-cursor-box-while-vi activate)
+  (define-advice vi-goto-insert-state (:after (&rest _))
     (setq cursor-type 'bar))
 
   ;; disable key-chord
   (setup-after "key-chord"
-    (defadvice vi-mode (after disable-key-chord activate)
+    (define-advice vi-mode (:after (&rest _))
       (setq-local key-chord-mode nil)
       (setq-local input-method-function nil))
-    (defadvice vi-goto-insert-state (after disable-key-chord activate)
+    (define-advice vi-goto-insert-state (:after (&rest _))
       (kill-local-variable 'key-chord-mode)
       (kill-local-variable 'input-method-function)))
 
@@ -4817,7 +4817,7 @@ displayed, use substring of the buffer."
            (howm-time-to-datestr))
           (t
            (error (format "Invalid input %s." str)))))
-  (defun howm-action-lock-date (date &optional new future-p)
+  (define-advice howm-action-lock-date (:override (date &optional new future-p))
     (let* ((prompt (concat "[" (howm-datestr-day-of-week date) "] "
                            "RET(list), [+-]num(shift), yymmdd(set)"
                            ", x~y(from/to), .(today): "))
@@ -4920,7 +4920,7 @@ displayed, use substring of the buffer."
     (when (and buffer-file-name
                (file-exists-p (scratch-palette--file-name buffer-file-name)))
       (setq my-palette-available-p t)))
-  (defadvice scratch-palette-kill (after my-update-palette-status activate)
+  (define-advice scratch-palette-kill (:after (&rest _))
     (my-update-palette-status))
   (setup-hook 'find-file-hook 'my-update-palette-status)
   (my-update-palette-status))
@@ -5335,7 +5335,7 @@ displayed, use substring of the buffer."
   ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#aee2c9" "#9e9e9e")
 
   ;; switch mode-line color while recording macros
-  (defadvice kmacro-start-macro (after my-recording-mode-line activate)
+  (define-advice kmacro-start-macro (:after (&rest _))
     (set-face-attribute 'mode-line nil :inherit 'elemental-highlight-bg-2-face)
     (add-hook 'post-command-hook 'my-recording-mode-line-end))
   (defun my-recording-mode-line-end ()
@@ -5470,7 +5470,7 @@ displayed, use substring of the buffer."
    (define-globalized-minor-mode global-highlight-parentheses-mode
      highlight-parentheses-mode
      (lambda () (highlight-parentheses-mode 1)))
-   (defadvice hl-paren-create-overlays (after my-prior-hl-paren-overlays activate)
+   (define-advice hl-paren-create-overlays (:after (&rest _))
      (dolist (ov hl-paren-overlays)
        (overlay-put ov 'priority 2)))
    (global-highlight-parentheses-mode 1)))
