@@ -5473,7 +5473,9 @@ displayed, use substring of the buffer."
    (define-advice hl-paren-create-overlays (:after (&rest _))
      (dolist (ov hl-paren-overlays)
        (overlay-put ov 'priority 2)))
-   (global-highlight-parentheses-mode 1)))
+   (global-highlight-parentheses-mode 1)
+   (setup-after "vi"
+     (push 'highlight-parentheses-mode my-kindly-unsupported-minor-modes))))
 
 (!-
  (setup "highlight-stages"
