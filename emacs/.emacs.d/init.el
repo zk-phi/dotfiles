@@ -2,6 +2,7 @@
 
 (eval-when-compile
   (require 'setup)
+  (require 'subr-x)
   (setq setup-silent t
         setup-enable-gc-threshold-hacks t
         setup-disable-magic-file-name t
@@ -1483,8 +1484,7 @@ unary operators which can also be binary."
          (back (and back (- (point) back)))
          (forward (and forward (- forward (point)))))
     (mark-sexp
-     (if (or (not back)
-             (and forward (< forward back))) 1 -1))))
+     (if (or (not back) (and forward (< forward back))) 1 -1))))
 
 (defun my-down-list ()
   (interactive)
@@ -2017,10 +2017,10 @@ kill-buffer-query-functions."
     (">=" ."<") ( "<" .">=") ( ">" ."<=")))
 (defun my-transpose-chars ()
   (interactive)
-  (when-let ((replacement
-              (or (cl-some (lambda (pair) (and (looking-back (car pair) (point-at-bol)) (cdr pair)))
-                           my-transpose-chars-list)
-                  (and (looking-back "\\(.\\)\\(.\\)" (max 0 (- (point) 2))) "\\2\\1"))))
+  (when-let (replacement
+             (or (cl-some (lambda (pair) (and (looking-back (car pair) (point-at-bol)) (cdr pair)))
+                          my-transpose-chars-list)
+                 (and (looking-back "\\(.\\)\\(.\\)" (max 0 (- (point) 2))) "\\2\\1")))
     (replace-match replacement)))
 
 (defun my-smart-comma ()
