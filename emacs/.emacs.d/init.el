@@ -451,7 +451,7 @@
 
 ;; on Windows, use Shift-JIS for file names
 ;; reference | http://sakito.jp/emacs/emacsshell.html
-(!when (string= window-system "w32")
+(!when (eq system-type 'windows-nt)
   (setq locale-coding-system    'sjis
         file-name-coding-system 'sjis))
 
@@ -1298,7 +1298,7 @@ unary operators which can also be binary."
 (setup-after "isearch"
   ;; isearch in japanese (for windows)
   ;; reference | http://d.hatena.ne.jp/myhobby20xx/20110228/1298865536
-  (!when (string= window-system "w32")
+  (!when (string= window-system 'w32)
     (defun my-isearch-update ()
       (interactive)
       (isearch-update))
@@ -3491,7 +3491,7 @@ emacs-lisp-mode."
              (push '("\\.ahk$" . ahk-mode) auto-mode-alist)
              ;; the default value of ahk-path-exe-installed is invalid
              ;; on non-w32 systems.
-             (unless (eq (window-system) 'w32)
+             (unless (eq system-type 'windows-nt)
                (defvar ahk-path-exe-installed nil)))
   (setup-after "mark-hacks"
     (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes))
@@ -4541,7 +4541,7 @@ emacs-lisp-mode."
       (if file
           (find-file (concat dir file))
         (bury-buffer))))
-  (when (string= window-system "w32")
+  (!when (eq system-type 'windows-nt)
     (defun eshell/open (&optional file)
       "win-start the current line's file."
       (interactive)
