@@ -1377,7 +1377,7 @@ unary operators which can also be binary."
     `(lambda ()
        (interactive)
        (yas--expand-or-prompt-for-template
-        (cl-mapcan #'(lambda (table) (yas--fetch table ,name)) (yas--get-snippet-tables)))))
+        (mapcan #'(lambda (table) (yas--fetch table ,name)) (yas--get-snippet-tables)))))
   )
 
 ;;   + multiple-cursors [multiple-cursors]
