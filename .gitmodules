@@ -93,7 +93,7 @@
 	path = emacs/site-lisp/plugins/multiple-cursors-el
 	url = https://github.com/magnars/multiple-cursors.el.git
 [submodule "emacs/site-lisp/plugins/paredit"]
-	path = emacs/site-lisp/plugins/paredit
+	path = emacs/site-lisp/my-plugins/paredit
 	url = http://mumble.net/~campbell/git/paredit.git
 	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/cedit"]
