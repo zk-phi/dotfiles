@@ -3,6 +3,8 @@
 (eval-when-compile
   (require 'setup)
   (setq setup-silent t
+        setup-enable-gc-threshold-hacks t
+        setup-disable-magic-file-name t
         setup-delay-interval 0.5))
 (setup-initialize)
 
@@ -409,8 +411,6 @@
       completion-ignore-case                t
       read-file-name-completion-ignore-case t
       create-lockfiles                      nil
-      ;; gc-cons-threshold                     (! (* 128 1024 1024))
-      ;; gc-cons-percentage                    0.5
       message-log-max                       1000
       enable-local-variables                :safe
       echo-keystrokes                       0.1
