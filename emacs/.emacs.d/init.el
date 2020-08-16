@@ -1388,9 +1388,9 @@ unary operators which can also be binary."
     ;; keep mark active on "require" and "load"
     ;; reference | https://github.com/milkypostman/dotemacs/init.el
     (define-advice require (:around (fn &rest args))
-      (save-excursion (let (deactivate-mark) (apply fn args))))
+      (save-mark-and-excursion (let (deactivate-mark) (apply fn args))))
     (define-advice load (:around (fn &rest args))
-      (save-excursion (let (deactivate-mark) (apply fn args))))
+      (save-mark-and-excursion (let (deactivate-mark) (apply fn args))))
 
     ;; (mc--in-defun) sometimes seems not work (why?)
     ;; so make him return always non-nil
@@ -1507,7 +1507,7 @@ unary operators which can also be binary."
 
 (defun my-copy-sexp ()
   (interactive)
-  (save-excursion
+  (save-mark-and-excursion
     (my-mark-sexp)
     (kill-ring-save (region-beginning) (region-end))))
 
@@ -1542,7 +1542,7 @@ unary operators which can also be binary."
 
 (defun my-indent-defun ()
   (interactive)
-  (save-excursion
+  (save-mark-and-excursion
     (mark-defun)
     (indent-region (region-beginning) (region-end))))
 
