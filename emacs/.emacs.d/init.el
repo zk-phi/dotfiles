@@ -590,7 +590,7 @@ cons of two integers which defines a range of the codepoints."
      (maphash
       (lambda (key files)
         ;; exclude non-backup files (like ".", "..")
-        (setq files (delq nil (mapcan (lambda (f)
+        (setq files (delq nil (mapcar (lambda (f)
                                         (when (backup-file-name-p f) f))
                                       files)))
         (when (and files
@@ -1140,7 +1140,7 @@ unary operators which can also be binary."
                                  (nconc (mapcar 'car lists)
                                         (mix-lists (mapcar 'cdr lists))))))
           (mix-lists
-           (mapcan (lambda (str) (flx-ido-match str items))
+           (mapcar (lambda (str) (flx-ido-match str items))
                    (my-make-super-flex-keywords query)))))
 
       (defun my-ido-disable-prefix ()
@@ -1258,7 +1258,7 @@ unary operators which can also be binary."
          . (lambda ()
              (condition-case nil
                  (with-current-buffer anything-c-imenu-current-buffer
-                   (mapcan
+                   (mapcar
                     (lambda (entry)
                       (if (listp (cdr entry))
                           (mapcar (lambda (sub)
@@ -2159,7 +2159,7 @@ lines far from the cursor."
       (unless (byte-compile-file file t)
         (push file errors)))
     (message "Following files have failed to compile: %s"
-             (mapcan (lambda (x) (file-name-nondirectory x)) errors))))
+             (mapcar (lambda (x) (file-name-nondirectory x)) errors))))
 
 ;;   + Misc: built-ins
 ;;   + | files
@@ -4489,7 +4489,7 @@ emacs-lisp-mode."
 
   (defun my-shorten-directory (dir len)
     (if (null dir) ""
-      (let ((lst (mapcan (lambda (s)
+      (let ((lst (mapcar (lambda (s)
                            (if (> (length s) 5)
                                (cons 5 (concat (substring s 0 4) "-"))
                              (cons (length s) s)))
@@ -4896,7 +4896,7 @@ displayed, use substring of the buffer."
 ;;   + | the mode-line-format
 
 (defvar my-mode-line-battery-indicator-colors
-  ;; (mapcan (lambda (x)  (apply 'color-rgb-to-hex (color-hsl-to-rgb x 0.5 0.5)))
+  ;; (mapcar (lambda (x)  (apply 'color-rgb-to-hex (color-hsl-to-rgb x 0.5 0.5)))
   ;;         '(0.00 0.045 0.091 0.136 0.182 0.227 0.273 0.318 0.363 0.409 0.455 0.500))
   '("#bf3f3f" "#bf623f" "#bf853f" "#bfa73f" "#b3bf3f" "#91bf3f"
     "#6dbf3f" "#4bbf3f" "#3fbf56" "#3fbf79" "#3fbf9c" "#3fbfbf"))
