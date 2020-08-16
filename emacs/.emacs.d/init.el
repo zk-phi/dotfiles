@@ -395,7 +395,7 @@
   (when buffer-file-name
     (let ((dir (file-name-directory buffer-file-name)))
       (when (and (not (file-exists-p dir))
-                 (y-or-n-p (format "Directory does not exist. Create it? ")))
+                 (y-or-n-p "Directory does not exist. Create it? "))
         (make-directory dir t)))))
 
 ;;   + Misc: core
