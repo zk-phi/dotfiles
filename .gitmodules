@@ -1,31 +1,24 @@
 [submodule "zsh/.zsh.d/plugins/per-directory-history"]
 	path = zsh/.zsh.d/plugins/per-directory-history
 	url = https://github.com/zk-phi/per-directory-history.git
-	ignore = dirty
 [submodule "zsh/.zsh.d/plugins/zsh-autosuggestions"]
 	path = zsh/.zsh.d/plugins/zsh-autosuggestions
 	url = https://github.com/zsh-users/zsh-autosuggestions.git
-	ignore = dirty
 [submodule "zsh/.zsh.d/plugins/zsh-abbrev-alias"]
 	path = zsh/.zsh.d/plugins/zsh-abbrev-alias
 	url = https://github.com/momo-lab/zsh-abbrev-alias.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/popwin-el"]
 	path = emacs/site-lisp/plugins/popwin-el
 	url = https://github.com/m2ym/popwin-el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/scratch-pop"]
 	path = emacs/site-lisp/my-plugins/scratch-pop
 	url = https://github.com/zk-phi/scratch-pop.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/undohist-el"]
 	path = emacs/site-lisp/my-plugins/undohist-el
 	url = https://github.com/zk-phi/undohist.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/docker-tramp.el"]
 	path = emacs/site-lisp/plugins/docker-tramp-el
 	url = https://github.com/emacs-pe/docker-tramp.el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/smooth-scrolling"]
 	path = emacs/site-lisp/plugins/smooth-scrolling
 	url = https://github.com/aspiers/smooth-scrolling.git
@@ -33,47 +26,36 @@
 [submodule "emacs/site-lisp/my-plugins/phi-rectangle"]
 	path = emacs/site-lisp/my-plugins/phi-rectangle
 	url = https://github.com/zk-phi/phi-rectangle.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/mark-hacks"]
 	path = emacs/site-lisp/my-plugins/mark-hacks
 	url = https://github.com/zk-phi/mark-hacks.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/phi-grep"]
 	path = emacs/site-lisp/my-plugins/phi-grep
 	url = https://github.com/zk-phi/phi-grep.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/phi-autopair"]
 	path = emacs/site-lisp/my-plugins/phi-autopair
 	url = https://github.com/zk-phi/phi-autopair.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/electric-align"]
 	path = emacs/site-lisp/my-plugins/electric-align
 	url = https://github.com/zk-phi/electric-align.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/electric-spacing"]
 	path = emacs/site-lisp/my-plugins/electric-spacing
 	url = https://github.com/zk-phi/electric-spacing.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/jaword"]
 	path = emacs/site-lisp/my-plugins/jaword
 	url = https://github.com/zk-phi/jaword.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/popup-el"]
 	path = emacs/site-lisp/plugins/popup-el
 	url = https://github.com/auto-complete/popup-el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/auto-complete"]
 	path = emacs/site-lisp/plugins/auto-complete
 	url = https://github.com/auto-complete/auto-complete.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/guess-style"]
 	path = emacs/site-lisp/plugins/guess-style
 	url = https://github.com/nschum/guess-style.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/ac-last-session"]
 	path = emacs/site-lisp/my-plugins/ac-last-session
 	url = https://github.com/zk-phi/ac-last-session.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/key-combo"]
 	path = emacs/site-lisp/plugins/key-combo
 	url = https://github.com/uk-ar/key-combo.git
@@ -85,11 +67,9 @@
 [submodule "emacs/site-lisp/my-plugins/commentize-conflict"]
 	path = emacs/site-lisp/my-plugins/commentize-conflict
 	url = https://github.com/zk-phi/commentize-conflict.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/key-chord"]
 	path = emacs/site-lisp/my-plugins/key-chord
 	url = https://github.com/zk-phi/key-chord.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/sdic"]
 	path = emacs/site-lisp/plugins/sdic
 	url = https://github.com/emacsattic/sdic.git
@@ -97,27 +77,21 @@
 [submodule "emacs/site-lisp/plugins/flx"]
 	path = emacs/site-lisp/plugins/flx
 	url = https://github.com/lewang/flx.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/anything-config"]
 	path = emacs/site-lisp/plugins/anything
 	url = http://repo.or.cz/r/anything-config.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/setup"]
 	path = emacs/site-lisp/my-plugins/setup
 	url = https://github.com/zk-phi/setup.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/yasnippet"]
 	path = emacs/site-lisp/plugins/yasnippet
 	url = https://github.com/joaotavora/yasnippet.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/git-complete"]
 	path = emacs/site-lisp/my-plugins/git-complete
 	url = https://github.com/zk-phi/git-complete.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/multiple-cursors.el"]
 	path = emacs/site-lisp/plugins/multiple-cursors-el
 	url = https://github.com/magnars/multiple-cursors.el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/paredit"]
 	path = emacs/site-lisp/plugins/paredit
 	url = http://mumble.net/~campbell/git/paredit.git
@@ -125,7 +99,6 @@
 [submodule "emacs/site-lisp/my-plugins/cedit"]
 	path = emacs/site-lisp/my-plugins/cedit
 	url = https://github.com/zk-phi/cedit.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/japanese-holidays"]
 	path = emacs/site-lisp/plugins/japanese-holidays
 	url = https://github.com/emacs-jp/japanese-holidays.git
@@ -141,7 +114,6 @@
 [submodule "emacs/site-lisp/my-plugins/phi-search"]
 	path = emacs/site-lisp/my-plugins/phi-search
 	url = https://github.com/zk-phi/phi-search.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/phi-search-mc.el"]
 	path = emacs/site-lisp/plugins/phi-search-mc-el
 	url = https://github.com/knu/phi-search-mc.el.git
@@ -149,19 +121,15 @@
 [submodule "emacs/site-lisp/my-plugins/phi-search-migemo"]
 	path = emacs/site-lisp/my-plugins/phi-search-migemo
 	url = https://github.com/zk-phi/phi-search-migemo.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/expand-region.el"]
 	path = emacs/site-lisp/plugins/expand-region-el
 	url = https://github.com/magnars/expand-region.el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/include-anywhere"]
 	path = emacs/site-lisp/my-plugins/include-anywhere
 	url = https://github.com/zk-phi/include-anywhere.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/scratch-palette"]
 	path = emacs/site-lisp/my-plugins/scratch-palette
 	url = https://github.com/zk-phi/scratch-palette.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/shell-pop-el"]
 	path = emacs/site-lisp/plugins/shell-pop-el
 	url = https://github.com/kyagi/shell-pop-el.git
@@ -169,7 +137,6 @@
 [submodule "emacs/site-lisp/my-plugins/rpn-calc"]
 	path = emacs/site-lisp/my-plugins/rpn-calc
 	url = https://github.com/zk-phi/rpn-calc.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/sudden-death.el"]
 	path = emacs/site-lisp/plugins/sudden-death-el
 	url = https://github.com/yewton/sudden-death.el.git
@@ -185,15 +152,12 @@
 [submodule "emacs/site-lisp/my-plugins/download-region"]
 	path = emacs/site-lisp/my-plugins/download-region
 	url = https://github.com/zk-phi/download-region.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/emacs-web-server"]
 	path = emacs/site-lisp/plugins/emacs-web-server
 	url = https://github.com/skeeto/emacs-web-server.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/ace-link"]
 	path = emacs/site-lisp/plugins/ace-link
 	url = https://github.com/abo-abo/ace-link.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/avy"]
 	path = emacs/site-lisp/plugins/avy
 	url = https://github.com/abo-abo/avy.git
@@ -201,15 +165,12 @@
 [submodule "emacs/site-lisp/plugins/emacs-htmlize"]
 	path = emacs/site-lisp/plugins/emacs-htmlize
 	url = https://github.com/hniksic/emacs-htmlize.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/togetherly"]
 	path = emacs/site-lisp/my-plugins/togetherly
 	url = https://github.com/zk-phi/togetherly.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/rainbow-delimiters"]
 	path = emacs/site-lisp/plugins/rainbow-delimiters
 	url = https://github.com/Fanael/rainbow-delimiters.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/rainbow-mode"]
 	path = emacs/site-lisp/plugins/rainbow-mode
 	url = https://github.com/emacsmirror/rainbow-mode.git
@@ -217,23 +178,18 @@
 [submodule "emacs/site-lisp/plugins/gauche-mode"]
 	path = emacs/site-lisp/plugins/gauche-mode
 	url = https://github.com/leque/gauche-mode.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/scheme-complete"]
 	path = emacs/site-lisp/plugins/scheme-complete
 	url = https://github.com/ashinn/scheme-complete.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/ac-c-headers"]
 	path = emacs/site-lisp/my-plugins/ac-c-headers
 	url = https://github.com/zk-phi/ac-c-headers.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/scad-preview"]
 	path = emacs/site-lisp/my-plugins/scad-preview
 	url = https://github.com/zk-phi/scad-preview.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/arduino-mode"]
 	path = emacs/site-lisp/plugins/arduino-mode
 	url = https://github.com/stardiviner/arduino-mode.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/bison-mode"]
 	path = emacs/site-lisp/plugins/bison-mode
 	url = https://github.com/Wilfred/bison-mode.git
@@ -245,7 +201,6 @@
 [submodule "emacs/site-lisp/my-plugins/bfbuilder"]
 	path = emacs/site-lisp/my-plugins/bfbuilder
 	url = https://github.com/zk-phi/bfbuilder.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/ahk-mode"]
 	path = emacs/site-lisp/plugins/ahk-mode
 	url = https://github.com/ralesi/ahk-mode.git
@@ -253,15 +208,12 @@
 [submodule "emacs/site-lisp/plugins/typescript.el"]
 	path = emacs/site-lisp/plugins/typescript-el
 	url = https://github.com/ananthakumaran/typescript.el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/web-mode"]
 	path = emacs/site-lisp/plugins/web-mode
 	url = https://github.com/fxbois/web-mode.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/key-combo-web"]
 	path = emacs/site-lisp/my-plugins/key-combo-web
 	url = https://github.com/zk-phi/key-combo-web.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/dockerfile-mode"]
 	path = emacs/site-lisp/plugins/dockerfile-mode
 	url = https://github.com/spotify/dockerfile-mode.git
@@ -269,11 +221,9 @@
 [submodule "emacs/site-lisp/my-plugins/magic-latex-buffer"]
 	path = emacs/site-lisp/my-plugins/magic-latex-buffer
 	url = https://github.com/zk-phi/magic-latex-buffer.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/markdown-mode"]
 	path = emacs/site-lisp/plugins/markdown-mode
 	url = https://github.com/jrblevin/markdown-mode.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/stripe-buffer"]
 	path = emacs/site-lisp/plugins/stripe-buffer
 	url = https://github.com/sabof/stripe-buffer.git
@@ -281,35 +231,27 @@
 [submodule "emacs/site-lisp/my-plugins/phi-search-dired"]
 	path = emacs/site-lisp/my-plugins/phi-search-dired
 	url = https://github.com/zk-phi/phi-search-dired.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/howm"]
 	path = emacs/site-lisp/plugins/howm
 	url = https://scm.osdn.net/gitroot/howm/howm.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/sky-color-clock"]
 	path = emacs/site-lisp/my-plugins/sky-color-clock
 	url = https://github.com/zk-phi/sky-color-clock.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/elemental-theme"]
 	path = emacs/site-lisp/my-plugins/elemental-theme
 	url = https://github.com/zk-phi/elemental-theme.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/highlight-parentheses.el"]
 	path = emacs/site-lisp/plugins/highlight-parentheses-el
 	url = https://github.com/tsdh/highlight-parentheses.el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/highlight-stages"]
 	path = emacs/site-lisp/my-plugins/highlight-stages
 	url = https://github.com/zk-phi/highlight-stages.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/sublimity"]
 	path = emacs/site-lisp/my-plugins/sublimity
 	url = https://github.com/zk-phi/sublimity.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/dired-explore"]
 	path = emacs/site-lisp/my-plugins/dired-explore
 	url = https://github.com/zk-phi/dired-explore.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/tinysegmenter.el"]
 	path = emacs/site-lisp/plugins/tinysegmenter-el
 	url = https://github.com/myuhe/tinysegmenter.el.git
@@ -325,7 +267,6 @@
 [submodule "emacs/site-lisp/plugins/s.el"]
 	path = emacs/site-lisp/plugins/s-el
 	url = https://github.com/magnars/s.el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/gitmole"]
 	path = emacs/site-lisp/my-plugins/gitmole
 	url = https://github.com/zk-phi/gitmole.git
