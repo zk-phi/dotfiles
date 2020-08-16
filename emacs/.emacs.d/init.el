@@ -5521,23 +5521,6 @@ displayed, use substring of the buffer."
   (setq ns-command-modifier   'meta
         ns-alternate-modifier 'super))
 
-;;   + mouse buttons
-
-;; <mouse-1>, <wheel-up>, <wheel-down> are not disabled
-(setup-keybinds nil
-  '("<down-mouse-1>" "<drag-mouse-1>"
-    "<double-mouse-1>" "<triple-mouse-1>"
-    "<mouse-2>" "<down-mouse-2>" "<drag-mouse-2>"
-    "<double-mouse-2>" "<triple-mouse-2>"
-    "C-<mouse-1>" "C-<down-mouse-1>" "C-<drag-mouse-1>"
-    "C-<double-drag-mouse-1>" "C-<triple-drag-mouse-1>"
-    "C-<mouse-2>" "C-<down-mouse-2>" "C-<drag-mouse-2>"
-    "C-<double-drag-mouse-2>" "C-<triple-drag-mouse-2>"
-    "M-<mouse-1>" "M-<down-mouse-1>" "M-<drag-mouse-1>"
-    "M-<double-drag-mouse-1>" "M-<triple-drag-mouse-1>"
-    "M-<mouse-2>" "M-<down-mouse-2>" "M-<drag-mouse-2>"
-    "M-<double-drag-mouse-2>" "M-<triple-drag-mouse-2>") 'ignore)
-
 ;;   + keyboard
 ;;   + | ignored keys
 
