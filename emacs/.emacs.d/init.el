@@ -551,6 +551,10 @@ cons of two integers which defines a range of the codepoints."
 ;; make the main frame maximized by default
 (push '(fullscreen . maximized) default-frame-alist)
 
+;; enable transparent titlebar on darwin systems
+(!when (eq window-system 'ns)
+  (push '(ns-transparent-titlebar . t) default-frame-alist))
+
 ;;   + | backup, autosave
 
 ;; backup directory
@@ -5225,6 +5229,8 @@ displayed, use substring of the buffer."
          (bright-fg      (my-blend-colors fg-base bg-base -40)))
     `(progn
        (custom-theme-set-variables 'elemental-theme '(frame-background-mode ',mode))
+       ,(when (eq window-system 'ns)
+          `(set-frame-parameter nil 'ns-appearance ',mode))
        (set-face-background 'default ,bg-base)
        (set-face-background 'cursor ,fg-base)
        (set-face-background 'elemental-bright-bg-face ,bright-bg)
