@@ -1767,7 +1767,7 @@ kill-buffer-query-functions."
 ;; reference | http://d.hatena.ne.jp/mooz/touch/20100119/p1
 (defun my-resize-window ()
   (interactive)
-  (cl-case (read-char "Press npbf or hjkl to resize.")
+  (cl-case (read-char-choice "Press npbf or hjkl to resize." '(?n ?p ?b ?f ?h ?j ?k ?l))
     ((?f ? ?l)
      (enlarge-window-horizontally
       (if (zerop (car (window-edges))) 1 -1))
