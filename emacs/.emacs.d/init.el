@@ -277,9 +277,9 @@
     (run-hooks 'my-listy-mode-common-hook)))
 
 (defun my-get-branch-name (file)
-  (let* ((project-root (locate-dominating-file file ".git"))
-         (head-path (and project-root (concat project-root "/.git/HEAD"))))
-    (when (and head-path (file-exists-p head-path))
+  (when-let ((project-root (locate-dominating-file file ".git"))
+             (head-path (concat project-root "/.git/HEAD")))
+    (when (file-exists-p head-path)
       (with-temp-buffer
         (insert-file-contents head-path)
         (goto-char (point-min))
@@ -2017,12 +2017,11 @@ kill-buffer-query-functions."
     (">=" ."<") ( "<" .">=") ( ">" ."<=")))
 (defun my-transpose-chars ()
   (interactive)
-  (let ((replacement
-         (or (cl-some (lambda (pair) (and (looking-back (car pair) (point-at-bol)) (cdr pair)))
-                      my-transpose-chars-list)
-             (and (looking-back "\\(.\\)\\(.\\)" (max 0 (- (point) 2))) "\\2\\1"))))
-    (when replacement
-      (replace-match replacement))))
+  (when-let ((replacement
+              (or (cl-some (lambda (pair) (and (looking-back (car pair) (point-at-bol)) (cdr pair)))
+                           my-transpose-chars-list)
+                  (and (looking-back "\\(.\\)\\(.\\)" (max 0 (- (point) 2))) "\\2\\1"))))
+    (replace-match replacement)))
 
 (defun my-smart-comma ()
   "Insert comma maybe followed by a space."
@@ -2117,17 +2116,16 @@ lines far from the cursor."
 (defun my-rename-current-buffer-file ()
   "Rename current buffer file."
   (interactive)
-  (let ((oldname (buffer-file-name)))
-    (if (null oldname)
-        (error "Not a file buffer.")
-      (let ((newname (read-file-name "New name: " nil oldname)))
-        (if (get-file-buffer newname)
-            (error "A buffer named %s already exists." newname)
-          (rename-file oldname newname 0)
-          (rename-buffer newname)
-          (set-visited-file-name newname)
-          (set-buffer-modified-p nil)
-          (message "Successfully renamed to %s." (file-name-nondirectory newname)))))))
+  (if-let ((oldname (buffer-file-name))
+           (newname (read-file-name "New name: " nil oldname)))
+      (if (get-file-buffer newname)
+          (error "A buffer named %s already exists." newname)
+        (rename-file oldname newname 0)
+        (rename-buffer newname)
+        (set-visited-file-name newname)
+        (set-buffer-modified-p nil)
+        (message "Successfully renamed to %s." (file-name-nondirectory newname)))
+    (error "Not a file buffer.")))
 
 ;; reference | http://d.hatena.ne.jp/IMAKADO/20090215/1234699972
 (defun my-toggle-transparency ()
