@@ -4957,12 +4957,10 @@ displayed, use substring of the buffer."
 
 ;; either linum or colnum must be %-notated to be updated correctrly
 (defsubst my-mode-line--colnum ()
-  (propertize "%3c" 'face 'mode-line-bright-face)
-  ;; (if (not mark-active)
-  ;;     (propertize "%3c" 'face 'mode-line-bright-face)
-  ;;   (propertize (format "%3d" (count-lines (region-beginning) (region-end)))
-  ;;               'face 'mode-line-warning-face))
-  )
+  (if (not mark-active)
+      (propertize "%3c" 'face 'mode-line-bright-face)
+    (propertize (format "%3d" (count-lines (region-beginning) (region-end)))
+                'face 'mode-line-warning-face)))
 
 (defsubst my-mode-line--indicators ()
   (concat
@@ -5102,7 +5100,9 @@ displayed, use substring of the buffer."
       (concat lmargin lstr rmargin rstr)))
   (setq-default mode-line-format '((:eval (my-generate-mode-line-format))))
   ;; force update mode-line every minutes
-  (run-with-timer 60 60 'force-mode-line-update))
+  (run-with-timer 60 60 'force-mode-line-update)
+  ;; force update mode-line when idle
+  (run-with-idle-timer 0.3 t 'force-mode-line-update))
 
 ;;   + "kindly-view" minor-mode
 
