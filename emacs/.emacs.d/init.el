@@ -433,7 +433,9 @@
       delete-trailing-lines                 t
       ;; files.el
       magic-mode-alist                      nil
-      interpreter-mode-alist                nil)
+      interpreter-mode-alist                nil
+      ;; mouse.el
+      mouse-drag-and-drop-region            t)
 
 (setq-default indent-tabs-mode      nil
               tab-width             4
