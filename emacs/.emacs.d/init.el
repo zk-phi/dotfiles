@@ -1125,7 +1125,7 @@ unary operators which can also be binary."
 
       (defun my-make-super-flex-keywords (str)
         (cl-labels ((shuffle-list (lst)
-                                  ;; '(a b c) -> '((a b c) (b a c) (a c b))
+                                  ;; '(a b c) -> '((b a c) (a c b))
                                   (when (>= (length lst) 2)
                                     (cons `(,(cadr lst) ,(car lst) . ,(cddr lst))
                                           (mapcar (lambda (l) (cons (car lst) l))
