@@ -2056,8 +2056,7 @@ kill-buffer-query-functions."
                                          (not (memq (char-before) '(?\[ ?\( ?\{ nil)))
                                          (insert " "))))
       (cond ((= bol eol)              ; blank-line(s) : shrink => join
-             (if (< (- (line-number-at-pos eos)
-                       (line-number-at-pos bos)) 3)
+             (if (< (- (line-number-at-pos eos) (line-number-at-pos bos)) 3)
                  ;; just one blank line
                  (progn (delete-region bos eos)
                         (maybe-insert-space))
@@ -2977,8 +2976,7 @@ emacs-lisp-mode."
       (cond ((use-region-p)              ; wrap with {}
              (let* ((beg (region-beginning))
                     (end (region-end))
-                    (one-liner (= (line-number-at-pos beg)
-                                  (line-number-at-pos end))))
+                    (one-liner (= (line-number-at-pos beg) (line-number-at-pos end))))
                (deactivate-mark)
                (goto-char beg)
                (insert (if one-liner "{ " "\n{"))
