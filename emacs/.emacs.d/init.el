@@ -4,9 +4,10 @@
   (require 'setup)
   (require 'subr-x)
   (setq setup-silent t
+        setup-delay-with-threads t
         setup-enable-gc-threshold-hacks t
-        setup-disable-magic-file-name t
-        setup-delay-interval 0.5))
+        setup-use-profiler nil
+        setup-disable-magic-file-name t))
 (setup-initialize)
 
 (setup-include "cl-lib")
