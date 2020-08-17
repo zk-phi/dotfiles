@@ -265,7 +265,7 @@
         (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
         (match-string 1)))))
 
-(defun my-abbrev-branch-name (name)
+(defsubst my-abbrev-branch-name (name)
   (and name
        (let ((str (replace-regexp-in-string "\\([aeiouAEIOU]\\)[aeiouAEIOU]" "\\1" name)))
          (if (> (length str) 4) (substring str 0 4) str))))
