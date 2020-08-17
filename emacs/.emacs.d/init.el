@@ -292,21 +292,6 @@
        (let ((str (replace-regexp-in-string "\\([aeiouAEIOU]\\)[aeiouAEIOU]" "\\1" name)))
          (if (> (length str) 4) (substring str 0 4) str))))
 
-(defun my-read-font-family ()
-  (interactive)
-  (let ((res (completing-read "Font Family: " (cl-remove-duplicates (font-family-list)) nil t))
-        (outputfn (if (called-interactively-p 'any) (lambda (s) (insert "\"" s "\"")) 'identity)))
-    (funcall outputfn res)))
-
-(defun my-generate-random-str (len)
-  (interactive (list (read-number "length : ")))
-  (let* ((chars (string-to-vector "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKMNLOPQRSTUVWXYZ_"))
-         (max (length chars))
-         (lst (make-list len nil))
-         (str (mapconcat (lambda (x) (char-to-string (aref chars (random max)))) lst ""))
-         (outputfn (if (called-interactively-p 'any) 'insert 'identity)))
-    (funcall outputfn str)))
-
 (defun my-open-file (file)
   (!cond ((eq system-type 'windows-nt)
           (w32-shell-execute "open" file))
@@ -315,12 +300,10 @@
          (t
           (error "unsupported system"))))
 
-;; hexify 0-255 colorname
-(setup-lazy '(my-make-color-name) "color"
-  (defun my-make-color-name (r g b)
-    (interactive (list (read-number "R: ") (read-number "G: ") (read-number "B: ")))
-    (funcall (if (called-interactively-p 'any) 'insert 'identity)
-             (color-rgb-to-hex (/ r 255.0) (/ g 255.0) (/ b 255.0) 2))))
+(setup-lazy
+  '(my-read-font-family
+    my-generate-random-str
+    my-make-color-name) "cmd_utils")
 
 ;; + | System
 ;;   + *scratch* utilities [scratch-pop]
@@ -1473,105 +1456,17 @@ unary operators which can also be binary."
 ;;   + | expr-wise operations (lisp) [paredit] [cedit]
 ;;     + (lisp) lisp
 
-(defun my-mark-sexp ()
-  (interactive)
-  (let* ((back (and (save-excursion
-                      (search-backward-regexp "\\_>\\|\\s)\\|\\s\"" nil t))
-                    (match-end 0)))
-         (forward (and (save-excursion
-                         (search-forward-regexp "\\_<\\|\\s(\\|\\s\"" nil t))
-                       (match-beginning 0)))
-         (back (and back (- (point) back)))
-         (forward (and forward (- forward (point)))))
-    (mark-sexp
-     (if (or (not back) (and forward (< forward back))) 1 -1))))
-
-(defun my-down-list ()
-  (interactive)
-  (let* ((back-list (save-excursion
-                      (and (search-backward-regexp "\\s)" nil t)
-                           (point))))
-         (back-list (and back-list (- back-list (point))))
-         (back-str (save-excursion
-                     (and (search-backward-regexp "\\s\"" nil t)
-                          (point))))
-         (back-str (and back-str (- back-str (point))))
-         (for-list (save-excursion
-                     (and (search-forward-regexp "\\s(" nil t)
-                          (point))))
-         (for-list (and for-list (- for-list (point))))
-         (for-str (save-excursion
-                    (and (search-forward-regexp "\\s\"" nil t)
-                         (point))))
-         (for-str (and for-str (- for-str (point))))
-         (diff (car (sort (list back-list back-str for-list for-str)
-                          (lambda (a b)
-                            (or (not (numberp b))
-                                (and (numberp a) (< (abs a) (abs b)))))))))
-    (if (numberp diff) (forward-char diff) (error "Cannot go down."))))
-
-(defun my-copy-sexp ()
-  (interactive)
-  (save-mark-and-excursion
-    (my-mark-sexp)
-    (kill-ring-save (region-beginning) (region-end))))
-
-(defun my-transpose-sexps ()
-  (interactive)
-  (transpose-sexps -1))
-
-(defun my-comment-sexp ()
-  (interactive)
-  (my-mark-sexp)
-  (comment-or-uncomment-region (region-beginning) (region-end)))
-
-(defun my-up-list ()
-  "handy version of up-list for interactive use"
-  (interactive)
-  (let* ((in-string (nth 3 (syntax-ppss (point))))
-         (back-pos (save-excursion
-                     (if in-string
-                         (search-backward-regexp "\\s\"" nil t)
-                       (ignore-errors (backward-up-list) (point)))))
-         (for-pos (save-excursion
-                    (if in-string
-                        (search-forward-regexp "\\s\"" nil t)
-                      (ignore-errors (up-list) (point))))))
-    (when (not (or back-pos for-pos))
-      (signal 'scan-error "cannot go up"))
-    (goto-char (cond ((null back-pos) for-pos)
-                     ((null for-pos) back-pos)
-                     ((< (abs (- (point) for-pos))
-                         (abs (- (point) back-pos))) for-pos)
-                     (t back-pos)))))
-
-(defun my-indent-defun ()
-  (interactive)
-  (save-mark-and-excursion
-    (mark-defun)
-    (indent-region (region-beginning) (region-end))))
-
-(defun my-overwrite-sexp ()
-  (interactive)
-  (my-mark-sexp)
-  (delete-region (region-beginning)
-                 (region-end))
-  (yank))
-
-(defun my-eval-sexp-dwim ()
-  "eval-last-sexp or eval-region"
-  (interactive)
-  (if (not (use-region-p))
-      (call-interactively 'eval-last-sexp) ; must be interactive
-    (eval-region (region-beginning) (region-end))
-    (deactivate-mark)))
-
-(defun my-eval-and-replace-sexp ()
-  "Evaluate the sexp at point and replace it with its value"
-  (interactive)
-  (let ((value (eval-last-sexp nil)))
-    (kill-sexp -1)
-    (insert (format "%S" value))))
+(setup-lazy
+  '(my-mark-sexp
+    my-down-list
+    my-copy-sexp
+    my-transpose-sexps
+    my-comment-sexp
+    my-up-list
+    my-indent-defun
+    my-overwrite-sexp
+    my-eval-sexp-dwim
+    my-eval-and-replace-sexp) "cmd_sexpwise")
 
 ;;     + [paredit] paredit
 
@@ -1647,391 +1542,55 @@ unary operators which can also be binary."
 
 ;;   + | line-wise operations
 
-;; reference | http://emacsredux.com/blog/2013/04/08/kill-line-backward/
-(defun my-kill-line-backward ()
-  "Kill line backward."
-  (interactive)
-  (kill-line 0)
-  (indent-according-to-mode))
-
-(defun my-next-opened-line ()
-  "open line below, and put the cursor there"
-  (interactive)
-  (end-of-line)
-  (newline-and-indent))
-
-(defun my-open-line-and-indent ()
-  "open line with indentation"
-  (interactive)
-  (open-line 1)
-  (save-excursion
-    (forward-line)
-    (indent-according-to-mode)))
-
-;;         foo  |                    |
-;; foo          |              foo { |            foo
-;; |    -> |    | foo { | } ->     | | foo|bar -> |
-;; bar          |              }     |            bar
-;;         bar  |                    |
-;; reference | https://github.com/milkypostman/dotemacs/init.el
-(defun my-new-line-between ()
-  (interactive)
-  (newline)
-  (save-excursion
-    (newline)
-    (indent-for-tab-command))
-  (indent-for-tab-command))
-
-(defun my-transpose-lines ()
-  (interactive)
-  (transpose-lines 1)
-  (forward-line -2)
-  (end-of-line))
+(setup-lazy
+  '(my-kill-line-backward
+    my-next-opened-line
+    my-open-line-and-indent
+    my-new-line-between
+    my-transpose-lines) "cmd_linewise")
 
 ;;   + | word-wise operations
 
-;;                          |                          |
-;; |hoge hoge -> Hoge| hoge | hoge| hoge -> Hoge| hoge | [hoge hoge| hoge -> Hoge Hoge| hoge
-;;                          |                          |
-(defun my-capitalize-word-dwim ()
-  (interactive)
-  (cond ((use-region-p)
-         (capitalize-region (region-beginning) (region-end)))
-        ((<= ?a (char-after) ?z)
-         (capitalize-word 1))
-        (t
-         (capitalize-word -1))))
-
-;; hoge hoge| hoge -> hoge HOGE| hoge -> HOGE HOGE| hoge
-(defvar my-upcase-previous-word-count nil)
-(defun my-upcase-previous-word ()
-  (interactive)
-  (cond ((use-region-p)
-         (upcase-region (region-beginning) (region-end))
-         (setq my-upcase-previous-word-count 0)
-         (setq my-upcase-previous-word-count 0))
-        ((not (eq last-command this-command))
-         (upcase-word (setq my-upcase-previous-word-count -1)))
-        (t
-         (cl-decf my-upcase-previous-word-count)
-         (upcase-word my-upcase-previous-word-count))))
-
-;; Hoge HOGE| HOGE -> Hoge hoge| HOGE -> hoge hoge| HOGE
-(defvar my-downcase-previous-word-count nil)
-(defun my-downcase-previous-word ()
-  (interactive)
-  (cond ((use-region-p)
-         (downcase-region (region-beginning) (region-end))
-         (setq my-downcase-previous-word-count 0))
-        ((not (eq last-command this-command))
-         (downcase-word (setq my-downcase-previous-word-count -1)))
-        (t
-         (cl-decf my-downcase-previous-word-count)
-         (downcase-word my-downcase-previous-word-count))))
-
-(defun my-transpose-words ()
-  (interactive)
-  (transpose-words -1))
+(setup-lazy
+  '(my-capitalize-word-dwim
+    my-upcase-previous-word
+    my-downcase-previous-word
+    my-transpose-words) "cmd_wordwise")
 
 ;;   + Misc: core
 ;;   + | buffers / windows
 
-;; move buffers among windows smartly
-(defun my-transpose-window-buffers ()
-  "Rotate buffers among windows."
-  (interactive)
-  (let ((m (make-sparse-keymap)))
-    (dolist (cmd '(other-window previous-multiframe-window next-multiframe-window))
-      (let ((keys (where-is-internal cmd))
-            (def `(lambda ()
-                    (interactive)
-                    (let* ((w1 (selected-window))
-                           (w2 (progn (call-interactively ',cmd) (selected-window)))
-                           (tmp (window-buffer w1)))
-                      (set-window-buffer w1 (window-buffer w2))
-                      (set-window-buffer w2 tmp)))))
-        (dolist (key keys) (define-key m key def))))
-    (set-transient-map m t)))
-
-(defun my-kill-this-buffer (&optional force)
-  "Like kill-this-buffer but accepts FORCE argument to skip
-kill-buffer-query-functions."
-  (interactive "P")
-  (if (not force)
-      (kill-this-buffer)
-    (let ((kill-buffer-query-functions nil)
-          (kill-buffer-hook nil))
-      (kill-this-buffer))))
-
-;; resize windows
-;; reference | http://d.hatena.ne.jp/mooz/touch/20100119/p1
-(defun my-resize-window ()
-  (interactive)
-  (cl-case (read-char-choice "Press npbf or hjkl to resize." '(?n ?p ?b ?f ?h ?j ?k ?l))
-    ((?f ? ?l)
-     (enlarge-window-horizontally
-      (if (zerop (car (window-edges))) 1 -1))
-     (my-resize-window))
-    ((?b ? ?h)
-     (shrink-window-horizontally
-      (if (zerop (car (window-edges))) 1 -1))
-     (my-resize-window))
-    ((?n ? ?j)
-     (enlarge-window
-      (if (zerop (cadr (window-edges))) 1 -1))
-     (my-resize-window))
-    ((?p ? ?k)
-     (shrink-window
-      (if (zerop (cadr (window-edges))) 1 -1))
-     (my-resize-window))))
-
-(defun my-retop ()
-  "Make cursor displayed on top of the window."
-  (interactive)
-  (recenter 0))
-
-(defun my-recenter ()
-  "Make cursor displayed on 3/8 of the window"
-  (interactive)
-  (recenter (* (/ (window-height) 8) 3)))
-
-(defun my-toggle-narrowing ()
-  "narrow-to-region or widen."
-  (interactive)
-  (cond ((use-region-p)
-         (narrow-to-region (region-beginning) (region-end)))
-        ((buffer-narrowed-p)
-         (widen))
-        (t
-         (error "there is no active region"))))
-
-;; split window smartly
-;; reference | http://d.hatena.ne.jp/yascentur/20110621/1308585547
-;;           | http://dev.ariel-networks.com/wp/documents/aritcles/emacs/part16
-(defvar my-split-window-saved-configuration nil)
-(defun my-split-window ()
-  "split windows smartly"
-  (interactive)
-  (cl-labels ((split
-               (n &optional vertically)
-               (cond
-                ((< n 2) nil)
-                ((= (mod n 2) 0)        ; (n/2) | (n/2)
-                 (let ((wnd (if vertically
-                                (split-window-vertically)
-                              (split-window-horizontally))))
-                   (with-selected-window wnd
-                     (split (/ n 2) vertically))
-                   (split (/ n 2) vertically)))
-                (t                      ; (n-1) | 1
-                 (if vertically
-                     (split-window-vertically
-                      (- (window-height) (/ (window-height) n)))
-                   (split-window-horizontally
-                    (- (window-total-width) (/ (window-total-width) n))))
-                 (split (1- n) vertically)))))
-    (cl-case last-command
-      ;; horizontally
-      ;; |---------------| -> |-------|-------|
-      ((my-split-window-horizontally-0)
-       (split 2)
-       (setq this-command 'my-split-window-horizontally-1))
-      ;; (try vertical split)
-      ((my-split-window-horizontally-1)
-       (set-window-configuration my-split-window-saved-configuration)
-       (split 2 t)
-       (setq this-command 'my-split-window-horizontally-2))
-      ;; |-------|-------| -> |----|-----|----|
-      ((my-split-window-horizontally-2)
-       (set-window-configuration my-split-window-saved-configuration)
-       (split 3)
-       (setq this-command 'my-split-window-horizontally-3))
-      ;; |----|-----|----| -> |---|---|-------|
-      ((my-split-window-horizontally-3)
-       (set-window-configuration my-split-window-saved-configuration)
-       (split 2)
-       (split 2)
-       (setq this-command 'my-split-window-horizontally-4))
-      ;; |---|---|-------| -> |---|---|---|---|
-      ((my-split-window-horizontally-4)
-       (set-window-configuration my-split-window-saved-configuration)
-       (split 4)
-       (setq this-command 'my-split-window-horizontally-5))
-      ;; |---|---|---|---| -> |---------------|
-      ((my-split-window-horizontally-5)
-       (set-window-configuration my-split-window-saved-configuration)
-       (setq this-command 'my-split-window-horizontally-0))
-      ;; vertically
-      ((my-split-window-vertically-0)
-       (split 2 t)
-       (setq this-command 'my-split-window-vertically-1))
-      ((my-split-window-vertically-1)
-       (set-window-configuration my-split-window-saved-configuration)
-       (split 2)
-       (setq this-command 'my-split-window-vertically-2))
-      ((my-split-window-vertically-2)
-       (set-window-configuration my-split-window-saved-configuration)
-       (split 3 t)
-       (setq this-command 'my-split-window-vertically-3))
-      ((my-split-window-vertically-3)
-       (set-window-configuration my-split-window-saved-configuration)
-       (setq this-command 'my-split-window-vertically-0))
-      (t
-       (setq my-split-window-saved-configuration
-             (current-window-configuration))
-       (cond ((> (window-total-width)
-                 (* 2.65 (window-height)))
-              (split 2)
-              (setq this-command 'my-split-window-horizontally-1))
-             (t
-              (split 2 t)
-              (setq this-command 'my-split-window-vertically-1)))))))
+(setup-lazy
+  '(my-transpose-window-buffers
+    my-kill-this-buffer
+    my-resize-window
+    my-retop
+    my-recenter
+    my-toggle-narrowing
+    my-split-window) "cmd_window")
 
 ;;   + | jump around
 
-;; linewise motion
-
-(defun my-next-line (n)
-  (interactive "p")
-  (call-interactively 'next-line)
-  (when (looking-back "^[\s\t]*" (point-at-bol))
-    (let (goal-column) (back-to-indentation))))
-
-(defun my-previous-line (n)
-  (interactive "p")
-  (call-interactively 'previous-line)
-  (when (looking-back "^[\s\t]*" (point-at-bol))
-    (let (goal-column) (back-to-indentation))))
-
-(defun my-smart-bol ()
-  "beginning-of-line or back-to-indentation"
-  (interactive)
-  (let ((command (if (eq last-command 'back-to-indentation)
-                     'beginning-of-line
-                   'back-to-indentation)))
-    (setq this-command command)
-    (funcall command)))
-
-;; blank-line-delimited navigation
-
-(defvar my-next-blank-line-skip-faces
-  '(font-lock-string-face
-    font-lock-comment-face
-    font-lock-comment-delimiter-face
-    font-lock-doc-face))
-
-(defun my-next-blank-line ()
-  "Jump to the next empty line."
-  (interactive)
-  (when (eobp) (signal 'end-of-buffer "end of buffer"))
-  (let ((type (get-text-property (point) 'face)))
-    (skip-chars-forward "\s\t\n")
-    (condition-case nil
-        (while (and (search-forward-regexp "\n[\s\t]*$")
-                    (let ((face (get-text-property (point) 'face)))
-                      (and (memq face my-next-blank-line-skip-faces)
-                           (not (eq face type))))))
-      (error (goto-char (point-max))))))
-
-(defun my-previous-blank-line ()
-  "Jump to the previous empty line."
-  (interactive)
-  (when (bobp) (signal 'beginning-of-buffer "beginning of buffer"))
-  (let ((type (get-text-property (point) 'face)))
-    (skip-chars-backward "\s\t\n")
-    (condition-case nil
-        (while (and (search-backward-regexp "^[\s\t]*\n")
-                    (let ((face (get-text-property (point) 'face)))
-                      (and (memq face my-next-blank-line-skip-faces)
-                           (not (eq face type))))))
-      (error (goto-char (point-min))))))
-
-;; jump-back!
-
-(defvar-local my-jump-back!--marker-ring nil)
-
-(defun my-jump-back!--ring-update ()
-  (require 'ring)
-  (let ((marker (point-marker)))
-    (unless my-jump-back!--marker-ring
-      (setq my-jump-back!--marker-ring (make-ring 30)))
-    (ring-insert my-jump-back!--marker-ring marker)))
-
-(run-with-idle-timer 1 t 'my-jump-back!--ring-update)
-
-(setup-lazy '(my-jump-back!) "edmacro"
-  (defun my-jump-back! ()
-    (interactive)
-    (let (marker)
-      (cond ((or (null my-jump-back!--marker-ring)
-                 (ring-empty-p my-jump-back!--marker-ring))
-             (error "No further undo information"))
-            ((= (point-marker)
-                (prog1 (setq marker (ring-ref my-jump-back!--marker-ring 0))
-                  (ring-remove my-jump-back!--marker-ring 0)))
-             (my-jump-back!))
-            (t
-             (goto-char marker)
-             (let ((repeat-key (vector last-input-event)))
-               (message "(Type %s to repeat)" (edmacro-format-keys repeat-key))
-               (set-transient-map
-                (let ((km (make-sparse-keymap)))
-                  (define-key km repeat-key 'my-jump-back!)
-                  km)
-                t)))))))
+(setup-lazy
+  '(my-next-line
+    my-previous-line
+    my-smart-bol
+    my-next-blank-line
+    my-previous-blank-line
+    my-jump-back!) "cmd_motion")
 
 ;;   + | edit
 
-;; drag region with cursor keys
-;; reference | http://www.pitecan.com/tmp/move-region.el
-(defun my-move-region (function)
-  "Drag region with FUNCTION."
-  (if (use-region-p)
-      (let (m)
-        (kill-region (mark) (point))
-        (call-interactively function)
-        (setq m (point))
-        (yank)
-        (set-mark m)
-        (setq deactivate-mark nil))
-    (call-interactively function)))
-(defun my-move-region-up ()
-  "Drag region upward."
-  (interactive)
-  (my-move-region 'my-previous-line))
-(defun my-move-region-down ()
-  "Drag region downward."
-  (interactive)
-  (my-move-region 'my-next-line))
-(defun my-move-region-left ()
-  "Drag region backward."
-  (interactive)
-  (my-move-region 'backward-char))
-(defun my-move-region-right ()
-  "Drag region forward."
-  (interactive)
-  (my-move-region 'forward-char))
-
-(defvar my-transpose-chars-list
-  '(("->" ."<-") ("<-" ."->") ("<=" .">")
-    (">=" ."<") ( "<" .">=") ( ">" ."<=")))
-(defun my-transpose-chars ()
-  (interactive)
-  (when-let (replacement
-             (or (cl-some (lambda (pair) (and (looking-back (car pair) (point-at-bol)) (cdr pair)))
-                          my-transpose-chars-list)
-                 (and (looking-back "\\(.\\)\\(.\\)" (max 0 (- (point) 2))) "\\2\\1")))
-    (replace-match replacement)))
-
-(defun my-smart-comma ()
-  "Insert comma maybe followed by a space."
-  (interactive)
-  (cond ((not (eq last-command 'my-smart-comma))
-         (insert ", "))
-        ((= (char-before) ?\s)
-         (delete-char -1))
-        (t
-         (insert " "))))
+(setup-lazy
+  '(my-move-region-up
+    my-move-region-down
+    my-move-region-left
+    my-move-region-right
+    my-transpose-chars
+    my-smart-comma
+    my-shrink-whitespaces
+    my-dabbrev-expand
+    my-map-lines-from-here) "cmd_edit")
 
 ;; shrink indentation on "kill-line"
 ;; reference | http://www.emacswiki.org/emacs/AutoIndentation
@@ -2041,123 +1600,14 @@ kill-buffer-query-functions."
     (apply fn args)
     (save-excursion (just-one-space))))
 
-(defun my-shrink-whitespaces ()
-  "shrink adjacent whitespaces or newlines in a dwim way"
-  (interactive)
-  (let ((bol (save-excursion (back-to-indentation)
-                             (point)))
-        (eol (point-at-eol))
-        (bos (save-excursion (skip-chars-backward "\s\t\n")
-                             (point)))
-        (eos (save-excursion (skip-chars-forward "\s\t\n")
-                             (point))))
-    (cl-labels ((maybe-insert-space ()
-                                    ;; (foo
-                                    ;;  ^ we do not need space here
-                                    (and (not (memq (char-after) '(?\] ?\) ?\} nil)))
-                                         (not (memq (char-before) '(?\[ ?\( ?\{ nil)))
-                                         (insert " "))))
-      (cond ((= bol eol)              ; blank-line(s) : shrink => join
-             (if (< (- (line-number-at-pos eos) (line-number-at-pos bos)) 3)
-                 ;; just one blank line
-                 (progn (delete-region bos eos)
-                        (maybe-insert-space))
-               ;; two or more blank lines
-               (delete-region bos (save-excursion
-                                    (goto-char eos)
-                                    (1- (point-at-bol))))
-               (newline-and-indent)))
-            ((<= (point) bol)         ; bol: fix indentation => join
-             (when (= (save-excursion
-                        (back-to-indentation)
-                        (point))
-                      (progn
-                        (call-interactively indent-line-function)
-                        (back-to-indentation)
-                        (point)))
-               (delete-region bos (point))
-               (maybe-insert-space)))
-            ((= (point) eol)         ; eol: delete trailing ws => join
-             (if (not (= (point) bos))
-                 (delete-region (point) bos)
-               (delete-region (point) eos)
-               (maybe-insert-space)))
-            (t                          ; otherwise: just-one-space
-             (just-one-space))))))
-
-;; delimited dabbrev expand
-(defvar my-dabbrev-expand-fallback 'my-expand-dwim)
-(defun my-dabbrev-expand (&optional lines)
-  "Expands to the most recent, preceding word for which this is a
-prefix. When LINES is specified, matches must be at most LINES
-lines far from the cursor."
-  (interactive)
-  (or (and (looking-back "\\_<\\(?:\\sw\\|\\s_\\)*" (point-at-bol))
-           (save-excursion
-             (search-backward-regexp
-              (concat (regexp-quote (match-string 0)) "\\(\\(?:\\sw\\|\\s_\\)+\\)\\_>")
-              (and lines (point-at-bol (- lines))) t 2))
-           (progn (insert (match-string 1) " ") t))
-      (if my-dabbrev-expand-fallback
-          (funcall my-dabbrev-expand-fallback)
-        (message "No completions found."))))
-
-(defun my-map-lines-from-here (fn)
-  (interactive (list (eval `(lambda (s) ,(read (read-from-minibuffer "(s) => "))))))
-  (save-excursion
-    (while (progn (let ((res (funcall fn (buffer-substring (point-at-bol) (point-at-eol)))))
-                    (kill-whole-line)
-                    (and res (insert res "\n")))
-                  (not (eobp))))))
-
 ;;   + | others
 
-;; reference | http://github.com/milkypostman/dotemacs/init.el
-(defun my-rename-current-buffer-file ()
-  "Rename current buffer file."
-  (interactive)
-  (if-let ((oldname (buffer-file-name))
-           (newname (read-file-name "New name: " nil oldname)))
-      (if (get-file-buffer newname)
-          (error "A buffer named %s already exists." newname)
-        (rename-file oldname newname 0)
-        (rename-buffer newname)
-        (set-visited-file-name newname)
-        (set-buffer-modified-p nil)
-        (message "Successfully renamed to %s." (file-name-nondirectory newname)))
-    (error "Not a file buffer.")))
-
-;; reference | http://d.hatena.ne.jp/IMAKADO/20090215/1234699972
-(defun my-toggle-transparency ()
-  "Toggle transparency."
-  (interactive)
-  (let* ((current-alpha (or (cdr (assoc 'alpha (frame-parameters))) 100))
-         (new-alpha (cl-case current-alpha ((100) 93) ((93) 91) ((91) 78) ((78) 66) ((66) 50) (t 100))))
-    (set-frame-parameter nil 'alpha new-alpha)))
-
-;; URL encode / decode region
-(defun my-url-decode-region (beg end)
-  "Decode region as hexified string."
-  (interactive "r")
-  (let ((str (buffer-substring beg end)))
-    (delete-region beg end)
-    (insert (decode-coding-string (url-unhex-string str) 'utf-8))))
-(defun my-url-encode-region (beg end)
-  "Hexify region."
-  (interactive "r")
-  (let ((str (buffer-substring beg end)))
-    (delete-region beg end)
-    (insert (url-hexify-string (encode-coding-string str 'utf-8)))))
-
-;; byte-compile directory recursively
-(defun my-byte-compile-dir (dir)
-  (interactive (list (read-directory-name "DIR: ")))
-  (let ((errors nil))
-    (dolist (file (directory-files-recursively dir "\\.el$"))
-      (unless (byte-compile-file file t)
-        (push file errors)))
-    (message "Following files have failed to compile: %s"
-             (mapcar (lambda (x) (file-name-nondirectory x)) errors))))
+(setup-lazy
+  '(my-rename-current-buffer-file
+    my-toggle-transparency
+    my-url-decode-region
+    my-url-encode-region
+    my-byte-compile-dir) "cmd_other")
 
 ;;   + Misc: built-ins
 ;;   + | files
@@ -2317,16 +1767,17 @@ emacs-lisp-mode."
 
 ;; completion via `git grep'
 (setup-in-idle "git-complete")
-(setup-lazy '(git-complete) "git-complete"
-  ;; create the fallback chain (my-dabbrev-expand -> git-complete -> my-expand-dwim)
-  :prepare (setq my-dabbrev-expand-fallback 'git-complete)
-  (setq git-complete-limit-extension   t
-        git-complete-repeat-completion t
-        git-complete-fallback-function 'my-expand-dwim)
-  (push '(web-mode "jsx" "js"
-                   "scss" "css"
-                   "html" "html.ep")
-        git-complete-major-mode-extensions-alist))
+(setup-after "cmd_edit"
+  (setup "git-complete"
+    ;; create the fallback chain (my-dabbrev-expand -> git-complete -> my-expand-dwim)
+    (setq my-dabbrev-expand-fallback     'git-complete
+          git-complete-limit-extension   t
+          git-complete-repeat-completion t
+          git-complete-fallback-function 'my-expand-dwim)
+    (push '(web-mode "jsx" "js"
+                     "scss" "css"
+                     "html" "html.ep")
+          git-complete-major-mode-extensions-alist)))
 
 ;; insert import statement
 (setup-lazy '(include-anywhere) "include-anywhere")
@@ -2436,51 +1887,10 @@ emacs-lisp-mode."
 
 ;; toggle commands
 
-(defun my-lisp-toggle-exp (exprs)
-  (save-excursion
-    (when (nth 3 (syntax-ppss (point)))
-      (search-backward-regexp "\\s\""))
-    (let ((match-res (cl-some (lambda (pair)
-                                (and (looking-at (car pair)) pair))
-                              exprs)))
-      (cond (match-res
-             (replace-match (cdr match-res))
-             (indent-sexp))
-            ((looking-at "\\_<\\|\\s(")
-             (condition-case nil
-                 (backward-up-list)
-               (error (error "nothing to toggle")))
-             (forward-sexp)
-             (backward-sexp)
-             (my-lisp-toggle-exp exprs))
-            (t
-             (backward-sexp)
-             (my-lisp-toggle-exp exprs))))))
-
-(defun my-lisp-toggle-let ()
-  "toggle let and let"
-  (interactive)
-  (my-lisp-toggle-exp
-   '(("(let\\*" . "(let") ("(let" . "(let*"))))
-
-(defun my-lisp-toggle-quote ()
-  "toggle ' and `"
-  (interactive)
-  (my-lisp-toggle-exp '(("'" . "`") ("`" . "'"))))
-
-(defun my-lisp-toggle-bracket ()
-  "toggle () and []"
-  (interactive)
-  (save-excursion
-    (backward-up-list)
-    (let ((beg (point))
-          (newparen (if (= (char-after) ?\() '("[" . "]") '("(" .  ")"))))
-      (forward-sexp)
-      (delete-char -1)
-      (insert (cdr newparen))
-      (goto-char beg)
-      (delete-char 1)
-      (insert (car newparen)))))
+(setup-lazy
+  '(my-lisp-toggle-let
+    my-lisp-toggle-quote
+    my-lisp-toggle-bracket) "cmd_lisp")
 
 (setup-hook 'my-lispy-mode-common-hook
   (local-set-key (kbd "C-c C-'") 'my-lisp-toggle-quote)
