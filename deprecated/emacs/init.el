@@ -1399,3 +1399,81 @@ displayed, use substring of the buffer."
 
 (setup-keybinds nil
   "M-," '("howm" my-howm-menu-or-remember))
+;; + mini-modeline: core
+
+(setup-include "mini-modeline"
+  (defun my-header-line--icon () nil)
+  (!-
+   (setup "all-the-icons"
+     (defun my-header-line--icon ()
+       (let ((icon (all-the-icons-icon-for-buffer)))
+         (and (stringp icon) icon)))
+     (setq all-the-icons-scale-factor 1.0)))
+  (defun my-headerline-format ()
+    (let ((lmargin
+           (propertize " " 'display '((space :align-to left-fringe)) 'face 'header-line-bg-face))
+          (rmargin
+           (propertize " " 'display '((space :align-to (+ 1 scroll-bar))) 'face 'header-line-bg-face)))
+      (concat lmargin "  "
+              (my-header-line--icon)
+              " "
+              my-mode-line--filename
+              (my-mode-line--palette-status) my-mode-line--recur-status
+              " " (my-mode-line--indicators)
+              "  "
+              (propertize " "  'face 'header-line-bg-face) (my-header-line--full-branch)
+              rmargin)))
+  (defun my-mini-modeline-format ()
+    (concat (my-mode-line--linum) my-mode-line--separator
+            (my-mode-line--colnum) my-mode-line--separator
+            (my-mode-line--mode-name) (my-mode-line--process) " "
+            (my-mode-line--full-encoding) my-mode-line--separator
+            (my-mode-line--clock)
+            " " (my-mode-line--battery-status)))
+  (setq-default header-line-format '((:eval (my-headerline-format))))
+  (setq mini-modeline-r-format '((:eval (my-mini-modeline-format)))
+        mini-modeline-face-attr nil)
+  (setup-with-delayed-redisplay
+   (mini-modeline-mode 1)))
+
+;; + mini-modeline: appearance
+
+(setup-after "mini-modeline"
+  (set-face-attribute
+   'mini-modeline-mode-line nil
+   :height 0.1
+   :background 'unspecified
+   :inherit 'elemental-highlight-bg-1-face)
+  (set-face-attribute
+   'mini-modeline-mode-line-inactive nil
+   :height 0.1
+   :background 'unspecified
+   :inherit 'elemental-brighter-bg-face)
+  (!-
+   (setup "sky-color-clock"
+     (defun my-set-borderline-color-with-scc ()
+       (let ((time (current-time))
+             (cloudiness (sky-color-clock--cloudiness)))
+         (set-face-attribute
+          'mini-modeline-mode-line nil
+          :background (sky-color-clock--pick-bg-color time cloudiness))))
+     (sky-color-clock-initialize 35.40)
+     (when my-openweathermap-api-key
+       (sky-color-clock-initialize-openweathermap-client my-openweathermap-api-key 1850144))
+     (run-with-timer 0 60 'my-set-borderline-color-with-scc))))
+
+;; + mini-modeline: dimmer
+
+(!-
+ (setup "dimmer"
+   (setq dimmer-fraction 0.2)
+   (dimmer-mode 1)))
+
+;; + mini-modeline: all-the-icons
+
+(defun all-the-icons-octicon (&rest _) nil) ; redefined later
+(defsubst my-header-line--full-branch ()
+  (if my-current-branch-full-name
+      (propertize (concat (all-the-icons-octicon "git-branch") " " my-current-branch-full-name)
+                  'face 'header-line-bg-face)
+    ""))

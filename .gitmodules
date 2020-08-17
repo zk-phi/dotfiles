@@ -277,18 +277,9 @@
 	path = emacs/site-lisp/plugins/emacs-memoize
 	url = https://github.com/skeeto/emacs-memoize.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/emacs-mini-modeline"]
-	path = emacs/site-lisp/plugins/emacs-mini-modeline
-	url = https://github.com/kiennq/emacs-mini-modeline.git
 [submodule "emacs/site-lisp/plugins/dash.el"]
 	path = emacs/site-lisp/plugins/dash-el
 	url = https://github.com/magnars/dash.el.git
-[submodule "emacs/site-lisp/plugins/dimmer.el"]
-	path = emacs/site-lisp/plugins/dimmer-el
-	url = https://github.com/gonewest818/dimmer.el.git
-[submodule "emacs/site-lisp/plugins/all-the-icons.el"]
-	path = emacs/site-lisp/plugins/all-the-icons-el
-	url = https://github.com/domtronn/all-the-icons.el.git
 [submodule "emacs/site-lisp/plugins/oj.el"]
 	path = emacs/site-lisp/plugins/oj-el
 	url = https://github.com/conao3/oj.el.git
