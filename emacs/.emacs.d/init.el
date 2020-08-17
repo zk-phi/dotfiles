@@ -34,7 +34,7 @@
 ;; |KlWnd|MkWnd|Blnce|Follw|     |     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
 ;;    |Scrat|Palet| Eval|Recnt|Table|YankP|UndoT|Shell|Opcty|EvalP|     |     |
 ;;       |Artst| All |Dired| File| Grep|Shrnk|Anthg|KlWnd| Goto|     |     |
-;;          |     |Comnd|Cmpil| Vim |Buffr|Narrw|DMcro| Howm|     |     |
+;;          |     |Comnd|Cmpil| Vim |Buffr|Narrw|DMcro|     |     |     |
 
 ;; M-Shift-
 ;; |     |     |     |     |     |     |     | Barf|Wrap(|Slurp| Undo|     |     |     |
@@ -106,15 +106,6 @@
   (defconst my-additional-info-directories
     (when (boundp 'my-additional-info-directories) my-additional-info-directories)
     "List of directories counted as additional include directory.")
-  (defconst my-howm-import-directory
-    (when (boundp 'my-howm-import-directory) my-howm-import-directory)
-    "Directory which Howm should import notes from.")
-  (defconst my-howm-export-file
-    (when (boundp 'my-howm-export-file) my-howm-export-file)
-    "File which Howm should export schedules to.")
-  (defconst my-howm-export-ics
-    (when (boundp 'my-howm-export-ics) my-howm-export-ics)
-    "iCal which Howm should export schedules to.")
   (defconst my-migemo-dictionary
     (when (boundp 'my-migemo-dictionary) my-migemo-dictionary)
     "Dictionary file for migemo.")
@@ -201,20 +192,6 @@
 (defconst my-ispell-repl
   (! (concat my-dat-directory "ispell-repl"))
   "File name of personal ispell replacement dictionary.")
-
-;; Howm Datas
-
-(defconst my-howm-directory
-  (! (concat my-dat-directory "howm_" system-name "/"))
-  "Directory to save Howm notes.")
-
-(defconst my-howm-keyword-file
-  (! (concat my-dat-directory "howm-keys_" system-name))
-  "File to save Howm keyword list.")
-
-(defconst my-howm-history-file
-  (! (concat my-dat-directory "howm-history_" system-name))
-  "File to save Howm history.")
 
 ;; System-specific History Datas
 
@@ -1068,7 +1045,7 @@ unary operators which can also be binary."
   (setq recentf-max-saved-items 500
         recentf-exclude '("/[^/]*\\<tmp\\>[^/]*/" "/[^/]*\\<backup\\>[^/]*/"
                           "~$" "^#[^#]*#$" "^/[^/]*:" "/GitHub/" "\\.emacs\\.d/dat/"
-                          "/undohist/" "\\.elc$" "\\.howm$" "\\.dat$"))
+                          "/undohist/" "\\.elc$" "\\.dat$"))
   ;; (setq recentf-auto-cleanup 10)
   ;; ;; auto-save recentf-list / delayed cleanup
   ;; ;; reference | http://d.hatena.ne.jp/tomoya/20110217/1297928222
@@ -1710,17 +1687,6 @@ emacs-lisp-mode."
   (setq info-lookup-other-window-flag nil
         Info-directory-list
         (append my-additional-info-directories Info-directory-list)))
-
-;; Calendar
-(setup-after "calendar"
-  ;; mark today
-  (add-hook 'calendar-today-visible-hook 'calendar-mark-today)
-  ;; mark japanese holidays
-  (setup "japanese-holidays"
-    (setq calendar-mark-holidays-flag t
-          calendar-holidays (append japanese-holidays
-                                    holiday-local-holidays
-                                    holiday-other-holidays))))
 
 ;;   + Misc: plug-ins
 ;;   + | jump around
@@ -3965,313 +3931,6 @@ emacs-lisp-mode."
     (local-set-key (kbd "C-j") 'eshell-bol))
   )
 
-;;     + howm
-;;     + | (prelude)
-
-(setup-lazy '(my-howm-menu-or-remember) "howm"
-  :prepare (progn (setup-in-idle "howm")
-                  (push '("\\.howm$" . org-mode) auto-mode-alist))
-
-  ;;   + | settings
-
-  (setq howm-directory                       my-howm-directory
-        howm-keyword-file                    my-howm-keyword-file
-        howm-history-file                    my-howm-history-file
-        howm-file-name-format                "%Y/%m/%Y-%m-%d-%H%M%S.howm"
-        howm-view-summary-persistent         nil
-        howm-view-title-header               "*"
-        howm-template-date-format            "[%Y-%m-%d]"
-        howm-template                        "* %date %cursor\n"
-        howm-action-lock-forward-save-buffer t
-        howm-insert-date-future              t
-        howm-menu-lang                       'en
-        howm-menu-schedule-days-before       0
-        howm-menu-schedule-days              250
-        howm-menu-todo-num                   100
-        howm-menu-reminder-separators
-        '((-1000 . "\n// past")
-          (-1 . "\n// today")
-          (0 . "\n// upcoming")
-          (nil . "\n// todo (-n: n日後から↓ / +n: n日後から↑ / ~n: n日周期↑↓)")))
-
-  (set-face-background 'howm-reminder-today-face nil)
-  (set-face-background 'howm-reminder-tomorrow-face nil)
-
-  (setup-after "popwin"
-    (push '("*howm-remember*") popwin:special-display-config))
-
-  ;;   + | utilities
-
-  (defun my-howm-menu-reminder ()
-    "like `howm-menu-reminder' but if howm-menu is already
-displayed, use substring of the buffer."
-    (if (null (get-buffer "*howmM:%menu%*"))
-        (howm-menu-reminder)
-      (with-current-buffer "*howmM:%menu%*"
-        (save-excursion
-          (save-restriction
-            (widen)
-            (goto-char (point-min))
-            (search-forward (cdar howm-menu-reminder-separators))
-            (buffer-substring-no-properties (match-beginning 0) (point-max)))))))
-
-  ;;   + | dropbox -> howm
-
-  (setup-hook 'howm-menu-hook
-    (when my-howm-import-directory
-      (let ((imported-flag nil))
-        (dolist (file (directory-files my-howm-import-directory))
-          (unless (string-match "^[#-]\\|~$" file)
-            (let ((abs-path (concat my-howm-import-directory file)))
-              (when (file-regular-p abs-path)
-                (howm-remember)
-                (insert-file-contents abs-path)
-                (goto-char (point-min))
-                (cl-case (read-char-choice (format "import %s (y, n or x)? " file) '(?y ?n ?x))
-                  ((?y)
-                   (let ((howm-template (concat "* " (howm-reminder-today)
-                                                "- " file "\n\n%cursor")))
-                     (howm-remember-submit)
-                     (delete-file abs-path)
-                     (setq imported-flag t)))
-                  ((?n)
-                   (howm-remember-discard))
-                  ((?x)
-                   (howm-remember-discard)
-                   (let* ((newname-base (concat my-howm-import-directory "-" file))
-                          (newname newname-base)
-                          (n 0))
-                     (while (file-exists-p newname)
-                       (setq n       (1+ n)
-                             newname (concat newname-base "_" (number-to-string n) ".txt")))
-                     (rename-file abs-path newname))))))))
-        ;; force update
-        (when imported-flag
-          (let ((my-howm-import-directory nil))
-            (howm-menu-refresh))))))
-
-  ;;   + | howm -> dropbox
-
-  (setup-lazy '(my-howm-export-file) "calendar"
-    (defun my-howm-export-file (target)
-      (with-temp-file target
-        (set-buffer-file-coding-system 'utf-8) ; Dropbox App compatibility
-        (insert (format "* Howm Schedule %s ~ %s *\n\n"
-                        (howm-reminder-today)
-                        (howm-reminder-today howm-menu-schedule-days))
-                ;; calendar of the next two months
-                (let* ((date (calendar-current-date))
-                       (month (calendar-extract-month date))
-                       (year (calendar-extract-year date)))
-                  (concat
-                   (with-temp-buffer
-                     (calendar-generate-month month year 0)
-                     (buffer-substring-no-properties (point-min) (point-max)))
-                   "\n\n"
-                   (with-temp-buffer
-                     (calendar-increment-month month year 1)
-                     (calendar-generate-month month year 0)
-                     (buffer-substring-no-properties (point-min) (point-max)))))
-                "\n"
-                (my-howm-menu-reminder))
-        (message "successfully exported"))))
-
-  (defun my-howm-generate-vevent (y m d dd body)
-    (concat "BEGIN:VEVENT\n"
-            "SUMMARY:" body "\n"
-            "DTSTART:"
-            (format-time-string "%Y%m%d" (encode-time 0 0 0 d m y)) "\n"
-            "DTEND:"
-            (format-time-string "%Y%m%d" (encode-time 0 0 0 (+ d dd) m y)) "\n"
-            "END:VEVENT\n"))
-  (defun my-howm-export-ics (target)
-    (let ((lst nil))
-      (with-temp-buffer
-        (insert (my-howm-menu-reminder))
-        (goto-char 1)
-        (while (search-forward-regexp
-                "\\[\\([0-9]+\\)-\\([0-9]+\\)-\\([0-9]+\\)\\][@!]\\([0-9]+\\)? \\(.+\\)$"
-                nil t)
-          (push (list (read (match-string 1))          ; year
-                      (read (match-string 2))          ; month
-                      (read (match-string 3))          ; day
-                      (read (or (match-string 4) "1")) ; duration
-                      (match-string 5))                ; body
-                lst)))
-      (with-temp-file target
-        (set-buffer-file-coding-system 'utf-8-dos)
-        (insert (concat "BEGIN:VCALENDAR\n"
-                        "PRODID:Emacs Howm\n"
-                        "VERSION:2.0\n"
-                        "METHOD:PUBLISH\n"
-                        "CALSCALE:GREGORIAN\n"
-                        "X-WR-CALNAME:Emacs Howm\n"
-                        "X-WR-TIMEZONE:Asia/Tokyo\n"
-                        "BEGIN:VTIMEZONE\n"
-                        "TZID:Asia/Tokyo\n"
-                        "BEGIN:STANDARD\n"
-                        "DTSTART:19700101T000000\n"
-                        "TZOFFSETFROM:+0900\n"
-                        "TZOFFSETTO:+0900\n"
-                        "END:STANDARD\n"
-                        "END:VTIMEZONE\n"))
-        (dolist (elem lst)
-          (insert (apply 'my-howm-generate-vevent elem)))
-        (insert "END:VCALENDAR"))))
-
-  ;;   + | howm-calendar
-
-  (setup-lazy '(my-howm-calendar) "calendar"
-
-    (defvar my-howm-calendar-highlight-face 'font-lock-keyword-face)
-
-    (defvar my-howm-calendar-keymap
-      (let ((kmap (make-sparse-keymap)))
-        (set-keymap-parent kmap calendar-mode-map)
-        (setup-keybinds kmap
-          [remap calendar-exit] 'my-howm-calendar-exit
-          "RET"                 'my-howm-calendar-insert-date
-          "C-g"                 'my-howm-calendar-exit)))
-
-    ;; reference | http://www.bookshelf.jp/soft/meadow_38.html#SEC563
-    (defun my-howm-calendar-insert-date ()
-      (interactive)
-      (let ((day nil)
-            (calendar-date-display-form
-             '("[" year "-" (format "%02d" (string-to-number month))
-               "-" (format "%02d" (string-to-number day)) "]")))
-        (setq day (calendar-date-string
-                   (calendar-cursor-to-date t)))
-        (calendar-exit t)
-        (insert day)))
-
-    (defun my-howm-calendar-exit ()
-      "like `calendar-exit' but kills the calendar buffer."
-      (interactive)
-      (calendar-exit t))
-
-    (defun my-howm-calendar ()
-      (interactive)
-      (calendar)
-      (use-local-map my-howm-calendar-keymap)
-      ;; mark howm reminders
-      (let (matches marker-fn)
-        (with-temp-buffer
-          (insert (my-howm-menu-reminder))
-          (goto-char 1)
-          (while (search-forward-regexp
-                  ;; marked with `@' or `!' but does not starts with `('
-                  "\\[\\([0-9]+\\)-\\([0-9]+\\)-\\([0-9]+\\)\\][@!]\\([0-9]+\\)? [^(]"
-                  nil t)
-            (let ((m (read (match-string 2)))                ; month
-                  (d (read (match-string 3)))                ; date
-                  (y (read (match-string 1))))               ; year
-              (dotimes (dd (read (or (match-string 4) "1"))) ; duration
-                (cl-destructuring-bind (_ __ ___ d m y . ____)
-                    (decode-time (encode-time 0 0 0 (+ d dd) m y))
-                  (push (list m d y) matches))))))
-        (setq marker-fn
-              `(lambda ()
-                 (dolist (match ',matches)
-                   (when (calendar-date-is-visible-p match)
-                     (calendar-mark-visible-date match my-howm-calendar-highlight-face)))))
-        (add-hook 'calendar-move-hook marker-fn nil t)
-        (funcall marker-fn)))
-    )
-
-  ;;   + | commands
-
-  (defvar my-howm-saved-window-configuration nil)
-
-  (defun my-howm-exit ()
-    (interactive)
-    (when my-howm-export-file
-      (my-howm-export-file my-howm-export-file))
-    (when my-howm-export-ics
-      (my-howm-export-ics my-howm-export-ics))
-    ;; kill all howm buffers
-    (mapc (lambda(b)
-            (when (cdr (assq 'howm-mode (buffer-local-variables b)))
-              (kill-buffer b)))
-          (buffer-list))
-    (set-window-configuration my-howm-saved-window-configuration))
-
-  (defun my-howm-menu-or-remember ()
-    (interactive)
-    (if (use-region-p)
-        (let ((str (buffer-substring (region-beginning) (region-end))))
-          (howm-remember)
-          (insert str))
-      (setq my-howm-saved-window-configuration (current-window-configuration))
-      (delete-other-windows)
-      (howm-menu)))
-
-  (defun my-howm-kill-buffer ()
-    "save and kill this howm buffer"
-    (interactive)
-    (when (and buffer-file-name (string-match "\\.howm" buffer-file-name))
-      (let ((buf (buffer-name)))
-        (save-buffer)
-        ;; codes below are added to avoid
-        ;; confliction with "delete-file-if-no-contents"
-        ;; - kill only when the buffer exists
-        (when (string= (buffer-name) buf) (kill-buffer))
-        ;; - reflesh menu
-        (howm-menu-refresh))))
-
-  ;; redefine howm-action-lock-date to allow from~to style input
-  (defun howm-action-lock-interpret-input (str date future-p)
-    (cond ((string-match "^[-+][0-9]+$" str) ; relative
-           (howm-datestr-shift date 0 0 (string-to-number str)))
-          ((string-match "^[0-9]+$" str)  ; absolute
-           (howm-datestr-expand str date future-p))
-          ((string-match "^\\.$" str)     ; today
-           (howm-time-to-datestr))
-          (t
-           (error (format "Invalid input %s." str)))))
-  (define-advice howm-action-lock-date (:override (date &optional new future-p))
-    (let* ((prompt (concat "[" (howm-datestr-day-of-week date) "] "
-                           "RET(list), [+-]num(shift), yymmdd(set)"
-                           ", x~y(from/to), .(today): "))
-           (str (howm-read-string prompt nil "+-~0123456789" nil nil)))
-      (if (not (string-match
-                "^\\([-+]?[0-9]+\\|\\.\\)\\(?:~\\([-+]?[0-9]+\\|\\.\\)\\)?$" str))
-          (error (format "Invalid input %s." str))
-        (save-excursion
-          (let ((d1 (save-match-data
-                      (howm-action-lock-interpret-input (match-string 1 str) date future-p)))
-                (d2 (when (match-beginning 2)
-                      (howm-action-lock-interpret-input (match-string 2 str) date future-p))))
-            (while (not (looking-at howm-date-regexp))
-              (backward-char))
-            (replace-match d1)
-            (when d2
-              (goto-char (1+ (match-end 0)))
-              (insert
-               (format "@%d" (- (1+ (time-to-days (howm-datestr-to-time d2)))
-                                (time-to-days (howm-datestr-to-time d1)))))))))))
-
-  ;;   + | keybinds
-
-  (setup-keybinds howm-mode-map
-    "C-x C-s"                   'my-howm-kill-buffer
-    "C-c C-d"                   'howm-insert-date
-    "C-c C-c"                   'my-howm-calendar
-    [remap phi-search]          'phi-search-migemo
-    [remap phi-search-backward] 'phi-search-migemo-backward)
-  (setup-keybinds howm-menu-mode-map
-    "q"                         'my-howm-exit
-    [remap phi-search]          'phi-search-migemo
-    [remap phi-search-backward] 'phi-search-migemo-backward)
-  (setup-keybinds howm-remember-mode-map
-    "C-g"                       'howm-remember-discard
-    "C-x C-s"                   'howm-remember-submit
-    [remap phi-search]          'phi-search-migemo
-    [remap phi-search-backward] 'phi-search-migemo-backward)
-
-  ;;   + | (sentinel)
-  )
-
 ;; + | Appearance
 ;;   + font-lock level
 
@@ -5178,7 +4837,6 @@ displayed, use substring of the buffer."
   "M-t"       'orgtbl-mode
   "M-a"       'artist-mode
   "M-n"       'my-toggle-narrowing
-  "M-,"       '("howm" my-howm-menu-or-remember)
   "M-c"       '("smart-compile" smart-compile compile)
   "C-x C-i"   '("ispell" ispell-region)
   "C-x C-t"   'toggle-truncate-lines

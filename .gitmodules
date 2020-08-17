@@ -99,10 +99,6 @@
 [submodule "emacs/site-lisp/my-plugins/cedit"]
 	path = emacs/site-lisp/my-plugins/cedit
 	url = https://github.com/zk-phi/cedit.git
-[submodule "emacs/site-lisp/plugins/japanese-holidays"]
-	path = emacs/site-lisp/plugins/japanese-holidays
-	url = https://github.com/emacs-jp/japanese-holidays.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/iy-go-to-char"]
 	path = emacs/site-lisp/plugins/iy-go-to-char
 	url = https://github.com/doitian/iy-go-to-char.git
@@ -231,9 +227,6 @@
 [submodule "emacs/site-lisp/my-plugins/phi-search-dired"]
 	path = emacs/site-lisp/my-plugins/phi-search-dired
 	url = https://github.com/zk-phi/phi-search-dired.git
-[submodule "emacs/site-lisp/my-plugins/howm"]
-	path = emacs/site-lisp/plugins/howm
-	url = https://scm.osdn.net/gitroot/howm/howm.git
 [submodule "emacs/site-lisp/my-plugins/sky-color-clock"]
 	path = emacs/site-lisp/my-plugins/sky-color-clock
 	url = https://github.com/zk-phi/sky-color-clock.git
