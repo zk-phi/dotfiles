@@ -3943,7 +3943,6 @@ emacs-lisp-mode."
             mode-line-dark-face
             mode-line-highlight-face
             mode-line-special-mode-face
-            mode-line-git-branch-face
             mode-line-warning-face
             mode-line-modified-face
             mode-line-read-only-face
@@ -4041,7 +4040,7 @@ emacs-lisp-mode."
 
 (defsubst my-mode-line--branch ()
   (if my-current-branch-name
-      (propertize (concat "/" my-current-branch-name) 'face 'mode-line-git-branch-face)
+      (propertize (concat "/" my-current-branch-name) 'face 'mode-line-bright-face)
     ""))
 
 (defsubst my-mode-line--palette-status ()
@@ -4392,10 +4391,6 @@ emacs-lisp-mode."
    'mode-line-special-mode-face nil
    :inherit 'elemental-accent-fg-4-face
    :weight  'bold)
-  (set-face-attribute
-   'mode-line-git-branch-face nil
-   :weight 'bold
-   :inherit 'elemental-bright-fg-face)
   (set-face-attribute
    'mode-line-modified-face nil
    :inherit '(elemental-red-face elemental-bright-bg-face))
