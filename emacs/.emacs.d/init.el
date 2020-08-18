@@ -858,13 +858,13 @@ unary operators which can also be binary."
       (outline-minor-mode 1)
       (setq-local outline-regexp (concat "^\\(\s*" (regexp-quote comment-start)
                                          "[" (regexp-quote comment-start) "]*\\)"
-                                         "\s?\\(\s*\\++\\)\s"))
-      (setq-local outline-level (lambda ()
-                                  (setq-local my-outline-minimum-heading-len
-                                              (min my-outline-minimum-heading-len
-                                                   (- (match-end 0) (match-beginning 0))))
-                                  (- (match-end 0) (match-beginning 0)
-                                     my-outline-minimum-heading-len)))))
+                                         "\s?\\(\s*\\++\\)\s")
+                  outline-level  (lambda ()
+                                   (setq-local my-outline-minimum-heading-len
+                                               (min my-outline-minimum-heading-len
+                                                    (- (match-end 0) (match-beginning 0))))
+                                   (- (match-end 0) (match-beginning 0)
+                                      my-outline-minimum-heading-len)))))
   (setup-lazy '(my-outline-cycle-dwim) "outline-magic"
     :prepare (setup-after "outline"
                (setup-keybinds outline-minor-mode-map "TAB" 'my-outline-cycle-dwim))
@@ -942,8 +942,8 @@ unary operators which can also be binary."
   ;; disable key-chord
   (setup-after "key-chord"
     (setup-hook 'eww-mode-hook
-      (setq-local key-chord-mode nil)
-      (setq-local input-method-function nil)))
+      (setq-local key-chord-mode        nil
+                  input-method-function nil)))
 
   ;; disable hl-line
   (setup-after "hl-line"
@@ -3282,8 +3282,8 @@ emacs-lisp-mode."
   (push "lstlisting" tex-verbatim-environments)
   (setup-hook 'latex-mode-hook
     (outline-minor-mode 1)
-    (setq-local outline-regexp "\\\\\\(sub\\)*section\\>")
-    (setq-local outline-level (lambda () (- (outline-level) 7))))
+    (setq-local outline-regexp "\\\\\\(sub\\)*section\\>"
+                outline-level  (lambda () (- (outline-level) 7))))
   (setup-keybinds latex-mode-map
     "C-c C-'" 'latex-close-block
     '("C-j" "C-M-i" "<C-return>") nil)
@@ -3588,8 +3588,8 @@ emacs-lisp-mode."
 ;; disable key-chord in listy modes
 (setup-after "key-chord"
   (setup-hook 'my-listy-mode-common-hook
-    (setq-local key-chord-mode nil)
-    (setq-local input-method-function nil)))
+    (setq-local key-chord-mode        nil
+                input-method-function nil)))
 
 (setup-expecting "stripe-buffer"
   (setup-hook 'my-listy-mode-common-hook 'my-stripe-buffer))
@@ -3844,8 +3844,8 @@ emacs-lisp-mode."
   ;; disable key-chord
   (setup-after "key-chord"
     (define-advice vi-mode (:after (&rest _))
-      (setq-local key-chord-mode nil)
-      (setq-local input-method-function nil))
+      (setq-local key-chord-mode        nil
+                  input-method-function nil))
     (define-advice vi-goto-insert-state (:after (&rest _))
       (kill-local-variable 'key-chord-mode)
       (kill-local-variable 'input-method-function)))
@@ -4146,12 +4146,12 @@ emacs-lisp-mode."
   (defvar my-kindly-view-mode nil) ; define as a global variable to suppress warning
   (defun my-kindly-view-mode ()
     (interactive)
-    (setq-local my-kindly-view-mode t)
-    (setq-local face-remapping-alist
+    (setq-local my-kindly-view-mode t
+                line-spacing        0.3
+                cursor-type         'bar
+                face-remapping-alist
                 (append face-remapping-alist
                         '((default (:family "Times New Roman" :height 1.3 :width semi-condensed)))))
-    (setq-local line-spacing 0.3)
-    (setq-local cursor-type 'bar)
     (dolist (mode my-kindly-unsupported-minor-modes)
       (when (and (boundp mode) mode) (funcall mode -1)))
     (dolist (var my-kindly-unsupported-global-variables)
