@@ -25,15 +25,17 @@ Symlink .gitconfig and .gitignore_global
 
 ** emacs
 
-Symlink init.el and snippets, site-lisp
+Symlink early-init.el, init.el and snippets, site-lisp
 
 : cd ~/.emacs.d
 : ln -s ~/dotfiles/emacs/.emacs.d/init.el
+: ln -s ~/dotfiles/emacs/.emacs.d/early-init.el
 : ln -s ~/dotfiles/emacs/.emacs.d/snippets
 
 : cd /Applications/Emacs.app/Contents/Resources
 : ln -s ~/dotfiles/emacs/site-lisp
 
-Do not forget to symlink init.elc too, when you bytecompile it.
+Do not forget to symlink .elc too, when you bytecompile it for first.
 
+: ln -s ~/dotfiles/emacs/.emacs.d/early-init.elc
 : ln -s ~/dotfiles/emacs/.emacs.d/init.elc
