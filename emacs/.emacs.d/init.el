@@ -507,8 +507,7 @@ cons of two integers which defines a range of the codepoints."
 
 ;; settings for the byte-compiler
 (eval-when-compile
-  (setq byte-compile-warnings t
-        byte-compile-dynamic  t))
+  (setq byte-compile-warnings t))
 
 ;; make the main frame maximized by default
 (push '(fullscreen . maximized) default-frame-alist)
