@@ -4236,8 +4236,11 @@ emacs-lisp-mode."
                (y (- 1 x)))
           (color-rgb-to-hex (+ (* r y) (* r2 x)) (+ (* g y) (* g2 x)) (+ (* b y) (* b2 x))))))))
 
-;; utility to apply color palette to the elemental-theme
+;; load the theme
 (setup-include "elemental-theme")
+(enable-theme 'elemental-theme)
+
+;; utility to apply color palette to the elemental-theme
 (defmacro my-elemental-theme-apply-colors
     (bg-base fg-base
              type-yellow warning-orange error-red visited-magenta
