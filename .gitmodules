@@ -269,6 +269,7 @@
 [submodule "emacs/site-lisp/plugins/commenter"]
 	path = emacs/site-lisp/plugins/commenter
 	url = https://github.com/yuutayamada/commenter.git
+	ignore = dirty
 [submodule "emacs/site-lisp/plugins/ido-completing-read-plus"]
 	path = emacs/site-lisp/plugins/ido-completing-read-plus
 	url = https://github.com/DarwinAwardWinner/ido-completing-read-plus.git
