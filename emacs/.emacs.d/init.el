@@ -5,6 +5,7 @@
   (require 'subr-x)
   (setq setup-silent t
         setup-delay-with-threads t
+        ;; setup-delay-interval 0.5
         setup-enable-gc-threshold-hacks t
         setup-use-profiler nil
         setup-disable-magic-file-name t))
