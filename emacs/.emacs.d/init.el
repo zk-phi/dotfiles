@@ -503,6 +503,9 @@ cons of two integers which defines a range of the codepoints."
     (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend) ; unicode (fallback)
     (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend)))) ; unicode (japanese)
 
+;; do not treat symbols specially when determining font
+(setq use-default-font-for-symbols nil)
+
 ;; settings for the byte-compiler
 (eval-when-compile
   (setq byte-compile-warnings t))
@@ -4078,7 +4081,8 @@ emacs-lisp-mode."
 (!-
  (setup "sky-color-clock"
    (sky-color-clock-initialize 35.40)
-   (setq sky-color-clock-enable-emoji-icon t)
+   (setq sky-color-clock-enable-emoji-icon    t
+         sky-color-clock-enable-daytime-emoji t)
    (when my-openweathermap-api-key
      (sky-color-clock-initialize-openweathermap-client my-openweathermap-api-key 1850144))
    (defun my-time-string () (sky-color-clock))))
