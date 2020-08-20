@@ -4084,7 +4084,8 @@ emacs-lisp-mode."
    (setq sky-color-clock-enable-emoji-icon    t
          sky-color-clock-enable-daytime-emoji t)
    (when my-openweathermap-api-key
-     (sky-color-clock-initialize-openweathermap-client my-openweathermap-api-key 1850144))
+     (!-
+       (sky-color-clock-initialize-openweathermap-client my-openweathermap-api-key 1850144)))
    (defun my-time-string () (sky-color-clock))))
 
 (defsubst my-mode-line--clock ()
