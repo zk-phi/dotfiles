@@ -783,44 +783,45 @@ cons of two integers which defines a range of the codepoints."
 
 (!-
  (setup "popup")
- (setup "auto-complete"
-   (setq ac-comphist-file  my-ac-history-file
-         ac-auto-start     t
-         ac-dwim           t
-         ac-delay          0
-         ac-ignore-case    nil
-         ac-auto-show-menu 0.8
-         ac-disable-faces  nil)
-   (push my-dictionary-directory ac-dictionary-directories)
-   (global-auto-complete-mode)
-   (setup-keybinds ac-completing-map "S-<tab>" 'ac-previous)
-   ;; complete buffer-file-name
-   (ac-define-source my-buffer-file-name
-     '((candidates . (when buffer-file-name
-                       (list (file-name-sans-extension
-                              (file-name-nondirectory buffer-file-name)))))))
-   ;; complete property names in CSS-like languages
-   (setup-after "auto-complete-config"
-     (ac-define-source my-css-propname
-       '((candidates . (mapcar 'car ac-css-property-alist))
-         (cache . 1)
-         (prefix . "\\(?:^\\|;\\)[\s\t]*\\([^\s\t]*\\)")))
-     (define-advice ac-css-prefix (:before-until (&rest _))
-       (= (char-before) ?\;)))
-   ;; ;; complete words in the last sessions
-   ;; (setup "ac-last-sessions"
-   ;;   (setq ac-last-sessions-save-file my-ac-last-sessions-file)
-   ;;   (add-hook 'kill-emacs-hook 'ac-last-sessions-save-completions)
-   ;;   (!- (ac-last-sessions-load-completions)))
-   ;; do not complete remote file names
-   (define-advice ac-filename-candidate (:before-until (&rest _))
-     (file-remote-p ac-prefix))
-   ;; setup default sources
-   (setq-default ac-sources '(ac-source-my-buffer-file-name
-                              ac-source-dictionary
-                              ;; ac-source-last-sessions
-                              ac-source-words-in-same-mode-buffers
-                              ac-source-filename))))
+ (!-
+  (setup "auto-complete"
+    (setq ac-comphist-file  my-ac-history-file
+          ac-auto-start     t
+          ac-dwim           t
+          ac-delay          0
+          ac-ignore-case    nil
+          ac-auto-show-menu 0.8
+          ac-disable-faces  nil)
+    (push my-dictionary-directory ac-dictionary-directories)
+    (global-auto-complete-mode)
+    (setup-keybinds ac-completing-map "S-<tab>" 'ac-previous)
+    ;; complete buffer-file-name
+    (ac-define-source my-buffer-file-name
+      '((candidates . (when buffer-file-name
+                        (list (file-name-sans-extension
+                               (file-name-nondirectory buffer-file-name)))))))
+    ;; complete property names in CSS-like languages
+    (setup-after "auto-complete-config"
+      (ac-define-source my-css-propname
+        '((candidates . (mapcar 'car ac-css-property-alist))
+          (cache . 1)
+          (prefix . "\\(?:^\\|;\\)[\s\t]*\\([^\s\t]*\\)")))
+      (define-advice ac-css-prefix (:before-until (&rest _))
+        (= (char-before) ?\;)))
+    ;; ;; complete words in the last sessions
+    ;; (setup "ac-last-sessions"
+    ;;   (setq ac-last-sessions-save-file my-ac-last-sessions-file)
+    ;;   (add-hook 'kill-emacs-hook 'ac-last-sessions-save-completions)
+    ;;   (!- (ac-last-sessions-load-completions)))
+    ;; do not complete remote file names
+    (define-advice ac-filename-candidate (:before-until (&rest _))
+      (file-remote-p ac-prefix))
+    ;; setup default sources
+    (setq-default ac-sources '(ac-source-my-buffer-file-name
+                               ac-source-dictionary
+                               ;; ac-source-last-sessions
+                               ac-source-words-in-same-mode-buffers
+                               ac-source-filename)))))
 
 (setup-lazy '(guess-style-guess-all) "guess-style"
   :prepare (setup-hook 'find-file-hook
