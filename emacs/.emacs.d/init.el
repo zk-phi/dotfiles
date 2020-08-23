@@ -1,5 +1,5 @@
 ;;; -*- lexical-binding: t -*-
-;; init.el (for Emacs 26.3) | 2012- zk_phi
+;; init.el (for Emacs 27.1) | 2012- zk_phi
 
 (eval-when-compile
   (require 'setup)
