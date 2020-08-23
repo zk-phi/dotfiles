@@ -917,28 +917,6 @@ unary operators which can also be binary."
     (setq-local my-eww-enable-colors t)
     (eww-reload))
 
-  ;; Backward Compatibility (<= 24.3)
-  ;; Reference | https://lists.gnu.org/archive/html/emacs-diffs/2013-06/msg00410.html
-  (unless (fboundp 'add-face-text-property)
-    (defun add-face-text-property (beg end face &optional appendp object)
-      "Combine FACE BEG and END."
-      (let ((b beg))
-        (while (< b end)
-          (let ((oldval (get-text-property b 'face)))
-            (put-text-property
-             b (setq b (next-single-property-change b 'face nil end))
-             'face (cond ((null oldval)
-                          face)
-                         ((and (consp oldval)
-                               (not (keywordp (car oldval))))
-                          (if appendp
-                              (nconc oldval (list face))
-                            (cons face oldval)))
-                         (t
-                          (if appendp
-                              (list oldval face)
-                            (list face oldval))))))))))
-
   ;; disable sublimity-attractive-centering
   (setup-after "sublimity-attractive"
     (setup-hook 'eww-mode-hook
