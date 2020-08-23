@@ -4570,13 +4570,13 @@ emacs-lisp-mode."
 ;;     + | frame, window
 
 (setup-keybinds nil
-  "M-0" 'next-multiframe-window
+  "M-0" 'next-window-any-frame
   "M-1" 'delete-other-windows
   "M-2" 'my-split-window
   "M-3" 'my-resize-window
   "M-4" 'my-toggle-follow-mode
   "M-8" 'my-transpose-window-buffers
-  "M-9" 'previous-multiframe-window
+  "M-9" 'previous-window-any-frame
   "M-o" 'my-toggle-transparency
   "M-k" 'delete-window)
 
