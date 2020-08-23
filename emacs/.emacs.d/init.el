@@ -4031,6 +4031,7 @@ emacs-lisp-mode."
 (defconst my-mode-line--recur-status
   (! (propertize "%]" 'face 'mode-line-dark-face)))
 
+(defvar-local my-mode-line--mode-name-cache nil)
 (defsubst my-mode-line--mode-name ()
   (cond ((bound-and-true-p artist-mode)
          (! (propertize "*Artist*" 'face 'mode-line-special-mode-face)))
@@ -4039,10 +4040,11 @@ emacs-lisp-mode."
         ((bound-and-true-p follow-mode)
          (! (propertize "*Follow*" 'face 'mode-line-special-mode-face)))
         (t
-         (propertize
-          ;; mode-name may be a list in sgml modes
-          (if (consp mode-name) (cadr mode-name) mode-name)
-          'face 'mode-line-bright-face))))
+         (unless (eq (car my-mode-line--mode-name-cache) major-mode)
+           (setq my-mode-line--mode-name-cache
+                 (cons major-mode
+                       (propertize (format-mode-line mode-name) 'face 'mode-line-bright-face))))
+         (cdr my-mode-line--mode-name-cache))))
 
 (defsubst my-mode-line--process ()
   (propertize (format-mode-line mode-line-process) 'face 'mode-line-highlight-face))
