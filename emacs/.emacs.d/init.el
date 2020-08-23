@@ -369,7 +369,7 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 (define-key query-replace-map (kbd "SPC") nil) ; do not accept SPC in y-or-n-p
 
-(setq frame-title-format                    "%b - Emacs"
+(setq frame-title-format                    "Emacs"
       completion-ignore-case                t
       read-file-name-completion-ignore-case t
       create-lockfiles                      nil
