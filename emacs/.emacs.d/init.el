@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t -*-
 ;; init.el (for Emacs 26.3) | 2012- zk_phi
 
 (eval-when-compile
@@ -11,7 +12,7 @@
         setup-disable-magic-file-name t))
 (setup-initialize)
 
-(setup-include "cl-lib")
+(setup "cl-lib")
 
 ;; + Cheat Sheet :
 ;; + | global
@@ -572,7 +573,7 @@ cons of two integers which defines a range of the codepoints."
 ;;   + Misc: built-ins
 ;;   + | buffers / windows
 
-(setup-include "saveplace"
+(setup "saveplace"
   (setq save-place-file my-save-place-file)
   (save-place-mode)
   ;; open invisible automatically
@@ -632,15 +633,15 @@ cons of two integers which defines a range of the codepoints."
 ;;   + | edit
 
 ;; electric newline
-(setup-include "electric"
+(setup "electric"
   (electric-layout-mode 1))
 
 ;; delete selection on insert like modern applications
-(setup-include "delsel"
+(setup "delsel"
   (delete-selection-mode 1))
 
 ;; track undo history across sessions
-(setup-include "undohist"
+(setup "undohist"
   (setq undohist-directory my-undohist-directory)
   (undohist-initialize)
   ;; workaround for Windows
@@ -715,10 +716,10 @@ cons of two integers which defines a range of the codepoints."
 ;;   + Misc: plug-ins
 ;;   + | buffers / windows
 
-(setup-include "smooth-scrolling"
+(setup "smooth-scrolling"
   (setq smooth-scroll-margin 3))
 
-(setup-include "popwin"
+(setup "popwin"
   (setq popwin:reuse-window nil
         popwin:special-display-config
         '(("*Warnings*")
@@ -761,8 +762,8 @@ cons of two integers which defines a range of the codepoints."
 
 ;;   + | edit
 
-(setup-include "paredit")               ; dependency
-(setup-include "phi-autopair"
+(setup "paredit")               ; dependency
+(setup "phi-autopair"
   (nconc phi-autopair-lispy-modes my-lispy-modes)
   (phi-autopair-global-mode 1))
 
@@ -831,7 +832,7 @@ cons of two integers which defines a range of the codepoints."
 ;;   + | keyboards
 
 ;; not key-chord in MELPA but my own fork of key-chord
-(setup-include "key-chord"
+(setup "key-chord"
   (setup-silently (key-chord-mode 1))
   (setq key-chord-safety-interval-forward 0.55))
 
@@ -891,7 +892,7 @@ unary operators which can also be binary."
 
 ;;   + | others
 
-(setup-include "commentize-conflict"
+(setup "commentize-conflict"
   (add-hook 'prog-mode-hook 'commentize-conflict-mode))
 
 ;; + | Commands
@@ -1753,7 +1754,7 @@ emacs-lisp-mode."
 ;;   + | pop-up windows
 
 ;; make and popup scratch-notes for each files
-(setup-include "scratch-palette"
+(setup "scratch-palette"
   (setq scratch-palette-directory my-palette-directory)
   (setup-keybinds scratch-palette-minor-mode-map
     "M-w" 'scratch-palette-kill))
@@ -1768,7 +1769,7 @@ emacs-lisp-mode."
 ;;   + | trace changes
 
 ;; tree-like undo history browser
-(setup-include "undo-tree"
+(setup "undo-tree"
   (global-undo-tree-mode 1)
   (setup-keybinds undo-tree-visualizer-mode-map
     "j" 'undo-tree-visualize-redo
@@ -1815,10 +1816,10 @@ emacs-lisp-mode."
   ;; define a temporary function that loads "dmacro"
   (defun dmacro-exec ()
     (interactive)
-    (let ((*dmacro-key* (this-single-command-keys)))
-      (load "dmacro")
-      ;; dmacro-exec is overriden here
-      (call-interactively 'dmacro-exec))))
+    (defconst *dmacro-key* (this-single-command-keys))
+    (load "dmacro")
+    ;; dmacro-exec is overriden here
+    (call-interactively 'dmacro-exec)))
 
 ;; download region as an url
 (setup-lazy '(download-region-as-url) "download-region"
@@ -4230,7 +4231,7 @@ emacs-lisp-mode."
 
 ;; utility to mix two colors
 (eval-and-compile
-  (setup-include "color")
+  (setup "color")
   (defun my-blend-colors (basecolor mixcolor percent)
     "Mix two colors."
     (cl-destructuring-bind (r g b) (color-name-to-rgb basecolor)
@@ -4240,7 +4241,7 @@ emacs-lisp-mode."
           (color-rgb-to-hex (+ (* r y) (* r2 x)) (+ (* g y) (* g2 x)) (+ (* b y) (* b2 x))))))))
 
 ;; load the theme
-(setup-include "elemental-theme")
+(setup "elemental-theme")
 (enable-theme 'elemental-theme)
 
 ;; utility to apply color palette to the elemental-theme
@@ -4450,11 +4451,11 @@ emacs-lisp-mode."
 
 ;; highlight matching parens
 ;; - show-paren-mode cannot be delayed with "!-" (why?)
-(setup-include "paren"
+(setup "paren"
   (setq show-paren-delay 0)
   (show-paren-mode 1))
 
-(setup-include "hl-line"
+(setup "hl-line"
   (global-hl-line-mode 1))
 
 (setup-lazy '(whitespace-mode) "whitespace"
@@ -4499,11 +4500,11 @@ emacs-lisp-mode."
   (set-face-attribute 'stripe-highlight nil :extend t))
 
 ;; make GUI modern
-(setup-include "sublimity"
-  (setup-include "sublimity-scroll"
+(setup "sublimity"
+  (setup "sublimity-scroll"
     (setq sublimity-scroll-weight       4
           sublimity-scroll-drift-length 3))
-  (setup-include "sublimity-attractive"
+  (setup "sublimity-attractive"
     (setq sublimity-attractive-centering-width 100))
   (sublimity-mode 1))
 
