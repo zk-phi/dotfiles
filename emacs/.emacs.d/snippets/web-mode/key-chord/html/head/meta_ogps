@@ -6,7 +6,7 @@
 <meta property="og:title" content="${1:`(my-web-html-title)`}">
 <meta property="og:site_name" content="${2:`(my-web-html-title)`}">
 <meta property="og:url" content="${3:https://hogehoge.com/piyopiyo.html}">
-<meta property="og:description" content="${4:Hogehoge}">
+<meta property="og:description" content="${4:`(my-web-html-description)`}">
 <meta property="og:image" content="${5:https://hogehoge.com/img/piyopiyo.png}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="$1">
