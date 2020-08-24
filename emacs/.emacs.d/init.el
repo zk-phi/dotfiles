@@ -2533,8 +2533,7 @@ emacs-lisp-mode."
 ;;         + Arduino
 
 (setup-lazy '(arduino-mode) "arduino-mode"
-  :prepare (progn (push '("\\.ino$" . arduino-mode) auto-mode-alist)
-                  (push '("\\.pde$" . arduino-mode) auto-mode-alist))
+  :prepare (push '("\\.\\(ino\\|pde\\)$" . arduino-mode) auto-mode-alist)
   ;; if arduino-mk is installed, use it to upload programs
   (when (file-exists-p "/usr/share/arduino/Arduino.mk")
     (defvar my-arduino-port "/dev/ttyACM0")
@@ -2550,8 +2549,7 @@ emacs-lisp-mode."
 ;;         + flex/bison
 
 (setup-lazy '(bison-mode) "bison-mode"
-  :prepare (progn (push '("\\.ll?$" . bison-mode) auto-mode-alist)
-                  (push '("\\.yy?$" . bison-mode) auto-mode-alist)))
+  :prepare (push '("\\.\\(ll?\\|yy?\\)$" . bison-mode) auto-mode-alist))
 
 ;;       + perl-like
 ;;         + Perl (cperl-mode)
@@ -3282,9 +3280,7 @@ emacs-lisp-mode."
 ;;       + gfm-mode [markdown-mode]
 
 (setup-lazy '(gfm-mode) "markdown-mode"
-  :prepare (progn
-             (push '("\\.md$" . gfm-mode) auto-mode-alist)
-             (push '("\\.markdown$" . gfm-mode) auto-mode-alist))
+  :prepare (push '("\\.m\\(ark\\)?d\\(own\\)?$" . gfm-mode) auto-mode-alist)
   (setup-keybinds gfm-mode-map
     '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
     "TAB" 'markdown-cycle))
