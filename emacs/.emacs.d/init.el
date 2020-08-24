@@ -2882,12 +2882,125 @@ emacs-lisp-mode."
 (setup-lazy '(typescript-mode) "typescript-mode"
   :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
 
+;;       + js-mode
+
+;; TODO: migrate from web-mode
+
+(setup-lazy '(js-mode) "js"
+  :prepare (push '("\\.jsx?$" . js-mode) auto-mode-alist)
+
+  (setq js-jsx-syntax           t
+        js-jsx-indent-level     2
+        js-jsx-attribute-offset 2)
+
+  ;; font-lock
+
+  (font-lock-add-keywords
+   'js-mode
+   `(
+     ;; "*** from" part of import stmt
+     (,(concat "^import +\\(.+\\) +\\(from\\)")
+      (1 'font-lock-variable-name-face t)
+      (2 'font-lock-keyword-face t t))
+     ;; es6 class decl
+     (,(concat "class +\\(" js--name-re "\\) +\\(extends +\\(" js--dotted-name-re "\\)\\)?")
+      (1 'font-lock-type-face t)
+      (3 'font-lock-type-face t t))
+     ;; es6 class method names and args
+     (,(concat "^ *\\(" js--name-re "\\) *([^)]*) *{")
+      (1 'font-lock-function-name-face t)
+      (,(concat "\\(" js--name-re "\\)\\(\\s-*).*\\)?")
+       (progn (backward-char) (backward-sexp))
+       (end-of-line)
+       (1 font-lock-variable-name-face)))
+     ;; arrow fn args
+     (,(concat "\\(" js--name-re "\\) *=>")
+      (1 'font-lock-variable-name-face t))
+     (,(concat "\\(([^)]*)\\) *=>")
+      (,(concat "\\(" js--name-re "\\)\\(\\s-*).*\\)?")
+       (backward-sexp)
+       (end-of-line)
+       (1 font-lock-variable-name-face))))
+   t)
+  (font-lock-add-keywords
+   'js-mode
+   ;; hash keys
+   `((,(concat js--name-re ":") 0 'font-lock-variable-name-face)))
+
+  (define-advice js--inside-param-list-p (:override ())
+    "Make multi-line method arglist highlighted too"
+    (ignore-errors
+      (save-excursion
+        (js--up-nearby-list)
+        (and (looking-at "(")
+             (progn (forward-symbol -1)
+                    (or (looking-at "function")
+                        (looking-back "^[\s\t]*" (point-at-bol)) ; added
+                        (progn (forward-symbol -1)
+                               (looking-at "function"))))))))
+
+  ;; forward-sexp-function
+
+  (defun my-jsx-forward-sexp (&optional n)
+    (interactive "p")
+    (let ((forward-sexp-function nil))
+      (cond ((< n 0)
+             (my-jsx-backward-sexp (- n)))
+            ;; looking-at closing tag => error
+            ((looking-at "[\s\t\n]*\\(</[A-z]\\)")
+             (signal 'scan-error
+                     (list "Cannot move forward" (match-beginning 1) (scan-sexps (point) 1))))
+            ;; looking-at opening tag => skip the tag forward
+            ((looking-at "[\s\t\n]*<[A-z]")
+             (sgml-skip-tag-forward 1))
+            ;; just do forward-sexp
+            (t
+             (forward-sexp 1))))
+    (when (> n 1)
+      (my-jsx-forward-sexp (1- n))))
+
+  (defun my-jsx-backward-sexp (&optional n)
+    (interactive "p")
+    (let ((forward-sexp-function nil))
+      (cond ((< n 0)
+             (my-jsx-forward-sexp (- n)))
+            ;; looking-back closing tag => skip the tag backward
+            ((looking-back "\\(</[A-z.]+>\\|[A-z]/>\\)[\s\t\n]*" (point-min))
+             (sgml-skip-tag-backward 1))
+            ;; looking-at opening tag => error
+            ((looking-back "\\([A-z}]>\\)[\s\t\n]*" (point-min))
+             (signal 'scan-error
+                     (list "Cannot move backward" (scan-sexps (point) -1) (match-end 1))))
+            (t
+             (backward-sexp 1))))
+    (when (> n 1)
+      (my-jsx-backward-sexp (1- n))))
+
+  (setup-hook 'js-mode-hook
+    (setq-local forward-sexp-function 'my-jsx-forward-sexp))
+
+  ;; packages
+
+  (setup-after "key-chord"
+    (setup-expecting "yasnippet"
+      (setup-hook 'js-mode-hook
+        (key-chord-define-local "fu" (my-yas "kc-fu")) ; js/function
+        )))
+
+  (setup-after "key-combo"
+    (setup-hook 'js-mode-hook
+      (key-combo-mode 1)
+      (key-combo-define-local (kbd "<") '(" < " "<`!!'>")) ; press twice to start jsx tag
+      (key-combo-define-local (kbd "</") 'sgml-close-tag)
+      (key-combo-define-local (kbd "&") '(" & " " && "))))
+  )
+
 ;;       + web-mode
 
 (setup-lazy '(web-mode) "web-mode"
   :prepare (progn
              (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
-             (push '("\\.jsx?$" . web-mode) auto-mode-alist)
+             ;; (push '("\\.jsx?$" . web-mode) auto-mode-alist)
              (push '("\\.s?css$" . web-mode) auto-mode-alist)
              (push '("\\.ejs$" . web-mode) auto-mode-alist))
 
