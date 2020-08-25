@@ -22,6 +22,7 @@ Symlink .gitconfig and .gitignore_global
 : cd ~
 : ln -s ~/dotfiles/git/.gitconfig
 : ln -s ~/dotfiles/git/.gitignore_global
+: ln -s ~/dotfiles/git/.git_template
 
 ** emacs
 

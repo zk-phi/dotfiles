@@ -6,6 +6,8 @@
     smudge = git-lfs smudge %f
     required = true
     clean = git-lfs clean %f
+[init]
+    templatedir = ~/.git_template
 [alias]
     # ---- git-submodule-update-checker
     submodule-updates = "!f(){ git submodule foreach 'git fetch origin master &> /dev/null; git --no-pager log --oneline HEAD..origin/master'; }; f"
