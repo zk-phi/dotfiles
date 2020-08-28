@@ -173,10 +173,6 @@
 [submodule "emacs/site-lisp/my-plugins/bfbuilder"]
 	path = emacs/site-lisp/my-plugins/bfbuilder
 	url = https://github.com/zk-phi/bfbuilder.git
-[submodule "emacs/site-lisp/plugins/ahk-mode"]
-	path = emacs/site-lisp/plugins/ahk-mode
-	url = https://github.com/ralesi/ahk-mode.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/typescript.el"]
 	path = emacs/site-lisp/plugins/typescript-el
 	url = https://github.com/ananthakumaran/typescript.el.git

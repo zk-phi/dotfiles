@@ -2590,23 +2590,6 @@ emacs-lisp-mode."
   (setup-after "smart-compile"
     (push `(nim-mode . "nim c %f") smart-compile-alist)))
 
-;;         + AHK
-
-(setup-lazy '(ahk-mode) "ahk-mode"
-  :prepare (progn
-             (push '("\\.ahk$" . ahk-mode) auto-mode-alist)
-             ;; the default value of ahk-path-exe-installed is invalid
-             ;; on non-w32 systems.
-             (unless (eq system-type 'windows-nt)
-               (defvar ahk-path-exe-installed nil)))
-  (setup-after "mark-hacks"
-    (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes))
-  (setup-after "auto-complete"
-    (push 'ahk-mode ac-modes))
-  ;; ahk-mode-map must be set by hooks (why?)
-  (setup-hook 'ahk-mode-hook
-    (setup-keybinds ahk-mode-map '("C-j" "C-h") nil)))
-
 ;;         + shell
 
 (setup-lazy '(shell-script-mode) "sh-script"
