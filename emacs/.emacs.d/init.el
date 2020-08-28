@@ -2309,7 +2309,7 @@ emacs-lisp-mode."
 ;;         + SCAD
 
 ;; *NOTE* "scad-mode.el" provides "scad" feature (!!!)
-;; So it's not good idea to specify "scad-mode" here.
+;; So it's not good idea to specify "scad-mode" as a package name here.
 (setup-lazy '(scad-mode) "scad-preview"
   :prepare (push '("\\.scad$" . scad-mode) auto-mode-alist)
   (setup-keybinds scad-mode-map
