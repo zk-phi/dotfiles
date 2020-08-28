@@ -1477,3 +1477,59 @@ displayed, use substring of the buffer."
       (propertize (concat (all-the-icons-octicon "git-branch") " " my-current-branch-full-name)
                   'face 'header-line-bg-face)
     ""))
+
+;; + tramp
+
+(eval-and-compile
+  (defconst my-tramp-proxies
+    (when (boundp 'my-tramp-proxies) my-tramp-proxies)
+    "My tramp proxies.")
+  (defconst my-tramp-abbrevs
+    (when (boundp 'my-tramp-abbrevs) my-tramp-abbrevs)
+    "Abbreviation table for remote hosts."))
+
+(defconst my-ftp-executable
+  (!when (file-exists-p "~/.emacs.d/lib/ftp.exe")
+    "~/.emacs.d/lib/ftp.exe")
+  "/path/to/ftp")
+
+(defconst my-tramp-file
+  (! (concat my-dat-directory "tramp_" system-name))
+  "File to save tramp settings.")
+
+(setup-after "tramp"
+  (setq tramp-persistency-file-name my-tramp-file
+        tramp-default-proxies-alist (nconc my-tramp-proxies tramp-default-proxies-alist))
+  (setup "docker-tramp"))
+(setup-expecting "tramp"
+  (define-abbrev-table 'my-tramp-abbrev-table my-tramp-abbrevs)
+  (setup-hook 'minibuffer-setup-hook
+    (abbrev-mode 1)
+    (setq local-abbrev-table (symbol-value 'my-tramp-abbrev-table))))
+
+;; use SSH over fakecygpty on Windows
+(!when (executable-find "fakecygpty")
+  (setup-after "em-alias"
+    (eshell/alias "ssh" "fakecygpty ssh $*"))
+  (setup-after "tramp"
+    ;; reference | http://www.emacswiki.org/emacs/SshWithNTEmacs
+    (push '("cygssh"
+            (tramp-login-program "fakecygpty ssh")
+            (tramp-login-args (("-l" "%u")
+                               ("-p" "%p")
+                               ("-e" "none")
+                               ("%h")))
+            (tramp-async-args (("-q")))
+            (tramp-remote-shell "/bin/sh")
+            (tramp-remote-shell-args ("-c"))
+            (tramp-gw-args (("-o" "GlobalKnownHostsFile=/dev/null")
+                            ("-o" "UserKnownHostsFile=/dev/null")
+                            ("-o" "StrictHostKeyChecking=no")))
+            (tramp-default-port 22))
+          tramp-methods)
+    (setq tramp-default-method "cygssh")))
+
+;; ftp settings
+(setup-after "ange-ftp"
+  (when my-ftp-executable
+    (setq ange-ftp-ftp-program-name my-ftp-executable)))

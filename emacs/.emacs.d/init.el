@@ -114,12 +114,6 @@
   (defconst my-openweathermap-api-key
     (when (boundp 'my-openweathermap-api-key) my-openweathermap-api-key)
     "Access token for openweathermap API.")
-  (defconst my-tramp-proxies
-    (when (boundp 'my-tramp-proxies) my-tramp-proxies)
-    "My tramp proxies.")
-  (defconst my-tramp-abbrevs
-    (when (boundp 'my-tramp-abbrevs) my-tramp-abbrevs)
-    "Abbreviation table for remote hosts.")
   (defconst my-secret-words
     (when (boundp 'my-secret-words) my-secret-words)
     "List of secret words to be hidden."))
@@ -150,11 +144,6 @@
   (!when (file-exists-p "~/.emacs.d/lib/ditaa.jar")
     "~/.emacs.d/lib/ditaa.jar")
   "/path/to/ditaa.jar")
-
-(defconst my-ftp-executable
-  (!when (file-exists-p "~/.emacs.d/lib/ftp.exe")
-    "~/.emacs.d/lib/ftp.exe")
-  "/path/to/ftp")
 
 ;;   + path to data files
 
@@ -232,10 +221,6 @@
 (defconst my-save-place-file
   (! (concat my-dat-directory "save-place_" system-name))
   "File to save save-place datas.")
-
-(defconst my-tramp-file
-  (! (concat my-dat-directory "tramp_" system-name))
-  "File to save tramp settings.")
 
 ;; (defconst my-ac-last-sessions-file
 ;;   (! (concat my-dat-directory "ac-last-sessions_" system-name))
@@ -667,46 +652,6 @@ cons of two integers which defines a range of the codepoints."
 
 (setup-after "newcomment"
   (setq comment-empty-lines t))
-
-;;   + | network
-
-;; tramp settings
-(setup-after "tramp"
-  (setq tramp-persistency-file-name my-tramp-file
-        tramp-default-proxies-alist (nconc my-tramp-proxies tramp-default-proxies-alist))
-  (setup "docker-tramp"))
-(setup-expecting "tramp"
-  (define-abbrev-table 'my-tramp-abbrev-table my-tramp-abbrevs)
-  (setup-hook 'minibuffer-setup-hook
-    (abbrev-mode 1)
-    (setq local-abbrev-table (symbol-value 'my-tramp-abbrev-table))))
-
-;; use SSH over fakecygpty on Windows
-(!when (executable-find "fakecygpty")
-  (setup-after "em-alias"
-    (eshell/alias "ssh" "fakecygpty ssh $*"))
-  (setup-after "tramp"
-    ;; reference | http://www.emacswiki.org/emacs/SshWithNTEmacs
-    (push '("cygssh"
-            (tramp-login-program "fakecygpty ssh")
-            (tramp-login-args (("-l" "%u")
-                               ("-p" "%p")
-                               ("-e" "none")
-                               ("%h")))
-            (tramp-async-args (("-q")))
-            (tramp-remote-shell "/bin/sh")
-            (tramp-remote-shell-args ("-c"))
-            (tramp-gw-args (("-o" "GlobalKnownHostsFile=/dev/null")
-                            ("-o" "UserKnownHostsFile=/dev/null")
-                            ("-o" "StrictHostKeyChecking=no")))
-            (tramp-default-port 22))
-          tramp-methods)
-    (setq tramp-default-method "cygssh")))
-
-;; ftp settings
-(setup-after "ange-ftp"
-  (when my-ftp-executable
-    (setq ange-ftp-ftp-program-name my-ftp-executable)))
 
 ;;   + | vcs
 
