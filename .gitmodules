@@ -16,9 +16,6 @@
 [submodule "emacs/site-lisp/plugins/undohist-el"]
 	path = emacs/site-lisp/my-plugins/undohist-el
 	url = https://github.com/zk-phi/undohist.git
-[submodule "emacs/site-lisp/plugins/docker-tramp.el"]
-	path = emacs/site-lisp/plugins/docker-tramp-el
-	url = https://github.com/emacs-pe/docker-tramp.el.git
 [submodule "emacs/site-lisp/plugins/smooth-scrolling"]
 	path = emacs/site-lisp/plugins/smooth-scrolling
 	url = https://github.com/aspiers/smooth-scrolling.git
