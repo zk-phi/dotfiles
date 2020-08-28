@@ -33,10 +33,10 @@
 ;;   + Meta-
 
 ;; M-_
-;; |KlWnd|MkWnd|Blnce|Follw|     |     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
+;; |KlWnd|MkWnd|Blnce|     |     |     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
 ;;    |Scrat|Palet| Eval|Recnt|Table|YankP|UndoT|Shell|Opcty|EvalP|     |     |
 ;;       |Artst| All |Dired| File| Grep|Shrnk|Anthg|KlWnd| Goto|     |     |
-;;          |     |Comnd|Cmpil| Vim |Buffr|Narrw|DMcro|     |     |     |
+;;          |     |Comnd|Cmpil|     |Buffr|Narrw|DMcro|     |     |     |
 
 ;; M-Shift-
 ;; |     |     |     |     |     |     |     | Barf|Wrap(|Slurp| Undo|     |     |     |
@@ -1600,21 +1600,15 @@ emacs-lisp-mode."
     "q" 'undo-tree-visualizer-abort)
   (setup-keybinds undo-tree-map '("M-_") nil))
 
-;;   + | assistants
-
-;; autoload RPN calc
-(setup-lazy '(rpn-calc) "rpn-calc")
-
-;;   + | jokes / games
+;;   + | others
 
 ;; ＿人人人人人人人人＿
 ;; ＞  sudden-death  ＜
 ;; ￣ＹＹＹＹＹＹＹＹ￣
 (setup-lazy '(sudden-death) "sudden-death")
 
-(setup-lazy '(2048-game) "2048-game")
-
-;;   + | others
+;; autoload RPN calc
+(setup-lazy '(rpn-calc) "rpn-calc")
 
 ;; autoload gitmole
 (setup-lazy '(gitmole-interactive-blame) "gitmole")
@@ -2593,18 +2587,6 @@ emacs-lisp-mode."
 
 (setup-lazy '(shell-script-mode) "sh-script"
   :prepare (push '("\\.z?sh$" . shell-script-mode) auto-mode-alist))
-
-;;         + DOS
-
-(setup-lazy '(bat-mode) "bat-mode"
-  :prepare (setq auto-mode-alist
-                 (nconc
-                  '(("\\.\\(?:[bB][aA][tT]\\|[cC][mM][dD]\\)\\'" . bat-mode)
-                    ("\\`[cC][oO][nN][fF][iI][gG]\\." . bat-mode)
-                    ("\\`[aA][uU][tT][oO][eE][xX][eE][cC]\\." . bat-mode))
-                  auto-mode-alist))
-  (setup-after "auto-complete"
-    (push 'bat-mode ac-modes)))
 
 ;;     + web
 ;;       + typescript-mode

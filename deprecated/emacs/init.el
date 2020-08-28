@@ -1776,3 +1776,19 @@ displayed, use substring of the buffer."
   ;; ahk-mode-map must be set by hooks (why?)
   (setup-hook 'ahk-mode-hook
     (setup-keybinds ahk-mode-map '("C-j" "C-h") nil)))
+
+;; + languages/DOS
+
+(setup-lazy '(bat-mode) "bat-mode"
+  :prepare (setq auto-mode-alist
+                 (nconc
+                  '(("\\.\\(?:[bB][aA][tT]\\|[cC][mM][dD]\\)\\'" . bat-mode)
+                    ("\\`[cC][oO][nN][fF][iI][gG]\\." . bat-mode)
+                    ("\\`[aA][uU][tT][oO][eE][xX][eE][cC]\\." . bat-mode))
+                  auto-mode-alist))
+  (setup-after "auto-complete"
+    (push 'bat-mode ac-modes)))
+
+;; + 2048-game
+
+(setup-lazy '(2048-game) "2048-game")
