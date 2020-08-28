@@ -4199,7 +4199,8 @@ emacs-lisp-mode."
 ;;   + | ignored keys
 
 (setup-keybinds nil
-  "C-M-S-n" 'ignore                     ; mute discord
+  "<escape>" 'ignore
+  "C-M-S-n"  'ignore                    ; mute discord
   )
 
 ;;   + | fundamental
