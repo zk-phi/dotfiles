@@ -1128,21 +1128,6 @@ unary operators which can also be binary."
   ;;   + | (sentinel)
   )
 
-;;   + isearch (isearch)
-
-(setup-after "isearch"
-  ;; isearch in japanese (for windows)
-  ;; reference | http://d.hatena.ne.jp/myhobby20xx/20110228/1298865536
-  (!when (string= window-system 'w32)
-    (defun my-isearch-update ()
-      (interactive)
-      (isearch-update))
-    (setup-keybinds isearch-mode-map
-      [compend] 'my-isearch-update
-      [kanji]   'isearch-toggle-input-method))
-  ;; do not use lax-whitespace (for Emacs>=24)
-  (setq isearch-lax-whitespace nil))
-
 ;;   + yasnippet settings [yasnippet]
 
 (setup-lazy
