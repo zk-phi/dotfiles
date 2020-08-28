@@ -130,16 +130,6 @@
     "~/.emacs.d/ac-dict/")
   "Dictionary directory for auto-complete.")
 
-(defconst my-sdic-eiwa-dictionary
-  (!when (file-exists-p "~/.emacs.d/sdic/gene.sdic")
-    "~/.emacs.d/sdic/gene.sdic")
-  "Eiwa dictionary for sdic.")
-
-(defconst my-sdic-waei-dictionary
-  (!when (file-exists-p "~/.emacs.d/sdic/jedict.sdic")
-    "~/.emacs.d/sdic/jedict.sdic")
-  "Waei dictionary for sdic.")
-
 (defconst my-ditaa-jar-file
   (!when (file-exists-p "~/.emacs.d/lib/ditaa.jar")
     "~/.emacs.d/lib/ditaa.jar")
@@ -905,48 +895,6 @@ unary operators which can also be binary."
     "C"   'url-cookie-list
     "H"   'eww-list-histories
     "R"   'eww-readable)
-  )
-
-;;   + english <-> japanese dictionary [sdic]
-
-(setup-after "sdic"
-
-  ;; implement mode-hook
-  (defvar sdic-mode-hook nil)
-  (define-advice sdic-mode (:after (&rest _))
-    (run-hooks 'sdic-mode-hook))
-
-  ;; advice "word-at-point" to use "word-at-point"
-  (setup "thingatpt"
-    (define-advice sdic-word-at-point (:override (&rest _))
-      (let* ((str (or (word-at-point) ""))
-             (len (length str)))
-        (set-text-properties 0 len nil str)
-        str)))
-
-  ;; popwin workaround
-  (setup-after "popwin"
-    (push '("*sdic*") popwin:special-display-config)
-    ;; redefine some functions so that popwin can work with
-    ;; reference | http://aikotobaha.blogspot.jp/2013/04/popwinel.html
-    (define-advice sdic-display-buffer (:override (&optional start-point))
-      (let ((p (or start-point (point))))
-        (and sdic-warning-hidden-entry
-             (> p (point-min))
-             (message "この前にもエントリがあります。"))
-        (goto-char p)
-        (display-buffer (get-buffer sdic-buffer-name))
-        (set-window-start (get-buffer-window sdic-buffer-name) p)))
-    (define-advice sdic-other-window (:override (&rest _))
-      (other-window 1))
-    (define-advice sdic-close-window (:override (&rest _))
-      (bury-buffer sdic-buffer-name)))
-
-  ;; settings
-  (setq sdic-eiwa-dictionary-list (when my-sdic-eiwa-dictionary
-                                    `((sdicf-client ,my-sdic-eiwa-dictionary)))
-        sdic-waei-dictionary-list (when my-sdic-waei-dictionary
-                                    `((sdicf-client ,my-sdic-waei-dictionary))))
   )
 
 ;;   + ido and recentf [flx-ido]
@@ -3486,10 +3434,6 @@ emacs-lisp-mode."
       "l" 'help-go-forward
       "f" '("ace-link" ace-link-help))))
 
-(setup-lazy '(sdic-describe-word) "sdic"
-  (setup-expecting "vi"
-    (setup-hook 'sdic-mode-hook 'my-kindly-view-mode)))
-
 (setup-after "info"
   (setup-after "popwin"
     (push '("*info*") popwin:special-display-config))
@@ -4666,8 +4610,7 @@ emacs-lisp-mode."
   "<f1> v"    'describe-variable
   "<f1> a"    'describe-face
   "<f1> x"    'describe-syntax
-  "<f1> s"    'info-lookup-symbol
-  "<f1> w"    '("sdic" sdic-describe-word))
+  "<f1> s"    'info-lookup-symbol)
 
 ;;   + | others
 
