@@ -3159,7 +3159,7 @@ emacs-lisp-mode."
 
 ;;   + orgtbl-mode
 
-(setup-lazy '(orgtbl-mode) "org-table"
+(setup-lazy '(orgtbl-mode) "org"
 
   ;; kill whole row with "org-table-cut-region"
   ;; reference | http://dev.ariel-networks.com/Members/matsuyama/tokyo-emacs-02/
