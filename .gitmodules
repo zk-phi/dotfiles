@@ -70,10 +70,6 @@
 [submodule "emacs/site-lisp/my-plugins/key-chord"]
 	path = emacs/site-lisp/my-plugins/key-chord
 	url = https://github.com/zk-phi/key-chord.git
-[submodule "emacs/site-lisp/plugins/sdic"]
-	path = emacs/site-lisp/plugins/sdic
-	url = https://github.com/emacsattic/sdic.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/flx"]
 	path = emacs/site-lisp/plugins/flx
 	url = https://github.com/lewang/flx.git
