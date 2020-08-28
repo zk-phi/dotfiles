@@ -107,9 +107,6 @@
 	path = emacs/site-lisp/plugins/phi-search-mc-el
 	url = https://github.com/knu/phi-search-mc.el.git
 	ignore = dirty
-[submodule "emacs/site-lisp/my-plugins/phi-search-migemo"]
-	path = emacs/site-lisp/my-plugins/phi-search-migemo
-	url = https://github.com/zk-phi/phi-search-migemo.git
 [submodule "emacs/site-lisp/plugins/expand-region.el"]
 	path = emacs/site-lisp/plugins/expand-region-el
 	url = https://github.com/magnars/expand-region.el.git
@@ -164,12 +161,6 @@
 	path = emacs/site-lisp/plugins/rainbow-mode
 	url = https://github.com/emacsmirror/rainbow-mode.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/gauche-mode"]
-	path = emacs/site-lisp/plugins/gauche-mode
-	url = https://github.com/leque/gauche-mode.git
-[submodule "emacs/site-lisp/plugins/scheme-complete"]
-	path = emacs/site-lisp/plugins/scheme-complete
-	url = https://github.com/ashinn/scheme-complete.git
 [submodule "emacs/site-lisp/my-plugins/ac-c-headers"]
 	path = emacs/site-lisp/my-plugins/ac-c-headers
 	url = https://github.com/zk-phi/ac-c-headers.git
@@ -179,14 +170,6 @@
 [submodule "emacs/site-lisp/plugins/arduino-mode"]
 	path = emacs/site-lisp/plugins/arduino-mode
 	url = https://github.com/stardiviner/arduino-mode.git
-[submodule "emacs/site-lisp/plugins/bison-mode"]
-	path = emacs/site-lisp/plugins/bison-mode
-	url = https://github.com/Wilfred/bison-mode.git
-	ignore = dirty
-[submodule "emacs/site-lisp/plugins/ruby-end.el"]
-	path = emacs/site-lisp/plugins/ruby-end-el
-	url = https://github.com/rejeep/ruby-end.el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/bfbuilder"]
 	path = emacs/site-lisp/my-plugins/bfbuilder
 	url = https://github.com/zk-phi/bfbuilder.git
@@ -241,10 +224,6 @@
 [submodule "emacs/site-lisp/plugins/tinysegmenter.el"]
 	path = emacs/site-lisp/plugins/tinysegmenter-el
 	url = https://github.com/myuhe/tinysegmenter.el.git
-	ignore = dirty
-[submodule "emacs/site-lisp/plugins/migemo"]
-	path = emacs/site-lisp/plugins/migemo
-	url = https://github.com/emacs-jp/migemo.git
 	ignore = dirty
 [submodule "emacs/site-lisp/plugins/spinner.el"]
 	path = emacs/site-lisp/plugins/spinner-el
