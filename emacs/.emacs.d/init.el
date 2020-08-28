@@ -493,6 +493,27 @@ cons of two integers which defines a range of the codepoints."
 (!when (eq window-system 'ns)
   (push '(ns-transparent-titlebar . t) default-frame-alist))
 
+;; Parse .zshenv (during compile) and setenv $PATH
+(setenv
+ "PATH"
+ (!
+  (with-temp-buffer
+    (let ((default-path
+            (cond ((eq system-type 'darwin)
+                   "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin")
+                  (t
+                   (getenv "PATH")))))
+      (cond ((not (file-exists-p "~/.zshenv"))
+             (warn "~/.zshenv does not exist")
+             default-path)
+            ((progn
+               (insert-file-contents "~/.zshenv")
+               (goto-char (point-min))
+               (search-forward-regexp "export PATH=\"\\(.*:\\)\\$PATH\"" nil t))
+             (concat (match-string 1) default-path))
+            (t
+             (warn "~/.zshenv does not have any \"export PATH=...:$PATH\"")))))))
+
 ;;   + | backup, autosave
 
 ;; backup directory
@@ -501,11 +522,11 @@ cons of two integers which defines a range of the codepoints."
 
 ;; version control
 ;; reference | http://aikotobaha.blogspot.jp/2010/07/emacs.html
-(setq version-control        t
-      kept-new-versions      200
-      kept-old-versions      10
-      delete-old-versions    t
-      vc-make-backup-files   t)
+(setq version-control      t
+      kept-new-versions    200
+      kept-old-versions    10
+      delete-old-versions  t
+      vc-make-backup-files t)
 
 ;; use auto-save
 (setq auto-save-default          t
@@ -562,27 +583,6 @@ cons of two integers which defines a range of the codepoints."
 
 ;;   + | compilation
 
-;; Parse .zshenv (during compile) and setenv $PATH
-(setenv
- "PATH"
- (!
-  (with-temp-buffer
-    (let ((default-path
-            (cond ((eq system-type 'darwin)
-                   "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin")
-                  (t
-                   (getenv "PATH")))))
-      (cond ((not (file-exists-p "~/.zshenv"))
-             (warn "~/.zshenv does not exist")
-             default-path)
-            ((progn
-               (insert-file-contents "~/.zshenv")
-               (goto-char (point-min))
-               (search-forward-regexp "export PATH=\"\\(.*:\\)\\$PATH\"" nil t))
-             (concat (match-string 1) default-path))
-            (t
-             (warn "~/.zshenv does not have any \"export PATH=...:$PATH\"")))))))
-
 ;; setting for compilation result buffer
 (setup-after "compile"
   (setq compilation-scroll-output  'first-error
@@ -597,8 +597,8 @@ cons of two integers which defines a range of the codepoints."
 ;; use elisp implementation of "ls"
 (setup-after "dired"
   (setup "ls-lisp"
-    (setq ls-lisp-use-insert-directory-program  nil
-          ls-lisp-dirs-first                    t)))
+    (setq ls-lisp-use-insert-directory-program nil
+          ls-lisp-dirs-first                   t)))
 
 ;; add include directories
 (setup-after "find-file"
@@ -759,11 +759,6 @@ cons of two integers which defines a range of the codepoints."
                                ac-source-words-in-same-mode-buffers
                                ac-source-filename)))))
 
-(setup-lazy '(guess-style-guess-all) "guess-style"
-  :prepare (setup-hook 'find-file-hook
-             (when (derived-mode-p 'prog-mode)
-               (run-with-idle-timer 0 nil 'guess-style-guess-all))))
-
 ;;   + | keyboards
 
 ;; not key-chord in MELPA but my own fork of key-chord
@@ -788,7 +783,11 @@ unary operators which can also be binary."
            (insert (concat back ,str forward)))
        (insert ,str))))
 
-;;   + | assistants
+;;   + | coding
+
+(setup-lazy '(guess-style-guess-all) "guess-style"
+  :prepare (setup-hook 'prog-mode-hook
+             (run-with-idle-timer 0 nil 'guess-style-guess-all)))
 
 ;; org-like folding via outline-mode
 (setup-lazy '(outline-minor-mode) "outline")
@@ -824,8 +823,6 @@ unary operators which can also be binary."
       ;; to "overview -> show all -> overview -> ..."
       (when (eq this-command 'outline-cycle-overview)
         (setq this-command 'outline-cycle-toc)))))
-
-;;   + | others
 
 (setup "commentize-conflict"
   (add-hook 'prog-mode-hook 'commentize-conflict-mode))
@@ -3464,8 +3461,10 @@ emacs-lisp-mode."
   (setup-hook 'my-listy-mode-common-hook 'my-stripe-buffer))
 
 (setup-hook 'my-listy-mode-common-hook
-  (local-set-key (kbd "j") 'next-line)
-  (local-set-key (kbd "k") 'previous-line))
+  (setup-keybinds (current-local-map)
+    "<escape>" 'ignore                  ; ignore vi-mode
+    "j"        'next-line
+    "k"        'previous-line))
 
 (setup-after "tabulated-list"
   (setup-keybinds tabulated-list-mode-map
