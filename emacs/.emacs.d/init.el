@@ -70,7 +70,6 @@
 ;; -  M-<f4> : kill-emacs
 ;;
 ;; -     TAB : indent / ac-expand
-;; -     ESC : vi-mode
 ;; -   C-RET : phi-rectangle-set-mark-command
 ;; -   C-SPC : set-mark-command / visible-register / exchange-point-and-mark
 
@@ -3301,9 +3300,8 @@ emacs-lisp-mode."
 
 (setup-hook 'my-listy-mode-common-hook
   (setup-keybinds (current-local-map)
-    "<escape>" 'ignore                  ; ignore vi-mode
-    "j"        'next-line
-    "k"        'previous-line))
+    "j" 'next-line
+    "k" 'previous-line))
 
 (setup-after "tabulated-list"
   (setup-keybinds tabulated-list-mode-map
@@ -3523,43 +3521,6 @@ emacs-lisp-mode."
 (setup-after "simple"
   (setup-after "mark-hacks"
     (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes)))
-
-;;     + vi-mode
-
-(setup-lazy '(vi-mode) "vi"
-
-  ;; undo-tree integration
-  (setup-expecting "undo-tree"
-    (setup-keybinds vi-com-map
-      "C-r" 'undo-tree-redo
-      "u"   'undo-tree-undo))
-
-  ;; vi-like paren-matching
-  (setup-after "paren"
-    (define-advice show-paren-function (:around (fn &rest args))
-      (if (and (eq major-mode 'vi-mode)
-               (looking-back "\\s)" (max 0 (- (point) 2))))
-          (save-excursion (forward-char) (apply fn args))
-        (apply fn args))))
-
-  ;; make cursor "box" while in vi-mode
-  (define-advice vi-mode (:after (&rest _))
-    (setq cursor-type 'box))
-  (define-advice vi-goto-insert-state (:after (&rest _))
-    (setq cursor-type 'bar))
-
-  ;; disable key-chord
-  (setup-after "key-chord"
-    (define-advice vi-mode (:after (&rest _))
-      (setq-local key-chord-mode        nil
-                  input-method-function nil))
-    (define-advice vi-goto-insert-state (:after (&rest _))
-      (kill-local-variable 'key-chord-mode)
-      (kill-local-variable 'input-method-function)))
-
-  ;; keybinds
-  (setup-keybinds vi-com-map "v" 'set-mark-command)
-  )
 
 ;;     + eshell
 
@@ -3838,6 +3799,7 @@ emacs-lisp-mode."
 
 ;; reference | http://d.hatena.ne.jp/nitro_idiot/20130215/1360931962
 (setup-lazy '(my-kindly-view-mode) "vi"
+
   (defvar my-kindly-view-mode-map
     (let ((kmap (copy-keymap vi-com-map)))
       (setup-keybinds kmap
@@ -3845,6 +3807,7 @@ emacs-lisp-mode."
         '("k" "C-p")   '("pager" pager-row-up previous-line)
         "h"            'backward-char
         "l"            'forward-char)))
+
   (defvar my-kindly-unsupported-minor-modes
     '(phi-autopair-mode)
     "list of minor-modes that must be turned-off temporarily.")
@@ -3852,6 +3815,7 @@ emacs-lisp-mode."
     '(global-hl-line-mode show-paren-mode
                           key-chord-mode input-method-function)
     "list of variables that must be set nil locally.")
+
   (defvar my-kindly-view-mode nil) ; define as a global variable to suppress warning
   (defun my-kindly-view-mode ()
     (interactive)
@@ -3869,7 +3833,33 @@ emacs-lisp-mode."
     (setq-local minor-mode-map-alist
                 (cons (cons 'my-kindly-view-mode (current-local-map)) minor-mode-map-alist))
     ;; and kindly-view-mode-map as the major-mode bindings
-    (use-local-map my-kindly-view-mode-map)))
+    (use-local-map my-kindly-view-mode-map))
+
+  ;; vi-mode hacks
+
+  ;; vi-like paren-matching
+  (setup-after "paren"
+    (define-advice show-paren-function (:around (fn &rest args))
+      (if (and (eq major-mode 'vi-mode)
+               (looking-back "\\s)" (max 0 (- (point) 2))))
+          (save-excursion (forward-char) (apply fn args))
+        (apply fn args))))
+
+  ;; make cursor "box" while in vi-mode
+  (define-advice vi-mode (:after (&rest _))
+    (setq cursor-type 'box))
+  (define-advice vi-goto-insert-state (:after (&rest _))
+    (setq cursor-type 'bar))
+
+  ;; disable key-chord
+  (setup-after "key-chord"
+    (define-advice vi-mode (:after (&rest _))
+      (setq-local key-chord-mode        nil
+                  input-method-function nil))
+    (define-advice vi-goto-insert-state (:after (&rest _))
+      (kill-local-variable 'key-chord-mode)
+      (kill-local-variable 'input-method-function)))
+  )
 
 ;;   + prettify ansi-colored output
 
@@ -4459,8 +4449,6 @@ emacs-lisp-mode."
   "C-="       'text-scale-increase
   "C-M-="     'text-scale-decrease
   "C-M-c"     '("rpn-calc" rpn-calc calc)
-  "<escape>"  'vi-mode
-  "M-v"       'vi-mode
   "M-t"       'orgtbl-mode
   "M-a"       'artist-mode
   "M-n"       'my-toggle-narrowing
