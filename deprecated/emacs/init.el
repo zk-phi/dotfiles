@@ -14,6 +14,57 @@
   ;; do not use lax-whitespace (for Emacs>=24)
   (setq isearch-lax-whitespace nil))
 
+;; + follow-mode
+
+;; turn-off follow-mode on delete-other-windows
+(setup-lazy '(my-toggle-follow-mode) "follow"
+  (defun my-toggle-follow-mode ()
+    (interactive)
+    (cond (follow-mode
+           (let ((selected-window (selected-window)))
+             (dolist (window (follow-all-followers))
+               (unless (eq window selected-window)
+                 (delete-window window))))
+           (follow-mode -1))
+          (t
+           (split-window-horizontally)
+           (follow-mode 1))))
+  (setup-hook 'window-configuration-change-hook
+    (dolist (window (window-list))
+      (with-selected-window window
+        (when (and follow-mode (null (cdr (follow-all-followers))))
+          (follow-mode -1))))))
+
+(setup-keybinds nil
+  "M-4" 'my-toggle-follow-mode)
+
+;; (defsubst my-mode-line--mode-name ()
+;;   ...
+;;   ((bound-and-true-p follow-mode)
+;;    (! (propertize "*Follow*" 'face 'mode-line-special-mode-face)))
+;;   ...)
+
+;; + migemo
+
+(eval-and-compile
+  (defconst my-migemo-dictionary
+    (when (boundp 'my-migemo-dictionary) my-migemo-dictionary)
+    "Dictionary file for migemo."))
+
+(setup-lazy '(phi-search-migemo phi-search-migemo-backward) "phi-search-migemo"
+  (setq migemo-command          "cmigemo"
+        migemo-options          '("-q" "--emacs")
+        migemo-dictionary       my-migemo-dictionary
+        migemo-user-dictionary  nil
+        migemo-regex-dictionary nil
+        migemo-coding-system    'utf-8-unix
+        migemo-isearch-enable-p nil))
+
+(setup-expecting "phi-search-migemo"
+  (setup-keybinds text-mode-map
+    [remap phi-search]          'phi-search-migemo
+    [remap phi-search-backward] 'phi-search-migemo-backward))
+
 ;; + flyspell: core
 
 (setup-lazy '(my-turn-on-flyspell) "flyspell-lazy"
@@ -506,6 +557,8 @@
 
 ;; + languages/Clojure: core
 
+(push 'clojure-mode my-lispy-modes)
+
 (setup-lazy '(clojure-mode) "clojure-mode"
   :prepare (progn (push '("\\.clj$" . clojure-mode) auto-mode-alist))
 
@@ -537,6 +590,8 @@
   )
 
 ;; + languages/Egison: core
+
+(push 'egison-mode my-lispy-modes)
 
 (setup-lazy '(egison-mode) "egison-mode"
   :prepare (push '("\\.egi$" . egison-mode) auto-mode-alist)
@@ -649,6 +704,8 @@
   )
 
 ;; + languages/Racket: core
+
+(push 'racket-mode my-lispy-modes)
 
 (setup-lazy '(racket-mode) "racket-mode"
   :prepare (push '("\\.rkt$" . racket-mode) auto-mode-alist)
@@ -1608,3 +1665,97 @@ displayed, use substring of the buffer."
 
 (setup-keybinds nil
   "<f1> w" '("sdic" sdic-describe-word))
+
+;; + languages/Gauche
+
+(push 'gauche-mode my-lispy-modes)
+
+(setup-lazy '(gauche-mode) "gauche-mode"
+  :prepare (push '("\\.scm$" . gauche-mode) auto-mode-alist)
+
+  ;; hooks seems not working ...
+  (define-advice gauche-mode (:after (&rest _))
+    (run-hooks 'gauche-mode-hook))
+
+  ;; why "|" is whitespace in gauche-mode ?
+  (modify-syntax-entry ?\| "_ 23b" gauche-mode-syntax-table)
+
+  ;; use "-i" option to launch gosh process
+  (setup-hook 'gauche-mode-hook
+    (setq scheme-program-name "gosh -i"))
+
+  ;; use auto-complete in gauche-mode buffers
+  (setup "scheme-complete"
+    (setq scheme-default-implementation              'gauche
+          scheme-always-use-default-implementation-p t)
+    (setup-hook 'gauche-mode-hook
+      (setq-local lisp-indent-function 'scheme-smart-indent-function))
+    (setup-after "auto-complete"
+      (push 'gauche-mode ac-modes)
+      (defvar my-ac-source-scheme-complete
+        '((candidates . (all-completions ac-target (apply 'append (scheme-current-env))))))
+      (setup-hook 'gauche-mode-hook
+        (make-local-variable 'ac-sources)
+        (add-to-list 'ac-sources 'my-ac-source-scheme-complete t))))
+
+  ;; run scheme REPL in another window
+  (defun my-run-scheme-other-window ()
+    (interactive)
+    (with-selected-window (split-window-vertically -10)
+      (switch-to-buffer (get-buffer-create "*scheme*"))
+      (run-scheme scheme-program-name))
+    (when buffer-file-name
+      (scheme-load-file buffer-file-name)))
+
+  ;; send an expression DWIM to the REPL
+  (defun my-scheme-send-dwim ()
+    (interactive)
+    (if (use-region-p)
+        (scheme-send-region (region-beginning) (region-end))
+      (scheme-send-last-sexp)))
+
+  (setup-keybinds gauche-mode-map
+    "C-c C-e" 'my-scheme-send-dwim
+    "C-c C-m" 'gauche-mode-macroexpand
+    "C-c C-s" 'my-run-scheme-other-window
+    "C-c C-l" 'scheme-load-file)
+  )
+
+;; + languages/FLEX,BISON
+
+(setup-lazy '(bison-mode) "bison-mode"
+  :prepare (push '("\\.\\(ll?\\|yy?\\)$" . bison-mode) auto-mode-alist))
+
+;; + languages/Ruby
+
+(setup-lazy '(ruby-mode) "ruby-mode"
+  :prepare (push '("\\(?:\\.r[bu]\\|Rakefile\\|Gemfile\\)$" . ruby-mode) auto-mode-alist)
+
+  (setq ruby-insert-encoding-magic-comment nil
+        ruby-deep-indent-paren-style       nil)
+
+  ;; fix that the poor close-paren indentation
+  ;; reference | http://blog.willnet.in/entry/2012/06/16/212313
+  (define-advice ruby-indent-line (:after (&rest _))
+    (let ((column (current-column)) indent offset)
+      (save-excursion
+        (back-to-indentation)
+        (let ((state (syntax-ppss)))
+          (setq offset (- column (current-column)))
+          (when (and (eq (char-after) ?\)) (not (zerop (car state))))
+            (goto-char (cadr state))
+            (setq indent (current-indentation)))))
+      (when indent
+        (indent-line-to indent)
+        (when (> offset 0) (forward-char offset)))))
+
+  (setup-keybinds ruby-mode-map
+    [remap backward-sexp] 'ruby-backward-sexp
+    [remap forward-sexp]  'ruby-forward-sexp
+    "C-c ["               'ruby-toggle-block
+    "C-m"                 'reindent-then-newline-and-indent
+    '("M-C-b" "M-C-f" "M-C-p" "M-C-n" "M-C-q" "C-c {") nil)
+
+  (setup "ruby-end"
+    (setq ruby-end-insert-newline nil))
+  )

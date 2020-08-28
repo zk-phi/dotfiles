@@ -108,9 +108,6 @@
   (defconst my-additional-info-directories
     (when (boundp 'my-additional-info-directories) my-additional-info-directories)
     "List of directories counted as additional include directory.")
-  (defconst my-migemo-dictionary
-    (when (boundp 'my-migemo-dictionary) my-migemo-dictionary)
-    "Dictionary file for migemo.")
   (defconst my-openweathermap-api-key
     (when (boundp 'my-openweathermap-api-key) my-openweathermap-api-key)
     "Access token for openweathermap API.")
@@ -220,8 +217,7 @@
 
 (defvar my-lispy-modes
   '(lisp-mode emacs-lisp-mode scheme-mode
-              lisp-interaction-mode gauche-mode
-              clojure-mode racket-mode egison-mode))
+              lisp-interaction-mode))
 (setup-hook 'change-major-mode-after-body-hook
   (when (apply 'derived-mode-p my-lispy-modes)
     (run-hooks 'my-lispy-mode-common-hook)))
@@ -1479,27 +1475,6 @@ unary operators which can also be binary."
                (erase-buffer)
                (insert-file-contents selected-backup)))))))
 
-;;   + | buffers / windows
-
-;; turn-off follow-mode on delete-other-windows
-(setup-lazy '(my-toggle-follow-mode) "follow"
-  (defun my-toggle-follow-mode ()
-    (interactive)
-    (cond (follow-mode
-           (let ((selected-window (selected-window)))
-             (dolist (window (follow-all-followers))
-               (unless (eq window selected-window)
-                 (delete-window window))))
-           (follow-mode -1))
-          (t
-           (split-window-horizontally)
-           (follow-mode 1))))
-  (setup-hook 'window-configuration-change-hook
-    (dolist (window (window-list))
-      (with-selected-window window
-        (when (and follow-mode (null (cdr (follow-all-followers))))
-          (follow-mode -1))))))
-
 ;;   + | edit
 
 ;; expand anything
@@ -1567,14 +1542,6 @@ emacs-lisp-mode."
                      (append '(((kbd "C-a") . 'phi-search-mc/mark-next)
                                ((kbd "C-M-a") . 'phi-search-mc/mark-all))
                              phi-search-additional-keybinds)))))
-(setup-lazy '(phi-search-migemo phi-search-migemo-backward) "phi-search-migemo"
-  (setq migemo-command          "cmigemo"
-        migemo-options          '("-q" "--emacs")
-        migemo-dictionary       my-migemo-dictionary
-        migemo-user-dictionary  nil
-        migemo-regex-dictionary nil
-        migemo-coding-system    'utf-8-unix
-        migemo-isearch-enable-p nil))
 
 ;;   + | edit
 
@@ -1768,59 +1735,6 @@ emacs-lisp-mode."
       (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
   (setup-expecting "rainbow-mode"
     (setup-hook 'emacs-lisp-mode-hook 'rainbow-mode)))
-
-;;         + Gauche [scheme-complete]
-
-(setup-lazy '(gauche-mode) "gauche-mode"
-  :prepare (push '("\\.scm$" . gauche-mode) auto-mode-alist)
-
-  ;; hooks seems not working ...
-  (define-advice gauche-mode (:after (&rest _))
-    (run-hooks 'gauche-mode-hook))
-
-  ;; why "|" is whitespace in gauche-mode ?
-  (modify-syntax-entry ?\| "_ 23b" gauche-mode-syntax-table)
-
-  ;; use "-i" option to launch gosh process
-  (setup-hook 'gauche-mode-hook
-    (setq scheme-program-name "gosh -i"))
-
-  ;; use auto-complete in gauche-mode buffers
-  (setup "scheme-complete"
-    (setq scheme-default-implementation              'gauche
-          scheme-always-use-default-implementation-p t)
-    (setup-hook 'gauche-mode-hook
-      (setq-local lisp-indent-function 'scheme-smart-indent-function))
-    (setup-after "auto-complete"
-      (push 'gauche-mode ac-modes)
-      (defvar my-ac-source-scheme-complete
-        '((candidates . (all-completions ac-target (apply 'append (scheme-current-env))))))
-      (setup-hook 'gauche-mode-hook
-        (make-local-variable 'ac-sources)
-        (add-to-list 'ac-sources 'my-ac-source-scheme-complete t))))
-
-  ;; run scheme REPL in another window
-  (defun my-run-scheme-other-window ()
-    (interactive)
-    (with-selected-window (split-window-vertically -10)
-      (switch-to-buffer (get-buffer-create "*scheme*"))
-      (run-scheme scheme-program-name))
-    (when buffer-file-name
-      (scheme-load-file buffer-file-name)))
-
-  ;; send an expression DWIM to the REPL
-  (defun my-scheme-send-dwim ()
-    (interactive)
-    (if (use-region-p)
-        (scheme-send-region (region-beginning) (region-end))
-      (scheme-send-last-sexp)))
-
-  (setup-keybinds gauche-mode-map
-    "C-c C-e" 'my-scheme-send-dwim
-    "C-c C-m" 'gauche-mode-macroexpand
-    "C-c C-s" 'my-run-scheme-other-window
-    "C-c C-l" 'scheme-load-file)
-  )
 
 ;;       + c-like
 ;;         + (common)
@@ -2421,11 +2335,6 @@ emacs-lisp-mode."
     (setup-after "smart-compile"
       (push '(arduino-mode . (my-arduino-compile-and-upload)) smart-compile-alist))))
 
-;;         + flex/bison
-
-(setup-lazy '(bison-mode) "bison-mode"
-  :prepare (push '("\\.\\(ll?\\|yy?\\)$" . bison-mode) auto-mode-alist))
-
 ;;       + perl-like
 ;;         + Perl (cperl-mode)
 
@@ -2555,40 +2464,6 @@ emacs-lisp-mode."
       (key-combo-define-local (kbd "qw") "qw/`!!'/")
       (key-combo-define-local (kbd "qr") "qr/`!!'/")
       (key-combo-define-local (kbd "?") " ? `!!' : ")))
-  )
-
-;;         + Ruby
-
-(setup-lazy '(ruby-mode) "ruby-mode"
-  :prepare (push '("\\(?:\\.r[bu]\\|Rakefile\\|Gemfile\\)$" . ruby-mode) auto-mode-alist)
-
-  (setq ruby-insert-encoding-magic-comment nil
-        ruby-deep-indent-paren-style       nil)
-
-  ;; fix that the poor close-paren indentation
-  ;; reference | http://blog.willnet.in/entry/2012/06/16/212313
-  (define-advice ruby-indent-line (:after (&rest _))
-    (let ((column (current-column)) indent offset)
-      (save-excursion
-        (back-to-indentation)
-        (let ((state (syntax-ppss)))
-          (setq offset (- column (current-column)))
-          (when (and (eq (char-after) ?\)) (not (zerop (car state))))
-            (goto-char (cadr state))
-            (setq indent (current-indentation)))))
-      (when indent
-        (indent-line-to indent)
-        (when (> offset 0) (forward-char offset)))))
-
-  (setup-keybinds ruby-mode-map
-    [remap backward-sexp] 'ruby-backward-sexp
-    [remap forward-sexp]  'ruby-forward-sexp
-    "C-c ["               'ruby-toggle-block
-    "C-m"                 'reindent-then-newline-and-indent
-    '("M-C-b" "M-C-f" "M-C-p" "M-C-n" "M-C-q" "C-c {") nil)
-
-  (setup "ruby-end"
-    (setq ruby-end-insert-newline nil))
   )
 
 ;;       + prolog-ilke
@@ -3017,10 +2892,6 @@ emacs-lisp-mode."
     (setup-hook 'text-mode-hook 'jaword-mode))
   (setup-after "mark-hacks"
     (push 'text-mode mark-hacks-auto-indent-inhibit-modes))
-  (setup-expecting "phi-search-migemo"
-    (setup-keybinds text-mode-map
-      [remap phi-search]          'phi-search-migemo
-      [remap phi-search-backward] 'phi-search-migemo-backward))
   (setup-keybinds text-mode-map "C-M-i" nil))
 
 ;;       + org-mode [htmlize]
@@ -3906,8 +3777,6 @@ emacs-lisp-mode."
          (! (propertize "*Artist*" 'face 'mode-line-special-mode-face)))
         ((bound-and-true-p orgtbl-mode)
          (! (propertize "*OrgTbl*" 'face 'mode-line-special-mode-face)))
-        ((bound-and-true-p follow-mode)
-         (! (propertize "*Follow*" 'face 'mode-line-special-mode-face)))
         (t
          (unless (eq (car my-mode-line--mode-name-cache) major-mode)
            (setq my-mode-line--mode-name-cache
@@ -4424,7 +4293,6 @@ emacs-lisp-mode."
   "M-1" 'delete-other-windows
   "M-2" 'my-split-window
   "M-3" 'my-resize-window
-  "M-4" 'my-toggle-follow-mode
   "M-8" 'my-transpose-window-buffers
   "M-9" 'previous-window-any-frame
   "M-o" 'my-toggle-transparency
