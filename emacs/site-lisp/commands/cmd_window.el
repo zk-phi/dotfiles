@@ -3,7 +3,7 @@
   "Rotate buffers among windows."
   (interactive)
   (let ((m (make-sparse-keymap)))
-    (dolist (cmd '(other-window previous-multiframe-window next-multiframe-window))
+    (dolist (cmd '(other-window previous-window-any-frame next-window-any-frame))
       (let ((keys (where-is-internal cmd))
             (def `(lambda ()
                     (interactive)
