@@ -639,8 +639,9 @@ cons of two integers which defines a range of the codepoints."
 ;;   + Misc: plug-ins
 ;;   + | buffers / windows
 
-(setup "smooth-scrolling"
-  (setq smooth-scroll-margin 3))
+(!-
+ (setup "smooth-scrolling"
+   (setq smooth-scroll-margin 3)))
 
 (setup "popwin"
   (setq popwin:reuse-window nil
@@ -750,9 +751,10 @@ cons of two integers which defines a range of the codepoints."
 ;;   + | keyboards
 
 ;; not key-chord in MELPA but my own fork of key-chord
-(setup "key-chord"
-  (setup-silently (key-chord-mode 1))
-  (setq key-chord-safety-interval-forward 0.55))
+(!-
+ (setup "key-chord"
+   (setup-silently (key-chord-mode 1))
+   (setq key-chord-safety-interval-forward 0.55)))
 
 (setup-lazy '(key-combo-mode key-combo-define-local) "key-combo"
   ;; input-method (and multiple-cursors) is incompatible with key-combo
@@ -812,8 +814,8 @@ unary operators which can also be binary."
       (when (eq this-command 'outline-cycle-overview)
         (setq this-command 'outline-cycle-toc)))))
 
-(setup "commentize-conflict"
-  (add-hook 'prog-mode-hook 'commentize-conflict-mode))
+(setup-lazy '(commentize-conflict-mode) "commentize-conflict"
+  :prepare (add-hook 'prog-mode-hook 'commentize-conflict-mode))
 
 ;; + | Commands
 ;;   + web browser [eww]
@@ -1567,8 +1569,9 @@ emacs-lisp-mode."
 ;;   + | pop-up windows
 
 ;; make and popup scratch-notes for each files
-(setup "scratch-palette"
-  (setq scratch-palette-directory my-palette-directory)
+(!- (setup "scratch-palette"))
+(setup-lazy '(scratch-palette-popup) "scratch-palette"
+  :prepare (defvar scratch-palette-directory my-palette-directory)
   (setup-keybinds scratch-palette-minor-mode-map
     "M-w" 'scratch-palette-kill))
 
@@ -3622,10 +3625,12 @@ emacs-lisp-mode."
     (when (and buffer-file-name
                (file-exists-p (scratch-palette--file-name buffer-file-name)))
       (setq my-palette-available-p t)))
-  (define-advice scratch-palette-kill (:after (&rest _))
-    (my-update-palette-status))
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (my-update-palette-status)))
   (setup-hook 'find-file-hook 'my-update-palette-status)
-  (my-update-palette-status))
+  (define-advice scratch-palette-kill (:after (&rest _))
+    (my-update-palette-status)))
 
 ;; ramen timer
 (defvar my-ramen-start-time nil)
@@ -3898,9 +3903,9 @@ emacs-lisp-mode."
 
 ;; utility to mix two colors
 (eval-and-compile
-  (setup "color")
   (defun my-blend-colors (basecolor mixcolor percent)
     "Mix two colors."
+    (require 'color)
     (cl-destructuring-bind (r g b) (color-name-to-rgb basecolor)
       (cl-destructuring-bind (r2 g2 b2) (color-name-to-rgb mixcolor)
         (let* ((x (/ percent 100.0))
