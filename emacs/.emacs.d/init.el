@@ -687,7 +687,6 @@ cons of two integers which defines a range of the codepoints."
 
 ;;   + | edit
 
-(setup "paredit")               ; dependency
 (setup "phi-autopair"
   (nconc phi-autopair-lispy-modes my-lispy-modes)
   (phi-autopair-global-mode 1))
