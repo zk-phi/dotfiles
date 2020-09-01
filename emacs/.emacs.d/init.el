@@ -600,8 +600,9 @@ cons of two integers which defines a range of the codepoints."
   (electric-layout-mode 1))
 
 ;; delete selection on insert like modern applications
-(setup "delsel"
-  (delete-selection-mode 1))
+(!-
+ (setup "delsel"
+   (delete-selection-mode 1)))
 
 ;; track undo history across sessions
 (setup "undohist"
