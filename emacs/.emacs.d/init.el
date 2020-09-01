@@ -4,15 +4,14 @@
 (eval-when-compile
   (require 'setup)
   (require 'subr-x)
-  (setq setup-silent t
+  (require 'cl-macs)
+  (setq setup-silent nil
         setup-delay-with-threads t
         ;; setup-delay-interval 0.5
         setup-enable-gc-threshold-hacks t
         setup-use-profiler nil
         setup-disable-magic-file-name t))
 (setup-initialize)
-
-(setup "cl-lib")
 
 ;; + Cheat Sheet :
 ;; + | global
@@ -456,12 +455,14 @@ cons of two integers which defines a range of the codepoints."
 ;; font settings (windows)
 (!when (eq system-type 'windows-nt)
   (!cond
-   ((cl-every (lambda (f) (member f (font-family-list)))
-              '("Source Code Pro" "Unifont" ;; "Arial Unicode MS"
-                "Symbola" "VLゴシック phi" "さわらびゴシック phi"))
+   ((and (member "Source Code Pro" (font-family-list))
+         (member "Unifont" (font-family-list))
+         (member "Symbola" (font-family-list))
+         (member "VLゴシック phi" (font-family-list))
+         (member "さわらびゴシック phi" (font-family-list)))
     (set-face-attribute 'default nil :family "Source Code Pro" :height 90) ; base
     (my-set-fontset-font "Unifont" 'unicode) ; unicode (fallback 4)
-    (my-set-fontset-font "Arial Unicode MS" 'unicode nil 'prepend) ; unicode (fallback 3)
+    ;; (my-set-fontset-font "Arial Unicode MS" 'unicode nil 'prepend) ; unicode (fallback 3)
     (my-set-fontset-font "Symbola" 'unicode nil 'prepend) ; unicode (fallback 2)
     (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend) ; unicode (fallback)
     (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend)))) ; unicode (japanese)
@@ -1474,9 +1475,10 @@ unary operators which can also be binary."
     "Expand either flyspell correction, dabbrev, or package name if
 emacs-lisp-mode."
     (interactive)
-    (cond ((and (cl-some (lambda (ov)
-                           (eq (overlay-get ov 'face) 'flyspell-incorrect))
-                         (overlays-in (1- (point)) (point)))
+    (cond ((and (catch 'flyspell-error-found
+                  (dolist (ov (overlays-in (1- (point)) (point)))
+                    (when (eq (overlay-get ov 'face) 'flyspell-incorrect)
+                      (throw 'flyspell-error-found ov))))
                 (fboundp 'flyspell-correct-word-before-point))
            (flyspell-correct-word-before-point))
           ((and (not (eq this-command last-command))
