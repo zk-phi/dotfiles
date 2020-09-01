@@ -506,7 +506,7 @@ cons of two integers which defines a range of the codepoints."
 
 ;; backup directory
 (setq backup-directory-alist
-      `(("\\.*$" . ,(expand-file-name my-backup-directory))))
+      `(("" . ,(expand-file-name my-backup-directory))))
 
 ;; version control
 ;; reference | http://aikotobaha.blogspot.jp/2010/07/emacs.html
