@@ -253,7 +253,8 @@
 (!-
  :prepend
  (setup "scratch-pop"
-   (setq scratch-pop-backup-directory my-scratch-pop-directory)
+   (setq scratch-pop-backup-directory   my-scratch-pop-directory
+         scratch-pop-initial-major-mode 'lisp-interaction-mode)
    (scratch-pop-restore-scratches 1)
    (setup-hook 'kill-emacs-hook 'scratch-pop-backup-scratches)))
 
@@ -345,9 +346,8 @@
       default-input-method                  "japanese"
       ;; startup.el
       inhibit-startup-screen                t
-      inhibit-startup-message               t
       initial-scratch-message               ""
-      initial-major-mode                    'emacs-lisp-mode
+      initial-major-mode                    'fundamental-mode
       ;; simple.el
       eval-expression-print-length          nil
       eval-expression-print-level           10
