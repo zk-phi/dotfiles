@@ -65,7 +65,15 @@
     [remap phi-search]          'phi-search-migemo
     [remap phi-search-backward] 'phi-search-migemo-backward))
 
-;; + flyspell: core
+;; + flyspell / ispell: core
+
+(defconst my-ispell-dictionary
+  (! (concat my-dat-directory "ispell-dict"))
+  "File name of personal ispell dictionary.")
+
+(defconst my-ispell-repl
+  (! (concat my-dat-directory "ispell-repl"))
+  "File name of personal ispell replacement dictionary.")
 
 (setup-lazy '(my-turn-on-flyspell) "flyspell-lazy"
   :prepare (add-hook 'find-file-hook 'my-turn-on-flyspell t)
@@ -95,6 +103,12 @@
       (if (derived-mode-p 'text-mode)
           (flyspell-mode)
         (flyspell-prog-mode))))
+
+  (set-face-attribute
+   'flyspell-incorrect nil
+   :foreground 'unspecified
+   :background 'unspecified
+   :underline  (! `(:style wave :color ,(face-foreground 'term-color-red))))
 
   ;; overwrite "flyspell-emacs-popup" to use popup.el
   ;; Reference | EmacsWiki - Flyspell
@@ -136,14 +150,8 @@
     '(ac-flyspell-workaround))
   )
 
-;; + flyspell: appearance
-
-(setup-after "flyspell"
-  (set-face-attribute
-   'flyspell-incorrect nil
-   :foreground 'unspecified
-   :background 'unspecified
-   :underline  (! `(:style wave :color ,(face-foreground 'term-color-red)))))
+(setup-keybinds nil
+  "C-x C-i" '("ispell" ispell-region))
 
 ;; + flycheck: core
 
@@ -1792,3 +1800,5 @@ displayed, use substring of the buffer."
 ;; + 2048-game
 
 (setup-lazy '(2048-game) "2048-game")
+
+;; + ispell

@@ -48,7 +48,7 @@
 
 ;; C-x C-_
 ;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|WUndo| Diff|     |     |
-;;    |     |Write|Encod|Revrt|Trnct|     |Untab|SpChk|     |Bckup|(ESC)|     |
+;;    |     |Write|Encod|Revrt|Trnct|     |Untab|     |     |Bckup|(ESC)|     |
 ;;       |MFile| Save|     |FFlat|     |OthrF|     |KilBf|CgLog|     |     |
 ;;          |     |Rname|Close|     |Bffrs|     |ExMcr|  DL |     |     |
 
@@ -161,14 +161,6 @@
 (defconst my-mc-list-file
   (! (concat my-dat-directory "mc-list"))
   "File to save the list of multiple-cursors compatible commands.")
-
-(defconst my-ispell-dictionary
-  (! (concat my-dat-directory "ispell-dict"))
-  "File name of personal ispell dictionary.")
-
-(defconst my-ispell-repl
-  (! (concat my-dat-directory "ispell-repl"))
-  "File name of personal ispell replacement dictionary.")
 
 ;; System-specific History Datas
 
@@ -4436,7 +4428,6 @@ emacs-lisp-mode."
   "M-a"       'artist-mode
   "M-n"       'my-toggle-narrowing
   "M-c"       '("smart-compile" smart-compile compile)
-  "C-x C-i"   '("ispell" ispell-region)
   "C-x C-t"   'toggle-truncate-lines
   "C-x C-p"   'my-restore-from-backup
   "C-x C-,"   '("download-region" download-region-as-url))
