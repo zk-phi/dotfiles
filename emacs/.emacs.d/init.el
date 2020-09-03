@@ -641,6 +641,7 @@ cons of two integers which defines a range of the codepoints."
 
 (!-
  (setup "smooth-scrolling"
+   (smooth-scrolling-mode 1)
    (setq smooth-scroll-margin 3)))
 
 (setup "popwin"
