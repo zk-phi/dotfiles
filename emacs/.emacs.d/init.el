@@ -5,7 +5,7 @@
   (require 'setup)
   (require 'subr-x)
   (require 'cl-macs)
-  (setq setup-silent nil
+  (setq setup-silent t
         setup-delay-with-threads t
         ;; setup-delay-interval 0.5
         setup-enable-gc-threshold-hacks t
