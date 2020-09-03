@@ -206,8 +206,7 @@
 ;; + | Utilities
 
 (defvar my-lispy-modes
-  '(lisp-mode emacs-lisp-mode scheme-mode
-              lisp-interaction-mode))
+  '(lisp-mode emacs-lisp-mode scheme-mode))
 (setup-hook 'change-major-mode-after-body-hook
   (when (apply 'derived-mode-p my-lispy-modes)
     (run-hooks 'my-lispy-mode-common-hook)))
@@ -254,7 +253,7 @@
  :prepend
  (setup "scratch-pop"
    (setq scratch-pop-backup-directory   my-scratch-pop-directory
-         scratch-pop-initial-major-mode 'lisp-interaction-mode)
+         scratch-pop-initial-major-mode 'emacs-lisp-mode)
    (scratch-pop-restore-scratches 1)
    (setup-hook 'kill-emacs-hook 'scratch-pop-backup-scratches)))
 
