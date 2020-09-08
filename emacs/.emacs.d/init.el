@@ -1572,7 +1572,6 @@ emacs-lisp-mode."
   :prepare (progn
              (defvar undo-tree-map (make-sparse-keymap)) ; inhibit overriding keymap
              (setup-hook 'write-file-functions 'undo-tree-save-history-from-hook)
-             (setup-hook 'kill-buffer-hook 'undo-tree-save-history-from-hook)
              (setup-hook 'find-file-hook 'undo-tree-load-history-from-hook))
 
   ;; save / load undo histories
