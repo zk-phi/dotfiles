@@ -249,13 +249,13 @@
 ;;   + *scratch* utilities [scratch-pop]
 ;;   + | backup/popup scratches
 
-(!-
- :prepend
- (setup "scratch-pop"
-   (setq scratch-pop-backup-directory   my-scratch-pop-directory
-         scratch-pop-initial-major-mode 'emacs-lisp-mode)
-   (scratch-pop-restore-scratches 1)
-   (setup-hook 'kill-emacs-hook 'scratch-pop-backup-scratches)))
+(setup "scratch-pop"
+  (setq scratch-pop-backup-directory   my-scratch-pop-directory
+        scratch-pop-initial-major-mode 'emacs-lisp-mode)
+  (scratch-pop-restore-scratches 1)
+  (setup-hook 'kill-emacs-hook 'scratch-pop-backup-scratches)
+  (setup-after "popwin"
+    (setq scratch-pop-popup-function 'popwin:popup-buffer)))
 
 ;;   + | make *scratch* persistent
 
