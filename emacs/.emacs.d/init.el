@@ -1589,7 +1589,8 @@ emacs-lisp-mode."
 ;;   + | trace changes
 
 ;; tree-like undo history browser
-(setup "undo-tree"
+(setup-lazy '(undo-tree-undo undo-tree-visualize) "undo-tree"
+  :prepare (defvar undo-tree-map (make-sparse-keymap)) ; inhibit overriding keymap
   (global-undo-tree-mode 1)
   (setup-keybinds undo-tree-visualizer-mode-map
     "j" 'undo-tree-visualize-redo
@@ -1598,8 +1599,7 @@ emacs-lisp-mode."
     "h" 'undo-tree-visualize-switch-branch-left
     "RET" 'undo-tree-visualizer-quit
     "C-g" 'undo-tree-visualizer-abort
-    "q" 'undo-tree-visualizer-abort)
-  (setup-keybinds undo-tree-map '("M-_") nil))
+    "q" 'undo-tree-visualizer-abort))
 
 ;;   + | others
 
