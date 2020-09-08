@@ -6,10 +6,11 @@
   (require 'subr-x)
   (require 'cl-macs)
   (setq setup-silent t
-        setup-delay-with-threads t
-        ;; setup-delay-interval 0.5
+        ;; setup-delay-with-threads t
+        setup-delay-interval 0.5
         setup-enable-gc-threshold-hacks t
-        setup-use-profiler nil
+        ;; setup-use-profiler t
+        ;; setup-use-load-history-tracker t
         setup-disable-magic-file-name t))
 (setup-initialize)
 
