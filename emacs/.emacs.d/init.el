@@ -1567,26 +1567,18 @@ emacs-lisp-mode."
 (setup-lazy
   '(undo-tree-undo
     undo-tree-visualize
-    my-save-undo-tree-history
-    my-load-undo-tree-history) "undo-tree"
+    undo-tree-save-history-from-hook
+    undo-tree-load-history-from-hook) "undo-tree"
   :prepare (progn
              (defvar undo-tree-map (make-sparse-keymap)) ; inhibit overriding keymap
-             (setup-hook 'write-file-functions 'my-save-undo-tree-history)
-             (setup-hook 'find-file-hook 'my-load-undo-tree-history))
+             (setup-hook 'write-file-functions 'undo-tree-save-history-from-hook)
+             (setup-hook 'kill-buffer-hook 'undo-tree-save-history-from-hook)
+             (setup-hook 'find-file-hook 'undo-tree-load-history-from-hook))
 
   ;; save / load undo histories
-  (setq undo-tree-history-directory-alist
+  (setq undo-tree-auto-save-history t
+        undo-tree-history-directory-alist
         `(("" . ,(expand-file-name my-undo-tree-history-directory))))
-  (defun my-save-undo-tree-history ()
-    (unless (eq buffer-undo-list t)
-      (undo-tree-save-history nil t)
-      nil))
-  (defun my-load-undo-tree-history ()
-    (when (and my-undo-tree-history-directory
-               (not (eq buffer-undo-list t))
-               (not revert-buffer-in-progress-p)
-               (undo-tree-load-history nil t))
-      (undo-list-transfer-to-tree)))
   (global-undo-tree-mode 1)
 
   ;; delete old histories
