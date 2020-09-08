@@ -1,4 +1,5 @@
 (require 'edmacro)
+(require 'ring)
 
 ;; linewise motion
 
@@ -57,11 +58,9 @@
       (error (goto-char (point-min))))))
 
 ;; jump-back!
-
 (defvar-local my-jump-back!--marker-ring nil)
 
 (defun my-jump-back!--ring-update ()
-  (require 'ring)
   (let ((marker (point-marker)))
     (unless my-jump-back!--marker-ring
       (setq my-jump-back!--marker-ring (make-ring 30)))
