@@ -3610,19 +3610,20 @@ emacs-lisp-mode."
     "#6dbf3f" "#4bbf3f" "#3fbf56" "#3fbf79" "#3fbf9c" "#3fbfbf"))
 
 ;; battery status
-(require 'battery)
 (defvar my-battery-status nil "cons of (PERCENTILE . CHARGING)")
-(defun my-update-battery-status ()
-  (let* ((stat (funcall battery-status-function))
-         (percentile (read (cdr (assoc ?p stat))))
-         (charging (member (cdr (assoc ?L stat)) '("AC" "on-line")))
-         (last-stat my-battery-status))
-    (when (numberp percentile)
-      (setq my-battery-status (cons percentile charging))
-      (unless (equal last-stat my-battery-status)
-        (force-mode-line-update)))))
 (!-
- (run-with-timer 0 60 'my-update-battery-status))
+ (setup "battery"
+   (defun my-update-battery-status ()
+     (let* ((stat (funcall battery-status-function))
+            (percentile (read (cdr (assoc ?p stat))))
+            (charging (member (cdr (assoc ?L stat)) '("AC" "on-line")))
+            (last-stat my-battery-status))
+       (when (numberp percentile)
+         (setq my-battery-status (cons percentile charging))
+         (unless (equal last-stat my-battery-status)
+           (force-mode-line-update)))))
+   (my-update-battery-status)
+   (run-with-timer 0 60 'my-update-battery-status)))
 
 ;; scratch-palette status
 (defvar-local my-palette-available-p nil)
