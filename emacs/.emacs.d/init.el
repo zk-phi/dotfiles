@@ -175,13 +175,13 @@
   (! (concat my-dat-directory "eshell_" system-name "/"))
   "Directory to save eshell histories.")
 
-(defconst my-undohist-directory
-  (! (concat my-dat-directory "undohist_" system-name "/"))
-  "Directory to save undo histories.")
-
 (defconst my-backup-directory
   (! (concat my-dat-directory "backups_" system-name "/"))
   "Directory to save backup files.")
+
+(defconst my-undo-tree-history-directory
+  (! (concat my-dat-directory "undo-tree_" system-name "/"))
+  "Directory to save undo-tree history.")
 
 (defconst my-scratch-pop-directory
   (! (concat my-dat-directory "scratch_pop_" system-name "/"))
@@ -602,31 +602,6 @@ cons of two integers which defines a range of the codepoints."
 (!-
  (setup "delsel"
    (delete-selection-mode 1)))
-
-;; track undo history across sessions
-(setup "undohist"
-  (setq undohist-directory my-undohist-directory)
-  (undohist-initialize)
-  ;; workaround for Windows
-  (defun make-undohist-file-name (file)
-    (when (string-match "\\(.\\):/?\\(.*\\)$" file)
-      (setq file (concat "/drive_" (match-string 1 file) "/" (match-string 2 file))))
-    (expand-file-name
-     (subst-char-in-string ?/ ?! (replace-regexp-in-string "!" "!!" file))
-     undohist-directory))
-  (!-
-   ;; delete old histories
-   (defun my-delete-old-undohists ()
-     (let ((threshold (* (/ 365 2) 24 60 60))
-           (current (float-time (current-time))))
-       (dolist (file (directory-files undohist-directory t))
-         (when (and (file-regular-p file)
-                    (> (- current (float-time (nth 5 (file-attributes file))))
-                       threshold))
-           (message "deleting old undohist: %s" (file-name-base file))
-           (delete-file file))))
-     (message "Old undohists deleted."))
-   (run-with-idle-timer 30 nil 'my-delete-old-undohists)))
 
 (setup-after "newcomment"
   (setq comment-empty-lines t))
@@ -1589,9 +1564,44 @@ emacs-lisp-mode."
 ;;   + | trace changes
 
 ;; tree-like undo history browser
-(setup-lazy '(undo-tree-undo undo-tree-visualize) "undo-tree"
-  :prepare (defvar undo-tree-map (make-sparse-keymap)) ; inhibit overriding keymap
+(setup-lazy
+  '(undo-tree-undo
+    undo-tree-visualize
+    my-save-undo-tree-history
+    my-load-undo-tree-history) "undo-tree"
+  :prepare (progn
+             (defvar undo-tree-map (make-sparse-keymap)) ; inhibit overriding keymap
+             (setup-hook 'write-file-functions 'my-save-undo-tree-history)
+             (setup-hook 'find-file-hook 'my-load-undo-tree-history))
+
+  ;; save / load undo histories
+  (setq undo-tree-history-directory-alist
+        `(("" . ,(expand-file-name my-undo-tree-history-directory))))
+  (defun my-save-undo-tree-history ()
+    (unless (eq buffer-undo-list t)
+      (undo-tree-save-history nil t)
+      nil))
+  (defun my-load-undo-tree-history ()
+    (when (and my-undo-tree-history-directory
+               (not (eq buffer-undo-list t))
+               (not revert-buffer-in-progress-p)
+               (undo-tree-load-history nil t))
+      (undo-list-transfer-to-tree)))
   (global-undo-tree-mode 1)
+
+  ;; delete old histories
+  (defun my-delete-old-undohists ()
+    (let ((threshold (* (/ 365 2) 24 60 60))
+          (current (float-time (current-time))))
+      (dolist (file (directory-files my-undo-tree-history-directory t))
+        (when (and (file-regular-p file)
+                   (> (- current (float-time (nth 5 (file-attributes file))))
+                      threshold))
+          (message "deleting old undohist: %s" (file-name-base file))
+          (delete-file file))))
+    (message "Old undohists deleted."))
+  (run-with-idle-timer 30 nil 'my-delete-old-undohists)
+
   (setup-keybinds undo-tree-visualizer-mode-map
     "j" 'undo-tree-visualize-redo
     "k" 'undo-tree-visualize-undo
@@ -1599,7 +1609,8 @@ emacs-lisp-mode."
     "h" 'undo-tree-visualize-switch-branch-left
     "RET" 'undo-tree-visualizer-quit
     "C-g" 'undo-tree-visualizer-abort
-    "q" 'undo-tree-visualizer-abort))
+    "q" 'undo-tree-visualizer-abort)
+  )
 
 ;;   + | others
 
