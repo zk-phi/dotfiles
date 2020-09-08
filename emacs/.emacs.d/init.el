@@ -644,15 +644,19 @@ cons of two integers which defines a range of the codepoints."
    (smooth-scrolling-mode 1)
    (setq smooth-scroll-margin 3)))
 
-(setup "popwin"
-  (setq popwin:reuse-window nil
-        popwin:special-display-config
-        '(("*Warnings*")
-          ("*Shell Command Output*")
-          ("*Compile-Log*" :noselect t) ; when selected compilation may fail ?
-          ("*Backtrace*")
-          ("*Completions*" :noselect t)))
-  (popwin-mode 1))
+(setup-expecting "popwin"
+  (defvar popwin:special-display-config nil) ; disable default settings
+  (!-
+   (setup "popwin"
+     (setq popwin:reuse-window nil
+           popwin:special-display-config
+           (nconc '(("*Warnings*")
+                    ("*Shell Command Output*")
+                    ("*Compile-Log*" :noselect t) ; when selected compilation may fail ?
+                    ("*Backtrace*")
+                    ("*Completions*" :noselect t))
+                  popwin:special-display-config))
+     (popwin-mode 1))))
 
 ;;   + | mark / region
 
