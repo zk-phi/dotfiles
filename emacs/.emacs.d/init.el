@@ -794,8 +794,13 @@ unary operators which can also be binary."
       (when (eq this-command 'outline-cycle-overview)
         (setq this-command 'outline-cycle-toc)))))
 
-(setup-lazy '(commentize-conflict-mode) "commentize-conflict"
-  :prepare (add-hook 'prog-mode-hook 'commentize-conflict-mode))
+(!-
+ (setup "commentize-conflict"
+   (dolist (buf (buffer-list))
+     (with-current-buffer buf
+       (when (derived-mode-p 'prog-mode)
+         (commentize-conflict-mode))))
+   (setup-hook 'prog-mode-hook 'commentize-conflict-mode)))
 
 ;; + | Commands
 ;;   + web browser [eww]
@@ -1696,7 +1701,11 @@ emacs-lisp-mode."
     (key-combo-define-local (kbd ".") '(my-lisp-smart-dot "."))
     (key-combo-define-local (kbd ";") ";; ")))
 
-(setup-expecting "rainbow-delimiters"
+(setup-after "rainbow-delimiters"
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (memq major-mode my-lispy-modes)
+        (rainbow-delimiters-mode))))
   (setup-hook 'my-lispy-mode-common-hook 'rainbow-delimiters-mode))
 
 ;;         + Emacs Lisp [setup]
@@ -1729,7 +1738,11 @@ emacs-lisp-mode."
                        ac-source-functions
                        ac-source-variables
                        ac-source-features))))
-(setup-expecting "rainbow-mode"
+(setup-after "rainbow-mode"
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (derived-mode-p 'emacs-lisp-mode)
+        (rainbow-mode))))
   (setup-hook 'emacs-lisp-mode-hook 'rainbow-mode))
 
 ;;       + c-like
@@ -2667,7 +2680,11 @@ emacs-lisp-mode."
                            ("<%#" . " | %")))
         web-mode-engines-auto-pairs)
 
-  (setup-expecting "rainbow-mode"
+  (setup-after "rainbow-mode"
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (when (derived-mode-p 'web-mode)
+          (rainbow-mode))))
     (setup-hook 'web-mode-hook 'rainbow-mode))
 
   (setup-after "auto-complete"
@@ -4184,9 +4201,9 @@ emacs-lisp-mode."
          highlight-stages-highlight-priority   2)
    (highlight-stages-global-mode 1)))
 
-(setup-lazy '(rainbow-delimiters-mode) "rainbow-delimiters")
+(!- (setup "rainbow-delimiters"))
 
-(setup-lazy '(rainbow-mode) "rainbow-mode")
+(!- (setup "rainbow-mode"))
 
 (setup-lazy '(my-stripe-buffer) "stripe-buffer"
   (defun my-stripe-buffer ()
