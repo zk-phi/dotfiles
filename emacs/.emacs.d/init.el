@@ -1701,37 +1701,36 @@ emacs-lisp-mode."
 
 ;;         + Emacs Lisp [setup]
 
-(setup-after "lisp-mode"
+;; lisp-mode.el (loaded before init.el)
+(setup-hook 'emacs-lisp-mode-hook
+  :oneshot
   (font-lock-add-keywords
    'emacs-lisp-mode '(("(\\(defvar-local\\)" 1 font-lock-keyword-face)))
   (setup-keybinds emacs-lisp-mode-map '("M-TAB" "C-j") nil)
   (setup-after "smart-compile"
     (push '(emacs-lisp-mode . (emacs-lisp-byte-compile)) smart-compile-alist))
-  (!-
-   (setup "setup"
-     (setup-after "smart-compile"
-       (push '("init\\.el" . (setup-byte-compile-file)) smart-compile-alist))))
-  (setup-after "auto-complete"
-    (push 'emacs-lisp-mode ac-modes)
-    (setup-hook 'emacs-lisp-mode-hook
-      ;; ac-source-symbols is very nice but seems buggy
-      (setq ac-sources '(ac-source-my-buffer-file-name
-                         ac-source-filename
-                         ;; ac-source-last-sessions
-                         ac-source-words-in-same-mode-buffers
-                         ac-source-dictionary
-                         ac-source-functions
-                         ac-source-variables
-                         ac-source-features))))
+  (setup "setup"
+    (setup-after "smart-compile"
+      (push '("init\\.el" . (setup-byte-compile-file)) smart-compile-alist)))
   (setup-after "key-chord"
     (setup-expecting "yasnippet"
-      (setup-hook 'emacs-lisp-mode-hook
-        (key-chord-define-local "sk" (my-yas "kc-sk")))))
+      (key-chord-define-local "sk" (my-yas "kc-sk"))))
   (setup-expecting "key-combo"
-    (setup-hook 'emacs-lisp-mode-hook
-      (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
-  (setup-expecting "rainbow-mode"
-    (setup-hook 'emacs-lisp-mode-hook 'rainbow-mode)))
+    (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
+(setup-after "auto-complete"
+  (push 'emacs-lisp-mode ac-modes)
+  (setup-hook 'emacs-lisp-mode-hook
+    ;; ac-source-symbols is very nice but seems buggy
+    (setq ac-sources '(ac-source-my-buffer-file-name
+                       ac-source-filename
+                       ;; ac-source-last-sessions
+                       ac-source-words-in-same-mode-buffers
+                       ac-source-dictionary
+                       ac-source-functions
+                       ac-source-variables
+                       ac-source-features))))
+(setup-expecting "rainbow-mode"
+  (setup-hook 'emacs-lisp-mode-hook 'rainbow-mode))
 
 ;;       + c-like
 ;;         + (common)
@@ -2138,7 +2137,6 @@ emacs-lisp-mode."
              (forward-line -1)
              (indent-according-to-mode))))
     (defun my-install-c-common-smartchr ()
-      (key-combo-mode 1)
       ;; add / sub / mul / div
       (key-combo-define-local (kbd "+") `(,(my-unary "+") "++"))
       (key-combo-define-local (kbd "+=") " += ")
@@ -2246,7 +2244,9 @@ emacs-lisp-mode."
                  (let ((back (unless (= (char-before) ?\s) " "))
                        (forward (unless (= (char-after) ?\s) " ")))
                    (insert (concat back ,str forward)))))))
+    (setup-hook 'c-mode-hook 'key-combo-mode)
     (setup-hook 'c-mode-hook
+      :oneshot
       (my-install-c-common-smartchr)
       ;; pointers
       (key-combo-define-local (kbd "&") `(,(my-c-smart-pointer "&") " && "))
@@ -2288,7 +2288,9 @@ emacs-lisp-mode."
     (push '(java-mode . "javac -Xlint:all -encoding UTF-8 %f") smart-compile-alist))
 
   (setup-expecting "key-combo"
+    (setup-hook 'java-mode-hook 'key-combo-mode)
     (setup-hook 'java-mode-hook
+      :oneshot
       (my-install-c-common-smartchr)
       ;; javadoc comment
       (key-combo-define-local (kbd "/**") "/**\n`!!'\n*/")
@@ -2395,6 +2397,7 @@ emacs-lisp-mode."
   (setup-after "key-chord"
     (setup-expecting "yasnippet"
       (setup-hook 'cperl-mode-hook
+        :oneshot
         (key-chord-define-local "sk" (my-yas "kc-sk")) ; skeleton (package/script)
         (key-chord-define-local "ar" (my-yas "kc-ar")) ; args / type_arrayref
         (key-chord-define-local "ha" (my-yas "kc-ha")) ; type_hashref
@@ -2415,8 +2418,9 @@ emacs-lisp-mode."
         )))
 
   (setup-expecting "key-combo"
+    (setup-hook 'cperl-mode-hook 'key-combo-mode)
     (setup-hook 'cperl-mode-hook
-      (key-combo-mode 1)
+      :oneshot
       ;; arithmetic
       (key-combo-define-local (kbd "+") `(,(my-unary "+") "++"))
       (key-combo-define-local (kbd "-") `(,(my-unary "-") "--"))
@@ -2476,7 +2480,6 @@ emacs-lisp-mode."
                       "|"
                       (unless (= (char-after) ?\s) " ")))))
   (defun my-install-prolog-common-smartchr ()
-    (key-combo-mode 1)
     ;; comments, periods
     (key-combo-define-local (kbd "%") '("% " "%% "))
     ;; toplevel
@@ -2535,7 +2538,9 @@ emacs-lisp-mode."
     (push 'prolog-mode ac-modes))
 
   (setup-expecting "key-combo"
+    (setup-hook 'prolog-mode-hook 'key-combo-mode)
     (setup-hook 'prolog-mode-hook
+      :oneshot
       (my-install-prolog-common-smartchr)
       ;; control
       (key-combo-define-local (kbd "->") " -> ")
@@ -2710,6 +2715,7 @@ emacs-lisp-mode."
         (if (string= str "") "" "\">\n    "))
 
       (setup-hook 'web-mode-hook
+        :oneshot
         (key-chord-define-local "sk" (my-yas "kc-sk")) ; html/skeleton
         (key-chord-define-local "jq" (my-yas "kc-jq")) ; html/jquery
         (key-chord-define-local "ui" (my-yas "kc-ui")) ; html/jquery_ui
@@ -2727,8 +2733,9 @@ emacs-lisp-mode."
         )))
 
   (setup "key-combo-web"
+    (setup-hook 'web-mode-hook 'key-combo-mode)
     (setup-hook 'web-mode-hook
-      (key-combo-mode 1)
+      :oneshot
       ;; css combos
       (key-combo-web-define "css" (kbd "+") " + ")
       (key-combo-web-define "css" (kbd ">") " > ")
@@ -2852,15 +2859,17 @@ emacs-lisp-mode."
                          (search-forward "．" nil t)))))
     (my-auto-kutoten-mode -1)))
 
-(setup-after "text-mode"
-  (setup-hook 'text-mode-hook 'my-auto-kutoten-mode)
-  (setup-expecting "electric-spacing"
-    (setup-hook 'text-mode-hook 'electric-spacing-mode))
-  (setup-expecting "jaword"
-    (setup-hook 'text-mode-hook 'jaword-mode))
-  (setup-after "mark-hacks"
-    (push 'text-mode mark-hacks-auto-indent-inhibit-modes))
+;; text-mode.el (loaded before init.el)
+(setup-hook 'text-mode-hook 'my-auto-kutoten-mode)
+(setup-hook 'text-mode-hook
+  :oneshot
   (setup-keybinds text-mode-map "C-M-i" nil))
+(setup-expecting "electric-spacing"
+  (setup-hook 'text-mode-hook 'electric-spacing-mode))
+(setup-expecting "jaword"
+  (setup-hook 'text-mode-hook 'jaword-mode))
+(setup-after "mark-hacks"
+  (push 'text-mode mark-hacks-auto-indent-inhibit-modes))
 
 ;;       + org-mode [htmlize]
 
@@ -3205,6 +3214,7 @@ emacs-lisp-mode."
 
   ;; keybinds
   (setup-hook 'orgtbl-mode-hook
+    :oneshot
     (setup-keybinds orgtbl-mode-map
       ;; motion
       "C-f"   'forward-char
@@ -3289,7 +3299,9 @@ emacs-lisp-mode."
     "j" 'next-line
     "k" 'previous-line))
 
-(setup-after "tabulated-list"
+;; tabulated-list.el (loaded before init.el)
+(setup-hook 'tabulated-list-mode-hook
+  :oneshot
   (setup-keybinds tabulated-list-mode-map
     "," 'tabulated-list-sort))
 
@@ -3489,9 +3501,11 @@ emacs-lisp-mode."
 
 ;;     + Buffer-menu
 
-(setup-after "buff-menu"
-  (setup-after "popwin"
-    (push '("*Buffer List*") popwin:special-display-config))
+;; buff-menu.el (loaded before init.el)
+(setup-after "popwin"
+  (push '("*Buffer List*") popwin:special-display-config))
+(setup-hook 'Buffer-menu-mode-hook
+  :oneshot
   (setup-keybinds Buffer-menu-mode-map
     "RET" 'Buffer-menu-select
     "SPC" 'Buffer-menu-delete
@@ -3578,6 +3592,7 @@ emacs-lisp-mode."
 
   ;; "eshell-mode-map" does not work (why?)
   (setup-hook 'eshell-mode-hook
+    :oneshot
     (local-set-key (kbd "C-j") 'eshell-bol))
   )
 
@@ -4123,12 +4138,12 @@ emacs-lisp-mode."
 
 ;;   + Misc: built-ins
 
-(setup-after "frame"
-  (blink-cursor-mode -1))
+;; frame.el (loaded before init.el)
+(blink-cursor-mode -1)
 
-(setup-after "font-lock"
-  (setq font-lock-support-mode 'jit-lock-mode
-        jit-lock-stealth-time 16))
+;; font-lock.el (loaded before init.el)
+(setq font-lock-support-mode 'jit-lock-mode
+      jit-lock-stealth-time 16)
 
 ;; highlight matching parens
 ;; - show-paren-mode cannot be delayed with "!-" (why?)
