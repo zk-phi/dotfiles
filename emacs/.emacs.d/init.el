@@ -763,8 +763,8 @@ unary operators which can also be binary."
 (setup-lazy '(outline-minor-mode) "outline")
 (setup-expecting "outline"
   (defvar my-outline-minimum-heading-len 10000) ; define as a global variable to suppress warning
-  (setup-hook 'prog-mode-hook
-    (when comment-start
+  (setup-hook 'find-file-hook
+    (when (and buffer-file-name (string-match "init\\.el" buffer-file-name))
       (outline-minor-mode 1)
       (setq-local outline-regexp (concat "^\\(\s*" (regexp-quote comment-start)
                                          "[" (regexp-quote comment-start) "]*\\)"
