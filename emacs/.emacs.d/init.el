@@ -1718,14 +1718,15 @@ emacs-lisp-mode."
   (setup-keybinds emacs-lisp-mode-map '("M-TAB" "C-j") nil)
   (setup-after "smart-compile"
     (push '(emacs-lisp-mode . (emacs-lisp-byte-compile)) smart-compile-alist))
-  (setup "setup"
-    (setup-after "smart-compile"
-      (push '("init\\.el" . (setup-byte-compile-file)) smart-compile-alist)))
   (setup-after "key-chord"
     (setup-expecting "yasnippet"
       (key-chord-define-local "sk" (my-yas "kc-sk"))))
   (setup-expecting "key-combo"
     (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
+(!-
+ (setup "setup"
+   (setup-after "smart-compile"
+     (push '("init\\.el" . (setup-byte-compile-file)) smart-compile-alist))))
 (setup-after "auto-complete"
   (push 'emacs-lisp-mode ac-modes)
   (setup-hook 'emacs-lisp-mode-hook
