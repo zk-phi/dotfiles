@@ -100,23 +100,26 @@
 ;; Load some constant definitions from site-constants.el, to use
 ;; during compile.
 (eval-when-compile
- (when (locate-library "site-constants")
-   (load "site-constants"))
- (defconst my-additional-include-directories
-   (when (boundp 'my-additional-include-directories) my-additional-include-directories)
-   "List of directories counted as additional info directory.")
- (defconst my-additional-info-directories
-   (when (boundp 'my-additional-info-directories) my-additional-info-directories)
-   "List of directories counted as additional include directory.")
- (defconst my-openweathermap-api-key
-   (when (boundp 'my-openweathermap-api-key) my-openweathermap-api-key)
-   "Access token for openweathermap API.")
- (defconst my-secret-words
-   (when (boundp 'my-secret-words) my-secret-words)
-   "List of secret words to be hidden.")
- (defconst my-emacs-C-source-directory
-   (when (boundp 'my-emacs-C-source-directory) my-emacs-C-source-directory)
-   "/path/to/emacs/src"))
+  (when (locate-library "site-constants")
+    (load "site-constants"))
+  (defconst my-additional-include-directories
+    (when (boundp 'my-additional-include-directories) my-additional-include-directories)
+    "List of directories counted as additional info directory.")
+  (defconst my-additional-info-directories
+    (when (boundp 'my-additional-info-directories) my-additional-info-directories)
+    "List of directories counted as additional include directory.")
+  (defconst my-openweathermap-api-key
+    (when (boundp 'my-openweathermap-api-key) my-openweathermap-api-key)
+    "Access token for openweathermap API.")
+  (defconst my-secret-words
+    (when (boundp 'my-secret-words) my-secret-words)
+    "List of secret words to be hidden.")
+  (defconst my-ditaa-jar-file
+    (when (boundp 'my-ditaa-jar-file) my-ditaa-jar-file)
+    "/path/to/ditaa.jar")
+  (defconst my-emacs-C-source-directory
+    (when (boundp 'my-emacs-C-source-directory) my-emacs-C-source-directory)
+    "/path/to/emacs/src"))
 
 ;;   + path to library files
 
@@ -129,11 +132,6 @@
   (!when (file-exists-p "~/.emacs.d/ac-dict/")
     "~/.emacs.d/ac-dict/")
   "Dictionary directory for auto-complete.")
-
-(defconst my-ditaa-jar-file
-  (!when (file-exists-p "~/.emacs.d/lib/ditaa.jar")
-    "~/.emacs.d/lib/ditaa.jar")
-  "/path/to/ditaa.jar")
 
 ;;   + path to data files
 
@@ -2939,7 +2937,8 @@ emacs-lisp-mode."
 
   ;; ditaa
   (setup-after "ob-ditaa"
-    (setq org-ditaa-jar-path (when my-ditaa-jar-file (expand-file-name my-ditaa-jar-file))))
+    (setq org-ditaa-jar-path
+          (! (when my-ditaa-jar-file (expand-file-name my-ditaa-jar-file)))))
 
   ;; TODO: org-html seems no longer existing. inspect and update as needed.
   (setup-after "org-html"
