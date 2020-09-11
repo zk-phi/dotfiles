@@ -112,7 +112,10 @@
     "Access token for openweathermap API.")
   (defconst my-secret-words
     (when (boundp 'my-secret-words) my-secret-words)
-    "List of secret words to be hidden."))
+    "List of secret words to be hidden.")
+  (defconst my-emacs-C-source-directory
+    (when (boundp 'my-emacs-C-source-directory) my-emacs-C-source-directory)
+    "/path/to/emacs/src"))
 
 ;;   + path to library files
 
@@ -592,6 +595,9 @@ cons of two integers which defines a range of the codepoints."
 (setup-after "find-file"
   (setq cc-search-directories
         (append my-additional-include-directories cc-search-directories)))
+
+(setup-after "help-fns"
+  (setq find-function-C-source-directory my-emacs-C-source-directory))
 
 ;;   + | edit
 
