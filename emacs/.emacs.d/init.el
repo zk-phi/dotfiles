@@ -343,7 +343,7 @@
       enable-local-variables                :safe
       echo-keystrokes                       0.1
       delete-by-moving-to-trash             t
-      ;; common-win.el
+      ;; select.el
       select-enable-clipboard               t
       ;; mule-cmds.el
       default-input-method                  "japanese"
