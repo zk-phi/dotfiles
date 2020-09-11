@@ -647,7 +647,7 @@ cons of two integers which defines a range of the codepoints."
     phi-rectangle-kill-region
     phi-rectangle-yank
     phi-rectangle-kill-ring-save) "phi-rectangle"
-  (setq phi-rectangle-collect-fake-cursors-kill-rings t))
+  (setq phi-rectangle-collect-fake-cursors-kill-rings 'rectangle))
 
 ;; load mark-hacks
 (!-
