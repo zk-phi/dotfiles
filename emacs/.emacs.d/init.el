@@ -167,43 +167,43 @@
 ;; System-specific History Datas
 
 (defconst my-auto-save-list-directory
-  (! (concat my-dat-directory "auto-save-list_" system-name "/"))
+  (! (concat my-dat-directory "auto-save-list_" (system-name) "/"))
   "Directory to save auto-save-list(s) in.")
 
 (defconst my-palette-directory
-  (! (concat my-dat-directory "palette_" system-name "/"))
+  (! (concat my-dat-directory "palette_" (system-name) "/"))
   "Directory to save scratch-palette(s).")
 
 (defconst my-eshell-directory
-  (! (concat my-dat-directory "eshell_" system-name "/"))
+  (! (concat my-dat-directory "eshell_" (system-name) "/"))
   "Directory to save eshell histories.")
 
 (defconst my-backup-directory
-  (! (concat my-dat-directory "backups_" system-name "/"))
+  (! (concat my-dat-directory "backups_" (system-name) "/"))
   "Directory to save backup files.")
 
 (defconst my-undo-tree-history-directory
-  (! (concat my-dat-directory "undo-tree_" system-name "/"))
+  (! (concat my-dat-directory "undo-tree_" (system-name) "/"))
   "Directory to save undo-tree history.")
 
 (defconst my-scratch-pop-directory
-  (! (concat my-dat-directory "scratch_pop_" system-name "/"))
+  (! (concat my-dat-directory "scratch_pop_" (system-name) "/"))
   "File to save scratch.")
 
 (defconst my-ido-save-file
-  (! (concat my-dat-directory "ido_" system-name))
+  (! (concat my-dat-directory "ido_" (system-name)))
   "File to save ido history.")
 
 (defconst my-recentf-file
-  (! (concat my-dat-directory "recentf_" system-name))
+  (! (concat my-dat-directory "recentf_" (system-name)))
   "File to save recentf history.")
 
 (defconst my-save-place-file
-  (! (concat my-dat-directory "save-place_" system-name))
+  (! (concat my-dat-directory "save-place_" (system-name)))
   "File to save save-place datas.")
 
 ;; (defconst my-ac-last-sessions-file
-;;   (! (concat my-dat-directory "ac-last-sessions_" system-name))
+;;   (! (concat my-dat-directory "ac-last-sessions_" (system-name)))
 ;;   "File to save ac-last-sessions words.")
 
 ;; + | Utilities
