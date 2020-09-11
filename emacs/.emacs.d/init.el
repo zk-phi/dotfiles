@@ -97,25 +97,26 @@
 ;; + | Constants
 ;;   + system
 
-;; Inherit some constant definitions from site-start.el, so that we
-;; can write system-specific settings not in this file but in it.
-;; Note that we need some of these values also during compilation.
-(eval-and-compile
-  (defconst my-additional-include-directories
-    (when (boundp 'my-additional-include-directories) my-additional-include-directories)
-    "List of directories counted as additional info directory.")
-  (defconst my-additional-info-directories
-    (when (boundp 'my-additional-info-directories) my-additional-info-directories)
-    "List of directories counted as additional include directory.")
-  (defconst my-openweathermap-api-key
-    (when (boundp 'my-openweathermap-api-key) my-openweathermap-api-key)
-    "Access token for openweathermap API.")
-  (defconst my-secret-words
-    (when (boundp 'my-secret-words) my-secret-words)
-    "List of secret words to be hidden.")
-  (defconst my-emacs-C-source-directory
-    (when (boundp 'my-emacs-C-source-directory) my-emacs-C-source-directory)
-    "/path/to/emacs/src"))
+;; Load some constant definitions from site-constants.el, to use
+;; during compile.
+(eval-when-compile
+ (when (locate-library "site-constants")
+   (load "site-constants"))
+ (defconst my-additional-include-directories
+   (when (boundp 'my-additional-include-directories) my-additional-include-directories)
+   "List of directories counted as additional info directory.")
+ (defconst my-additional-info-directories
+   (when (boundp 'my-additional-info-directories) my-additional-info-directories)
+   "List of directories counted as additional include directory.")
+ (defconst my-openweathermap-api-key
+   (when (boundp 'my-openweathermap-api-key) my-openweathermap-api-key)
+   "Access token for openweathermap API.")
+ (defconst my-secret-words
+   (when (boundp 'my-secret-words) my-secret-words)
+   "List of secret words to be hidden.")
+ (defconst my-emacs-C-source-directory
+   (when (boundp 'my-emacs-C-source-directory) my-emacs-C-source-directory)
+   "/path/to/emacs/src"))
 
 ;;   + path to library files
 
@@ -594,10 +595,10 @@ cons of two integers which defines a range of the codepoints."
 ;; add include directories
 (setup-after "find-file"
   (setq cc-search-directories
-        (append my-additional-include-directories cc-search-directories)))
+        (! (append my-additional-include-directories cc-search-directories))))
 
 (setup-after "help-fns"
-  (setq find-function-C-source-directory my-emacs-C-source-directory))
+  (setq find-function-C-source-directory (! my-emacs-C-source-directory)))
 
 ;;   + | edit
 
@@ -1502,7 +1503,7 @@ emacs-lisp-mode."
 (setup-lazy '(info-lookup-symbol) "info-look"
   (setq info-lookup-other-window-flag nil
         Info-directory-list
-        (append my-additional-info-directories Info-directory-list)))
+        (! (append my-additional-info-directories Info-directory-list))))
 
 ;;   + Misc: plug-ins
 ;;   + | jump around
@@ -3774,10 +3775,10 @@ emacs-lisp-mode."
    (sky-color-clock-initialize 35.40)
    (setq sky-color-clock-enable-emoji-icon    t
          sky-color-clock-enable-daytime-emoji t)
-   (when my-openweathermap-api-key
+   (!when my-openweathermap-api-key
      (!-
       (setup-silently
-       (sky-color-clock-initialize-openweathermap-client my-openweathermap-api-key 1850144))))
+       (sky-color-clock-initialize-openweathermap-client (! my-openweathermap-api-key) 1850144))))
    (defun my-time-string () (sky-color-clock))))
 
 (defsubst my-mode-line--clock ()
@@ -3905,7 +3906,7 @@ emacs-lisp-mode."
 
 ;;   + "secret-words" minor-mode
 
-(defvar my-secret-words nil)
+(defvar my-secret-words (! my-secret-words))
 
 (defun my-secret-words--jit-hider (b e)
   (save-excursion
@@ -3944,7 +3945,8 @@ emacs-lisp-mode."
   my-secret-words-mode
   (lambda () (my-secret-words-mode 1)))
 
-(my-global-secret-words-mode 1)
+(!when my-secret-words
+  (my-global-secret-words-mode 1))
 
 ;;   + colorscheme
 
