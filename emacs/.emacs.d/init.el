@@ -593,7 +593,7 @@ cons of two integers which defines a range of the codepoints."
 ;; add include directories
 (setup-after "find-file"
   (setq cc-search-directories
-        (! (append my-additional-include-directories cc-search-directories))))
+        (nconc (! my-additional-include-directories) cc-search-directories)))
 
 (setup-after "help-fns"
   (setq find-function-C-source-directory (! my-emacs-C-source-directory)))
@@ -1501,7 +1501,7 @@ emacs-lisp-mode."
 (setup-lazy '(info-lookup-symbol) "info-look"
   (setq info-lookup-other-window-flag nil
         Info-directory-list
-        (! (append my-additional-info-directories Info-directory-list))))
+        (nconc (! my-additional-info-directories) Info-directory-list)))
 
 ;;   + Misc: plug-ins
 ;;   + | jump around
