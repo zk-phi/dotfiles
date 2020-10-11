@@ -710,14 +710,6 @@ cons of two integers which defines a range of the codepoints."
       '((candidates . (when buffer-file-name
                         (list (file-name-sans-extension
                                (file-name-nondirectory buffer-file-name)))))))
-    ;; complete property names in CSS-like languages
-    (setup-after "auto-complete-config"
-      (ac-define-source my-css-propname
-        '((candidates . (mapcar 'car ac-css-property-alist))
-          (cache . 1)
-          (prefix . "\\(?:^\\|;\\)[\s\t]*\\([^\s\t]*\\)")))
-      (define-advice ac-css-prefix (:before-until (&rest _))
-        (= (char-before) ?\;)))
     ;; ;; complete words in the last sessions
     ;; (setup "ac-last-sessions"
     ;;   (setq ac-last-sessions-save-file my-ac-last-sessions-file)
@@ -2706,8 +2698,7 @@ emacs-lisp-mode."
                                ac-source-words-in-same-mode-buffers))
               ("jsx-html"   . (;; ac-source-last-sessions
                                ac-source-words-in-same-mode-buffers))
-              ("css"        . (ac-source-my-css-propname
-                               ac-source-css-property
+              ("css"        . (ac-source-css-property
                                ;; ac-source-last-sessions
                                ac-source-words-in-same-mode-buffers))))
       (push 'web-mode ac-modes)))
