@@ -2177,8 +2177,8 @@ emacs-lisp-mode."
       (key-combo-define-local (kbd ">>=") " >>= ")
       (key-combo-define-local (kbd "<<=") " <<= ")
       (key-combo-define-local (kbd "^") " ^ ")
+      ;; conflicts with "C-="
       ;; (key-combo-define-local (kbd "^=") " ^= ")
-      ;; => cannot invoke C-= when enabled (why?)
       ;; others
       (key-combo-define-local (kbd "/*") "/* `!!' */")
       (key-combo-define-local (kbd "{") '(my-c-smart-braces "{ `!!' }"))))
@@ -2460,7 +2460,8 @@ emacs-lisp-mode."
       (key-combo-define-local (kbd "%=") " %= ")
       (key-combo-define-local (kbd "&=") " &= ")
       (key-combo-define-local (kbd "|=") " |= ")
-      (key-combo-define-local (kbd "^=") " ^= ")
+      ;; conflicts with "C-="
+      ;; (key-combo-define-local (kbd "^=") " ^= ")
       (key-combo-define-local (kbd "<<=") " <<= ")
       (key-combo-define-local (kbd ">>=") " >>= ")
       (key-combo-define-local (kbd "&&=") " &&= ")
@@ -2753,7 +2754,7 @@ emacs-lisp-mode."
       (key-combo-web-define "css" (kbd "+") " + ")
       (key-combo-web-define "css" (kbd ">") " > ")
       (key-combo-web-define "css" (kbd "~") " ~ ")
-      ;; doesn't work ... (why?)
+      ;; conflicts with "C-="
       ;; (key-combo-web-define "css" (kbd "^=") " ^= ")
       (key-combo-web-define "css" (kbd "$=") " $= ")
       (key-combo-web-define "css" (kbd "*=") " *= ")
