@@ -28,8 +28,8 @@
     compare = "!f() { git diff ${1:-master}...${2:-HEAD}; }; f"
     history = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
     # ---- push and pull in one shot
-    sync = "!f(){ local branch=${1-$(git symbolic-ref --short HEAD)}; git pull origin $branch --ff-only && git push origin $branch; }; f"
-    publish = "!f(){ git push origin ${1-$(git symbolic-ref --short HEAD)}; }; f"
+    sync = "!f(){ local target=${1-$(git symbolic-ref --short HEAD)}; git pull origin $target --ff-only && git push origin HEAD:$target; }; f"
+    publish = "!f(){ git push origin HEAD:${1-$(git symbolic-ref --short HEAD)}; }; f"
     # ---- delete old local branches
     clean-branch = "!f() { git branch -d $(git branch --merged ${1:-master} | grep -v \"*\\|${1:-master}\"); }; f"
     # ---- show dangling objects
