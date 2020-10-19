@@ -22,6 +22,7 @@
     patch = "!f(){ git diff $1^ $1 | git apply; }; f"
     unpatch = "!f(){ git diff $1^ $1 | git apply --reverse; }; f"
     stack = "!f(){ git diff HEAD...$1 | git apply; }; f"
+    # ---- merge stash top with the worktree and drop it when succeeded (= force pop, kind of)
     merge-stash = "!f(){ git diff stash@{0}^ stash@{0} | git apply && git stash drop; }; f"
     # ---- compare two branches excluding commits from other branches
     compare = "!f() { git diff ${1:-master}...${2:-HEAD}; }; f"
