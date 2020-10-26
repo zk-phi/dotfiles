@@ -28,26 +28,8 @@ setopt multios                  # accept multiple redirections
 # language-specific settings
 # ------------------------------
 
-# perl
-if type plenv > /dev/null; then
-    eval "$(plenv init -)"
-    export PERL_CPANM_OPT="--local-lib=$HOME/perl5"
-    export PERL5LIB=$HOME/perl5/lib/perl5:$PERL5LIB
-fi
-
-# ruby
-if type rbenv > /dev/null; then
-    eval "$(rbenv init -)"
-fi
-
-# node
-if type ndenv > /dev/null; then
-    eval "$(ndenv init -)"
-fi
-
-# ocaml
-if test -e $HOME/.opam/opam-init/init.zsh; then
-    source $HOME/.opam/opam-init/init.zsh &> /dev/null
+if type anyenv > /dev/null; then
+    eval "$(anyenv init -)"
 fi
 
 # ------------------------------
