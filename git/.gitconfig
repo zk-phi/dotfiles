@@ -36,6 +36,7 @@
     dangling-commits  = "!f() { git show --format='%ad %h : %s' --no-patch --date=short $(git fsck | grep 'commit' | cut -d ' ' -f 3) | sort -r | less; }; f"
     # ---- locally ignore some files
     ignore = update-index --assume-unchanged
+    unignore = update-index --no-assume-unchanged
     ignored = "!f() { git ls-files -v | grep '^[[:lower:]]'; }; f"
     # ---- DWIM abort rebase, merge or cherry-pick
     abort = "!f() { local command=$(git status | grep -o \"git \\w* --abort\"); echo $command; $($command); }; f"
