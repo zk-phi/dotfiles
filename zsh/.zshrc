@@ -247,7 +247,8 @@ setopt hist_reduce_blanks      # remove unuseful spaces
 alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn}'
 
 # ls: colorize
-alias ls=ls -G
+alias ls='ls -G'                # mac
+# alias ls='ls --color=auto'      # other
 
 # diff: colorize and pagify
 if which colordiff > /dev/null; then
