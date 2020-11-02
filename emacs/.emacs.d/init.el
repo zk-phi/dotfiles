@@ -1721,7 +1721,8 @@ emacs-lisp-mode."
     (setup-expecting "yasnippet"
       (key-chord-define-local "sk" (my-yas "kc-sk"))))
   (setup-expecting "key-combo"
-    (key-combo-define-local (kbd "#") '("#" ";;;###autoload"))))
+    (key-combo-define-local (kbd "##") ";;;###autoload")
+    (key-combo-define-local (kbd "#!") "#!/usr/bin/emacs --script")))
 (!- (setup "setup"))          ; also lazy-load for syntax highlighting
 (setup-after "auto-complete"
   (push 'emacs-lisp-mode ac-modes)
