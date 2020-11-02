@@ -24,10 +24,6 @@ Following plugins are not from git:
   - https://elpa.gnu.org/packages/undo-tree-0.6.5.el
   - this plugin is a part of ELPA
 
-- 2048-game.el
-  - https://hg.sr.ht/~zck/game-2048/raw/2048-game.el?rev=ea6c3bce8ac1c17dae5ac711ae4e931c0495e455
-  - this plugin is converted to a mercurial repo
-
 Following plugins are not directly required by init.el but added as
 dependencies:
 
