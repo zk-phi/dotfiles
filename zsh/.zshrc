@@ -249,12 +249,18 @@ alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn}'
 # ls: colorize
 alias ls=ls -G
 
-# diff: if colordiff is available, prefer it
+# diff: colorize and pagify
 if which colordiff > /dev/null; then
-    function diff () { colordiff -u $* | less -R }
+    diffcmd=colordiff
 else
-    echo "[.zshrc] colordiff is unavailable."
+    diffcmd=diff
 fi
+if which diff-highlight > /dev/null; then
+    postdiff=diff-highlight
+else
+    postdiff=cat
+fi
+function diff () { $diffcmd -u $* | $postdiff | less -R }
 
 # less: make less recognize ANSI escape sequences
 alias less='less -R'
