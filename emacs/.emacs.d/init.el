@@ -483,26 +483,17 @@ cons of two integers which defines a range of the codepoints."
 (!when (eq window-system 'ns)
   (push '(ns-transparent-titlebar . t) default-frame-alist))
 
-;; Parse .zshenv (during compile) and setenv $PATH
-(setenv
- "PATH"
- (!
-  (with-temp-buffer
-    (let ((default-path
-            (cond ((eq system-type 'darwin)
-                   "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin")
-                  (t
-                   (getenv "PATH")))))
-      (cond ((not (file-exists-p "~/.zshenv"))
-             (warn "~/.zshenv does not exist")
-             default-path)
-            ((progn
-               (insert-file-contents "~/.zshenv")
-               (goto-char (point-min))
-               (search-forward-regexp "export PATH=\"\\(.*:\\)\\$PATH\"" nil t))
-             (concat (match-string 1) default-path))
-            (t
-             (warn "~/.zshenv does not have any \"export PATH=...:$PATH\"")))))))
+;; get PATH from shell (during compile)
+(eval-when-compile
+  (defconst my-exec-path
+    (with-temp-buffer
+      (and (ignore-errors
+             (save-excursion
+               (call-process (getenv "SHELL") nil t nil "-l" "-c" "echo $PATH")))
+           (buffer-substring (point-min) (point-at-eol))))))
+(!when my-exec-path
+  (setenv "PATH" (! my-exec-path))
+  (setq exec-path (! (split-string my-exec-path ":"))))
 
 ;;   + | backup, autosave
 
