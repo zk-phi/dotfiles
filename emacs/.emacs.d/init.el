@@ -1511,6 +1511,10 @@ emacs-lisp-mode."
                                ((kbd "C-M-a") . 'phi-search-mc/mark-all))
                              phi-search-additional-keybinds)))))
 
+;; jump-to-defiition
+(setup-lazy '(dumb-jump-xref-activate) "dumb-jump"
+  :prepare (setup-hook 'xref-backend-functions 'dumb-jump-xref-activate))
+
 ;;   + | edit
 
 ;; autoload expand-region
@@ -4429,7 +4433,7 @@ emacs-lisp-mode."
   "C-x C-f" '("phi-grep" phi-grep-find-file-flat)
   "C-x C-=" '("ediff" ediff)
   "C-x C-d" '("ido" ido-dired dired)
-  "C-x DEL" 'ff-find-other-file ; C-x C-h
+  "C-x DEL" '("dumb-jump" xref-find-definitions ff-find-other-file) ; C-x C-h
   )
 
 ;;     + shell command
