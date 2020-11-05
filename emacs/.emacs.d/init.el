@@ -1530,9 +1530,10 @@ emacs-lisp-mode."
     (setq my-dabbrev-expand-fallback     'git-complete
           git-complete-limit-extension   t
           git-complete-repeat-completion t
-          git-complete-fallback-function 'my-expand-dwim
-          git-complete-grep-function
-          (!if (executable-find "rg") 'git-complete-ripgrep 'git-complete-git-grep))
+          git-complete-fallback-function 'my-expand-dwim)
+    (!if (executable-find "rg")
+        (setq git-complete-grep-function 'git-complete-ripgrep)
+      (byte-compile-warn "Using git-grep instead of rg"))
     (push '(web-mode "jsx" "js"
                      "scss" "css"
                      "html" "html.ep")
