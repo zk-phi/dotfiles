@@ -256,3 +256,6 @@
 [submodule "emacs/site-lisp/plugins/swiper"]
 	path = emacs/site-lisp/plugins/swiper
 	url = https://github.com/abo-abo/swiper.git
+[submodule "emacs/site-lisp/plugins/ivy-xref"]
+	path = emacs/site-lisp/plugins/ivy-xref
+	url = https://github.com/alexmurray/ivy-xref.git
