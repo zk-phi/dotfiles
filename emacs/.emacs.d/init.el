@@ -873,7 +873,7 @@ unary operators which can also be binary."
 (setup-expecting "recentf"
   (defvar recentf-save-file my-recentf-file))
 
-(setup-after "recentf"
+(setup-lazy '(recentf-open-files) "recentf"
   (recentf-mode 1)
   (setq recentf-max-saved-items 500
         recentf-exclude '("/[^/]*\\<tmp\\>[^/]*/" "/[^/]*\\<backup\\>[^/]*/"
