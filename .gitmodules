@@ -259,3 +259,6 @@
 [submodule "emacs/site-lisp/plugins/ivy-xref"]
 	path = emacs/site-lisp/plugins/ivy-xref
 	url = https://github.com/alexmurray/ivy-xref.git
+[submodule "emacs/site-lisp/plugins/company-mode"]
+	path = emacs/site-lisp/plugins/company-mode
+	url = https://github.com/company-mode/company-mode.git
