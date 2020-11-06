@@ -951,18 +951,19 @@ unary operators which can also be binary."
           t))
 
       (define-advice ido-set-matches-1 (:around (fn items &optional do-full))
-        (let ((retval (funcall fn items do-full)))
+        (let ((retval (or (funcall fn items do-full)
+                          (and ido-enable-prefix
+                               (progn (setq ido-enable-prefix nil)
+                                      (funcall fn items do-full))))))
           (when (my-valid-regex-p ido-text)
             (unless retval
-              (when ido-enable-prefix (my-ido-disable-prefix))
-              (unless retval
-                ;; if not found, try flex matching
-                (catch :too-big
-                  (setq retval (flx-ido-match ido-text items))
-                  ;; if not found, try super-flex matching
-                  (unless retval
-                    (setq retval
-                          (my-super-flx-ido-match ido-text items))))))
+              ;; if not found, try flex matching
+              (catch :too-big
+                (setq retval (flx-ido-match ido-text items))
+                ;; if not found, try super-flex matching
+                (unless retval
+                  (setq retval
+                        (my-super-flx-ido-match ido-text items)))))
             (let ((rx (concat "^" ido-text))
                   prefixed prefixed-sans-dir not-prefixed)
               (dolist (str retval)
