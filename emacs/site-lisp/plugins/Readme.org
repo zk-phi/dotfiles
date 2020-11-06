@@ -4,10 +4,6 @@ Following plugins are not from git:
   - https://raw.githubusercontent.com/emacs-mirror/emacs/83bad90efe943e7c88431b7a71bc1d5cf1304c92/lisp/emulation/vi.el
   - this plugin has been a built-in but removed in 24.5
 
-- auto-complete-latex.el
-  - https://bitbucket.org/tequilasunset/auto-complete-latex/raw/6c534e7733747ffb5deb9138f874216d4a6c5daa/auto-complete-latex.el
-  - this plugin is hosted on Bitbucket, from which I don't know how to add as a submodule
-
 - scad-mode.el
   - https://raw.githubusercontent.com/openscad/openscad/d500d8b3bdd7eb26e4e33451c0bab18a2552a1fb/contrib/scad-mode.el
   - this plugin is a part of OpenSCAD
@@ -44,3 +40,6 @@ dependencies:
 
 - tinysegmenter
   - required by jaword-mode
+
+- popup
+  - required by git-complete

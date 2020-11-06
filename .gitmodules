@@ -41,15 +41,9 @@
 [submodule "emacs/site-lisp/plugins/popup-el"]
 	path = emacs/site-lisp/plugins/popup-el
 	url = https://github.com/auto-complete/popup-el.git
-[submodule "emacs/site-lisp/plugins/auto-complete"]
-	path = emacs/site-lisp/plugins/auto-complete
-	url = https://github.com/auto-complete/auto-complete.git
 [submodule "emacs/site-lisp/plugins/guess-style"]
 	path = emacs/site-lisp/plugins/guess-style
 	url = https://github.com/nschum/guess-style.git
-[submodule "emacs/site-lisp/my-plugins/ac-last-session"]
-	path = emacs/site-lisp/my-plugins/ac-last-session
-	url = https://github.com/zk-phi/ac-last-session.git
 [submodule "emacs/site-lisp/plugins/key-combo"]
 	path = emacs/site-lisp/plugins/key-combo
 	url = https://github.com/uk-ar/key-combo.git
@@ -155,9 +149,6 @@
 	path = emacs/site-lisp/plugins/rainbow-mode
 	url = https://github.com/emacsmirror/rainbow-mode.git
 	ignore = dirty
-[submodule "emacs/site-lisp/my-plugins/ac-c-headers"]
-	path = emacs/site-lisp/my-plugins/ac-c-headers
-	url = https://github.com/zk-phi/ac-c-headers.git
 [submodule "emacs/site-lisp/my-plugins/scad-preview"]
 	path = emacs/site-lisp/my-plugins/scad-preview
 	url = https://github.com/zk-phi/scad-preview.git
