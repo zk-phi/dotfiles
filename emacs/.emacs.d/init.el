@@ -1018,79 +1018,16 @@ unary operators which can also be binary."
     ;; + | (sentinel)
     )
 
-;;   + jumping with anything [anything]
-;;     + | (prelude)
+;;   + ivy, counsel [swiper]
 
-(setup-lazy '(my-anything-jump) "anything"
-
-  ;;   + | force anything split window
-
-  ;; reference | http://emacs.g.hatena.ne.jp/k1LoW/20090713/1247496970
-  (setq anything-display-function
-        (lambda (buf)
-          (select-window (split-window (selected-window)
-                                       (/ (* (window-height) 3) 5)))
-          (switch-to-buffer buf)))
-
-  ;;   + | execute parsistent-action on move
-
-  ;; reference | http://shakenbu.org/yanagi/d/?date=20120213
-  (setup-hook 'anything-move-selection-after-hook
-    (if (member (cdr (assq 'name (anything-get-current-source)))
-                '("Imenu" "Visible Bookmarks" "Changes" "Flycheck"))
-        (anything-execute-persistent-action)))
-
-  ;;   + | anything source for imenu
-
-  ;; reference | http://www.emacswiki.org/emacs/AnythingSources
-  (setup "imenu"
-    (defvar anything-c-imenu-delimiter "/")
-    (defvar anything-c-source-imenu
-      '((name . "Imenu")
-        (init . (lambda ()
-                  (setq anything-c-imenu-current-buffer
-                        (current-buffer))))
-        (candidates
-         . (lambda ()
-             (condition-case nil
-                 (with-current-buffer anything-c-imenu-current-buffer
-                   (mapcar
-                    (lambda (entry)
-                      (if (listp (cdr entry))
-                          (mapcar (lambda (sub)
-                                    (concat (car entry) anything-c-imenu-delimiter (car sub)))
-                                  (cdr entry))
-                        (list (car entry))))
-                    (setq anything-c-imenu-alist (imenu--make-index-alist))))
-               (error nil))))
-        (volatile)
-        (action
-         . (lambda (entry)
-             (let* ((pair (split-string entry anything-c-imenu-delimiter))
-                    (fst (car pair))
-                    (snd (cadr pair)))
-               (imenu
-                (if snd
-                    (assoc snd (cdr (assoc fst anything-c-imenu-alist)))
-                  entry))))))))
-
-  ;;   + | anything-jump command
-
-  (defun my-anything-jump ()
-    "My 'anything'."
-    (interactive)
-    (anything
-     :sources `(,@(and (boundp 'my-anything-source-highlight-changes-mode)
-                       '(my-anything-source-highlight-changes-mode))
-                ,@(and (boundp 'my-anything-source-flycheck)
-                       '(my-anything-source-flycheck))
-                ,@ (and (boundp 'anything-c-source-imenu)
-                        '(anything-c-source-imenu)))
-     :input nil ;; (thing-at-point 'symbol)
-     :prompt "symbol : "))
-
-  ;;   + | (sentinel)
-  )
+(setup-lazy '(counsel-yank-pop counsel-imenu) "counsel"
+  (setup-keybinds ivy-minibuffer-map
+    "C-n" 'ivy-next-line
+    "C-p" 'ivy-previous-line
+    "C-u" 'ivy-scroll-down-command
+    "C-v" 'ivy-scroll-up-command
+    "C-M-u" 'ivy-beginning-of-buffer
+    "C-M-v" 'ivy-end-of-buffer))
 
 ;;   + yasnippet settings [yasnippet]
 
@@ -1521,12 +1458,6 @@ emacs-lisp-mode."
 ;; autoload expand-region
 (setup-lazy '(er/expand-region) "expand-region")
 
-;; autoload anything-show-kill-ring
-(setup-lazy '(anything-show-kill-ring) "anything-config"
-  :prepare (setup-in-idle "anything-config")
-  (setup-after "popwin"
-    (push '("*Kill Ring*") popwin:special-display-config)))
-
 ;; completion via `git grep'
 (setup-in-idle "git-complete")
 (setup-after "cmd_edit"
@@ -1642,12 +1573,6 @@ emacs-lisp-mode."
 ;; download region as an url
 (setup-lazy '(download-region-as-url) "download-region"
   (setq download-region-max-downloads 5))
-
-;; autoload some anything commands
-(setup-lazy
-  '(anything-colors
-    anything-register
-    anything-manage-advice) "anything-config")
 
 ;; start a HTTPd for this directory
 (setup-lazy '(my-start-httpd-web-server) "simple-httpd"
@@ -4319,7 +4244,7 @@ emacs-lisp-mode."
   "C-M-j" 'beginning-of-defun
   "C-M-e" 'end-of-defun
   "M-l"   'goto-line
-  "M-j"   '("anything" my-anything-jump))
+  "M-j"   '("counsel" counsel-imenu imenu))
 
 ;;     + scroll
 
@@ -4377,7 +4302,7 @@ emacs-lisp-mode."
   "M-D"   'kill-sexp
   "M-H"   'backward-kill-sexp
   "M-Y"   'my-overwrite-sexp
-  "M-y"   '("anything-config" anything-show-kill-ring yank-pop))
+  "M-y"   '("counsel" counsel-yank-pop yank-pop))
 
 ;;     + newline, indent, format
 
