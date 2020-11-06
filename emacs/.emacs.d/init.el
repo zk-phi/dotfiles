@@ -1018,9 +1018,14 @@ unary operators which can also be binary."
     ;; + | (sentinel)
     )
 
-;;   + ivy, counsel [swiper]
+;;   + ivy [ivy, counsel, ivy-xref]
 
-(setup-lazy '(counsel-yank-pop counsel-imenu) "counsel"
+(setup-lazy '(counsel-yank-pop counsel-imenu) "counsel")
+
+(setup-lazy '(ivy-xref-show-defs) "ivy-xref"
+  :prepare (setq xref-show-definitions-function 'ivy-xref-show-defs))
+
+(setup-after "ivy"
   (setup-keybinds ivy-minibuffer-map
     "C-n" 'ivy-next-line
     "C-p" 'ivy-previous-line
