@@ -940,10 +940,10 @@ unary operators which can also be binary."
 
       (defun my-ido-disable-prefix ()
         (when (and (ido-active) ido-enable-prefix)
-          (ido-tidy)
-          (setq ido-enable-prefix nil)
-          (ido-tidy)
-          (ido-exhibit)))
+          (run-hooks 'pre-command-hook)
+          (setq ido-enable-prefix nil
+                ido-rescan        t)
+          (run-hooks 'post-command-hook)))
 
       (defun my-valid-regex-p (regexp)
         (ignore-errors
