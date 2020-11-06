@@ -67,9 +67,6 @@
 [submodule "emacs/site-lisp/plugins/flx"]
 	path = emacs/site-lisp/plugins/flx
 	url = https://github.com/lewang/flx.git
-[submodule "emacs/site-lisp/plugins/anything-config"]
-	path = emacs/site-lisp/plugins/anything
-	url = http://repo.or.cz/r/anything-config.git
 [submodule "emacs/site-lisp/my-plugins/setup"]
 	path = emacs/site-lisp/my-plugins/setup
 	url = https://github.com/zk-phi/setup.git
