@@ -256,3 +256,6 @@
 	path = emacs/site-lisp/plugins/dumb-jump
 	url = https://github.com/jacktasia/dumb-jump.git
 	ignore = dirty
+[submodule "emacs/site-lisp/plugins/swiper"]
+	path = emacs/site-lisp/plugins/swiper
+	url = https://github.com/abo-abo/swiper.git
