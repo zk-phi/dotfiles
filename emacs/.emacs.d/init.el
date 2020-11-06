@@ -128,11 +128,6 @@
     "~/.emacs.d/snippets/")
   "Dictionary directory for yasnippet.")
 
-(defconst my-dictionary-directory
-  (!when (file-exists-p "~/.emacs.d/ac-dict/")
-    "~/.emacs.d/ac-dict/")
-  "Dictionary directory for auto-complete.")
-
 ;;   + path to data files
 
 ;; Directory
@@ -151,10 +146,6 @@
     (make-directory my-dat-directory)))
 
 ;; Common History Datas
-
-(defconst my-ac-history-file
-  (! (concat my-dat-directory "ac-comphist"))
-  "File to save auto-complete history.")
 
 (defconst my-smex-save-file
   (! (concat my-dat-directory "smex"))
@@ -201,10 +192,6 @@
 (defconst my-save-place-file
   (! (concat my-dat-directory "save-place_" (system-name)))
   "File to save save-place datas.")
-
-;; (defconst my-ac-last-sessions-file
-;;   (! (concat my-dat-directory "ac-last-sessions_" (system-name)))
-;;   "File to save ac-last-sessions words.")
 
 ;; + | Utilities
 
@@ -669,7 +656,10 @@ cons of two integers which defines a range of the codepoints."
 
 (setup-lazy '(electric-align-mode) "electric-align"
   :prepare (setup-hook 'prog-mode-hook 'electric-align-mode)
-  (setq electric-align-shortcut-commands '(my-smart-comma)))
+  (setq electric-align-shortcut-commands '(my-smart-comma))
+  (setup-after "company"
+    ;; stop completion with SPC
+    (push 'electric-align-SPC (cdr company-continue-commands))))
 
 ;; not "electric-spacing" hosted in MELPA, but my own one
 (setup-lazy '(electric-spacing-mode) "electric-spacing"
@@ -682,39 +672,55 @@ cons of two integers which defines a range of the codepoints."
 (setup-lazy '(subword-mode) "subword"
   :prepare (setup-hook 'prog-mode-hook 'subword-mode))
 
+;; TODO: company equivalent of
+;; - ac-c-headers
+;; - ac-c-header-symbols
+;; - ac-source-dictionary
+;; - web-mode-ac-sources-alist
+;; maybe ?
 (!-
- (setup "popup")
- (!-
-  (setup "auto-complete"
-    (setq ac-comphist-file  my-ac-history-file
-          ac-auto-start     t
-          ac-dwim           t
-          ac-delay          0
-          ac-ignore-case    nil
-          ac-auto-show-menu 0.8
-          ac-disable-faces  nil)
-    (push my-dictionary-directory ac-dictionary-directories)
-    (global-auto-complete-mode)
-    (setup-keybinds ac-completing-map "S-<tab>" 'ac-previous)
-    ;; complete buffer-file-name
-    (ac-define-source my-buffer-file-name
-      '((candidates . (when buffer-file-name
-                        (list (file-name-sans-extension
-                               (file-name-nondirectory buffer-file-name)))))))
-    ;; ;; complete words in the last sessions
-    ;; (setup "ac-last-sessions"
-    ;;   (setq ac-last-sessions-save-file my-ac-last-sessions-file)
-    ;;   (add-hook 'kill-emacs-hook 'ac-last-sessions-save-completions)
-    ;;   (!- (ac-last-sessions-load-completions)))
-    ;; do not complete remote file names
-    (define-advice ac-filename-candidate (:before-until (&rest _))
-      (file-remote-p ac-prefix))
-    ;; setup default sources
-    (setq-default ac-sources '(ac-source-my-buffer-file-name
-                               ac-source-dictionary
-                               ;; ac-source-last-sessions
-                               ac-source-words-in-same-mode-buffers
-                               ac-source-filename)))))
+ (setup "company"
+   (defun company-my-current-file-name (command &optional arg &rest ignored)
+     "`company-mode' for current file name."
+     (interactive (list 'interactive))
+     (cl-case command
+       (interactive (company-begin-backend 'company-my-current-file-name))
+       (prefix (and (or (eq t company-dabbrev-code-modes)
+                        (apply #'derived-mode-p company-dabbrev-code-modes))
+                    buffer-file-name
+                    (not (file-remote-p buffer-file-name))
+                    (company-grab-symbol)))
+       (candidates (all-completions arg (list (file-name-base buffer-file-name))))))
+   (setq company-idle-delay 0
+         company-minimum-prefix-length 2
+         company-selection-wrap-around t
+         company-dabbrev-code-everywhere t
+         company-backends
+         ;; NOTE: `company-css' is deprecated in Emacs>=26 since
+         ;; `css-mode' now supports CAPF. But I want to enable
+         ;; `company-css' since `web-mode' does not support CAPF.
+         '(company-files           ; complete file name if appropreate
+           (company-my-current-file-name
+            company-capf
+            company-css
+            company-dabbrev-code
+            company-keywords)
+           company-dabbrev
+           ))
+   (global-company-mode)
+   (setup-keybinds company-active-map
+     "C-p" 'company-select-previous
+     "C-n" 'company-select-next
+     "C-u" 'company-previous-page
+     "C-v" 'company-next-page
+     "C-s" 'company-filter-candidates
+     "<tab>" nil
+     "TAB" 'company-complete-common-or-cycle
+     "S-TAB" 'company-select-previous
+     "<f1>" nil)
+   (setup-keybinds company-search-map
+     "C-p" 'company-search-repeat-backward
+     "C-n" 'company-search-repeat-forward)))
 
 ;;   + | keyboards
 
@@ -1653,18 +1659,6 @@ emacs-lisp-mode."
     (key-combo-define-local (kbd "##") ";;;###autoload")
     (key-combo-define-local (kbd "#!") "#!/usr/bin/emacs --script")))
 (!- (setup "setup"))          ; also lazy-load for syntax highlighting
-(setup-after "auto-complete"
-  (push 'emacs-lisp-mode ac-modes)
-  (setup-hook 'emacs-lisp-mode-hook
-    ;; ac-source-symbols is very nice but seems buggy
-    (setq ac-sources '(ac-source-my-buffer-file-name
-                       ac-source-filename
-                       ;; ac-source-last-sessions
-                       ac-source-words-in-same-mode-buffers
-                       ac-source-dictionary
-                       ac-source-functions
-                       ac-source-variables
-                       ac-source-features))))
 (setup-after "rainbow-mode"
   (dolist (buf (buffer-list))
     (with-current-buffer buf
@@ -2113,18 +2107,6 @@ emacs-lisp-mode."
       (key-combo-define-local (kbd "/*") "/* `!!' */")
       (key-combo-define-local (kbd "{") '(my-c-smart-braces "{ `!!' }"))))
 
-  ;;         + auto-complete
-
-  (setup-after "auto-complete"
-    (setup "ac-c-headers"
-      (defun my-ac-install-c-sources ()
-        (setq ac-sources '(ac-source-my-buffer-file-name
-                           ac-source-c-headers
-                           ;; ac-source-last-sessions
-                           ac-source-words-in-same-mode-buffers
-                           ac-source-dictionary
-                           ac-source-c-header-symbols)))))
-
   ;;         + (sentinel)
   )
 
@@ -2140,14 +2122,6 @@ emacs-lisp-mode."
 
   (setup-hook 'c-mode-hook
     (c-set-style "phi"))
-
-  (setup-after "auto-complete"
-    (push 'c-mode ac-modes)
-    (push 'c++-mode ac-modes)
-    (push 'objc-mode ac-modes)
-    (setup-after "ac-c-headers"
-      (setup-hook 'c-mode-hook 'my-ac-install-c-sources)
-      (setup-hook 'c++-mode-hook 'my-ac-install-c-sources)))
 
   (setup-after "smart-compile"
     (push `(c-mode . "gcc -ansi -pedantic -Wall -W -Wextra -Wunreachable-code %f")
@@ -2220,9 +2194,6 @@ emacs-lisp-mode."
             (module-open) (module-close)
             (composition-open) (composition-close)
             (inexpr-class-open after) (inexpr-class-close before after))))
-
-  (setup-after "auto-complete"
-    (push 'java-mode ac-modes))
 
   (setup-after "smart-compile"
     (push '(java-mode . "javac -Xlint:all -encoding UTF-8 %f") smart-compile-alist))
@@ -2475,9 +2446,6 @@ emacs-lisp-mode."
         (prolog-consult-region (region-beginning) (region-end))
       (prolog-consult-predicate)))
 
-  (setup-after "auto-complete"
-    (push 'prolog-mode ac-modes))
-
   (setup-expecting "key-combo"
     (setup-hook 'prolog-mode-hook 'key-combo-mode)
     (setup-hook 'prolog-mode-hook
@@ -2614,25 +2582,6 @@ emacs-lisp-mode."
         (when (derived-mode-p 'web-mode)
           (rainbow-mode))))
     (setup-hook 'web-mode-hook 'rainbow-mode))
-
-  (setup-after "auto-complete"
-    (setup "auto-complete-config"
-      (setq web-mode-ac-sources-alist
-            '(("javascript" . (ac-source-my-buffer-file-name
-                               ;; ac-source-last-sessions
-                               ac-source-words-in-same-mode-buffers))
-              ("jsx"        . (ac-source-my-buffer-file-name
-                               ;; ac-source-last-sessions
-                               ac-source-words-in-same-mode-buffers
-                               ac-source-filename))
-              ("html"       . (;; ac-source-last-sessions
-                               ac-source-words-in-same-mode-buffers))
-              ("jsx-html"   . (;; ac-source-last-sessions
-                               ac-source-words-in-same-mode-buffers))
-              ("css"        . (ac-source-css-property
-                               ;; ac-source-last-sessions
-                               ac-source-words-in-same-mode-buffers))))
-      (push 'web-mode ac-modes)))
 
   (setup-after "smart-compile"
     (push '(web-mode . (browse-url-of-buffer)) smart-compile-alist))
@@ -2921,7 +2870,7 @@ emacs-lisp-mode."
     '("M-a" "M-TAB" "C-," "C-a" "C-j" "M-e" ) nil)
   )
 
-;;       + latex-mode [magic-latex-buffer] [ac-latex]
+;;       + latex-mode [magic-latex-buffer]
 
 (setup-expecting "tex-mode"
   (push '("\\.tex$" . latex-mode) auto-mode-alist))
@@ -2940,10 +2889,7 @@ emacs-lisp-mode."
   (setup-lazy '(magic-latex-buffer) "magic-latex-buffer"
     :prepare (setup-hook 'latex-mode-hook 'magic-latex-buffer)
     (setq magic-latex-enable-inline-image nil))
-  (setup-after "auto-complete"
-    (setup "auto-complete-latex"
-      (push 'latex-mode ac-modes)
-      (setup-hook 'latex-mode-hook 'ac-l-setup))))
+  )
 
 ;;       + gfm-mode [markdown-mode]
 
@@ -3507,13 +3453,6 @@ emacs-lisp-mode."
   (setup-after "mark-hacks"
     (push 'eshell-mode mark-hacks-auto-indent-inhibit-modes))
 
-  (setup-after "auto-complete"
-    (setup-hook 'eshell-mode-hook
-      (setq ac-sources '(ac-source-files-in-current-dir
-                         ;; ac-source-last-sessions
-                         ac-source-words-in-same-mode-buffers
-                         ac-source-filename))))
-
   ;; aliases
   ;; reference | http://www.emacswiki.org/cgi-bin/wiki?EshellFunctions
   ;;           | http://www.bookshelf.jp/soft/meadow_25.html
@@ -4065,16 +4004,6 @@ emacs-lisp-mode."
       (hl-paren-set 'hl-paren-background-colors
                     (list (face-background 'elemental-highlight-bg-1-face)))))
 
-  (setup-after "whitespace"
-    (set-face-attribute 'whitespace-space nil
-                        :inherit    'elemental-darker-fg-face
-                        :foreground 'unspecified
-                        :background 'unspecified)
-    (set-face-attribute 'whitespace-tab nil
-                        :inherit    'elemental-darker-fg-face
-                        :foreground 'unspecified
-                        :background 'unspecified))
-
   (setup-after "cperl-mode"
     (set-face-attribute 'cperl-hash-key-face nil
                         :inherit    'elemental-bright-fg-face
@@ -4426,12 +4355,13 @@ emacs-lisp-mode."
     (key-chord-define yas-keymap "fe" 'my-yas-next-field-or-dabbrev-expand)
     (key-chord-define yas-keymap "ji" 'my-yas-next-field-or-dabbrev-expand)
     (key-chord-define yas-keymap "jo" 'my-yas-next-field-or-dabbrev-expand)
-    ;; move to the next field even while auto-complete is in action
-    (setup-after "auto-complete"
-      (key-chord-define ac-completing-map "fr" 'my-yas-next-field-or-dabbrev-expand)
-      (key-chord-define ac-completing-map "fe" 'my-yas-next-field-or-dabbrev-expand)
-      (key-chord-define ac-completing-map "ji" 'my-yas-next-field-or-dabbrev-expand)
-      (key-chord-define ac-completing-map "jo" 'my-yas-next-field-or-dabbrev-expand)))
+    ;; move to the next field even while company is in action
+    (setup-after "company"
+      (key-chord-define company-active-map "fr" 'my-yas-next-field-or-dabbrev-expand)
+      (key-chord-define company-active-map "fe" 'my-yas-next-field-or-dabbrev-expand)
+      (key-chord-define company-active-map "ji" 'my-yas-next-field-or-dabbrev-expand)
+      (key-chord-define company-active-map "jo" 'my-yas-next-field-or-dabbrev-expand))
+    )
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "fd" 'iy-go-to-char-backward)
     (key-chord-define-global "jk" 'iy-go-to-char)))
