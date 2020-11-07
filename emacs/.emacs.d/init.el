@@ -181,6 +181,10 @@
   (! (concat my-dat-directory "scratch_pop_" (system-name) "/"))
   "File to save scratch.")
 
+(defconst my-company-history-file
+  (! (concat my-dat-directory "company_" (system-name)))
+  "File to save company-statistics history.")
+
 (defconst my-ido-save-file
   (! (concat my-dat-directory "ido_" (system-name)))
   "File to save ido history.")
@@ -695,19 +699,20 @@ cons of two integers which defines a range of the codepoints."
          company-minimum-prefix-length 2
          company-selection-wrap-around t
          company-dabbrev-code-everywhere t
+         company-transformers '(company-sort-by-backend-importance)
          company-backends
          ;; NOTE: `company-css' is deprecated in Emacs>=26 since
          ;; `css-mode' now supports CAPF. But I want to enable
          ;; `company-css' since `web-mode' does not support CAPF.
          '(company-files           ; complete file name if appropreate
-           (company-my-current-file-name
-            company-capf
-            company-css
-            company-dabbrev-code
-            company-keywords)
-           company-dabbrev
-           ))
+           (company-css company-keywords company-dabbrev-code
+                        :with company-capf company-my-current-file-name)
+           company-dabbrev))
    (global-company-mode)
+   (setup "company-statistics"
+     (setq company-statistics-file my-company-history-file)
+     (push 'company-sort-by-statistics company-transformers)
+     (company-statistics-mode))
    (setup-keybinds company-active-map
      "C-p" 'company-select-previous
      "C-n" 'company-select-next
