@@ -254,3 +254,6 @@
 [submodule "emacs/site-lisp/plugins/company-mode"]
 	path = emacs/site-lisp/plugins/company-mode
 	url = https://github.com/company-mode/company-mode.git
+[submodule "emacs/site-lisp/plugins/company-statistics"]
+	path = emacs/site-lisp/plugins/company-statistics
+	url = https://github.com/company-mode/company-statistics.git
