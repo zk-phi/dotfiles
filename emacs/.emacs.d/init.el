@@ -1030,7 +1030,9 @@ unary operators which can also be binary."
 
 ;;   + ivy [ivy, counsel, ivy-xref]
 
-(setup-lazy '(counsel-yank-pop counsel-imenu) "counsel")
+(setup-lazy '(counsel-yank-pop counsel-imenu) "counsel"
+  (setq counsel-yank-pop-separator      "\n----------\n"
+        counsel-yank-pop-preselect-last t))
 
 (setup-lazy '(ivy-xref-show-defs) "ivy-xref"
   :prepare (setq xref-show-definitions-function 'ivy-xref-show-defs))
