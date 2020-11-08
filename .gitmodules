@@ -84,10 +84,6 @@
 	path = emacs/site-lisp/plugins/iy-go-to-char
 	url = https://github.com/doitian/iy-go-to-char.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/pager"]
-	path = emacs/site-lisp/plugins/pager
-	url = https://github.com/emacsorphanage/pager.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/phi-search"]
 	path = emacs/site-lisp/my-plugins/phi-search
 	url = https://github.com/zk-phi/phi-search.git
