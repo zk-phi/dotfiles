@@ -333,6 +333,7 @@
       enable-local-variables                :safe
       echo-keystrokes                       0.1
       delete-by-moving-to-trash             t
+      scroll-preserve-screen-position       t
       ;; select.el
       select-enable-clipboard               t
       ;; mule-cmds.el
@@ -847,12 +848,12 @@ unary operators which can also be binary."
     "p"   'shr-previous-link
     "n"   'shr-next-link
     "h"   'eww-back-url
-    "j"   '("pager" pager-row-down next-line)
-    "k"   '("pager" pager-row-up previous-line)
-    "C-f" '("pager" pager-page-down scroll-up-command)
-    "C-b" '("pager" pager-page-up scroll-down-command)
-    " "   '("pager" pager-page-down scroll-up-command)
-    "DEL" '("pager" pager-page-up scroll-down-command)
+    "j"   'my-scroll-up-by-row
+    "k"   'my-scroll-down-by-row
+    "C-f" 'scroll-up-command
+    "C-b" 'scroll-down-command
+    " "   'scroll-up-command
+    "DEL" 'scroll-down-command
     "l"   'eww-forward-url
     "f"   '("ace-link" ace-link-eww)
     "g"   'beginning-of-buffer
@@ -1041,8 +1042,6 @@ unary operators which can also be binary."
   (setup-keybinds ivy-minibuffer-map
     "C-n" 'ivy-next-line
     "C-p" 'ivy-previous-line
-    "C-u" 'ivy-scroll-down-command
-    "C-v" 'ivy-scroll-up-command
     "C-M-u" 'ivy-beginning-of-buffer
     "C-M-v" 'ivy-end-of-buffer))
 
@@ -1317,6 +1316,8 @@ unary operators which can also be binary."
     my-resize-window
     my-retop
     my-recenter
+    my-scroll-down-by-row
+    my-scroll-up-by-row
     my-toggle-narrowing
     my-split-window) "cmd_window")
 
@@ -1446,12 +1447,6 @@ emacs-lisp-mode."
 
 ;; "f"-like jump command
 (setup-lazy '(iy-go-to-char iy-go-to-char-backward) "iy-go-to-char")
-
-(setup-lazy
-  '(pager-page-up
-    pager-page-down
-    pager-row-up
-    pager-row-down) "pager")
 
 ;; use "phi-search/replace" and "phi-search-mc" instead of "isearch"
 (setup-lazy '(phi-replace phi-replace-query) "phi-replace")
@@ -3698,10 +3693,10 @@ emacs-lisp-mode."
   (defvar my-kindly-view-mode-map
     (let ((kmap (copy-keymap vi-com-map)))
       (setup-keybinds kmap
-        '("j" "C-n")   '("pager" pager-row-down vi-next-line)
-        '("k" "C-p")   '("pager" pager-row-up previous-line)
-        "h"            'backward-char
-        "l"            'forward-char)))
+        '("j" "C-n") 'my-scroll-up-by-row
+        '("k" "C-p") 'my-scroll-down-by-row
+        "h"          'backward-char
+        "l"          'forward-char)))
 
   (defvar my-kindly-unsupported-minor-modes
     '(phi-autopair-mode)
@@ -4190,8 +4185,8 @@ emacs-lisp-mode."
 ;;     + scroll
 
 (setup-keybinds nil
-  "C-u"     '("pager" pager-page-up scroll-down)
-  "C-v"     '("pager" pager-page-down scroll-up)
+  "C-u"     'scroll-down-command
+  "C-v"     'scroll-up-command
   "C-l"     'my-recenter
   "C-M-u"   'beginning-of-buffer
   "C-M-v"   'end-of-buffer

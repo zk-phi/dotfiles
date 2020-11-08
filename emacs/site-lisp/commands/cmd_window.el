@@ -57,6 +57,15 @@ kill-buffer-query-functions."
   (interactive)
   (recenter (* (/ (window-height) 8) 3)))
 
+(defun my-scroll-down-by-row ()
+  "Scroll down by 1 row."
+  (interactive)
+  (scroll-down 1))
+(defun my-scroll-up-by-row ()
+  "Scroll up by 1 row."
+  (interactive)
+  (scroll-up 1))
+
 (defun my-toggle-narrowing ()
   "narrow-to-region or widen."
   (interactive)
