@@ -700,7 +700,7 @@ cons of two integers which defines a range of the codepoints."
    (setq company-idle-delay 0
          company-minimum-prefix-length 2
          company-selection-wrap-around t
-         company-dabbrev-code-everywhere t
+         company-tooltip-align-annotations t
          company-transformers '(company-sort-by-backend-importance)
          company-backends
          ;; NOTE: `company-css' is deprecated in Emacs>=26 since
