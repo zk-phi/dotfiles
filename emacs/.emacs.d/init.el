@@ -3890,7 +3890,7 @@ emacs-lisp-mode."
   ;; ;; "mesa" palette
   ;; ;; reference | http://emacsfodder.github.io/blog/mesa-theme/
   ;; (my-elemental-theme-apply-colors
-  ;;   "#ece8e1" "grey30" "#3388dd" "#ac3d1a" "#dd2222"
+  ;;   "#ece8e1" "#4d4d4d" "#3388dd" "#ac3d1a" "#dd2222"
   ;;   "#8b008b" "#00b7f0" "#1388a2" "#104e8b" "#00688b")
 
   ;; ;; "tron" palette
