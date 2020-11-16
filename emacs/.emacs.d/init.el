@@ -2272,8 +2272,10 @@ emacs-lisp-mode."
   (setq cperl-font-lock                            t
         cperl-highlight-variables-indiscriminately t
         cperl-invalid-face                         'default)
-  (copy-face 'font-lock-type-face 'cperl-scope-face)
-  (copy-face 'default 'cperl-hash-key-face)
+  (make-face 'cperl-scope-face)
+  (make-face 'cperl-hash-key-face)
+  (set-face-attribute 'cperl-scope-face nil :inherit 'font-lock-type-face)
+  (set-face-attribute 'cperl-hash-key-face nil :inherit 'default)
   (font-lock-add-keywords
    'cperl-mode '(("\\_<\\(?:local\\|our\\|my\\)\\_>" . 'cperl-scope-face)))
   (font-lock-add-keywords
