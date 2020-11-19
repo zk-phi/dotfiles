@@ -3561,6 +3561,11 @@ emacs-lisp-mode."
   (when buffer-file-name
     (setq my-current-branch-name (my-abbrev-branch-name (my-get-branch-name buffer-file-name)))))
 
+(defsubst my-mode-line--macro ()
+  (if defining-kbd-macro
+      (! (propertize "● " 'face 'mode-line-warning-face))
+    ""))
+
 (defconst my-mode-line--separator
   (! (propertize " : " 'face 'mode-line-dark-face)))
 
@@ -3663,7 +3668,8 @@ emacs-lisp-mode."
 
 (defun my-generate-mode-line-format ()
   (let* ((lstr
-          (concat (my-mode-line--linum) my-mode-line--separator
+          (concat (my-mode-line--macro)
+                  (my-mode-line--linum) my-mode-line--separator
                   (my-mode-line--colnum) my-mode-line--separator
                   (my-mode-line--indicators) my-mode-line--separator
                   my-mode-line--filename (my-mode-line--branch)
@@ -3956,15 +3962,6 @@ emacs-lisp-mode."
   ;; (my-elemental-theme-apply-colors
   ;;   "#192129" "#7d7d7d" "#fef187" "#f8c3a4" "#f9c9cf"
   ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#aee2c9" "#9e9e9e")
-
-  ;; switch mode-line color while recording macros
-  (define-advice kmacro-start-macro (:after (&rest _))
-    (set-face-attribute 'mode-line nil :inherit 'elemental-highlight-bg-2-face)
-    (add-hook 'post-command-hook 'my-recording-mode-line-end))
-  (defun my-recording-mode-line-end ()
-    (unless defining-kbd-macro
-      (set-face-attribute 'mode-line nil :inherit 'elemental-brighter-bg-face)
-      (remove-hook 'post-command-hook 'my-recording-mode-line-end)))
 
   ;; extra mode-line faces
   (set-face-attribute
