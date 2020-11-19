@@ -698,6 +698,7 @@ cons of two integers which defines a range of the codepoints."
                     (company-grab-symbol)))
        (candidates (all-completions arg (list (file-name-base buffer-file-name))))))
    (setq company-idle-delay 0
+         company-dabbrev-downcase nil
          company-minimum-prefix-length 2
          company-selection-wrap-around t
          company-tooltip-align-annotations t
