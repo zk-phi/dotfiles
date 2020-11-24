@@ -877,9 +877,15 @@ unary operators which can also be binary."
   ;; taken from "ido-everywhere"
   (setq read-file-name-function 'ido-read-file-name
         read-buffer-function 'ido-read-buffer)
+  ;; taken from "ido-ubiquitous-mode"
   (setup-lazy '(ido-completing-read+) "ido-completing-read+"
-    ;; taken from "ido-ubiquitous-mode"
-    :prepare (setq completing-read-function 'ido-completing-read+)))
+    :prepare (setq completing-read-function 'ido-completing-read+))
+  ;; use ido also for describe-face
+  (setup-lazy '(my-describe-face) "help-fns"
+    (defun my-describe-face (face)
+      (interactive (list (read-face-name "Describe face"
+                                         (or (face-at-point t) 'default))))
+      (describe-face face))))
 
 ;;     + ido interface for recentf
 
@@ -4317,7 +4323,7 @@ emacs-lisp-mode."
   "<f1> m"    'describe-mode
   "<f1> f"    'describe-function
   "<f1> v"    'describe-variable
-  "<f1> a"    'describe-face
+  "<f1> a"    'my-describe-face
   "<f1> x"    'describe-syntax
   "<f1> s"    'info-lookup-symbol)
 
