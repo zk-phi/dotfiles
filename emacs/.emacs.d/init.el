@@ -3579,14 +3579,14 @@ emacs-lisp-mode."
   (if (not mark-active)
       (! (propertize "%5l" 'face 'mode-line-bright-face))
     (propertize (format "%5d" (- (region-end) (region-beginning)))
-                'face 'mode-line-warning-face)))
+                'face 'mode-line-highlight-face)))
 
 ;; either linum or colnum must be %-notated to be updated correctrly
 (defsubst my-mode-line--colnum ()
   (if (not mark-active)
       (propertize "%3c" 'face 'mode-line-bright-face)
     (propertize (format "%3d" (count-lines (region-beginning) (region-end)))
-                'face 'mode-line-warning-face)))
+                'face 'mode-line-highlight-face)))
 
 (defsubst my-mode-line--indicators ()
   (concat
@@ -3662,7 +3662,7 @@ emacs-lisp-mode."
       (my-time-string)
     (propertize
      (format-time-string "%M:%S" (time-subtract (current-time) my-ramen-start-time))
-     'face 'mode-line-warning-face)))
+     'face 'mode-line-highlight-face)))
 
 (defsubst my-mode-line--battery-status ()
   (let* ((index (if my-battery-status (/ (floor (car my-battery-status)) 10) 11))
@@ -3844,19 +3844,17 @@ emacs-lisp-mode."
 
 ;; utility to apply color palette to the elemental-theme
 (defmacro my-elemental-theme-apply-colors
-    (bg-base fg-base
-             type-yellow warning-orange error-red visited-magenta
-             link-violet identifier-blue string-cyan keyword-green)
+    (bg-base fg-base accent-1 accent-2 accent-3 accent-4 red orange green blue)
   (declare (indent defun))
-  (let* ((mode (if (string< bg-base fg-base) 'dark 'light))
-         (bg-mixcolor    (if (eq mode 'dark) "#fff" "#000"))
-         (bright-bg      (my-blend-colors bg-base bg-mixcolor (if (eq mode 'dark) 6 4)))
-         (brighter-bg    (my-blend-colors bg-base bg-mixcolor (if (eq mode 'dark) 12 8)))
-         (highlight-bg-1 (my-blend-colors bg-base bg-mixcolor (if (eq mode 'dark) 22 12)))
-         (highlight-bg-2 (my-blend-colors highlight-bg-1 "red" 30))
-         (darker-fg      (my-blend-colors fg-base bg-base 65))
-         (dark-fg        (my-blend-colors fg-base bg-base 27))
-         (bright-fg      (my-blend-colors fg-base bg-base -40)))
+  (let* ((brightness-bg (caddr (apply 'color-rgb-to-hsl (color-name-to-rgb bg-base))))
+         (brightness-fg (caddr (apply 'color-rgb-to-hsl (color-name-to-rgb fg-base))))
+         (mode          (if (< brightness-bg brightness-fg) 'dark 'light))
+         (white         (if (eq mode 'dark) "white" "black"))
+         (bright-bg     (my-blend-colors bg-base white 7))
+         (brighter-bg   (my-blend-colors bg-base white 14))
+         (darker-fg     (my-blend-colors fg-base bg-base 65))
+         (dark-fg       (my-blend-colors fg-base bg-base 35))
+         (bright-fg     (my-blend-colors fg-base white 35)))
     `(progn
        (custom-theme-set-variables 'elemental-theme '(frame-background-mode ',mode))
        ,(when (eq window-system 'ns)
@@ -3865,109 +3863,106 @@ emacs-lisp-mode."
        (set-face-background 'cursor ,fg-base)
        (set-face-background 'elemental-bright-bg-face ,bright-bg)
        (set-face-background 'elemental-brighter-bg-face ,brighter-bg)
-       (set-face-background 'elemental-highlight-bg-1-face ,highlight-bg-1)
-       (set-face-background 'elemental-highlight-bg-2-face ,highlight-bg-2)
-       (set-face-foreground 'elemental-hidden-fg-face ,bg-base)
        (set-face-foreground 'elemental-darker-fg-face ,darker-fg)
        (set-face-foreground 'elemental-dark-fg-face ,dark-fg)
        (set-face-foreground 'default ,fg-base)
        (set-face-foreground 'elemental-bright-fg-face ,bright-fg)
-       (set-face-foreground 'elemental-accent-fg-1-face ,link-violet)
-       (set-face-foreground 'elemental-accent-fg-2-face ,visited-magenta)
-       (set-face-foreground 'elemental-accent-fg-3-face ,type-yellow)
-       (set-face-foreground 'elemental-accent-fg-4-face ,string-cyan)
-       (set-face-foreground 'elemental-red-face ,error-red)
-       (set-face-foreground 'elemental-blue-face ,identifier-blue)
-       (set-face-foreground 'elemental-green-face ,keyword-green)
-       (set-face-foreground 'elemental-orange-face ,warning-orange)
+       (set-face-foreground 'elemental-accent-fg-1-face ,accent-1)
+       (set-face-foreground 'elemental-accent-fg-2-face ,accent-2)
+       (set-face-foreground 'elemental-accent-fg-3-face ,accent-3)
+       (set-face-foreground 'elemental-accent-fg-4-face ,accent-4)
+       (set-face-foreground 'elemental-red-fg-face ,red)
+       (set-face-foreground 'elemental-orange-fg-face ,orange)
+       (set-face-foreground 'elemental-green-fg-face ,green)
+       (set-face-foreground 'elemental-blue-fg-face ,blue)
        (run-hooks 'my-elemental-theme-change-palette-hook))))
 
 (setup-expecting "elemental-theme"
 
   ;; ;; the solarized-dark theme
   ;; (my-elemental-theme-apply-colors
-  ;;   "#002b36" "#839496" "#b58900" "#cb4b16" "#dc322f"
-  ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
+  ;;   "#002b36" "#839496" "#268bd2" "#859900" "#b58900" "#2aa198"
+  ;;   "#dc322f" "#cb4b16" "#2aa198" "#268bd2")
 
   ;; ;; the solarized-light theme
   ;; (my-elemental-theme-apply-colors
-  ;;   "#fdf6e3" "#657b83" "#b58900" "#cb4b16" "#dc322f"
-  ;;   "#d33682" "#6c71c4" "#268bd2" "#2aa198" "#859900")
+  ;;   "#fdf6e3" "#657b83" "#268bd2" "#859900" "#b58900" "#2aa198"
+  ;;   "#dc322f" "#cb4b16" "#2aa198" "#268bd2")
 
   ;; ;; "jellybeans" palette
   ;; ;; reference | https://github.com/nanotech/jellybeans.vim
   ;; (my-elemental-theme-apply-colors
-  ;;   "#202020" "#939393" "#ffb964" "#8fbfdc" "#a04040"
-  ;;   "#b05080" "#805090" "#fad08a" "#99ad6a" "#8fbfdc")
+  ;;   "#202020" "#939393" "#fad08a" "#8fbfdc" "#ffb964" "#99ad6a"
+  ;;   "#a04040" "#ffb964" "#99ad6a" "#8fbfdc")
 
   ;; ;; "mesa" palette
   ;; ;; reference | http://emacsfodder.github.io/blog/mesa-theme/
   ;; (my-elemental-theme-apply-colors
-  ;;   "#ece8e1" "#4d4d4d" "#3388dd" "#ac3d1a" "#dd2222"
-  ;;   "#8b008b" "#00b7f0" "#1388a2" "#104e8b" "#00688b")
+  ;;   "#ece8e1" "#4d4d4d" "#1388a2" "#00688b" "#3388dd" "#104e8b"
+  ;;   "#dd2222" "#ac3d1a" "#1388a2" "#3388dd")
 
   ;; ;; "tron" palette
   ;; ;; reference | https://github.com/ivanmarcin/emacs-tron-theme/
   ;; (my-elemental-theme-apply-colors
-  ;;   "#000000" "#75797b" "#74abbe" "orange" "red"
-  ;;   "magenta" "violet" "#ec9346" "#e8b778" "#a4cee5")
+  ;;   "#000000" "#75797b" "#ec9346" "#a4cee5" "#74abbe" "#e8b778"
+  ;;   "red" "orange" "#74abbe" "#a4cee5")
 
   ;; ;; "majapahit" palette
   ;; ;; reference | https://gitlab.com/franksn/majapahit-theme/
   ;; (my-elemental-theme-apply-colors
-  ;;   "#2A1F1B" "#887f73" "#768d82" "#d99481" "#bb4e62"
-  ;;   "#db6b7e" "#8e6a60" "#adb78d" "#849f98" "#d4576f")
+  ;;   "#2A1F1B" "#887f73" "#adb78d" "#d4576f" "#768d82" "#849f98"
+  ;;   "#bb4e62" "#d99481" "#adb78d" "#849f98")
 
-  ;; ;; "planet" palette
-  ;; ;; reference | https://github.com/cmack/emacs-planet-theme/
-  ;; (my-elemental-theme-apply-colors
-  ;;   "#192129" "#79828c" "#e9b96e" "#ff8683" "#fe5450"
-  ;;   "#a6a1ea" "SlateBlue" "#729fcf" "#649d8a" "#c4dde8")
+  ;; "planet" palette
+  ;; reference | https://github.com/cmack/emacs-planet-theme/
+  (my-elemental-theme-apply-colors
+    "#192129" "#79828c" "#729fcf" "#c4dde8" "#e9b96e" "#649d8a"
+    "#fe5450" "#ff8683" "#649d8a" "#729fcf")
 
   ;; ;; "kagamine len" inspired palette
   ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
   ;; ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
   ;; (my-elemental-theme-apply-colors
-  ;;   "#fffdf9" "#7e7765" "#db8d2e" "#f77e96" "#f47166"
-  ;;   "#b04d99" "#51981b" "#fda700" "#34bd7d" "#59a9d2")
+  ;;   "#fffdf9" "#7e7765" "#fda700" "#59a9d2" "#db8d2e" "#34bd7d"
+  ;;   "#f47166" "#db8d2e" "#34bd7d" "#59a9d2")
 
   ;; ;; "reykjavik" palette
   ;; ;; reference | https://github.com/mswift42/reykjavik-theme/
   ;; (my-elemental-theme-apply-colors
-  ;;   "#112328" "#798284" "#c1d2b1" "#e86310" "#e81050"
-  ;;   "#c4cbee" "#a3d6cc" "#f1c1bd" "#e6c2db" "#a3d4e8")
+  ;;   "#112328" "#798284" "#f1c1bd" "#a3d4e8" "#c1d2b1" "#e6c2db"
+  ;;   "#e81050" "#e86310" "#c1d2b1" "#a3d4e8")
 
   ;; ;; chillized ("monochrome" inspired palette)
   ;; ;; reference | https://github.com/fxn/monochrome-theme.el/
   ;; (my-elemental-theme-apply-colors
-  ;;   "#1c1c1c" "#7d7d7d" "#9e9e9e" "#9b744c" "#aa6b6b"
-  ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#77889a" "#9e9e9e")
+  ;;   "#1c1c1c" "#7d7d7d" "#c0c0c0" "#9e9e9e" "#9e9e9e" "#77889a"
+  ;;   "#aa6b6b" "#9b744c" "#9e9e9e" "#77889a")
 
   ;; ;; sakura
   ;; (my-elemental-theme-apply-colors
-  ;;   "#192129" "#7d7d7d" "#9e9e9e" "#B0D391" "#FB9A85"
-  ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#F8C3CD" "#9e9e9e")
+  ;;   "#192129" "#7d7d7d" "#c0c0c0" "#9e9e9e" "#9e9e9e" "#F8C3CD"
+  ;;   "#FB9A85" "#F8C3CD" "#B0D391" "#9e9e9e")
 
   ;; ;; green ("monochrome" inspired palette 3)
   ;; (my-elemental-theme-apply-colors
-  ;;   "#000000" "#007100" "#00c000" "#00b000" "#00ca00"
-  ;;   "#00b000" "#00b000" "#00ca00" "#00df00" "#00c000")
+  ;;   "#001000" "#007800" "#00a000" "#00d000" "#00d000" "#00a000"
+  ;;   "#00f000" "#00f000" "#00b000" "#00b000")
 
   ;; ;; less colorful "planet" theme based on "monochrome"
   ;; (my-elemental-theme-apply-colors
-  ;;   "#192129" "#7d7d7d" "#e0b776" "#729fcf" "#ff8683"
-  ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#649d8a" "#9e9e9e")
+  ;;   "#192129" "#7d7d7d" "#c0c0c0" "#9e9e9e" "#e0b776" "#649d8a"
+  ;;   "#ff8683" "#e0b776" "#649d8a" "#729fcf")
 
-  ;; less colorful "planet", green and blue swapped
-  (my-elemental-theme-apply-colors
-    "#192129" "#7d7d7d" "#e0b776" "#649d8a" "#ff8683"
-    "#c0c0c0" "#c0c0c0" "#c0c0c0" "#729fcf" "#9e9e9e")
+  ;; ;; less colorful "planet", green and blue swapped
+  ;; (my-elemental-theme-apply-colors
+  ;;   "#192129" "#7d7d7d" "#c0c0c0" "#9e9e9e" "#e0b776" "#729fcf"
+  ;;   "#ff8683" "#e0b776" "#649d8a" "#729fcf")
 
   ;; ;; icecream
   ;; ;; https://www.pinterest.jp/pin/176555247871619456
   ;; (my-elemental-theme-apply-colors
-  ;;   "#192129" "#7d7d7d" "#fef187" "#f8c3a4" "#f9c9cf"
-  ;;   "#c0c0c0" "#c0c0c0" "#c0c0c0" "#aee2c9" "#9e9e9e")
+  ;;   "#192129" "#7d7d7d" "#c0c0c0" "#9e9e9e" "#fef187" "#aee2c9"
+  ;;   "#f9c9cf" "#f8c3a4" "#aee2c9" "#c0c0c0")
 
   ;; extra mode-line faces
   (set-face-attribute
@@ -3982,17 +3977,17 @@ emacs-lisp-mode."
    :weight  'bold)
   (set-face-attribute
    'mode-line-warning-face nil
-   :inherit 'elemental-accent-fg-3-face)
+   :inherit 'elemental-orange-fg-face)
   (set-face-attribute
    'mode-line-special-mode-face nil
    :inherit 'elemental-accent-fg-4-face
    :weight  'bold)
   (set-face-attribute
    'mode-line-modified-face nil
-   :inherit '(elemental-red-face elemental-bright-bg-face))
+   :inherit '(elemental-red-fg-face elemental-bright-bg-face))
   (set-face-attribute
    'mode-line-read-only-face nil
-   :inherit '(elemental-blue-face elemental-bright-bg-face))
+   :inherit '(elemental-blue-fg-face elemental-bright-bg-face))
   (set-face-attribute
    'mode-line-narrowed-face nil
    :inherit '(elemental-accent-fg-4-face elemental-bright-bg-face))
@@ -4007,17 +4002,14 @@ emacs-lisp-mode."
   (setup-after "highlight-parentheses"
     (hl-paren-set 'hl-paren-colors nil)
     (hl-paren-set 'hl-paren-background-colors
-                  (list (face-background 'elemental-highlight-bg-1-face)))
+                  (list (face-background 'elemental-brighter-bg-face)))
     ;; re-apply colors when the palette is changed
     (setup-hook 'my-elemental-theme-change-palette-hook
       (hl-paren-set 'hl-paren-background-colors
-                    (list (face-background 'elemental-highlight-bg-1-face)))))
+                    (list (face-background 'elemental-brighter-bg-face)))))
 
   (setup-after "cperl-mode"
-    (set-face-attribute 'cperl-hash-key-face nil
-                        :inherit    'elemental-bright-fg-face
-                        :foreground 'unspecified
-                        :background 'unspecified))
+    (set-face-attribute 'cperl-hash-key-face nil :inherit 'elemental-key))
   )
 
 ;;   + Misc: built-ins
