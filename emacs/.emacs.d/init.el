@@ -4069,7 +4069,8 @@ emacs-lisp-mode."
     (stripe-buffer-mode 1)
     (setq-local face-remapping-alist (cons '(hl-line . stripe-hl-line) face-remapping-alist)))
   ;; workaround emacs 27.1 support
-  (set-face-attribute 'stripe-highlight nil :extend t))
+  (set-face-attribute 'stripe-highlight nil :extend t)
+  (set-face-attribute 'stripe-hl-line nil :extend t))
 
 ;; make GUI modern
 (setup "sublimity"
