@@ -39,4 +39,6 @@
 
 (defun my-transpose-words ()
   (interactive)
-  (transpose-words -1))
+  (if (bound-and-true-p jaword-mode)
+      (jaword-transpose -1)
+    (transpose-words -1)))
