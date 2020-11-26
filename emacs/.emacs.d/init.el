@@ -4204,8 +4204,7 @@ emacs-lisp-mode."
 (setup-keybinds nil
   "C--"   '("undo-tree" undo-tree-undo undo)
   "C-M--" '("undo-tree" undo-tree-redo repeat-complex-command)
-  "M-_"   '("undo-tree" undo-tree-undo undo) ; not working ?
-  )
+  "M-_"   '("undo-tree" undo-tree-undo undo))
 
 ;;     + mark, region
 
