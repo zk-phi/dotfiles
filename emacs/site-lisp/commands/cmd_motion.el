@@ -15,14 +15,33 @@
   (when (looking-back "^[\s\t]*" (point-at-bol))
     (let (goal-column) (back-to-indentation))))
 
-(defun my-smart-bol ()
-  "beginning-of-line or back-to-indentation"
+(defun my-smart-eol ()
+  "end-of-visual-line or end-of-line"
   (interactive)
-  (let ((command (if (eq last-command 'back-to-indentation)
-                     'beginning-of-line
-                   'back-to-indentation)))
-    (setq this-command command)
-    (funcall command)))
+  (let ((initial (point)))
+    (end-of-visual-line)
+    (when (= (point) (save-excursion (beginning-of-visual-line) (point)))
+      (forward-char -1))
+    (when (and (= (point) initial) (not (eolp)))
+      (forward-char 1)
+      (end-of-visual-line))))
+
+(defun my-smart-bol ()
+  "beginning-of-visual-line or beginning-of-line or back-to-indentation"
+  (interactive)
+  (let ((initial (point))
+        (back (looking-back "^\\s *" (point-at-bol)))
+        (forward (looking-at "\\s ")))
+    (if back
+        (if forward
+            (skip-syntax-forward " " (point-at-eol))
+          (beginning-of-line 1))
+      (beginning-of-visual-line)
+      (when (= (point) initial)
+        (forward-char -1)
+        (beginning-of-visual-line))
+      (when (bolp)
+        (skip-syntax-forward " " (point-at-eol))))))
 
 ;; blank-line-delimited navigation
 

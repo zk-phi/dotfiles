@@ -1338,6 +1338,7 @@ unary operators which can also be binary."
   '(my-next-line
     my-previous-line
     my-smart-bol
+    my-smart-eol
     my-next-blank-line
     my-previous-blank-line
     my-jump-back!) "cmd_motion")
@@ -4179,7 +4180,7 @@ emacs-lisp-mode."
 
 (setup-keybinds nil
   "C-j"   'my-smart-bol
-  "C-e"   'move-end-of-line
+  "C-e"   'my-smart-eol
   "C-M-j" 'beginning-of-defun
   "C-M-e" 'end-of-defun
   "M-l"   'goto-line
