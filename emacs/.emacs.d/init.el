@@ -16,41 +16,41 @@
 
 ;; + Cheat Sheet :
 ;; + | global
-;;   + Ctrl-
 
-;; C-_
-;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Undo|Zoom+|     |     |
-;;    | Quot| Cut | End |Rplce|TrsWd| Yank| PgUp| Tab | Open| U p |(ESC)|     |
-;;       |MCNxt|Serch|Delte|Right| Quit| B S | Home|KilLn|Centr|Comnt|     |
-;;          |     |  *  |  *  | PgDn| Left| Down|Retrn|ExpRg|GitCp|     |
+;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  |  -  |  =  |  `  |
+;;    |  Q  |  W  |  E  |  R  |  T  |  Y  |  U  |  I  |  O  |  P  |  [  |  ]  |
+;;       |  A  |  S  |  D  |  F  |  G  |  H  |  J  |  K  |  L  |  ;  |  '  |  \  |
+;;          |  Z  |  X  |  C  |  V  |  B  |  N  |  M  |  ,  |  .  |  /  |
 
-;; C-M-_
-;; |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  0  | Redo|Zoom-|     |     |
-;;    |     | Copy|EdDef|RplAl|TrsLn|YankS|BgBuf| Fill|NLBet|BPgph|(ESC)|     |
-;;       |MCAll|SrchB|KilWd|FWord|Abort|BKlWd|BgDef|BKlLn| Top |     |     |
-;;          |     |     | Calc|EdBuf|BWord|NPgph|FwRet|MrkAl|Imprt|     |
+;; C-* (Basic commands)
+;; | A 1 | A 2 | A 3 | A 4 | A 5 | A 6 | A 7 | A 8 | A 9 | A 0 | Undo|Zoom+|     |
+;;    | Quot| Cut |EdLin|Rplce|TrsWd| Yank| PgUp|(TAB)| Open|BwLin|(ESC)|     |
+;;       |MCNxt|Serch|Delte|FwChr| Quit|(B S)|BgLin|KilLn|ReCnt|Comnt|     |     |
+;;          |     | C-x | C-c | PgDn|BwChr|FwLin|(RET)| Mark| Incl|     |
 
-;;   + Meta-
+;; C-M-* (Modded commands)
+;; | A 1 | A 2 | A 3 | A 4 | A 5 | A 6 | A 7 | A 8 | A 9 | A 0 | Redo|Zoom-|     |
+;;    |     | Copy|EdDef|RplAl|TrsLn|YnkSn|BgBuf| Fill|OpBtw|BPgph|(ESC)|     |
+;;       |MCAll|SrcBw|KilWd|FwWrd|Abort|BwKWd|BgDef|BwKLn|ReTop|     |     |     |
+;;          |     |EvDef| Calc|EdBuf|BwWrd|FPgph|FwRet|MrkAl|     |     |
 
-;; M-_
-;; |KlWnd|MkWnd|Blnce|     |     |     |     |SwWnd|PvWnd|NxWnd|LstCg|     |     |     |
-;;    |Scrat|Palet| Eval|Recnt|Table|YankP|UndoT|Shell|Opcty|EvalP|     |     |
-;;       |Artst| All |Dired| File| Grep|Shrnk|Anthg|KlWnd| Goto|     |     |
-;;          |     |Comnd|Cmpil|     |Buffr|Narrw|DMcro|     |     |     |
+;; M-Shift-* (Sexpwise commands)
+;; |     |     |     |     |     |     |     | Barf|Wrap(|Slurp| Undo|     |     |
+;;    |     |CpyEx|EvlRp|Raise|TrsEx|YnkRp|Splce|IndEx| Open|UpExp|Wrap[|     |
+;;       |     |SplEx|KlExp|FwExp| Quit|KilEx|JoiEx|BwKEx|ReCnt|CmtEx|Wrap"|     |
+;;          |     |     |Convo|     |BwExp|DnExp|Retrn|MrkEx|     |     |
 
-;; M-Shift-
-;; |     |     |     |     |     |     |     | Barf|Wrap(|Slurp| Undo|     |     |     |
-;;    |     |CpSex|EvlRp|Raise|TrsSx|YnkRp|Splce|IndtX| Open|UpLst|Wrap[|     |
-;;       |     |SpltS|KlSex|FwrdX|     |KillX|JoinX|KillX|Centr|CmntX|Wrap"|
-;;          |     |     |Convo| Mark|BackX|DnLst|Retrn|MkSex|     |     |
+;; M-* (Other Commands 1)
+;; |KlAWn|MkWnd|RszWn|     |     |     |     |TrWnd|PvWnd|NxWnd|JmpBk|     |     |
+;;    |Scrat|Palet| Eval|Recnt|Table|YankP|UndoT|Shell|Opcty|EvlPr|     |     |
+;;       |Artst|GrpFl|Dired|FFile|GrpDr|Shrnk|iMenu|KlWnd|GotoL|     |     |     |
+;;          |     | M-x |Cmpil|     |SwBuf|Narrw|DMcro|     |     |     |
 
-;;   + C-x -
-
-;; C-x C-_
-;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|WUndo| Diff|     |     |
-;;    |     |Write|Encod|Revrt|Trnct|     |Untab|     |     |Bckup|(ESC)|     |
-;;       |MFile| Save|     |FFlat|     |OthrF|     |KilBf|CgLog|     |     |
-;;          |     |Rname|Close|     |Bffrs|     |ExMcr|  DL |     |     |
+;; C-x C-* (Other commands 2)
+;; |     |     |     |     |     |     |     |     |BgMcr|EdMcr|     | Diff|     |
+;;    |     |Write|Encod|Revrt|Trnct|     |Untab|     |     |Rstor|(ESC)|     |
+;;       |     | Save|     |FFFlt|     | Xref|     |KilBf|     |     |     |     |
+;;          |     |Rname|Close|     |BfLst|     |RnMcr|  DL |     |     |
 
 ;; key-chord
 ;;
@@ -59,38 +59,37 @@
 ;; - kk : upcase word
 ;; - jj : downcase word
 ;;
-;; - sf : iy-go-to-char-backward
-;; - jl : iy-go-to-char
-;; - fe,fr : dabbrev (git-complete) / yas-next-field
-;; - ji,jo : dabbrev (git-complete) / yas-next-field
+;; - fd : iy-go-to-char-backward
+;; - jk : iy-go-to-char
+;; - ji : dabbrev (git-complete) / yas-next-field
 
 ;; special keys
 ;;
-;; -    <f1> : help prefix
-;; -  M-<f4> : kill-emacs
+;; -   <f1> : help prefix
+;; - M-<f4> : kill-emacs
 ;;
-;; -     TAB : indent / ac-expand
-;; -   C-RET : phi-rectangle-set-mark-command
-;; -   C-SPC : set-mark-command / visible-register / exchange-point-and-mark
+;; -   TAB : indent / complete
+;; - C-RET : phi-rectangle-set-mark-command
+;; - C-SPC : set-mark-command / visible-register / exchange-point-and-mark
 
 ;; + | orgtbl-mode
 
-;; C-_
-;; |     | Edit|     |     |     |     |     |     |     |     |     |ColFm|     |     |
+;; C-*
+;; |     | Edit|     |     |     |     |     |     |     |     |     |ColFm|     |
 ;;    |     |RcCut|     |     |TrRow|RcPst|     |FwCel|InRow|     |     |     |
-;;       |     |     |     |     |     |     |     |     |     |     |     |
+;;       |     |     |     |     |     |     |     |     |     |     |     |     |
 ;;          |     |     |     |     |     |     |FwRow|     |     | Sort|
 
-;; C-M-_
-;; |     |     |     |     |     |     |     |     |     |     |     |CelFm|     |     |
+;; C-M-*
+;; |     |     |     |     |     |     |     |     |     |     |     |CelFm|     |
 ;;    |     |     |     |     |TrCol|AFill|     |InCol|InHrl|     |     |     |
-;;       |     |     |     |FwCel|     |     |     |     |     |     |     |
+;;       |     |     |     |FwCel|     |     |     |     |     |     |     |     |
 ;;          |     |     |     |     |BwCel|     |HrFwR|     |     |     |
 
-;; M-_
-;; |     |     |     |     |     |     |     |     |     |     |     |     |     |     |
+;; M-*
+;; |     |     |     |     |     |     |     |     |     |     |     |     |     |
 ;;    |     |     | Eval|     |     |     |     |     |     |     |     |     |
-;;       |     |     |     |     |     |     |     |     |     |     |     |
+;;       |     |     |     |     |     |     |     |     |     |     |     |     |
 ;;          |     |     |     |     |     |     |     |     |     |     |
 
 ;; + Code :
@@ -4102,9 +4101,17 @@ emacs-lisp-mode."
 ;;   + keyboard
 ;;   + | ignored keys
 
+;; ignore (disable translation too)
 (setup-keybinds nil
   "<escape>" 'ignore
   "C-M-S-n"  'ignore                    ; mute discord
+  )
+
+;; disable some confusing commands
+(setup-keybinds nil
+  "C-z" nil                             ; suspend-frame
+  "C-/" nil                             ; undo (built-in)
+  '("C-\\" "C-`") nil                   ; toggle-input-method
   )
 
 ;;   + | fundamental
@@ -4122,12 +4129,14 @@ emacs-lisp-mode."
 
 (setup-keybinds nil
   "C-g"     'keyboard-quit
+  "M-G"     'keyboard-quit
   "C-M-g"   'abort-recursive-edit
   "M-e"     'my-eval-sexp-dwim
   "M-E"     'my-eval-and-replace-sexp
   "M-p"     '("ipretty" ipretty-last-sexp eval-print-last-sexp)
   "M-x"     '("smex" smex execute-extended-command)
   "M-m"     '("dmacro" dmacro-exec repeat)
+  "C-M-x"   'eval-defun
   "C-x C-c" 'save-buffers-kill-emacs
   "C-x C-0" 'kmacro-end-macro
   "C-x C-9" 'kmacro-start-macro
@@ -4351,22 +4360,12 @@ emacs-lisp-mode."
   (key-chord-define-global "jj" 'my-upcase-previous-word)
   (key-chord-define-global "kk" 'my-downcase-previous-word)
   (setup-hook 'prog-mode-hook
-    (key-chord-define-local "fr" 'my-dabbrev-expand)
-    (key-chord-define-local "fe" 'my-dabbrev-expand)
-    (key-chord-define-local "ji" 'my-dabbrev-expand)
-    (key-chord-define-local "jo" 'my-dabbrev-expand))
+    (key-chord-define-local "ji" 'my-dabbrev-expand))
   (setup-after "yasnippet"
-    (key-chord-define yas-keymap "fr" 'my-yas-next-field-or-dabbrev-expand)
-    (key-chord-define yas-keymap "fe" 'my-yas-next-field-or-dabbrev-expand)
     (key-chord-define yas-keymap "ji" 'my-yas-next-field-or-dabbrev-expand)
-    (key-chord-define yas-keymap "jo" 'my-yas-next-field-or-dabbrev-expand)
     ;; move to the next field even while company is in action
     (setup-after "company"
-      (key-chord-define company-active-map "fr" 'my-yas-next-field-or-dabbrev-expand)
-      (key-chord-define company-active-map "fe" 'my-yas-next-field-or-dabbrev-expand)
-      (key-chord-define company-active-map "ji" 'my-yas-next-field-or-dabbrev-expand)
-      (key-chord-define company-active-map "jo" 'my-yas-next-field-or-dabbrev-expand))
-    )
+      (key-chord-define company-active-map "ji" 'my-yas-next-field-or-dabbrev-expand)))
   (setup-expecting "iy-go-to-char"
     (key-chord-define-global "fd" 'iy-go-to-char-backward)
     (key-chord-define-global "jk" 'iy-go-to-char)))
