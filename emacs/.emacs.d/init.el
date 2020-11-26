@@ -707,7 +707,7 @@ cons of two integers which defines a range of the codepoints."
          ;; NOTE: `company-css' is deprecated in Emacs>=26 since
          ;; `css-mode' now supports CAPF. But I want to enable
          ;; `company-css' since `web-mode' does not support CAPF.
-         '(company-files           ; complete file name if appropreate
+         '(company-files
            (company-css :with company-dabbrev-code company-my-current-file-name)
            (company-capf :with company-dabbrev-code company-my-current-file-name)
            (company-keywords :with company-dabbrev-code company-my-current-file-name)
