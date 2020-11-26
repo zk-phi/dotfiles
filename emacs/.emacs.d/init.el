@@ -725,8 +725,9 @@ cons of two integers which defines a range of the codepoints."
      "C-v" 'company-next-page
      "C-s" 'company-filter-candidates
      "TAB" 'company-complete-common-or-cycle
+     "RET" 'company-complete-selection
      "<S-tab>" 'company-select-previous
-     '("<f1>" "<tab>") nil)
+     '("<f1>" "<tab>" "<return>") nil)
    (setup-keybinds company-search-map
      "C-p" 'company-search-repeat-backward
      "C-n" 'company-search-repeat-forward)))
