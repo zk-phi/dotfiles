@@ -184,6 +184,10 @@
   (! (concat my-dat-directory "company_" (system-name)))
   "File to save company-statistics history.")
 
+(defconst my-company-same-mode-buffers-history-file
+  (! (concat my-dat-directory "company-smb_" (system-name)))
+  "File to save company-same-mode-buffers history.")
+
 (defconst my-ido-save-file
   (! (concat my-dat-directory "ido_" (system-name)))
   "File to save ido history.")
@@ -690,28 +694,29 @@ cons of two integers which defines a range of the codepoints."
      (interactive (list 'interactive))
      (cl-case command
        (interactive (company-begin-backend 'company-my-current-file-name))
-       (prefix (and (or (eq t company-dabbrev-code-modes)
-                        (apply #'derived-mode-p company-dabbrev-code-modes))
-                    buffer-file-name
+       (prefix (and buffer-file-name
                     (not (file-remote-p buffer-file-name))
                     (company-grab-symbol)))
        (candidates (all-completions arg (list (file-name-base buffer-file-name))))))
+   (setq completion-styles '(basic partial-completion flex))
    (setq company-idle-delay 0
          company-dabbrev-downcase nil
          company-minimum-prefix-length 2
          company-selection-wrap-around t
          company-tooltip-align-annotations t
-         company-transformers '(company-sort-by-backend-importance)
-         company-backends
-         ;; NOTE: `company-css' is deprecated in Emacs>=26 since
-         ;; `css-mode' now supports CAPF. But I want to enable
-         ;; `company-css' since `web-mode' does not support CAPF.
-         '(company-files
-           (company-css :with company-dabbrev-code company-my-current-file-name)
-           (company-capf :with company-dabbrev-code company-my-current-file-name)
-           (company-keywords :with company-dabbrev-code company-my-current-file-name)
-           (company-dabbrev-code :with company-my-current-file-name)
-           company-dabbrev))
+         company-transformers '(company-sort-by-backend-importance))
+   (setup "company-same-mode-buffers"
+     (setq company-same-mode-buffers-history-file my-company-same-mode-buffers-history-file
+           company-backends
+           ;; NOTE: `company-css' is deprecated in Emacs>=26 since
+           ;; `css-mode' now supports CAPF. But I want to enable
+           ;; `company-css' since `web-mode' does not support CAPF.
+           '(company-files
+             (company-css :with company-my-current-file-name)
+             (company-capf :with company-my-current-file-name)
+             (company-keywords :with company-same-mode-buffers company-my-current-file-name)
+             (company-same-mode-buffers :with company-my-current-file-name)))
+     (company-same-mode-buffers-initialize))
    (global-company-mode)
    (setup "company-statistics"
      (setq company-statistics-file my-company-history-file)
