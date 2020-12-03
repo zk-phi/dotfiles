@@ -698,7 +698,6 @@ cons of two integers which defines a range of the codepoints."
                     (not (file-remote-p buffer-file-name))
                     (company-grab-symbol)))
        (candidates (all-completions arg (list (file-name-base buffer-file-name))))))
-   (setq completion-styles '(basic partial-completion flex))
    (setq company-idle-delay 0
          company-require-match 'never
          company-dabbrev-downcase nil
@@ -713,8 +712,7 @@ cons of two integers which defines a range of the codepoints."
            ;; `css-mode' now supports CAPF. But I want to enable
            ;; `company-css' since `web-mode' does not support CAPF.
            '(company-files
-             (company-css :with company-my-current-file-name)
-             (company-capf :with company-my-current-file-name)
+             (company-css :with company-same-mode-buffers company-my-current-file-name)
              (company-keywords :with company-same-mode-buffers company-my-current-file-name)
              (company-same-mode-buffers :with company-my-current-file-name)))
      (company-same-mode-buffers-initialize))
