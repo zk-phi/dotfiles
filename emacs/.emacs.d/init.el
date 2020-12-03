@@ -700,6 +700,7 @@ cons of two integers which defines a range of the codepoints."
        (candidates (all-completions arg (list (file-name-base buffer-file-name))))))
    (setq completion-styles '(basic partial-completion flex))
    (setq company-idle-delay 0
+         company-require-match 'never
          company-dabbrev-downcase nil
          company-minimum-prefix-length 2
          company-selection-wrap-around t
