@@ -716,7 +716,8 @@ cons of two integers which defines a range of the codepoints."
              (company-css :with company-same-mode-buffers company-my-current-file-name)
              (company-keywords :with company-same-mode-buffers company-my-current-file-name)
              (company-capf :with company-same-mode-buffers company-my-current-file-name)
-             (company-same-mode-buffers :with company-my-current-file-name)))
+             (company-same-mode-buffers :with company-my-current-file-name)
+             company-dabbrev))
      (company-same-mode-buffers-initialize))
    (global-company-mode)
    (setup "company-statistics"
