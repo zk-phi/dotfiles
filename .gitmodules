@@ -256,3 +256,6 @@
 [submodule "emacs/site-lisp/my-plugins/company-same-mode-buffers"]
 	path = emacs/site-lisp/my-plugins/company-same-mode-buffers
 	url = https://github.com/zk-phi/company-same-mode-buffers.git
+[submodule "emacs/site-lisp/my-plugins/company-dwim"]
+	path = emacs/site-lisp/my-plugins/company-dwim
+	url = https://github.com/zk-phi/company-dwim.git
