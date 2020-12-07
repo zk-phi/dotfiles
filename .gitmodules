@@ -259,3 +259,6 @@
 [submodule "emacs/site-lisp/my-plugins/company-dwim"]
 	path = emacs/site-lisp/my-plugins/company-dwim
 	url = https://github.com/zk-phi/company-dwim.git
+[submodule "emacs/site-lisp/my-plugins/company-anywhere"]
+	path = emacs/site-lisp/my-plugins/company-anywhere
+	url = https://github.com/zk-phi/company-anywhere.git
