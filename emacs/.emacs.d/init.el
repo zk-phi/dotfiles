@@ -704,10 +704,16 @@ cons of two integers which defines a range of the codepoints."
          company-minimum-prefix-length 2
          company-selection-wrap-around t
          company-tooltip-align-annotations t
-         company-transformers '(company-sort-by-backend-importance))
+         company-transformers '(company-sort-by-backend-importance)
+         company-backends
+         '(company-files
+           (company-css :with company-dabbrev-code company-my-current-file-name)
+           (company-keywords :with company-dabbrev-code company-my-current-file-name)
+           (company-capf :with company-dabbrev-code company-my-current-file-name)
+           (company-dabbrev-code :with company-my-current-file-name)
+           company-dabbrev))
    (setup "company-same-mode-buffers"
      (setq company-same-mode-buffers-history-file my-company-same-mode-buffers-history-file
-           completion-styles '(basic partial-completion flex)
            company-backends
            ;; NOTE: `company-css' is deprecated in Emacs>=26 since
            ;; `css-mode' now supports CAPF. But I want to enable
@@ -715,7 +721,6 @@ cons of two integers which defines a range of the codepoints."
            '(company-files
              (company-css :with company-same-mode-buffers company-my-current-file-name)
              (company-keywords :with company-same-mode-buffers company-my-current-file-name)
-             (company-capf :with company-same-mode-buffers company-my-current-file-name)
              (company-same-mode-buffers :with company-my-current-file-name)
              company-dabbrev))
      (company-same-mode-buffers-initialize))
