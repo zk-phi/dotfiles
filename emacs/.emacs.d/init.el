@@ -725,17 +725,42 @@ cons of two integers which defines a range of the codepoints."
              company-dabbrev))
      (company-same-mode-buffers-initialize))
    (global-company-mode)
+   (setup "company-anywhere")
+   (setup "company-dwim"
+     (setq company-frontends
+           '(company-pseudo-tooltip-unless-just-one-frontend
+             company-dwim-frontend
+             company-echo-metadata-frontend)))
+   (setup-fallback "company-dwim"
+     (require 'company-tng)
+     (defun company-my-preview-unless-selected-frontend (command)
+       (cl-case command
+         (pre-command (company-preview-hide))
+         (post-command
+          (unless company-selection
+            (cond ((and (company-preview-common--show-p)
+                        (not (string= company-prefix company-common)))
+                   (company-preview-show-at-point (point) company-common))
+                  (company-candidates
+                   (company-preview-show-at-point (point) (nth 0 company-candidates))))))
+         (hide (company-preview-hide))))
+     (company-tng-mode)
+     (setq company-frontends
+           '(company-tng-frontend
+             company-pseudo-tooltip-unless-just-one-frontend
+             company-my-preview-unless-selected-frontend
+             company-echo-metadata-frontend)))
    (setup "company-statistics"
      (setq company-statistics-file my-company-history-file)
      (push 'company-sort-by-statistics company-transformers)
      (company-statistics-mode))
    (setup-keybinds company-active-map
-     "C-p" 'company-select-previous
-     "C-n" 'company-select-next
+     "C-p" '("company-dwim" company-dwim-select-previous company-select-previous)
+     "C-n" '("company-dwim" company-dwim-select-next company-select-next)
      "C-u" 'company-previous-page
      "C-v" 'company-next-page
      "C-s" 'company-filter-candidates
-     "TAB" 'company-complete-common-or-cycle
+     "TAB" '("company-dwim" company-dwim company-complete-common-or-cycle)
      "RET" 'company-complete-selection
      "<S-tab>" 'company-select-previous
      '("<f1>" "<tab>" "<return>") nil)
