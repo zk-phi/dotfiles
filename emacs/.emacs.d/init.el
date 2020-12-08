@@ -224,10 +224,14 @@
         (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
         (match-string 1)))))
 
+(defvar my-abbrev-branch-name-len 24)
+
 (defsubst my-abbrev-branch-name (name)
   (and name
        (let ((str (replace-regexp-in-string "\\([aeiouAEIOU]\\)[aeiouAEIOU]" "\\1" name)))
-         (if (> (length str) 4) (substring str 0 4) str))))
+         (if (> (length str) my-abbrev-branch-name-len)
+             (substring str 0 my-abbrev-branch-name-len)
+           str))))
 
 (defun my-open-file (file)
   (!cond ((eq system-type 'windows-nt)
