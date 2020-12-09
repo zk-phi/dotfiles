@@ -708,7 +708,9 @@ cons of two integers which defines a range of the codepoints."
          company-minimum-prefix-length 2
          company-selection-wrap-around t
          company-tooltip-align-annotations t
-         company-transformers '(company-sort-by-backend-importance)
+         company-transformers
+         '(company-sort-by-backend-importance
+           company-sort-prefer-same-case-prefix)
          company-backends
          '(company-files
            (company-css :with company-dabbrev-code company-my-current-file-name)
