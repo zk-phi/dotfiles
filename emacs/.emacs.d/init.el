@@ -738,25 +738,6 @@ cons of two integers which defines a range of the codepoints."
            '(company-pseudo-tooltip-unless-just-one-frontend
              company-dwim-frontend
              company-echo-metadata-frontend)))
-   (setup-fallback "company-dwim"
-     (require 'company-tng)
-     (defun company-my-preview-unless-selected-frontend (command)
-       (cl-case command
-         (pre-command (company-preview-hide))
-         (post-command
-          (unless company-selection
-            (cond ((and (company-preview-common--show-p)
-                        (not (string= company-prefix company-common)))
-                   (company-preview-show-at-point (point) company-common))
-                  (company-candidates
-                   (company-preview-show-at-point (point) (nth 0 company-candidates))))))
-         (hide (company-preview-hide))))
-     (company-tng-mode)
-     (setq company-frontends
-           '(company-tng-frontend
-             company-pseudo-tooltip-unless-just-one-frontend
-             company-my-preview-unless-selected-frontend
-             company-echo-metadata-frontend)))
    (setup "company-statistics"
      (setq company-statistics-file my-company-history-file)
      (push 'company-sort-by-statistics company-transformers)
