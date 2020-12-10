@@ -4231,7 +4231,7 @@ emacs-lisp-mode."
 
 (setup-keybinds nil
   "C-j"   'my-smart-bol
-  "C-e"   'my-smart-eol
+  "C-e"   'end-of-line
   "C-M-j" 'beginning-of-defun
   "C-M-e" 'end-of-defun
   "M-l"   'goto-line
