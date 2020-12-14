@@ -342,6 +342,7 @@
       echo-keystrokes                       0.1
       delete-by-moving-to-trash             t
       scroll-preserve-screen-position       t
+      line-spacing                          0
       ;; select.el
       select-enable-clipboard               t
       ;; mule-cmds.el
@@ -434,15 +435,12 @@ cons of two integers which defines a range of the codepoints."
   (!cond
    ;; https://github.com/zk-phi/nasia
    ((member "nasia" (font-family-list))
-    (set-face-attribute 'default nil :family "nasia" :height 140)
-    (setq-default line-spacing 0.1))
+    (set-face-attribute 'default nil :family "nasia" :height 140))
    ;; https://github.com/zk-phi/code8903
    ((member "code8903" (font-family-list))
-    (set-face-attribute 'default nil :family "code8903" :height 130)
-    (setq-default line-spacing 0.1))
+    (set-face-attribute 'default nil :family "code8903" :height 130))
    (t
-    (set-face-attribute 'default nil :family "Monaco" :height 130)
-    (setq-default line-spacing 0)))
+    (set-face-attribute 'default nil :family "Monaco" :height 130)))
   ;; unicode (fallback)
   (!cond
    ((member "nasia" (font-family-list))
