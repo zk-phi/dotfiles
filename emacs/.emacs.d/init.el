@@ -3537,28 +3537,6 @@ emacs-lisp-mode."
 
 ;;   + | the mode-line-format
 
-(defvar my-mode-line-battery-indicator-colors
-  ;; (mapcar (lambda (x)  (apply 'color-rgb-to-hex (color-hsl-to-rgb x 0.5 0.5)))
-  ;;         '(0.00 0.045 0.091 0.136 0.182 0.227 0.273 0.318 0.363 0.409 0.455 0.500))
-  '("#bf3f3f" "#bf623f" "#bf853f" "#bfa73f" "#b3bf3f" "#91bf3f"
-    "#6dbf3f" "#4bbf3f" "#3fbf56" "#3fbf79" "#3fbf9c" "#3fbfbf"))
-
-;; battery status
-(defvar my-battery-status nil "cons of (PERCENTILE . CHARGING)")
-(!-
- (setup "battery"
-   (defun my-update-battery-status ()
-     (let* ((stat (funcall battery-status-function))
-            (percentile (read (cdr (assoc ?p stat))))
-            (charging (member (cdr (assoc ?L stat)) '("AC" "on-line")))
-            (last-stat my-battery-status))
-       (when (numberp percentile)
-         (setq my-battery-status (cons percentile charging))
-         (unless (equal last-stat my-battery-status)
-           (force-mode-line-update)))))
-   (my-update-battery-status)
-   (run-with-timer 0 60 'my-update-battery-status)))
-
 ;; scratch-palette status
 (defvar-local my-palette-available-p nil)
 (setup-after "scratch-palette"
@@ -3573,42 +3551,22 @@ emacs-lisp-mode."
   (define-advice scratch-palette-kill (:after (&rest _))
     (my-update-palette-status)))
 
-;; ramen timer
-(defvar my-ramen-start-time nil)
-(defvar my-ramen-timer-object nil)
-(defun my-ramen ()
-  (interactive)
-  (cond (my-ramen-start-time
-         (setq my-ramen-start-time nil)
-         (cancel-timer my-ramen-timer-object))
-        (t
-         (setq my-ramen-start-time   (and (not my-ramen-start-time) (current-time))
-               my-ramen-timer-object (run-with-timer 0 1 'force-mode-line-update)))))
-
-(defvar-local my-current-branch-name nil)
-(setup-hook 'find-file-hook
-  (when buffer-file-name
-    (setq my-current-branch-name (my-abbrev-branch-name (my-get-branch-name buffer-file-name)))))
-
 (defsubst my-mode-line--macro ()
   (if defining-kbd-macro
       (! (propertize "● " 'face 'mode-line-warning-face))
     ""))
 
-(defconst my-mode-line--separator
-  (! (propertize " : " 'face 'mode-line-dark-face)))
-
 (defsubst my-mode-line--linum ()
   (if (not mark-active)
-      (! (propertize "%5l" 'face 'mode-line-bright-face))
-    (propertize (format "%5d" (- (region-end) (region-beginning)))
+      (! (propertize "%l" 'face 'mode-line-bright-face))
+    (propertize (format "%d" (- (region-end) (region-beginning)))
                 'face 'mode-line-highlight-face)))
 
 ;; either linum or colnum must be %-notated to be updated correctrly
 (defsubst my-mode-line--colnum ()
   (if (not mark-active)
-      (propertize "%3c" 'face 'mode-line-bright-face)
-    (propertize (format "%3d" (count-lines (region-beginning) (region-end)))
+      (propertize "%c" 'face 'mode-line-bright-face)
+    (propertize (format "%d" (count-lines (region-beginning) (region-end)))
                 'face 'mode-line-highlight-face)))
 
 (defsubst my-mode-line--indicators ()
@@ -3629,11 +3587,6 @@ emacs-lisp-mode."
 (defconst my-mode-line--filename
   (! (propertize "%b" 'face 'mode-line-highlight-face)))
 
-(defsubst my-mode-line--branch ()
-  (if my-current-branch-name
-      (propertize (concat "/" my-current-branch-name) 'face 'mode-line-bright-face)
-    ""))
-
 (defsubst my-mode-line--palette-status ()
   (if my-palette-available-p
       (! (propertize ":p" 'face 'mode-line-palette-face))
@@ -3652,7 +3605,7 @@ emacs-lisp-mode."
          (unless (eq (car my-mode-line--mode-name-cache) major-mode)
            (setq my-mode-line--mode-name-cache
                  (cons major-mode
-                       (propertize (format-mode-line mode-name) 'face 'mode-line-bright-face))))
+                       (propertize (format-mode-line mode-name) 'face 'mode-line-dark-face))))
          (cdr my-mode-line--mode-name-cache))))
 
 (defsubst my-mode-line--process ()
@@ -3667,49 +3620,26 @@ emacs-lisp-mode."
                             ((0) ?u) ((1) ?d) ((2) ?m) (else ?-)))))
               'face 'mode-line-dark-face))
 
-(defun my-time-string ()
-  (propertize (format-time-string " %d %H:%M ") 'face 'mode-line-bright-face))
-(!-
- (setup "sky-color-clock"
-   (sky-color-clock-initialize 35.40)
-   (setq sky-color-clock-enable-emoji-icon    t
-         sky-color-clock-enable-daytime-emoji t)
-   (!when my-openweathermap-api-key
-     (!-
-      (setup-silently
-       (sky-color-clock-initialize-openweathermap-client (! my-openweathermap-api-key) 1850144))))
-   (defun my-time-string () (sky-color-clock))))
-
-(defsubst my-mode-line--clock ()
-  (if (null my-ramen-start-time)
-      (my-time-string)
-    (propertize
-     (format-time-string "%M:%S" (time-subtract (current-time) my-ramen-start-time))
-     'face 'mode-line-highlight-face)))
-
-(defsubst my-mode-line--battery-status ()
-  (let* ((index (if my-battery-status (/ (floor (car my-battery-status)) 10) 11))
-         (str (nth index
-                   '("₀_" "₁▁" "₂▂" "₃▃" "₄▄" "₅▅" "⁶▅" "⁷▆" "⁸▇" "⁹█" "⁰█" "N/A"))))
-    (if (cdr my-battery-status)
-        (propertize str 'face 'mode-line-dark-face)
-      (propertize str 'face `(:foreground ,(nth index my-mode-line-battery-indicator-colors))))))
+(defconst my-mode-line--vertical-spacer
+  (! (concat (propertize " " 'display '(raise +0.15))
+             (propertize " " 'display '(raise -0.15)))))
 
 (defun my-generate-mode-line-format ()
   (let* ((lstr
           (concat (my-mode-line--macro)
-                  (my-mode-line--linum) my-mode-line--separator
-                  (my-mode-line--colnum) my-mode-line--separator
-                  (my-mode-line--indicators) my-mode-line--separator
-                  my-mode-line--filename (my-mode-line--branch)
-                  (my-mode-line--palette-status) my-mode-line--recur-status))
+                  (my-mode-line--indicators) " "
+                  my-mode-line--filename
+                  (my-mode-line--palette-status)
+                  my-mode-line--recur-status
+                  my-mode-line--vertical-spacer))
          (rstr
-          ;; right half must not contain "%" notation otherwise we
-          ;; cannot determine the size of right margin
-          (concat my-mode-line--separator
-                  (my-mode-line--mode-name) (my-mode-line--process) " "
-                  (my-mode-line--encoding) my-mode-line--separator
-                  (my-mode-line--clock) " " (my-mode-line--battery-status)))
+          ;; use format-mode-line to get "correct" string width
+          (format-mode-line
+           (list (my-mode-line--mode-name)
+                 (my-mode-line--process) " "
+                 (my-mode-line--encoding) " "
+                 (my-mode-line--linum) ":"
+                 (my-mode-line--colnum))))
          (lmargin
           (propertize " " 'display '((space :align-to (+ 1 left-fringe)))))
          (rmargin
@@ -3717,6 +3647,11 @@ emacs-lisp-mode."
     (concat lmargin lstr rmargin rstr)))
 
 (setq-default mode-line-format '((:eval (my-generate-mode-line-format))))
+
+(setup-after "phi-search"
+  (push my-mode-line--vertical-spacer phi-search-mode-line-format))
+(setup-after "phi-replace"
+  (push my-mode-line--vertical-spacer phi-replace--mode-line-format))
 
 ;; force update mode-line every minutes
 (run-with-timer 60 60 'force-mode-line-update)
