@@ -4037,6 +4037,7 @@ emacs-lisp-mode."
 ;;   + Misc: built-ins
 
 ;; frame.el (loaded before init.el)
+(window-divider-mode 1)
 (blink-cursor-mode -1)
 
 ;; font-lock.el (loaded before init.el)
