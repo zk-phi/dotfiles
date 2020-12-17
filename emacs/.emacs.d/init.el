@@ -369,7 +369,6 @@
               truncate-lines        nil
               line-move-visual      t
               cursor-type           'bar
-              indicate-empty-lines  t
               ;; files.el
               require-final-newline t)
 
@@ -3783,6 +3782,31 @@ emacs-lisp-mode."
 (!when my-secret-words
   (my-global-secret-words-mode 1))
 
+;;   + "show-eof" minor-mode
+
+(defvar-local my-show-eof-ov nil)
+
+(make-face 'my-show-eof-face)
+(set-face-attribute 'my-show-eof-face nil :inherit 'font-lock-comment-face)
+
+(define-minor-mode my-show-eof-mode
+  "Minor mode to show EOF marker."
+  :init-value nil
+  :global nil
+  (if my-show-eof-mode
+      (unless my-show-eof-ov
+        (let ((ov (make-overlay (point-max) (point-max) (current-buffer) nil t))
+              (str (propertize "[EOF]" 'face 'my-show-eof-face)))
+          (put-text-property 0 1 'cursor 1 str)
+          (overlay-put ov 'after-string str)
+          (setq my-show-eof-ov ov)))
+    (when my-show-eof-ov
+      (delete-overlay my-show-eof-ov)
+      (setq my-show-eof-ov nil))))
+
+(add-hook 'prog-mode-hook 'my-show-eof-mode)
+(add-hook 'text-mode-hook 'my-show-eof-mode)
+
 ;;   + colorscheme
 
 ;; utility to mix two colors
@@ -3955,6 +3979,11 @@ emacs-lisp-mode."
    'mode-line-palette-face nil
    :inherit 'elemental-accent-fg-4-face
    :weight  'bold)
+
+  ;; "show-eof" face
+  (set-face-attribute
+   'my-show-eof-face nil
+   :inherit 'elemental-ui-ghost)
 
   (setup-after "highlight-parentheses"
     (hl-paren-set 'hl-paren-colors nil)
