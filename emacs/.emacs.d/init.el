@@ -3927,8 +3927,18 @@ emacs-lisp-mode."
 
   ;; ;; green ("monochrome" inspired palette 3)
   ;; (my-elemental-theme-apply-colors
-  ;;   "#001000" "#007800" "#00a000" "#00d000" "#00d000" "#00a000"
-  ;;   "#00f000" "#00f000" "#00b000" "#00b000")
+  ;;   "#102010" "#008000" "#00c000" "#00a000" "#00c000" "#00a000"
+  ;;   "#00f000" "#00f000" "#00f000" "#00f000")
+
+  ;; ;; pink ("monochrome" inspired palette 3)
+  ;; (my-elemental-theme-apply-colors
+  ;;   "#201520" "#804080" "#c060c0" "#a050a0" "#c060c0" "#a050a0"
+  ;;   "#f070f0" "#f070f0" "#f070f0" "#f070f0")
+
+  ;; ;; white ("monochrome" inspired palette 3)
+  ;; (my-elemental-theme-apply-colors
+  ;;   "#202020" "#808080" "#c0c0c0" "#a0a0a0" "#c0c0c0" "#c0c0c0"
+  ;;   "#ed9494" "#edd694" "#94edaa" "#94eded")
 
   ;; ;; less colorful "planet" theme based on "monochrome"
   ;; (my-elemental-theme-apply-colors
