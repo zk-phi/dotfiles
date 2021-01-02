@@ -4118,7 +4118,8 @@ emacs-lisp-mode."
     "C-M-1" "C-M-2" "C-M-3" "C-M-4" "C-M-5"
     "C-M-6" "C-M-7" "C-M-8" "C-M-9" "C-M-0"
     "M-!" "M-@" "M-#" "M-$" "M-%"
-    "M-^" "M-&" "M-*" "M-(" "M-)") 'digit-argument)
+    "M-^" "M-&" "M-*" "M-(" "M-)")
+  'digit-argument)
 
 ;;     + | emacs
 
