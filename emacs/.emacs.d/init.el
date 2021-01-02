@@ -3695,18 +3695,23 @@ emacs-lisp-mode."
   ;;   "#2A1F1B" "#887f73" "#adb78d" "#d4576f" "#768d82" "#849f98"
   ;;   "#bb4e62" "#d99481" "#adb78d" "#849f98")
 
-  ;; "planet" palette
-  ;; reference | https://github.com/cmack/emacs-planet-theme/
-  (my-elemental-theme-apply-colors
-    "#192129" "#79828c" "#729fcf" "#c4dde8" "#e9b96e" "#649d8a"
-    "#fe5450" "#ff8683" "#649d8a" "#729fcf")
-
-  ;; ;; "kagamine len" inspired palette
-  ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
-  ;; ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
+  ;; ;; "planet" palette
+  ;; ;; reference | https://github.com/cmack/emacs-planet-theme/
   ;; (my-elemental-theme-apply-colors
-  ;;   "#fffdf9" "#7e7765" "#fda700" "#59a9d2" "#db8d2e" "#34bd7d"
-  ;;   "#f47166" "#db8d2e" "#34bd7d" "#59a9d2")
+  ;;   "#192129" "#79828c" "#729fcf" "#c4dde8" "#e9b96e" "#649d8a"
+  ;;   "#fe5450" "#ff8683" "#649d8a" "#729fcf")
+
+  ;; "kagamine len" inspired palette (bg modified)
+  ;; reference | http://vocaloidcolorpalette.tumblr.com/
+  ;;           | http://smallwebmemo.blog113.fc2.com/blog-entry-156.html
+  (my-elemental-theme-apply-colors
+    "#fafafa" "#7e7765" "#fda700" "#59a9d2" "#db8d2e" "#34bd7d"
+    "#f47166" "#db8d2e" "#34bd7d" "#59a9d2")
+
+  ;; ;; "ayu"
+  ;; (my-elemental-theme-apply-colors
+  ;;   "#fafafa" "#575f66" "#f2ae49" "#fa8d3e" "#55b4d4" "#86b300"
+  ;;   "#ff8683" "#e0b776" "#649d8a" "#729fcf")
 
   ;; ;; "reykjavik" palette
   ;; ;; reference | https://github.com/mswift42/reykjavik-theme/
