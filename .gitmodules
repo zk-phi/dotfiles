@@ -100,10 +100,6 @@
 [submodule "emacs/site-lisp/my-plugins/scratch-palette"]
 	path = emacs/site-lisp/my-plugins/scratch-palette
 	url = https://github.com/zk-phi/scratch-palette.git
-[submodule "emacs/site-lisp/plugins/shell-pop-el"]
-	path = emacs/site-lisp/plugins/shell-pop-el
-	url = https://github.com/kyagi/shell-pop-el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/rpn-calc"]
 	path = emacs/site-lisp/my-plugins/rpn-calc
 	url = https://github.com/zk-phi/rpn-calc.git

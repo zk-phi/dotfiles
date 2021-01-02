@@ -164,10 +164,6 @@
   (! (concat my-dat-directory "palette_" (system-name) "/"))
   "Directory to save scratch-palette(s).")
 
-(defconst my-eshell-directory
-  (! (concat my-dat-directory "eshell_" (system-name) "/"))
-  "Directory to save eshell histories.")
-
 (defconst my-backup-directory
   (! (concat my-dat-directory "backups_" (system-name) "/"))
   "Directory to save backup files.")
@@ -213,25 +209,6 @@
 (setup-hook 'change-major-mode-after-body-hook
   (when (apply 'derived-mode-p my-listy-modes)
     (run-hooks 'my-listy-mode-common-hook)))
-
-(defun my-get-branch-name (file)
-  (when-let ((project-root (locate-dominating-file file ".git"))
-             (head-path (concat project-root "/.git/HEAD")))
-    (when (file-exists-p head-path)
-      (with-temp-buffer
-        (insert-file-contents head-path)
-        (goto-char (point-min))
-        (search-forward-regexp "\\(?:[^/]+/\\)?\\([^/\n]+\\)$" nil t)
-        (match-string 1)))))
-
-(defvar my-abbrev-branch-name-len 24)
-
-(defsubst my-abbrev-branch-name (name)
-  (and name
-       (let ((str (replace-regexp-in-string "\\([aeiouAEIOU]\\)[aeiouAEIOU]" "\\1" name)))
-         (if (> (length str) my-abbrev-branch-name-len)
-             (substring str 0 my-abbrev-branch-name-len)
-           str))))
 
 (defun my-open-file (file)
   (!cond ((eq system-type 'windows-nt)
@@ -1529,13 +1506,6 @@ emacs-lisp-mode."
   :prepare (defvar scratch-palette-directory my-palette-directory)
   (setup-keybinds scratch-palette-minor-mode-map
     "M-w" 'scratch-palette-kill))
-
-;; popup eshell
-(setup-lazy '(shell-pop) "shell-pop"
-  (setq shell-pop-internal-mode        "eshell"
-        shell-pop-internal-mode-buffer "*eshell*"
-        shell-pop-internal-mode-func   '(lambda () (eshell))
-        shell-pop-window-height        19))
 
 ;;   + | trace changes
 
@@ -3447,73 +3417,6 @@ emacs-lisp-mode."
   (setup-after "mark-hacks"
     (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes)))
 
-;;     + eshell
-
-(setup-after "eshell"
-
-  (defun my-shorten-directory (dir len)
-    (if (null dir) ""
-      (let ((lst (mapcar (lambda (s)
-                           (if (> (length s) 5)
-                               (cons 5 (concat (substring s 0 4) "-"))
-                             (cons (length s) s)))
-                         (reverse (split-string (abbreviate-file-name dir) "/"))))
-            (reslen 0)
-            (res ""))
-        (when (zerop (caar lst)) (setq lst (cdr lst))) ; ?
-        (while (and lst (< (+ reslen (caar lst) 1 (if (cdr lst) 4 0)) len))
-          (setq res    (concat (cdar lst) "/" res)
-                reslen (+ reslen (caar lst) 1)
-                lst    (cdr lst)))
-        (when lst (setq res (concat "…/" res)))
-        res)))
-
-  (setq eshell-directory-name  my-eshell-directory)
-
-  (setup-hook 'eshell-mode-hook
-    (setq eshell-last-command-status 0))
-
-  (setup-after "em-prompt"
-    (setq eshell-prompt-regexp   (regexp-opt '("（*>w<）? " "（*'-'）? " "（`;w;）! "))
-          eshell-prompt-function (lambda ()
-                                   (concat "\n"
-                                           (my-shorten-directory (eshell/pwd) 30) " "
-                                           (my-abbrev-branch-name
-                                            (my-get-branch-name (eshell/pwd))) "\n"
-                                           (cond ((= (user-uid) 0) "（*>w<）? ")
-                                                 ((= eshell-last-command-status 0) "（*'-'）? ")
-                                                 (t "（`;w;）! "))))))
-
-  (setup-after "mark-hacks"
-    (push 'eshell-mode mark-hacks-auto-indent-inhibit-modes))
-
-  ;; aliases
-  ;; reference | http://www.emacswiki.org/cgi-bin/wiki?EshellFunctions
-  ;;           | http://www.bookshelf.jp/soft/meadow_25.html
-  (defun eshell/emacs (&optional file)
-    "Open a file in emacs. Some habits die hard."
-    (let ((dir default-directory))
-      ;; if the cursor is in the shell-pop buffer, pop-out it
-      (when (and (boundp 'shell-pop-last-shell-buffer-name)
-                 (string= (buffer-name) shell-pop-last-shell-buffer-name))
-        (shell-pop-out))
-      ;; open file or bury buffer
-      (if file
-          (find-file (concat dir file))
-        (bury-buffer))))
-  (!when (eq system-type 'windows-nt)
-    (defun eshell/open (&optional file)
-      "win-start the current line's file."
-      (interactive)
-      (unless (null file)
-        (my-open-file (expand-file-name file)))))
-
-  ;; "eshell-mode-map" does not work (why?)
-  (setup-hook 'eshell-mode-hook
-    :oneshot
-    (local-set-key (kbd "C-j") 'eshell-bol))
-  )
-
 ;; + | Appearance
 ;;   + font-lock level
 
@@ -4305,11 +4208,6 @@ emacs-lisp-mode."
   "C-x C-d" '("ido" ido-dired dired)
   "C-x DEL" '("dumb-jump" xref-find-definitions ff-find-other-file) ; C-x C-h
   )
-
-;;     + shell command
-
-(setup-keybinds nil
-  "M-i" '("shell-pop" shell-pop eshell))
 
 ;;   + | help
 
