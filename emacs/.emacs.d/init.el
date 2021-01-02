@@ -898,12 +898,7 @@ unary operators which can also be binary."
   (setq recentf-max-saved-items 500
         recentf-exclude '("/[^/]*\\<tmp\\>[^/]*/" "/[^/]*\\<backup\\>[^/]*/"
                           "~$" "^#[^#]*#$" "^/[^/]*:" "/GitHub/" "\\.emacs\\.d/dat/"
-                          "/undohist/" "\\.elc$" "\\.dat$" "/deprecated/"))
-  ;; (setq recentf-auto-cleanup 10)
-  ;; ;; auto-save recentf-list / delayed cleanup
-  ;; ;; reference | http://d.hatena.ne.jp/tomoya/20110217/1297928222
-  ;; (run-with-idle-timer 30 t 'recentf-save-list)
-  )
+                          "/undohist/" "\\.elc$" "\\.dat$" "/deprecated/")))
 
 (setup-expecting "ido"
   (setup-lazy '(my-ido-recentf-open) "recentf"
