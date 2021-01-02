@@ -3634,8 +3634,8 @@ emacs-lisp-mode."
          (mode          (if (< brightness-bg brightness-fg) 'dark 'light))
          (bright-bg     (my-blend-colors bg-base fg-base (if (eq mode 'dark) 15 6)))
          (brighter-bg   (my-blend-colors bg-base fg-base (if (eq mode 'dark) 30 12)))
-         (darker-fg     (my-blend-colors fg-base bg-base (if (eq mode 'dark) 70 80)))
-         (dark-fg       (my-blend-colors fg-base bg-base (if (eq mode 'dark) 35 40)))
+         (darker-fg     (my-blend-colors fg-base bg-base (if (eq mode 'dark) 74 84)))
+         (dark-fg       (my-blend-colors fg-base bg-base (if (eq mode 'dark) 37 42)))
          (bright-fg     (my-blend-colors fg-base bg-base (if (eq mode 'dark) -30 -12))))
     `(progn
        (custom-theme-set-variables 'elemental-theme '(frame-background-mode ',mode))
