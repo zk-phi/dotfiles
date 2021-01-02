@@ -1485,6 +1485,7 @@ emacs-lisp-mode."
 (setup-lazy '(phi-replace phi-replace-query) "phi-replace")
 (setup-lazy '(phi-search phi-search-backward) "phi-search"
   (setq phi-search-case-sensitive   'guess
+        phi-search-use-modeline     nil
         phi-search-overlay-priority 3)
   (setup-expecting "multiple-cursors"
     (setup-lazy
