@@ -42,7 +42,7 @@
 
 ;; M-* (Other Commands 1)
 ;; |KlAWn|MkWnd|RszWn|     |     |     |     |TrWnd|PvWnd|NxWnd|JmpBk|     |     |
-;;    |Scrat|Palet| Eval|Recnt|Table|YankP|UndoT|Shell|Opcty|EvlPr|     |     |
+;;    |Scrat|Palet| Eval|Recnt|     |YankP|UndoT|Shell|Opcty|EvlPr|     |     |
 ;;       |Artst|GrpFl|Dired|FFile|GrpDr|Shrnk|iMenu|KlWnd|GotoL|     |     |     |
 ;;          |     | M-x |Cmpil|     |SwBuf|Narrw|DMcro|     |     |     |
 
@@ -71,26 +71,6 @@
 ;; -   TAB : indent / complete
 ;; - C-RET : phi-rectangle-set-mark-command
 ;; - C-SPC : set-mark-command / visible-register / exchange-point-and-mark
-
-;; + | orgtbl-mode
-
-;; C-*
-;; |     | Edit|     |     |     |     |     |     |     |     |     |ColFm|     |
-;;    |     |RcCut|     |     |TrRow|RcPst|     |FwCel|InRow|     |     |     |
-;;       |     |     |     |     |     |     |     |     |     |     |     |     |
-;;          |     |     |     |     |     |     |FwRow|     |     | Sort|
-
-;; C-M-*
-;; |     |     |     |     |     |     |     |     |     |     |     |CelFm|     |
-;;    |     |     |     |     |TrCol|AFill|     |InCol|InHrl|     |     |     |
-;;       |     |     |     |FwCel|     |     |     |     |     |     |     |     |
-;;          |     |     |     |     |BwCel|     |HrFwR|     |     |     |
-
-;; M-*
-;; |     |     |     |     |     |     |     |     |     |     |     |     |     |
-;;    |     |     | Eval|     |     |     |     |     |     |     |     |     |
-;;       |     |     |     |     |     |     |     |     |     |     |     |     |
-;;          |     |     |     |     |     |     |     |     |     |     |
 
 ;; + Code :
 ;; + | Constants
@@ -3060,84 +3040,6 @@ emacs-lisp-mode."
   ;;   + (sentinel)
   )
 
-;;   + orgtbl-mode
-
-(setup-lazy '(orgtbl-mode) "org"
-
-  ;; kill whole row with "org-table-cut-region"
-  ;; reference | http://dev.ariel-networks.com/Members/matsuyama/tokyo-emacs-02/
-  (define-advice org-table-cut-region (:around (fn &rest args))
-    (if (use-region-p)
-        (org-table-kill-row)
-      (apply fn args)))
-
-  ;; enable overlay while editing formulas
-  (define-advice org-table-eval-formula (:around (fn &rest args))
-    (unless org-table-coordinate-overlays
-      (org-table-toggle-coordinate-overlays))
-    (unwind-protect (apply fn args)
-      (org-table-toggle-coordinate-overlays)))
-  ;; if overlays are active, remove them instead of leaving orgtbl-mode
-  (define-advice orgtbl-mode (:around (fn &rest args))
-    (if org-table-coordinate-overlays
-        (org-table-toggle-coordinate-overlays)
-      (apply fn args)))
-
-  ;; my commands
-  (defun my-orgtbl-hard-next-field ()
-    (interactive)
-    (org-table-insert-column)
-    (org-table-next-field))
-  (defun my-orgtbl-open-row ()
-    (interactive)
-    (save-excursion
-      (org-table-insert-row '(4))))
-  (defun my-orgtbl-eval-column-formula ()
-    (interactive)
-    (org-table-eval-formula))
-  (defun my-orgtbl-eval-field-formula ()
-    (interactive)
-    (org-table-eval-formula '(4)))
-  (defun my-orgtbl-recalculate ()
-    (interactive)
-    (org-table-recalculate '(16)))
-
-  ;; keybinds
-  (setup-hook 'orgtbl-mode-hook
-    :oneshot
-    (setup-keybinds orgtbl-mode-map
-      ;; motion
-      "C-f"   'forward-char
-      "C-M-f" 'org-table-next-field
-      "C-b"   'backward-char
-      "C-M-b" 'org-table-previous-field
-      "C-n"   'next-line
-      "C-M-n" 'next-line
-      "C-p"   'previous-line
-      "C-M-p" 'previous-line
-      ;; region
-      "C-w"   'org-table-cut-region
-      "C-M-w" 'org-table-copy-region
-      "C-y"   'org-table-paste-rectangle
-      "C-M-y" 'org-table-copy-down
-      ;; newline and indent
-      "C-i"   'org-table-next-field
-      "C-M-i" 'my-orgtbl-hard-next-field
-      "C-o"   'my-orgtbl-open-row
-      "C-M-o" 'org-table-insert-hline
-      "C-m"   'org-table-next-row
-      "C-M-m" 'org-table-hline-and-move
-      ;; transpose
-      "C-t"   'org-table-move-row-up
-      "C-M-t" 'org-table-move-column-left
-      ;; others
-      "C-="   'my-orgtbl-eval-column-formula
-      "C-M-=" 'my-orgtbl-eval-field-formula
-      "C-/"   'org-table-sort-lines
-      "C-2"   'org-table-edit-field
-      "M-e"   'my-orgtbl-recalculate))
-  )
-
 ;;   + reading modes
 
 (setup-after "debug"
@@ -4233,7 +4135,6 @@ emacs-lisp-mode."
   "C-="       'text-scale-increase
   "C-M-="     'text-scale-decrease
   "C-M-c"     '("rpn-calc" rpn-calc calc)
-  "M-t"       'orgtbl-mode
   "M-a"       'artist-mode
   "M-n"       'my-toggle-narrowing
   "M-c"       '("smart-compile" smart-compile compile)
