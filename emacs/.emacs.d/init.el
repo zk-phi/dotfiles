@@ -619,14 +619,15 @@ cons of two integers which defines a range of the codepoints."
 
 (setup "phi-autopair"
   (nconc phi-autopair-lispy-modes my-lispy-modes)
-  (phi-autopair-global-mode 1))
+  (phi-autopair-global-mode 1)
+  (setup-after "company"
+    (push 'phi-autopair-open company-begin-commands)))
 
 (setup-lazy '(electric-align-mode) "electric-align"
   :prepare (setup-hook 'prog-mode-hook 'electric-align-mode)
   (setq electric-align-shortcut-commands '(my-smart-comma))
   (setup-after "company"
-    ;; stop completion with SPC
-    (push 'electric-align-SPC (cdr company-continue-commands))))
+    (push 'electric-align-SPC company-begin-commands)))
 
 ;; not "electric-spacing" hosted in MELPA, but my own one
 (setup-lazy '(electric-spacing-mode) "electric-spacing"
