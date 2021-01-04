@@ -3385,11 +3385,6 @@ emacs-lisp-mode."
 
 (setq-default mode-line-format '((:eval (my-generate-mode-line-format))))
 
-(setup-after "phi-search"
-  (push my-mode-line--vertical-spacer phi-search-mode-line-format))
-(setup-after "phi-replace"
-  (push my-mode-line--vertical-spacer phi-replace--mode-line-format))
-
 ;; force update mode-line every minutes
 (run-with-timer 60 60 'force-mode-line-update)
 
