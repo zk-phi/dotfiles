@@ -2410,7 +2410,8 @@ emacs-lisp-mode."
       "C-M-a" "C-M-e" "C-M-c"
       "C-M-h" "C-M-n" "C-M-p"
       "C-M-h" "C-M-e" "C-M-a"
-      "C-M-c" "C-M-n" "C-M-n") nil)
+      "C-M-c" "C-M-n" "C-M-n")
+    nil)
 
   (defun my-run-prolog-other-window ()
     (interactive)
