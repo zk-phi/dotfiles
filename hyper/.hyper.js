@@ -2,15 +2,15 @@
 // which will not automatically be merged into this file.
 // See https://hyper.is#cfg for all currently supported options.
 
-const REGION  = "rgba(255, 255, 255, 0.3)";
-const WHITE   = "#79828c";
-const BLACK   = "#192129";
-const RED     = "#ff8683";
-const GREEN   = "#649d8a";
-const YELLOW  = "#e9b96e";
-const BLUE    = "#729fcf";
-const MAGENTA = "#a6a1ea";
-const CYAN    = "#c4dde8";
+const REGION  = "rgba(253, 167, 0, 0.3)";
+const WHITE   = "#7e7765";
+const BLACK   = "#fafafa";
+const RED     = "#f47166";
+const GREEN   = "#34bd7d";
+const YELLOW  = "#fda700";
+const BLUE    = "#59a9d2";
+const MAGENTA = "#db8d2e";
+const CYAN    = "#fda700";
 const NAV     = "rgba(255, 255, 255, 0.08)";
 
 const CSS = `
@@ -22,6 +22,7 @@ nav {
   border-left: 1px solid ${BLACK} !important;
 }
 .tab_active {
+  color: ${WHITE};
   border-bottom: 1px solid ${BLUE} !important;
   transition: border 200ms;
 }
