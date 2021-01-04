@@ -689,7 +689,8 @@ cons of two integers which defines a range of the codepoints."
      (setq company-symbol-after-symbol-complete-after-space t)
      (push 'company-symbol-after-symbol company-backends))
    (global-company-mode)
-   (setup "company-anywhere")
+   (setup "company-anywhere"
+     (push 'company-anywhere-drop-redundant-candidates company-transformers))
    (setup "company-dwim"
      (setq company-frontends
            '(company-pseudo-tooltip-unless-just-one-frontend
