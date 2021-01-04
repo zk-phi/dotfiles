@@ -29,62 +29,62 @@ nav {
 `;
 
 module.exports = {
-  config: {
-    updateChannel: 'canary', // available: stable, canary
+    config: {
+        updateChannel: 'canary', // available: stable, canary
 
-    // font
-    fontSize: 13,
-    fontFamily: 'nasia, code8903, Monaco, Menlo, "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
-    padding: '6px',
+        // font
+        fontSize: 13,
+        fontFamily: 'nasia, code8903, Monaco, Menlo, "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
+        padding: '6px',
 
-    // colors
-    backgroundColor:   BLACK,
-    foregroundColor:   WHITE,
-    selectionColor:    REGION,
-    cursorColor:       WHITE,
-    cursorAccentColor: BLACK,
-    borderColor:       BLACK,
-    colors: {
-      black:   BLACK,
-      red:     RED,
-      green:   GREEN,
-      yellow:  YELLOW,
-      blue:    BLUE,
-      magenta: MAGENTA,
-      cyan:    CYAN,
-      white:   WHITE,
-      lightBlack:   BLACK,
-      lightRed:     RED,
-      lightGreen:   GREEN,
-      lightYellow:  YELLOW,
-      lightBlue:    BLUE,
-      lightMagenta: MAGENTA,
-      lightCyan:    CYAN,
-      lightWhite:   WHITE,
+        // colors
+        backgroundColor:   BLACK,
+        foregroundColor:   WHITE,
+        selectionColor:    REGION,
+        cursorColor:       WHITE,
+        cursorAccentColor: BLACK,
+        borderColor:       BLACK,
+        colors: {
+            black:   BLACK,
+            red:     RED,
+            green:   GREEN,
+            yellow:  YELLOW,
+            blue:    BLUE,
+            magenta: MAGENTA,
+            cyan:    CYAN,
+            white:   WHITE,
+            lightBlack:   BLACK,
+            lightRed:     RED,
+            lightGreen:   GREEN,
+            lightYellow:  YELLOW,
+            lightBlue:    BLUE,
+            lightMagenta: MAGENTA,
+            lightCyan:    CYAN,
+            lightWhite:   WHITE,
+        },
+
+        // cursor
+        cursorShape: 'BLOCK', // available: BEAM, UNDERLINE, BLOCK
+        cursorBlink: false,
+
+        // extra styles
+        css: CSS,
+
+        // shell process
+        shell: "zsh",
+        shellArgs: ['--login'],
+        env: {},
+
+        // other interface
+        copyOnSelect: false
     },
 
-    // cursor
-    cursorShape: 'BLOCK', // available: BEAM, UNDERLINE, BLOCK
-    cursorBlink: false,
+    plugins: [
+        'hyper-tab-icons-plus',
+        'hyper-search',
+        'hyperlinks'
+    ],
 
-    // extra styles
-    css: CSS,
-
-    // shell process
-    shell: "zsh",
-    shellArgs: ['--login'],
-    env: {},
-
-    // other interface
-    copyOnSelect: false
-  },
-
-  plugins: [
-    'hyper-tab-icons-plus',
-    'hyper-search',
-    'hyperlinks'
-  ],
-
-  keymaps: {
-  }
+    keymaps: {
+    }
 };
