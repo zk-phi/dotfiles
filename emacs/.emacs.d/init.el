@@ -687,7 +687,6 @@ cons of two integers which defines a range of the codepoints."
              company-dabbrev))
      (company-same-mode-buffers-initialize))
    (setup "company-symbol-after-symbol"
-     (setq company-symbol-after-symbol-complete-after-space t)
      (push 'company-symbol-after-symbol company-backends))
    (global-company-mode)
    (setup "company-anywhere"
