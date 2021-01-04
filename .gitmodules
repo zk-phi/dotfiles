@@ -258,3 +258,6 @@
 [submodule "emacs/site-lisp/my-plugins/company-anywhere"]
 	path = emacs/site-lisp/my-plugins/company-anywhere
 	url = https://github.com/zk-phi/company-anywhere.git
+[submodule "emacs/site-lisp/my-plugins/company-symbol-after-symbol"]
+	path = emacs/site-lisp/my-plugins/company-symbol-after-symbol
+	url = https://github.com/zk-phi/company-symbol-after-symbol.git
