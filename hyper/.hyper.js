@@ -2,7 +2,6 @@
 // which will not automatically be merged into this file.
 // See https://hyper.is#cfg for all currently supported options.
 
-const REGION  = "rgba(128, 128, 128, 0.3)";
 const WHITE   = "#79828c";
 const BLACK   = "#192129";
 const RED     = "#ff8683";
@@ -12,6 +11,7 @@ const BLUE    = "#729fcf";
 const MAGENTA = "#fe5450";
 const CYAN    = "#c4dde8";
 const NAV     = "rgba(128, 128, 128, 0.15)";
+const REGION  = WHITE < BLACK ? "rgba(0, 0, 0, 0.3)" : "rgba(255, 255, 255, 0.3)";
 const NAVFG   = WHITE < BLACK ? "#000" : "#fff";
 
 const CSS = `
