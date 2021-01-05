@@ -2,14 +2,14 @@
 // which will not automatically be merged into this file.
 // See https://hyper.is#cfg for all currently supported options.
 
-const WHITE   = "#79828c";
-const BLACK   = "#192129";
+const BLACK   = "#192129"; /* bg */
+const WHITE   = "#79828c"; /* fg */
+const BLUE    = "#729fcf"; /* accent 1 */
+const CYAN    = "#c4dde8"; /* accent 2 */
+const YELLOW  = "#e9b96e"; /* accent 3 */
 const RED     = "#ff8683";
 const GREEN   = "#649d8a";
-const YELLOW  = "#e9b96e";
-const BLUE    = "#729fcf";
 const MAGENTA = "#fe5450";
-const CYAN    = "#c4dde8";
 const NAV     = "rgba(128, 128, 128, 0.15)";
 const REGION  = WHITE < BLACK ? "rgba(0, 0, 0, 0.3)" : "rgba(255, 255, 255, 0.3)";
 const NAVFG   = WHITE < BLACK ? "#000" : "#fff";
