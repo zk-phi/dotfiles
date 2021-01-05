@@ -42,7 +42,7 @@ nav {
 
 module.exports = {
     config: {
-        updateChannel: 'stable', // available: stable, canary
+        updateChannel: 'canary', // available: stable, canary
 
         // font
         fontSize: 13,
