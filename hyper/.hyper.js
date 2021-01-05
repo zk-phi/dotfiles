@@ -19,18 +19,20 @@ const GREEN   = "#649d8a";
 const NAV     = "rgba(128, 128, 128, 0.1)";
 const BORDER  = "rgba(128, 128, 128, 0.3)";
 const REGION  = WHITE < BLACK ? "rgba(0, 0, 0, 0.3)" : "rgba(255, 255, 255, 0.3)";
-const NAVFG   = WHITE < BLACK ? "#000" : "#fff";
+const NAVFG1  = WHITE < BLACK ? "rgba(0, 0, 0, 1.0)" : "rgba(255, 255, 255, 1.0)";
+const NAVFG2  = WHITE < BLACK ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.7)";
 
 const CSS = `
 nav {
   background-color: ${NAV};
 }
 .tab_tab {
-  color: ${NAVFG};
+  color: ${NAVFG2};
   border none;
   border-left: 1px solid ${BLACK} !important;
 }
 .tab_active {
+  color: ${NAVFG1};
   border-bottom: 1px solid ${BLUE} !important;
   transition: border 200ms;
 }
