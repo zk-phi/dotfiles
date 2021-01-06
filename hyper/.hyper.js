@@ -20,16 +20,20 @@ const NAV     = "rgba(128, 128, 128, 0.1)";
 const BORDER  = "rgba(128, 128, 128, 0.3)";
 const REGION  = WHITE < BLACK ? "rgba(0, 0, 0, 0.3)" : "rgba(255, 255, 255, 0.3)";
 const NAVFG1  = WHITE < BLACK ? "rgba(0, 0, 0, 1.0)" : "rgba(255, 255, 255, 1.0)";
-const NAVFG2  = WHITE < BLACK ? "rgba(0, 0, 0, 0.5)" : "rgba(255, 255, 255, 0.5)";
+const NAVFG2  = WHITE < BLACK ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.7)";
+const NAVFG3  = WHITE < BLACK ? "rgba(0, 0, 0, 0.5)" : "rgba(255, 255, 255, 0.5)";
 
 const CSS = `
 nav {
   background-color: ${NAV};
 }
 .tab_tab {
-  color: ${NAVFG2};
+  color: ${NAVFG3};
   border none;
   border-left: 1px solid ${BLACK} !important;
+}
+.tab_tab:hover:not(.tab_active) {
+  color: ${NAVFG2};
 }
 .tab_active {
   color: ${NAVFG1};
