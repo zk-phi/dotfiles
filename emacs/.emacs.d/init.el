@@ -2491,17 +2491,12 @@ emacs-lisp-mode."
   :prepare (push '("\\.z?sh$" . shell-script-mode) auto-mode-alist))
 
 ;;     + web
-;;       + typescript-mode
-
-(setup-lazy '(typescript-mode) "typescript-mode"
-  :prepare (push '("\\.tsx$" . typescript-mode) auto-mode-alist))
-
 ;;       + web-mode
 
 (setup-lazy '(web-mode) "web-mode"
   :prepare (progn
              (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
-             (push '("\\.jsx?$" . web-mode) auto-mode-alist)
+             (push '("\\.[tj]sx?$" . web-mode) auto-mode-alist)
              (push '("\\.s?css$" . web-mode) auto-mode-alist)
              (push '("\\.ejs$" . web-mode) auto-mode-alist))
 
