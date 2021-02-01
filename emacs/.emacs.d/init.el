@@ -2533,13 +2533,15 @@ emacs-lisp-mode."
          '(;; labels
            ("case[\s\t]+\\([^:]+[^:\s\t]\\)[\s\t]*:" 1 'web-mode-constant-face)
            ;; hash-keys
-           ("\\([A-z0-9_]+\\)[\s\t]*:" 1 'web-mode-hash-key-face)
+           ("\\(?:^\\|,\\)[\s\t]*\\([A-z0-9_]+\\??\\)[\s\t]*:" 1 'web-mode-hash-key-face)
            ;; method decls / lambda expressions
            ("\\(?:\\(function\\)\\|\\([A-z0-9_]+\\)\\)[\s\t]*\\((\\)[A-z0-9_\s\t,=/*]*)[\s\t\n]*{"
             (1 'web-mode-keyword-face nil t)
             (2 'web-mode-function-name-face nil t)
             ("\\([A-z0-9_]+\\)\\(?:[^,]*\\)?[,)]"
              (goto-char (match-end 3)) nil (1 'web-mode-variable-name-face)))
+           ;; type name
+           ("\\(?:type\\)[\s\t]*\\([A-z0-9_]+\\)" 1 'web-mode-type-face)
            ;; import stmt
            ("\\(import\\)[\s\t]*\\([{A-z0-9_*]\\(?:[A-z0-9_,*\s\t]*[A-z0-9_}]\\)?\\)[\s\t]*\\(from\\)"
             (1 'web-mode-keyword-face)
