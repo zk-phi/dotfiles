@@ -164,6 +164,10 @@
   (! (concat my-dat-directory "company-smb_" (system-name)))
   "File to save company-same-mode-buffers history.")
 
+(defconst my-company-symbol-after-symbol-history-file
+  (! (concat my-dat-directory "company-sas_" (system-name)))
+  "File to save company-symbol-after-symbol history.")
+
 (defconst my-ido-save-file
   (! (concat my-dat-directory "ido_" (system-name)))
   "File to save ido history.")
@@ -687,10 +691,12 @@ cons of two integers which defines a range of the codepoints."
              company-dabbrev))
      (company-same-mode-buffers-initialize))
    (setup "company-symbol-after-symbol"
-     (push 'company-symbol-after-symbol company-backends))
-   (global-company-mode)
-   (setup "company-anywhere"
-     (push 'company-anywhere-drop-redundant-candidates company-transformers))
+     (setq company-symbol-after-symbol-history-file my-company-symbol-after-symbol-history-file)
+     (push 'company-symbol-after-symbol (cdr company-backends))
+     (company-symbol-after-symbol-initialize))
+   (setup "git-complete-company"
+     (push 'git-complete-company-omni-backend company-backends)
+     (push 'git-complete-company-whole-line-backend company-backends))
    (setup "company-dwim"
      (setq company-frontends
            '(company-pseudo-tooltip-unless-just-one-frontend
@@ -700,6 +706,8 @@ cons of two integers which defines a range of the codepoints."
      (setq company-statistics-file my-company-history-file)
      (push 'company-sort-by-statistics company-transformers)
      (company-statistics-mode))
+   (setup "company-anywhere")
+   (global-company-mode)
    (setup-keybinds company-active-map
      "C-p" '("company-dwim" company-dwim-select-previous company-select-previous)
      "C-n" '("company-dwim" company-dwim-select-next company-select-next)
@@ -1465,7 +1473,7 @@ emacs-lisp-mode."
 (setup-after "cmd_edit"
   (setup "git-complete"
     ;; create the fallback chain (my-dabbrev-expand -> git-complete -> my-expand-dwim)
-    (setq my-dabbrev-expand-fallback     'git-complete
+    (setq my-dabbrev-expand-fallback     'company-complete
           git-complete-limit-extension   t
           git-complete-repeat-completion t
           git-complete-fallback-function 'my-expand-dwim)
