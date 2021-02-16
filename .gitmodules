@@ -8,7 +8,7 @@
 	path = zsh/.zsh.d/plugins/zsh-abbrev-alias
 	url = https://github.com/momo-lab/zsh-abbrev-alias.git
 [submodule "emacs/site-lisp/plugins/popwin-el"]
-	path = emacs/site-lisp/my-plugins/popwin-el
+	path = emacs/site-lisp/plugins/popwin-el
 	url = https://github.com/m2ym/popwin-el.git
 [submodule "emacs/site-lisp/my-plugins/scratch-pop"]
 	path = emacs/site-lisp/my-plugins/scratch-pop
