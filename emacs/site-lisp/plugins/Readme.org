@@ -32,9 +32,6 @@ dependencies:
 - migemo
   - required by phi-search-migemo
 
-- s
-  - required by markdown-mode
-
 - spinner
   - required by arduino-mode
 
