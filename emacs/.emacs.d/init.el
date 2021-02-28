@@ -1089,7 +1089,6 @@ unary operators which can also be binary."
   (setup-keybinds yas-minor-mode-map
     '("TAB" "<tab>") nil)
   (setup-keybinds yas-keymap
-    '("TAB" "<tab>") nil
     "C-j"            'my-yas/goto-start-of-active-field
     "C-e"            'my-yas/goto-end-of-active-field)
   )
