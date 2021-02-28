@@ -890,7 +890,7 @@ unary operators which can also be binary."
   (setq recentf-max-saved-items 500
         recentf-exclude '("/[^/]*\\<tmp\\>[^/]*/" "/[^/]*\\<backup\\>[^/]*/"
                           "~$" "^#[^#]*#$" "^/[^/]*:" "/GitHub/" "\\.emacs\\.d/dat/"
-                          "/undohist/" "\\.elc$" "\\.dat$" "/deprecated/")))
+                          "\\.elc$" "\\.dat$" "/deprecated/")))
 
 (setup-expecting "ido"
   (setup-lazy '(my-ido-recentf-open) "recentf"
