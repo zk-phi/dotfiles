@@ -80,10 +80,6 @@
 [submodule "emacs/site-lisp/my-plugins/cedit"]
 	path = emacs/site-lisp/my-plugins/cedit
 	url = https://github.com/zk-phi/cedit.git
-[submodule "emacs/site-lisp/plugins/iy-go-to-char"]
-	path = emacs/site-lisp/plugins/iy-go-to-char
-	url = https://github.com/doitian/iy-go-to-char.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/phi-search"]
 	path = emacs/site-lisp/my-plugins/phi-search
 	url = https://github.com/zk-phi/phi-search.git

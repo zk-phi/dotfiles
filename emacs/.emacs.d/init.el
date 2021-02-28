@@ -59,8 +59,6 @@
 ;; - kk : upcase word
 ;; - jj : downcase word
 ;;
-;; - fd : iy-go-to-char-backward
-;; - jk : iy-go-to-char
 ;; - ji : dabbrev (git-complete) / yas-next-field
 
 ;; special keys
@@ -1441,9 +1439,6 @@ emacs-lisp-mode."
 
 ;;   + Misc: plug-ins
 ;;   + | jump around
-
-;; "f"-like jump command
-(setup-lazy '(iy-go-to-char iy-go-to-char-backward) "iy-go-to-char")
 
 ;; use "phi-search/replace" and "phi-search-mc" instead of "isearch"
 (setup-lazy '(phi-replace phi-replace-query) "phi-replace")
@@ -4081,7 +4076,4 @@ emacs-lisp-mode."
     (key-chord-define yas-keymap "ji" 'my-yas-next-field-or-dabbrev-expand)
     ;; move to the next field even while company is in action
     (setup-after "company"
-      (key-chord-define company-active-map "ji" 'my-yas-next-field-or-dabbrev-expand)))
-  (setup-expecting "iy-go-to-char"
-    (key-chord-define-global "fd" 'iy-go-to-char-backward)
-    (key-chord-define-global "jk" 'iy-go-to-char)))
+      (key-chord-define company-active-map "ji" 'my-yas-next-field-or-dabbrev-expand))))
