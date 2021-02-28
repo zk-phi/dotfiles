@@ -1,0 +1,6 @@
+# name : main (args)
+# key : kc-ma
+# --
+int main (int argc, char *argv) {
+    $0
+}

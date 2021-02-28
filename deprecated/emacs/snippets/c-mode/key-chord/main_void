@@ -1,0 +1,6 @@
+# name : main (void)
+# key : kc-ma
+# --
+int main (void) {
+    $0
+}

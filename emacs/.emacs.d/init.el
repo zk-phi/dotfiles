@@ -2301,22 +2301,6 @@ emacs-lisp-mode."
       (setup-hook 'cperl-mode-hook
         :oneshot
         (key-chord-define-local "sk" (my-yas "kc-sk")) ; skeleton (package/script)
-        (key-chord-define-local "ar" (my-yas "kc-ar")) ; args / type_arrayref
-        (key-chord-define-local "ha" (my-yas "kc-ha")) ; type_hashref
-        (key-chord-define-local "pa" (my-yas "kc-pa")) ; params (= args)
-        (key-chord-define-local "ty" (my-yas "kc-ty")) ; type
-        (key-chord-define-local "ha" (my-yas "kc-ha")) ; type_hashref
-        (key-chord-define-local "op" (my-yas "kc-op")) ; type_optional
-        (key-chord-define-local "sc" (my-yas "kc-sc")) ; type_scalar
-        (key-chord-define-local "un" (my-yas "kc-un")) ; unless (postfix/prefix) / type_undef
-        (key-chord-define-local "de" (my-yas "kc-de")) ; type_default
-        (key-chord-define-local "su" (my-yas "kc-su")) ; sub
-        (key-chord-define-local "se" (my-yas "kc-se")) ; self
-        (key-chord-define-local "cl" (my-yas "kc-cl")) ; class
-        (key-chord-define-local "if" (my-yas "kc-if")) ; if (postfix/prefix)
-        (key-chord-define-local "fo" (my-yas "kc-fo")) ; for (postfix/prefix)
-        (key-chord-define-local "ob" (my-yas "kc-ob")) ; type_object
-        (key-chord-define-local "va" (my-yas "kc-va")) ; validate (= args)
         )))
 
   (setup-expecting "key-combo"
@@ -2601,19 +2585,14 @@ emacs-lisp-mode."
       (setup-hook 'web-mode-hook
         :oneshot
         (key-chord-define-local "sk" (my-yas "kc-sk")) ; html/skeleton
-        (key-chord-define-local "jq" (my-yas "kc-jq")) ; html/jquery
-        (key-chord-define-local "ui" (my-yas "kc-ui")) ; html/jquery_ui
-        (key-chord-define-local "bo" (my-yas "kc-bo")) ; html/bootstrap
-        (key-chord-define-local "fa" (my-yas "kc-fa")) ; html/favicon
-        (key-chord-define-local "ap" (my-yas "kc-ap")) ; html/apple_touch_icon
-        (key-chord-define-local "st" (my-yas "kc-st")) ; html/stylesheet
-        (key-chord-define-local "og" (my-yas "kc-og")) ; html/OGP
-        (key-chord-define-local "sc" (my-yas "kc-sc")) ; html/script
-        (key-chord-define-local "fu" (my-yas "kc-fu")) ; js/function
-        (key-chord-define-local "vu" (my-yas "kc-vu")) ; html/vue
-        (key-chord-define-local "pa" (my-yas "kc-pa")) ; bootstrap/panel
-        (key-chord-define-local "fg" (my-yas "kc-fg")) ; bootstrap/form-group
-        (key-chord-define-local "ch" (my-yas "kc-ch")) ; bootstrap/checkbox
+        (key-chord-define-local "jq" (my-yas "kc-jq")) ; html/head/libraries/jquery
+        (key-chord-define-local "bo" (my-yas "kc-bo")) ; html/head/libraries/bootstrap
+        (key-chord-define-local "vu" (my-yas "kc-vu")) ; html/head/libraries/vue
+        (key-chord-define-local "fa" (my-yas "kc-fa")) ; html/head/favicon
+        (key-chord-define-local "ap" (my-yas "kc-ap")) ; html/head/apple_touch_icon
+        (key-chord-define-local "st" (my-yas "kc-st")) ; html/head/stylesheet
+        (key-chord-define-local "og" (my-yas "kc-og")) ; html/head/OGP
+        (key-chord-define-local "sc" (my-yas "kc-sc")) ; html/head/script
         )))
 
   (setup "key-combo-web"
