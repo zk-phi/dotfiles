@@ -2506,7 +2506,8 @@ emacs-lisp-mode."
              (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
              (push '("\\.[tj]sx?$" . web-mode) auto-mode-alist)
              (push '("\\.s?css$" . web-mode) auto-mode-alist)
-             (push '("\\.ejs$" . web-mode) auto-mode-alist))
+             (push '("\\.ejs$" . web-mode) auto-mode-alist)
+             (push '("\\.njk$" . web-mode) auto-mode-alist))
 
   (defun my-web-mode-electric-semi ()
     (interactive)
@@ -2532,7 +2533,8 @@ emacs-lisp-mode."
         web-mode-css-indent-offset                2
         web-mode-code-indent-offset               4
         web-mode-enable-control-block-indentation nil
-        web-mode-enable-auto-quoting              nil)
+        web-mode-enable-auto-quoting              nil
+        web-mode-enable-front-matter-block        t)
 
   ;; tweak JSX syntax highlight
   (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
