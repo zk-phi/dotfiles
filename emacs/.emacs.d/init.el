@@ -58,8 +58,6 @@
 ;; - hh : capitalize word
 ;; - kk : upcase word
 ;; - jj : downcase word
-;;
-;; - ji : dabbrev (git-complete) / yas-next-field
 
 ;; special keys
 ;;
@@ -694,7 +692,12 @@ cons of two integers which defines a range of the codepoints."
      (company-symbol-after-symbol-initialize))
    (setup "git-complete-company"
      (push 'git-complete-company-omni-backend company-backends)
-     (push 'git-complete-company-whole-line-backend company-backends))
+     (push 'git-complete-company-whole-line-backend company-backends)
+     ;; invoke (git-complete-)company when expand-dwim fails
+     (setq my-expand-dwim-fallback        'company-manual-begin
+           git-complete-limit-extension   t)
+     (push '(web-mode "jsx" "js" "scss" "css" "html" "html.ep")
+           git-complete-major-mode-extensions-alist))
    (setup "company-dwim"
      (setq company-frontends
            '(company-pseudo-tooltip-unless-just-one-frontend
@@ -1327,8 +1330,8 @@ unary operators which can also be binary."
     my-transpose-chars
     my-smart-comma
     my-shrink-whitespaces
-    my-dabbrev-expand
-    my-indent-or-dabbrev-expand
+    my-expand-dwim
+    my-indent-or-expand-dwim
     my-map-lines-from-here) "cmd_edit")
 
 ;; shrink indentation on "kill-line"
@@ -1385,32 +1388,6 @@ unary operators which can also be binary."
                (erase-buffer)
                (insert-file-contents selected-backup)))))))
 
-;;   + | edit
-
-;; expand anything
-(setup-lazy '(my-expand-dwim) "dabbrev"
-  (defun my-expand-dwim ()
-    "Expand either flyspell correction, dabbrev, or package name if
-emacs-lisp-mode."
-    (interactive)
-    (cond ((and (catch 'flyspell-error-found
-                  (dolist (ov (overlays-in (1- (point)) (point)))
-                    (when (eq (overlay-get ov 'face) 'flyspell-incorrect)
-                      (throw 'flyspell-error-found ov))))
-                (fboundp 'flyspell-correct-word-before-point))
-           (flyspell-correct-word-before-point))
-          ((and (not (eq this-command last-command))
-                (eq major-mode 'emacs-lisp-mode)
-                (memq (char-before) '(?\[ ?\( ?\s ?, ?' ?` ?@))
-                buffer-file-name)
-           (insert (file-name-base buffer-file-name) "-")
-           (dabbrev--reset-global-variables))
-          (t
-           (when (= (char-before) ?\s)
-             (delete-char -1))
-           (dabbrev-expand nil)
-           (insert " ")))))
-
 ;;   + | trace changes
 
 ;; run "diff" from emacs
@@ -1454,20 +1431,6 @@ emacs-lisp-mode."
 
 ;; autoload expand-region
 (setup-lazy '(er/expand-region) "expand-region")
-
-;; completion via `git grep'
-(setup-in-idle "git-complete")
-(setup-after "cmd_edit"
-  (setup "git-complete"
-    ;; create the fallback chain (my-dabbrev-expand -> git-complete -> my-expand-dwim)
-    (setq my-dabbrev-expand-fallback     'company-complete
-          git-complete-limit-extension   t
-          git-complete-repeat-completion t
-          git-complete-fallback-function 'my-expand-dwim)
-    (push '(web-mode "jsx" "js"
-                     "scss" "css"
-                     "html" "html.ep")
-          git-complete-major-mode-extensions-alist)))
 
 ;; insert import statement
 (setup-lazy '(include-anywhere) "include-anywhere")
@@ -3965,7 +3928,7 @@ emacs-lisp-mode."
 ;;     + newline, indent, format
 
 (setup-keybinds nil
-  "TAB"   'my-indent-or-dabbrev-expand ; C-i
+  "TAB"   'my-indent-or-expand-dwim ; C-i
   "C-o"   'my-open-line-and-indent
   "RET"   'newline-and-indent ; C-m
   "C-M-i" 'fill-paragraph

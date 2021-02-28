@@ -96,24 +96,43 @@
             (t                          ; otherwise: just-one-space
              (just-one-space))))))
 
-;; delimited dabbrev expand
-(defvar my-dabbrev-expand-fallback 'my-expand-dwim)
-(defun my-dabbrev-expand (&optional lines)
-  "Expands to the most recent, preceding word for which this is a
-prefix. When LINES is specified, matches must be at most LINES
-lines far from the cursor."
-  (interactive)
-  (or (and (looking-back "\\_<\\(?:\\sw\\|\\s_\\)*" (point-at-bol))
-           (save-excursion
-             (search-backward-regexp
-              (concat (regexp-quote (match-string 0)) "\\(\\(?:\\sw\\|\\s_\\)+\\)\\_>")
-              (and lines (point-at-bol (- lines))) t 2))
-           (progn (insert (match-string 1) " ") t))
-      (if my-dabbrev-expand-fallback
-          (funcall my-dabbrev-expand-fallback)
-        (message "No completions found."))))
+;; expand dwim
+(defvar my-expand-dwim-fallback nil)
+(defun my-expand-dwim (&optional lines)
+  "Expands either
 
-(defun my-indent-or-dabbrev-expand (arg)
+- flyspell correction if exists
+
+- most recent, preceding word which shares the prefix
+
+  When LINES is specified, matches must be at most LINES lines
+  far from the cursor.
+
+- elisp package name if the cursor is after \"(\", \"@\" etc"
+  (interactive)
+  (cond ((and (catch 'flyspell-error-found
+                (dolist (ov (overlays-in (1- (point)) (point)))
+                  (when (eq (overlay-get ov 'face) 'flyspell-incorrect)
+                    (throw 'flyspell-error-found ov))))
+              (fboundp 'flyspell-correct-word-before-point))
+         (flyspell-correct-word-before-point))
+        ((and (looking-back "\\_<\\(?:\\sw\\|\\s_\\)+" (point-at-bol))
+              (save-excursion
+                (search-backward-regexp
+                 (concat (regexp-quote (match-string 0)) "\\(\\(?:\\sw\\|\\s_\\)+\\)\\_>")
+                 (and lines (point-at-bol (- lines))) t)))
+         (insert (match-string 1) " "))
+        ((and (not (eq this-command last-command))
+              (eq major-mode 'emacs-lisp-mode)
+              (memq (char-before) '(?\[ ?\( ?\s ?, ?' ?` ?@))
+              buffer-file-name)
+         (insert (file-name-base buffer-file-name) "-"))
+        (my-expand-dwim-fallback
+         (funcall my-expand-dwim-fallback))
+        (t
+         (message "No completions found."))))
+
+(defun my-indent-or-expand-dwim (arg)
   (interactive "P")
   (cond
    ((use-region-p)
@@ -126,7 +145,7 @@ lines far from the cursor."
       (if (and (eq last-command 'indent-for-tab-command)
                (eq old-point (point))
                (eq old-tick (buffer-chars-modified-tick)))
-          (my-dabbrev-expand)
+          (my-expand-dwim)
         (setq this-command 'indent-for-tab-command))))))
 
 (defun my-map-lines-from-here (fn)
