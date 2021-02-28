@@ -261,3 +261,6 @@
 [submodule "emacs/site-lisp/plugins/s.el"]
 	path = emacs/site-lisp/plugins/s-el
 	url = https://github.com/magnars/s.el.git
+[submodule "emacs/site-lisp/plugins/emacs-tree-sitter"]
+	path = emacs/site-lisp/plugins/emacs-tree-sitter
+	url = https://github.com/ubolonton/emacs-tree-sitter
