@@ -3,14 +3,14 @@
 # condition : (and (string= (web-mode-language-at-pos) "html") (= (point-min) (point-max)))
 # --
 <!DOCTYPE html>
-<html>
+<html lang="${1:ja}">
 
   <head>
-    <title>${1:Page Title}</title>
-    <meta charset="${2:UTF-8}">
+    <title>${2:Page Title}</title>
+    <meta charset="${3:UTF-8}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="${3:Hogehoge}">
+    <meta name="description" content="${4:Hogehoge}">
     $0
   </head>
 
