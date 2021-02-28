@@ -113,6 +113,22 @@ lines far from the cursor."
           (funcall my-dabbrev-expand-fallback)
         (message "No completions found."))))
 
+(defun my-indent-or-dabbrev-expand (arg)
+  (interactive "P")
+  (cond
+   ((use-region-p)
+    (indent-for-tab-command)
+    (setq this-command 'indent-for-tab-command))
+   ((let ((old-point (point))
+          (old-tick (buffer-chars-modified-tick))
+          (tab-always-indent t))
+      (indent-for-tab-command arg)
+      (if (and (eq last-command 'indent-for-tab-command)
+               (eq old-point (point))
+               (eq old-tick (buffer-chars-modified-tick)))
+          (my-dabbrev-expand)
+        (setq this-command 'indent-for-tab-command))))))
+
 (defun my-map-lines-from-here (fn)
   (interactive (list (eval `(lambda (s) ,(read (read-from-minibuffer "(s) => "))))))
   (save-excursion

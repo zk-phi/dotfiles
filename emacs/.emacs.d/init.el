@@ -1042,8 +1042,7 @@ unary operators which can also be binary."
 ;;   + yasnippet settings [yasnippet]
 
 (setup-lazy
-  '(my-yas-next-field-or-dabbrev-expand
-    yas--expand-or-prompt-for-template) "yasnippet"
+  '(yas--expand-or-prompt-for-template) "yasnippet"
   :prepare (setup-in-idle "yasnippet")
 
   (setq yas-triggers-in-field t
@@ -1073,13 +1072,6 @@ unary operators which can also be binary."
       (if (= (point) pos)
           (move-beginning-of-line 1)
         (goto-char pos))))
-
-  (defun my-yas-next-field-or-dabbrev-expand ()
-    (interactive)
-    (cond ((yas-active-snippets)
-           (yas-next-field))
-          (t
-           (my-dabbrev-expand))))
 
   ;; indent current line after expanding snippet
   (setup-hook 'yas-after-exit-snippet-hook
@@ -1336,6 +1328,7 @@ unary operators which can also be binary."
     my-smart-comma
     my-shrink-whitespaces
     my-dabbrev-expand
+    my-indent-or-dabbrev-expand
     my-map-lines-from-here) "cmd_edit")
 
 ;; shrink indentation on "kill-line"
@@ -2287,6 +2280,7 @@ emacs-lisp-mode."
       (funcall syntax-propertize-function (point-min) (point-max))))
 
   (setup-keybinds cperl-mode-map
+    "TAB" nil                           ; do not override TAB behavior
     "C-c C-l" 'cperl-lineup
     '("{" "[" "(" "<" "}" "]" ")" "C-j" "DEL" "C-M-q" "C-M-\\" "C-M-|") nil)
 
@@ -3971,7 +3965,7 @@ emacs-lisp-mode."
 ;;     + newline, indent, format
 
 (setup-keybinds nil
-  "TAB"   'indent-for-tab-command ; C-i
+  "TAB"   'my-indent-or-dabbrev-expand ; C-i
   "C-o"   'my-open-line-and-indent
   "RET"   'newline-and-indent ; C-m
   "C-M-i" 'fill-paragraph
@@ -4068,11 +4062,4 @@ emacs-lisp-mode."
   (key-chord-define-global "fj" 'my-transpose-chars)
   (key-chord-define-global "hh" 'my-capitalize-word-dwim)
   (key-chord-define-global "jj" 'my-upcase-previous-word)
-  (key-chord-define-global "kk" 'my-downcase-previous-word)
-  (setup-hook 'prog-mode-hook
-    (key-chord-define-local "ji" 'my-dabbrev-expand))
-  (setup-after "yasnippet"
-    (key-chord-define yas-keymap "ji" 'my-yas-next-field-or-dabbrev-expand)
-    ;; move to the next field even while company is in action
-    (setup-after "company"
-      (key-chord-define company-active-map "ji" 'my-yas-next-field-or-dabbrev-expand))))
+  (key-chord-define-global "kk" 'my-downcase-previous-word))
