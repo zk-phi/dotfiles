@@ -302,59 +302,62 @@ zle -N forward-char-or-accept-suggested-word
 # plugin: abbrev-alias
 # ------------------------------
 
+# use "magic_abbrev_expand_or_insert" instead of "magic_abbrev_expand_and_insert"
+bindkey " " __abbrev_alias::magic_abbrev_expand_or_insert
+
 # use abbrevs if abbev-alias is available
 if whence abbrev-alias > /dev/null; then
     # git
-    abbrev-alias ga='git add'
-    abbrev-alias gap='git add -p'
-    abbrev-alias gc='git commit'
-    abbrev-alias gco='git checkout'
+    abbrev-alias ga='git add '
+    abbrev-alias gap='git add -p '
+    abbrev-alias gc='git commit '
+    abbrev-alias gco='git checkout '
     abbrev-alias gcoo='git fetch origin && git checkout origin/'
-    abbrev-alias gb='git branch'
-    abbrev-alias gd='git diff'
-    abbrev-alias gds='git diff --staged'
-    abbrev-alias gl='git log'
-    abbrev-alias glog='git log --oneline --decorate --graph'
-    abbrev-alias gr='git reset'
-    abbrev-alias gs='git show'
-    abbrev-alias gst='git status'
-    abbrev-alias gsta='git stash'
-    abbrev-alias gstap='git stash pop'
-    abbrev-alias gsyn='git submodule sync'
-    abbrev-alias gsup='git submodule update --init'
+    abbrev-alias gb='git branch '
+    abbrev-alias gd='git diff '
+    abbrev-alias gds='git diff --staged '
+    abbrev-alias gl='git log '
+    abbrev-alias glog='git log --oneline --decorate --graph '
+    abbrev-alias gr='git reset '
+    abbrev-alias gs='git show '
+    abbrev-alias gst='git status '
+    abbrev-alias gsta='git stash '
+    abbrev-alias gstap='git stash pop '
+    abbrev-alias gsyn='git submodule sync '
+    abbrev-alias gsup='git submodule update --init '
     # [git-stash-merge]
     # apply stash top and drop if succeeded.
     # this works even when there exist unstashed changes.
-    abbrev-alias gstam='git diff stash@{0}^ stash@{0} | git apply && git stash drop'
+    abbrev-alias gstam='git diff stash@{0}^ stash@{0} | git apply && git stash drop '
     # [git-undo]
     # undo the last change made to the current branch (keeping the worktree)
-    abbrev-alias -e gun='git reset $(git symbolic-ref --short HEAD)@{1}'
+    abbrev-alias -e gun='git reset $(git symbolic-ref --short HEAD)@{1} '
     # [git-pull-current]
     # pull current branch with `--ff-only` strategy
-    abbrev-alias -e gpu='git pull origin $(git symbolic-ref --short HEAD) --ff-only'
+    abbrev-alias -e gpu='git pull origin $(git symbolic-ref --short HEAD) --ff-only '
     # [git-pull-current-merge]
     # pull current branch
-    abbrev-alias -e gpm='git pull origin $(git symbolic-ref --short HEAD) --rebase=false'
+    abbrev-alias -e gpm='git pull origin $(git symbolic-ref --short HEAD) --rebase=false '
 
     # typos
-    abbrev-alias gti='git'
-    abbrev-alias igt='git'
-    abbrev-alias sl='ls'
-    abbrev-alias sls='ls'
+    abbrev-alias gti='git '
+    abbrev-alias igt='git '
+    abbrev-alias sl='ls '
+    abbrev-alias sls='ls '
 
     # ls
-    abbrev-alias l='ls'
-    abbrev-alias la='ls -a'
-    abbrev-alias ll='ls -lh'
-    abbrev-alias lla='ls -lah'
+    abbrev-alias l='ls '
+    abbrev-alias la='ls -a '
+    abbrev-alias ll='ls -lh '
+    abbrev-alias lla='ls -lah '
 
     # global aliases
-    abbrev-alias -g g='| grep'
-    abbrev-alias -g l='| less -R'
-    abbrev-alias -g c='| cut -d " " -f'
-    abbrev-alias -g s='| tr -s " "'
-    abbrev-alias -g n='--no-verify'
-    abbrev-alias -ge b='$(git symbolic-ref --short HEAD)'
+    abbrev-alias -g g='| grep '
+    abbrev-alias -g l='| less -R '
+    abbrev-alias -g c='| cut -d " " -f '
+    abbrev-alias -g s='| tr -s " " '
+    abbrev-alias -g n='--no-verify '
+    abbrev-alias -ge b='$(git symbolic-ref --short HEAD) '
 else
     echo "[.zshrc] abbrev-alias is not unavailable."
 fi
