@@ -276,24 +276,8 @@ alias git='noglob git'
 alias please='sudo'
 
 # ------------------------------
-# plugin: per-directory-history
-# ------------------------------
-
-# Installation:
-# $ cd ~/.zsh.d/plugins
-# $ git clone https://github.com/zk-phi/per-directory-history.git
-
-# NOTE: zk-phi/per-directory-history is a fork of
-# jimhester/per-directory-history, with a workaround to the problem
-# with unicode characters.
-
-# ------------------------------
 # plugin: autosuggestions
 # ------------------------------
-
-# Installation:
-# $ cd ~/.zsh.d/plugins
-# $ git clone https://github.com/zsh-users/zsh-autosuggestions.git
 
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=yellow'
 ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(forward-char-or-accept-suggested-word)
@@ -317,10 +301,6 @@ zle -N forward-char-or-accept-suggested-word
 # ------------------------------
 # plugin: abbrev-alias
 # ------------------------------
-
-# Installation:
-# $ cd ~/.zsh.d/plugins
-# $ git clone https://github.com/momo-lab/zsh-abbrev-alias.git
 
 # use abbrevs if abbev-alias is available
 if whence abbrev-alias > /dev/null; then
