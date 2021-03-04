@@ -349,12 +349,12 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias lla='ls -lah'
 
     # global aliases
-    abbrev-alias -g G='| grep'
-    abbrev-alias -g L='| less -R'
-    abbrev-alias -g C='| cut -d " " -f'
-    abbrev-alias -g S='| tr -s " "'
-    abbrev-alias -g NV='--no-verify'
-    abbrev-alias -ge B='$(git symbolic-ref --short HEAD)'
+    abbrev-alias -g g='| grep'
+    abbrev-alias -g l='| less -R'
+    abbrev-alias -g c='| cut -d " " -f'
+    abbrev-alias -g s='| tr -s " "'
+    abbrev-alias -g n='--no-verify'
+    abbrev-alias -ge b='$(git symbolic-ref --short HEAD)'
 else
     echo "[.zshrc] abbrev-alias is not unavailable."
 fi
