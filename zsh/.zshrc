@@ -325,14 +325,11 @@ zle -N forward-char-or-accept-suggested-word
 # use abbrevs if abbev-alias is available
 if whence abbrev-alias > /dev/null; then
     # git
-    abbrev-alias g='git'
     abbrev-alias ga='git add'
     abbrev-alias gap='git add -p'
     abbrev-alias gc='git commit'
-    abbrev-alias gcm='git commit -m'
     abbrev-alias gco='git checkout'
-    abbrev-alias gcob='git checkout -b'
-    abbrev-alias gcoo='git checkout-origin'
+    abbrev-alias gcoo='git fetch origin && git checkout origin/'
     abbrev-alias gb='git branch'
     abbrev-alias gd='git diff'
     abbrev-alias gds='git diff --staged'
@@ -343,14 +340,21 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias gst='git status'
     abbrev-alias gsta='git stash'
     abbrev-alias gstap='git stash pop'
-    abbrev-alias gstam='git merge-stash'
-    abbrev-alias gm='git mv'
-    abbrev-alias grm='git rm'
-    abbrev-alias gg='git grep'
     abbrev-alias gsyn='git submodule sync'
-    abbrev-alias gup='git submodule update --init'
-    abbrev-alias -e gun='git reset $(git symbolic-ref --short HEAD 2>/dev/null)@{1}'
-    abbrev-alias -e gpu='git pull origin $(git symbolic-ref --short HEAD 2>/dev/null) --ff-only'
+    abbrev-alias gsup='git submodule update --init'
+    # [git-stash-merge]
+    # apply stash top and drop if succeeded.
+    # this works even when there exist unstashed changes.
+    abbrev-alias gstam='git diff stash@{0}^ stash@{0} | git apply && git stash drop'
+    # [git-undo]
+    # undo the last change made to the current branch (keeping the worktree)
+    abbrev-alias -e gun='git reset $(git symbolic-ref --short HEAD)@{1}'
+    # [git-pull-current]
+    # pull current branch with `--ff-only` strategy
+    abbrev-alias -e gpu='git pull origin $(git symbolic-ref --short HEAD) --ff-only'
+    # [git-pull-current-merge]
+    # pull current branch
+    abbrev-alias -e gpm='git pull origin $(git symbolic-ref --short HEAD) --rebase=false'
 
     # typos
     abbrev-alias gti='git'
@@ -370,8 +374,7 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias -g C='| cut -d " " -f'
     abbrev-alias -g S='| tr -s " "'
     abbrev-alias -g NV='--no-verify'
-    abbrev-alias -ge B='$(git symbolic-ref --short HEAD 2>/dev/null)'
-    abbrev-alias -ge M='$(git log --graph --pretty=format:"%h %d" HEAD^ | grep "^* \+[0-9a-f]\+ \+(" | head -n 1 | sed "s/^.*(\([^,)]*\)[,)].*$/\1/")'
+    abbrev-alias -ge B='$(git symbolic-ref --short HEAD)'
 else
     echo "[.zshrc] abbrev-alias is not unavailable."
 fi

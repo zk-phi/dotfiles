@@ -23,8 +23,6 @@
     unpatch = "!f(){ git diff $1^ $1 | git apply --reverse; }; f"
     stack = "!f(){ git diff HEAD...$1 | git apply; }; f"
     imitate = "!f(){ git diff HEAD..$1 | git apply; }; f"
-    # ---- merge stash top with the worktree and drop it when succeeded (= force pop, kind of)
-    merge-stash = "!f(){ git diff stash@{0}^ stash@{0} | git apply && git stash drop; }; f"
     # ---- compare two branches excluding commits from other branches
     compare = "!f() { git diff ${1:-master}...${2:-HEAD}; }; f"
     history = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
@@ -43,16 +41,6 @@
     abort = "!f() { local command=$(git status | grep -o \"git \\w* --abort\"); echo $command; $($command); }; f"
     # ---- update timestamp of recent commits
     redate = "!f(){ export FILTER_BRANCH_SQUELCH_WARNING=1; local date=$(date); git filter-branch -f --env-filter 'export GIT_AUTHOR_DATE=\"$date\"; export GIT_COMMITTER_DATE=\"$date\"' $1..HEAD; }; f"
-    # ---- fetch and checkout remote branch
-    checkout-origin = "!f() { git fetch origin $1 && git checkout origin/$1; }; f"
-    # ---- fix typos
-    chekcout = checkout
-    hcekcout = checkout
-    hceckout = checkout
-    checkotu = checkout
-    stauts = status
-    stahs = stash
-    hisotry = "!f() { git log ${1:-master}..${2:-HEAD}; }; f"
 [merge]
     conflictStyle = diff3
 [fetch]
