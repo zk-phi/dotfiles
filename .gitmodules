@@ -219,9 +219,6 @@
 [submodule "emacs/site-lisp/plugins/oj.el"]
 	path = emacs/site-lisp/plugins/oj-el
 	url = https://github.com/conao3/oj.el.git
-[submodule "emacs/site-lisp/plugins/quickrun"]
-	path = emacs/site-lisp/plugins/quickrun
-	url = https://github.com/emacsorphanage/quickrun.git
 [submodule "emacs/site-lisp/plugins/dumb-jump"]
 	path = emacs/site-lisp/plugins/dumb-jump
 	url = https://github.com/jacktasia/dumb-jump.git
