@@ -2000,6 +2000,8 @@ displayed, use substring of the buffer."
 
 ;; + org-export (older varsions)
 
+(setup-lazy '(htmlize-buffer htmlize-file) "htmlize")
+
 (setup-after "org"
 
   (setup-after "smart-compile"

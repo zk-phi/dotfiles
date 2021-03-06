@@ -124,9 +124,6 @@
 	path = emacs/site-lisp/plugins/avy
 	url = https://github.com/abo-abo/avy.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/emacs-htmlize"]
-	path = emacs/site-lisp/plugins/emacs-htmlize
-	url = https://github.com/hniksic/emacs-htmlize.git
 [submodule "emacs/site-lisp/my-plugins/togetherly"]
 	path = emacs/site-lisp/my-plugins/togetherly
 	url = https://github.com/zk-phi/togetherly.git

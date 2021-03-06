@@ -1537,8 +1537,6 @@ unary operators which can also be binary."
 
 (setup-lazy '(ace-link-help ace-link-info ace-link-eww) "ace-link")
 
-(setup-lazy '(htmlize-buffer htmlize-file) "htmlize")
-
 (setup-lazy '(togetherly-client-start togetherly-server-start) "togetherly")
 
 ;; + | Modes
@@ -2685,7 +2683,7 @@ unary operators which can also be binary."
 (setup-after "mark-hacks"
   (push 'text-mode mark-hacks-auto-indent-inhibit-modes))
 
-;;       + org-mode [htmlize]
+;;       + org-mode
 
 (setup-after "org"
 
