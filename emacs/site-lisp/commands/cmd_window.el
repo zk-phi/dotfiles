@@ -150,8 +150,8 @@ kill-buffer-query-functions."
       (t
        (setq my-split-window-saved-configuration
              (current-window-configuration))
-       (cond ((> (window-total-width)
-                 (* 2.65 (window-height)))
+       (cond ((or (<= fill-column (/ (window-total-width) 2))
+                  (<= (window-height) 20))
               (split 2)
               (setq this-command 'my-split-window-horizontally-1))
              (t
