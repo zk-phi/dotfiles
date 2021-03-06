@@ -3672,13 +3672,14 @@ unary operators which can also be binary."
    :inherit 'elemental-ui-ghost)
 
   (setup-after "highlight-parentheses"
-    (hl-paren-set 'hl-paren-colors nil)
-    (hl-paren-set 'hl-paren-background-colors
-                  (list (face-background 'elemental-brighter-bg-face)))
+    (setq highlight-parentheses-colors nil
+          highlight-parentheses-background-colors
+          (list (face-background 'elemental-brighter-bg-face)))
     ;; re-apply colors when the palette is changed
     (setup-hook 'my-elemental-theme-change-palette-hook
-      (hl-paren-set 'hl-paren-background-colors
-                    (list (face-background 'elemental-brighter-bg-face)))))
+      (setq highlight-parentheses-background-colors
+            (list (face-background 'elemental-brighter-bg-face))))
+    (highlight-parentheses--color-update))
 
   (setup-after "cperl-mode"
     (set-face-attribute 'cperl-hash-key-face nil :inherit 'elemental-key))
