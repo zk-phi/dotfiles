@@ -46,7 +46,7 @@ nav {
 
 module.exports = {
     config: {
-        updateChannel: 'canary', // available: stable, canary
+        updateChannel: 'stable', // available: stable, canary
 
         // font
         fontSize: 13,
@@ -80,7 +80,7 @@ module.exports = {
         },
 
         // cursor
-        cursorShape: 'BLOCK', // available: BEAM, UNDERLINE, BLOCK
+        cursorShape: 'BEAM', // available: BEAM, UNDERLINE, BLOCK
         cursorBlink: false,
 
         // extra styles
@@ -97,8 +97,7 @@ module.exports = {
 
     plugins: [
         'hyper-search',
-        'hyperlinks',
-        'hyper-dnd-tabs'
+        'hyperlinks'
     ],
 
     keymaps: {
