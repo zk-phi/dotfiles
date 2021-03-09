@@ -28,9 +28,7 @@ setopt multios                  # accept multiple redirections
 # language-specific settings
 # ------------------------------
 
-if type anyenv > /dev/null; then
-    eval "$(anyenv init -)"
-fi
+. /usr/local/opt/asdf/asdf.sh
 
 # ------------------------------
 # prompt
