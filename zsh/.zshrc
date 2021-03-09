@@ -105,7 +105,7 @@ function _local_git_user {
     if _under_gitrepo_p; then
         echo $(git config --local user.name)
     else
-        echo ""
+        echo "(UNSET)"
     fi
 }
 
