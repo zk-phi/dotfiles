@@ -48,3 +48,11 @@ first time
 
 : ln -s ~/dotfiles/emacs/.emacs.d/early-init.elc
 : ln -s ~/dotfiles/emacs/.emacs.d/init.elc
+
+** asdf
+
+Symlink .asdfrc and .tool-versions
+
+: cd ~
+: ln -s ~/dotfiles/asdf/.asdfrc
+: ln -s ~/dotfiles/asdf/.tool-versions
