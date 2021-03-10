@@ -34,10 +34,9 @@ setopt auto_cd                  # "cd" with directory names
 # ------------------------------
 
 setopt prompt_subst
-autoload -U colors && colors
 
 function _errno_face {
-    echo " %(?:%{$reset_color%}?:%{$fg[red]%}!) "
+    echo " %(?:%f?:%F{red}!) "
 }
 
 function _under_gitrepo_p {
@@ -50,7 +49,7 @@ function _git_prompt {
 
         if test -n "$(git status --porcelain)"; then
             # _git_status="☁️ "
-            _git_status="%{$fg_bold[white]%}*"
+            _git_status="%f*"
         else
             # _git_status="✨ "
             _git_status=""
@@ -58,12 +57,12 @@ function _git_prompt {
 
         if git rev-parse --verify --quiet refs/stash >/dev/null; then
             # _git_stashed=" 📃 "
-            _git_stashed="%{$fg_bold[white]%}*"
+            _git_stashed="%f*"
         else
             _git_stashed=""
         fi
 
-        echo " %{$fg_bold[blue]%}git:(%{$fg_bold[red]%}$_branch_name$_git_status%{$fg_bold[blue]%})$_git_stashed"
+        echo " %F{blue}(%F{red}$_branch_name$_git_status%F{blue})$_git_stashed"
     else
         echo ""
     fi
@@ -73,7 +72,7 @@ function _local_git_user {
     if _under_gitrepo_p; then
         _name=$(git config --local user.name)
         if [[ "$_name" == "" ]]; then
-            echo "(UNSET)"
+            echo "%S%F{red}UNSET%s"
         else
             echo $_name
         fi
@@ -82,7 +81,7 @@ function _local_git_user {
     fi
 }
 
-PROMPT='%{$fg_bold[cyan]%}%c$(_git_prompt)$(_errno_face)%{$reset_color%}'
+PROMPT='%F{cyan}%c$(_git_prompt)$(_errno_face)%f'
 RPROMPT='$(_local_git_user)'
 
 # ------------------------------
