@@ -22,7 +22,6 @@ export LSCOLORS="Gxfxcxdxbxegedabagacad" # enable colors in "ls"
 setopt interactivecomments      # recognize comments in the REPL too
 setopt extended_glob            # enable extended glob syntax
 setopt auto_cd                  # "cd" with directory names
-setopt multios                  # accept multiple redirections
 
 # ------------------------------
 # language-specific settings
