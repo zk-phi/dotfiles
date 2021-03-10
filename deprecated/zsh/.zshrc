@@ -1,3 +1,7 @@
+# ------------------------------
+# prompt
+# ------------------------------
+
 # Reference: http://smithje.github.io/bash/2013/07/08/moon-phase-prompt.html
 _moon_phase () {
     local lp=2551443
@@ -20,3 +24,21 @@ _moon_phase () {
 
     echo $phase_icon
 }
+
+# ------------------------------
+# autocorrect
+# ------------------------------
+
+setopt correct_all
+
+# list of commands not to enable autocorrection
+# Reference: .oh-my-zsh/lib/correction.zsh
+alias ebuild='nocorrect ebuild'
+alias gist='nocorrect gist'
+alias heroku='nocorrect heroku'
+alias hpodder='nocorrect hpodder'
+alias man='nocorrect man'
+alias mkdir='nocorrect mkdir'
+alias mv='nocorrect mv'
+alias mysql='nocorrect mysql'
+alias sudo='nocorrect sudo'

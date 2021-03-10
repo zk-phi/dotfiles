@@ -170,24 +170,6 @@ zstyle ':completion:*:*:*:users' ignored-patterns \
 zstyle '*' single-ignored show
 
 # ------------------------------
-# autocorrect
-# ------------------------------
-
-setopt correct_all
-
-# list of commands not to enable autocorrection
-# Reference: .oh-my-zsh/lib/correction.zsh
-alias ebuild='nocorrect ebuild'
-alias gist='nocorrect gist'
-alias heroku='nocorrect heroku'
-alias hpodder='nocorrect hpodder'
-alias man='nocorrect man'
-alias mkdir='nocorrect mkdir'
-alias mv='nocorrect mv'
-alias mysql='nocorrect mysql'
-alias sudo='nocorrect sudo'
-
-# ------------------------------
 # history
 # ------------------------------
 
