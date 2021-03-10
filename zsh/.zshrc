@@ -71,9 +71,14 @@ function _git_prompt {
 
 function _local_git_user {
     if _under_gitrepo_p; then
-        echo $(git config --local user.name)
+        _name=$(git config --local user.name)
+        if [[ "$_name" == "" ]]; then
+            echo "(UNSET)"
+        else
+            echo $_name
+        fi
     else
-        echo "(UNSET)"
+        echo ""
     fi
 }
 
