@@ -41,14 +41,6 @@ function _errno_face {
     echo "%(?:%{$reset_color%}（*'-'）? :%{$fg[red]%}（\`;w;）! )"
 }
 
-function _pwd {
-    if [[ $PWD == $HOME ]]; then
-        echo "%{$fg_bold[cyan]%}~"
-    else
-        echo "%{$fg_bold[cyan]%}$(basename $PWD)"
-    fi
-}
-
 function _under_gitrepo_p {
     test -d .git || command git rev-parse --git-dir >/dev/null 2>/dev/null
 }
@@ -86,7 +78,7 @@ function _local_git_user {
     fi
 }
 
-PROMPT='$(_pwd)$(_git_prompt)$(_errno_face)%{$reset_color%}'
+PROMPT='%{$fg_bold[cyan]%}%c$(_git_prompt)$(_errno_face)%{$reset_color%}'
 RPROMPT='$(_local_git_user)'
 
 # ------------------------------
