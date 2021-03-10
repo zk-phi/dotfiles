@@ -88,42 +88,16 @@ RPROMPT='$(_local_git_user)'
 # Reference: .oh-my-zsh/lib/termsupport.zsh
 
 function _title {
-    emulate -L zsh
-    case "$TERM" in
-        cygwin|xterm*|putty*|rxvt*|ansi)
-            print -Pn "\e]2;$2:q\a" # set window name
-            print -Pn "\e]1;$1:q\a" # set tab name
-            ;;
-        screen*)
-            print -Pn "\ek$1:q\e\\" # set screen hardstatus
-            ;;
-        *)
-            if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
-                print -Pn "\e]2;$2:q\a" # set window name
-                print -Pn "\e]1;$1:q\a" # set tab name
-            else
-                # Try to use terminfo to set the title
-                # If the feature is available set title
-                if [[ -n "$terminfo[fsl]" ]] && [[ -n "$terminfo[tsl]" ]]; then
-                    echoti tsl
-                    print -Pn "$1"
-                    echoti fsl
-                fi
-            fi
-            ;;
-    esac
+    print -Pn "\e]1;$1:q\a" # set tab name
+    print -Pn "\e]2;$1:q\a" # set window name
 }
 
 function _set_title_pwd {
-    emulate -L zsh
-    _title "%15<..<%~%<<" "%n@%m: %~"
+    _title "%c"
 }
 
 function _set_title_procname {
-    emulate -L zsh
-    local CMD=${1[(wr)^(*=*|sudo|ssh|mosh|rake|-*)]:gs/%/%%}
-    local LINE="${2:gs/%/%%}"
-    _title '$CMD' '%100>...>$LINE%<<'
+    _title $2
 }
 
 precmd_functions+=(_set_title_pwd)
