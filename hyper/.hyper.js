@@ -57,7 +57,7 @@ module.exports = {
         backgroundColor:   BLACK,
         foregroundColor:   WHITE,
         selectionColor:    REGION,
-        cursorColor:       WHITE,
+        cursorColor:       CYAN,
         cursorAccentColor: BLACK,
         borderColor:       BORDER,
         colors: {
