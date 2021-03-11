@@ -88,8 +88,7 @@ RPROMPT='$(_local_git_user)'
 # terminal title
 # ------------------------------
 
-# Display process name or PWD in the terminal title.
-# Reference: .oh-my-zsh/lib/termsupport.zsh
+# Display command line or PWD in the terminal title.
 
 function _title {
     print -Pn "\e]1;$1:q\a" # set tab name
