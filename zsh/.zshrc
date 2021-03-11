@@ -114,11 +114,8 @@ autoload -U compinit && compinit -i
 
 ZSH_CACHE_DIR=$ZSH/cache
 
-unsetopt menu_complete  # do not autoselect the first completion
-unsetopt flowcontrol    # disable flowcontrol
+setopt no_flow_control  # disable flowcontrol
 setopt auto_menu        # automatically show completion menu
-setopt complete_in_word # complete at the cursor position
-setopt always_to_end    # move cursor to the end after completion
 
 # add flex matcher (as a fallback to the default oh-my-zsh matchers)
 zstyle ':completion:*' matcher-list \
@@ -130,21 +127,8 @@ zstyle ':completion:*' matcher-list \
 # Reference: .oh-my-zsh/lib/completion.zsh
 zstyle ':completion:*:*:*:*:*' menu select
 zstyle ':completion:*' list-colors ''
-zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#) ([0-9a-z-]#)*=01;34=0=01'
-zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
-zstyle ':completion:*:cd:*' tag-order local-directories directory-stack path-directories
 zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion::complete:*' cache-path $ZSH_CACHE_DIR
-zstyle ':completion:*:*:*:users' ignored-patterns \
-       adm amanda apache at avahi avahi-autoipd beaglidx bin cacti canna \
-       clamav daemon dbus distcache dnsmasq dovecot fax ftp games gdm \
-       gkrellmd gopher hacluster haldaemon halt hsqldb ident junkbust kdm \
-       ldap lp mail mailman mailnull man messagebus  mldonkey mysql nagios \
-       named netdump news nfsnobody nobody nscd ntp nut nx obsrun openvpn \
-       operator pcap polkitd postfix postgres privoxy pulse pvm quagga radvd \
-       rpc rpcuser rpm rtkit scard shutdown squid sshd statd svn sync tftp \
-       usbmux uucp vcsa wwwrun xfs '_*'
-zstyle '*' single-ignored show
 
 # ------------------------------
 # history
@@ -155,12 +139,8 @@ HISTSIZE=10000
 SAVEHIST=10000
 
 setopt append_history          # append new commands to the HISTFILE,
-setopt inc_append_history      # -- just after invoking commands
-setopt hist_ignore_dups        # do not add duplicate entries
-setopt hist_expire_dups_first  # expire duplicate entries first
+setopt hist_ignore_dups        # do not repeat identical entries
 setopt hist_ignore_space       # filter commands starts with a space
-setopt hist_verify             # edit before executing from history
-setopt share_history           # share history among the tabs
 setopt hist_reduce_blanks      # remove unuseful spaces
 
 # ------------------------------
@@ -195,9 +175,6 @@ alias jobs='jobs -l'
 
 # git: disable glob expansion (otherwise "reset HEAD^" fails as "no matches found")
 alias git='noglob git'
-
-# sudo: please, please do it
-alias please='sudo'
 
 # ------------------------------
 # plugin: autosuggestions
