@@ -2069,3 +2069,19 @@ displayed, use substring of the buffer."
           (apply fn args))))
     )
   )
+
+;; + Arduino
+
+(setup-lazy '(arduino-mode) "arduino-mode"
+  :prepare (push '("\\.\\(ino\\|pde\\)$" . arduino-mode) auto-mode-alist)
+  ;; if arduino-mk is installed, use it to upload programs
+  (when (file-exists-p "/usr/share/arduino/Arduino.mk")
+    (defvar my-arduino-port "/dev/ttyACM0")
+    (defvar my-arduino-board-type "uno")
+    (defun my-arduino-compile-and-upload ()
+      (interactive)
+      (setenv "BOARD_TAG" my-arduino-board-type)
+      (setenv "MONITOR_PORT" my-arduino-port)
+      (compile "make --makefile=/usr/share/arduino/Arduino.mk upload"))
+    (setup-after "smart-compile"
+      (push '(arduino-mode . (my-arduino-compile-and-upload)) smart-compile-alist))))
