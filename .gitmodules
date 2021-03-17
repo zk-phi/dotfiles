@@ -6,7 +6,7 @@
 	url = https://github.com/zsh-users/zsh-autosuggestions.git
 [submodule "zsh/.zsh.d/plugins/zsh-abbrev-alias"]
 	path = zsh/.zsh.d/plugins/zsh-abbrev-alias
-	url = https://github.com/momo-lab/zsh-abbrev-alias.git
+	url = https://github.com/zk-phi/zsh-abbrev-alias.git
 [submodule "emacs/site-lisp/plugins/popwin-el"]
 	path = emacs/site-lisp/plugins/popwin-el
 	url = https://github.com/m2ym/popwin-el.git
