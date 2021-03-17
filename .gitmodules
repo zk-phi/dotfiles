@@ -137,9 +137,6 @@
 [submodule "emacs/site-lisp/my-plugins/scad-preview"]
 	path = emacs/site-lisp/my-plugins/scad-preview
 	url = https://github.com/zk-phi/scad-preview.git
-[submodule "emacs/site-lisp/plugins/arduino-mode"]
-	path = emacs/site-lisp/plugins/arduino-mode
-	url = https://github.com/stardiviner/arduino-mode.git
 [submodule "emacs/site-lisp/my-plugins/bfbuilder"]
 	path = emacs/site-lisp/my-plugins/bfbuilder
 	url = https://github.com/zk-phi/bfbuilder.git
