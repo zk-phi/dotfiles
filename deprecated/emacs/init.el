@@ -1519,6 +1519,11 @@ displayed, use substring of the buffer."
 
 ;; + mini-modeline: appearance
 
+(eval-when-compile
+  (defconst my-openweathermap-api-key
+    (when (boundp 'my-openweathermap-api-key) my-openweathermap-api-key)
+    "Access token for openweathermap API."))
+
 (setup-after "mini-modeline"
   (set-face-attribute
    'mini-modeline-mode-line nil
@@ -1999,6 +2004,11 @@ displayed, use substring of the buffer."
   "M-t" 'orgtbl-mode)
 
 ;; + org-export (older varsions)
+
+(eval-when-compile
+  (defconst my-ditaa-jar-file
+    (when (boundp 'my-ditaa-jar-file) my-ditaa-jar-file)
+    "/path/to/ditaa.jar"))
 
 (setup-lazy '(htmlize-buffer htmlize-file) "htmlize")
 

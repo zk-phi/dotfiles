@@ -83,15 +83,9 @@
   (defconst my-additional-info-directories
     (when (boundp 'my-additional-info-directories) my-additional-info-directories)
     "List of directories counted as additional include directory.")
-  (defconst my-openweathermap-api-key
-    (when (boundp 'my-openweathermap-api-key) my-openweathermap-api-key)
-    "Access token for openweathermap API.")
   (defconst my-secret-words
     (when (boundp 'my-secret-words) my-secret-words)
     "List of secret words to be hidden.")
-  (defconst my-ditaa-jar-file
-    (when (boundp 'my-ditaa-jar-file) my-ditaa-jar-file)
-    "/path/to/ditaa.jar")
   (defconst my-emacs-C-source-directory
     (when (boundp 'my-emacs-C-source-directory) my-emacs-C-source-directory)
     "/path/to/emacs/src"))
