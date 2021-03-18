@@ -320,6 +320,7 @@
               truncate-lines        nil
               line-move-visual      t
               cursor-type           'bar
+              fill-column           100
               ;; files.el
               require-final-newline t)
 
@@ -3730,7 +3731,7 @@ unary operators which can also be binary."
     (setq sublimity-scroll-weight       4
           sublimity-scroll-drift-length 3))
   (setup "sublimity-attractive"
-    (setq sublimity-attractive-centering-width 100))
+    (setq sublimity-attractive-centering-width fill-column))
   (sublimity-mode 1))
 
 ;; + | Keybinds
