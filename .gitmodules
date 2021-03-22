@@ -171,7 +171,7 @@
 	url = https://github.com/zk-phi/elemental-theme.git
 [submodule "emacs/site-lisp/plugins/highlight-parentheses.el"]
 	path = emacs/site-lisp/plugins/highlight-parentheses-el
-	url = https://github.com/tsdh/highlight-parentheses.el.git
+	url = https://git.sr.ht/~tsdh/highlight-parentheses.el
 [submodule "emacs/site-lisp/plugins/highlight-stages"]
 	path = emacs/site-lisp/my-plugins/highlight-stages
 	url = https://github.com/zk-phi/highlight-stages.git
