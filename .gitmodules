@@ -149,7 +149,6 @@
 [submodule "emacs/site-lisp/plugins/dockerfile-mode"]
 	path = emacs/site-lisp/plugins/dockerfile-mode
 	url = https://github.com/spotify/dockerfile-mode.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/magic-latex-buffer"]
 	path = emacs/site-lisp/my-plugins/magic-latex-buffer
 	url = https://github.com/zk-phi/magic-latex-buffer.git
