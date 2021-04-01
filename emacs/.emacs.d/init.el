@@ -3549,7 +3549,7 @@ unary operators which can also be binary."
   ;; reference | https://github.com/cmack/emacs-planet-theme/
   (my-elemental-theme-apply-colors
     "#192129" "#79828c" "#729fcf" "#c4dde8" "#e9b96e" "#649d8a"
-    "#fe5450" "#ff8683" "#649d8a" "#729fcf")
+    "#fe5450" "#e9b96e" "#649d8a" "#729fcf")
 
   ;; ;; "kagamine len" inspired palette (bg modified)
   ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
