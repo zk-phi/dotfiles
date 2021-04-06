@@ -2444,10 +2444,11 @@ unary operators which can also be binary."
         web-mode-style-padding                    nil
         web-mode-markup-indent-offset             2
         web-mode-css-indent-offset                2
-        web-mode-code-indent-offset               4
+        web-mode-code-indent-offset               2
         web-mode-enable-control-block-indentation nil
         web-mode-enable-auto-quoting              nil
         web-mode-enable-front-matter-block        t)
+  (push '("lineup-calls" . nil) web-mode-indentation-params)
 
   ;; tweak JSX syntax highlight
   (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
