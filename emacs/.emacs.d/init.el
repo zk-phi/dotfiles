@@ -2162,6 +2162,11 @@ unary operators which can also be binary."
     "C-c C-c" 'scad-preview-export
     "<f5>"    'scad-preview-refresh))
 
+;;         + glsl
+
+(setup-lazy '(glsl-mode) "glsl-mode"
+  :prepare (push '("\\.\\(glsl\\|[vf]s\\)$" . glsl-mode) auto-mode-alist))
+
 ;;       + perl-like
 ;;         + Perl (cperl-mode)
 
