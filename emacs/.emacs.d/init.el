@@ -2165,7 +2165,9 @@ unary operators which can also be binary."
 ;;         + glsl
 
 (setup-lazy '(glsl-mode) "glsl-mode"
-  :prepare (push '("\\.\\(glsl\\|[vf]s\\)$" . glsl-mode) auto-mode-alist))
+  :prepare (push '("\\.\\(glsl\\|[vf]s\\)$" . glsl-mode) auto-mode-alist)
+  (setup-hook 'glsl-mode-hook
+    (c-set-style "phi")))
 
 ;;       + perl-like
 ;;         + Perl (cperl-mode)
