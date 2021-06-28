@@ -690,7 +690,9 @@ cons of two integers which defines a range of the codepoints."
      (push 'git-complete-company-whole-line-backend company-backends)
      ;; invoke (git-complete-)company when expand-dwim fails
      (setq my-expand-dwim-fallback        'company-manual-begin
-           git-complete-limit-extension   t)
+           git-complete-limit-extension   t
+           git-complete-grep-function
+           (!if (executable-find "rg") 'git-complete-ripgrep 'git-complete-git-grep))
      (push '(web-mode "jsx" "js" "scss" "css" "html" "html.ep")
            git-complete-major-mode-extensions-alist))
    (setup "company-dwim"
