@@ -49,6 +49,8 @@ first time
 : ln -s ~/dotfiles/emacs/.emacs.d/early-init.elc
 : ln -s ~/dotfiles/emacs/.emacs.d/init.elc
 
+Optional per-machine configurations are stored in a private repo.
+
 ** asdf
 
 Symlink .asdfrc and .tool-versions
