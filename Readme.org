@@ -1,4 +1,14 @@
-* zk-phi's Dotfiles
+zk-phi's Dotfiles
+
+* Setup (Mac)
+
+Install Xcode CLI tool.
+
+: xcode-select --install
+
+Install homebrew (look the official page for the install script).
+
+: /bin/bash install.sh
 
 Clone this repo and submodules
 
@@ -6,7 +16,19 @@ Clone this repo and submodules
 : cd dotfiles
 : git submodule update --init
 
-** zsh
+Install must-haves via =Brewfile=.
+
+: cd brew
+: brew bundle
+
+(See also https://scrapbox.io/zkphi/Mac_PC_%E7%A7%BB%E8%A1%8C)
+
+* zsh
+
+Change login shell
+
+: vim /etc/shells # Add /usr/local/bin/zsh
+: chsh -s /usr/local/bin/zsh
 
 Symlink .zshrc and .zsh.d
 
@@ -15,14 +37,14 @@ Symlink .zshrc and .zsh.d
 : ln -s ~/dotfiles/zsh/.zshrc
 : ln -s ~/dotfiles/zsh/.zsh.d
 
-** hyper terminal
+* hyper terminal
 
 Symlink .hyper.js
 
 : cd ~
 : ln -s ~/dotfiles/hyper/.hyper.js
 
-** git
+* git
 
 Symlink .gitconfig and .gitignore_global
 
@@ -31,7 +53,7 @@ Symlink .gitconfig and .gitignore_global
 : ln -s ~/dotfiles/git/.gitignore_global
 : ln -s ~/dotfiles/git/.git_template
 
-** emacs
+* emacs
 
 Symlink early-init.el, init.el, snippets and site-lisp
 
@@ -51,7 +73,11 @@ first time
 
 Optional per-machine configurations are stored in a private repo.
 
-** asdf
+** fonts
+
+→ https://github.com/zk-phi/nasia
+
+* asdf
 
 Symlink .asdfrc and .tool-versions
 
