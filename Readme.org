@@ -21,6 +21,10 @@ Install must-haves via =Brewfile=.
 : cd brew
 : brew bundle
 
+Some packages may fail under the Mac M1. Try installing with =arch -arm64= that case.
+
+: arch -arm64 brew install <package>
+
 Change login shell (if it's not zsh yet)
 
 : sudo vim /etc/shells # Add /usr/local/bin/zsh
@@ -73,7 +77,7 @@ first time
 
 Optional per-machine configurations are stored in a private repo.
 
-** fonts
+*** fonts
 
 → https://github.com/zk-phi/nasia
 
