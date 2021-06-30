@@ -17,4 +17,3 @@ rm -r /Applications/Emacs.app/Contents/Resources/site-lisp
 ln -s -i $(PWD)/emacs/site-lisp /Applications/Emacs.app/Contents/Resources/site-lisp
 
 ln -s -i $(PWD)/asdf/.asdfrc ~/.asdfrc
-ln -s -i $(PWD)/asdf/.tool-versions ~/.tool-versions
