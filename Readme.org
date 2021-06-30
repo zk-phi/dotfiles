@@ -10,9 +10,6 @@ Install Xcode CLI tool.
 
 Install homebrew (look the official page) and follow the instruction to add to PATH.
 
-: echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-: eval "$(/opt/homebrew/bin/brew shellenv)"
-
 Clone this repo and submodules
 
 : git clone https://github.com/zk-phi/dotfiles.git
