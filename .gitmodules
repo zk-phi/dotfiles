@@ -75,8 +75,7 @@
 	url = https://github.com/magnars/multiple-cursors.el.git
 [submodule "emacs/site-lisp/plugins/paredit"]
 	path = emacs/site-lisp/my-plugins/paredit
-	url = http://mumble.net/~campbell/git/paredit.git
-	ignore = dirty
+	url = https://github.com/zk-phi/paredit.git
 [submodule "emacs/site-lisp/my-plugins/cedit"]
 	path = emacs/site-lisp/my-plugins/cedit
 	url = https://github.com/zk-phi/cedit.git
