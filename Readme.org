@@ -2,13 +2,16 @@ zk-phi's Dotfiles
 
 * Setup (Mac)
 
+Open Terminal.app.
+
 Install Xcode CLI tool.
 
 : xcode-select --install
 
-Install homebrew (look the official page for the install script).
+Install homebrew (look the official page) and follow the instruction to add to PATH.
 
-: /bin/bash install.sh
+: echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+: eval "$(/opt/homebrew/bin/brew shellenv)"
 
 Clone this repo and submodules
 
@@ -21,14 +24,14 @@ Install must-haves via =Brewfile=.
 : cd brew
 : brew bundle
 
+Change login shell (if it's not zsh yet)
+
+: sudo vim /etc/shells # Add /usr/local/bin/zsh
+: chsh -s /usr/local/bin/zsh
+
 (See also https://scrapbox.io/zkphi/Mac_PC_%E7%A7%BB%E8%A1%8C)
 
 * zsh
-
-Change login shell
-
-: vim /etc/shells # Add /usr/local/bin/zsh
-: chsh -s /usr/local/bin/zsh
 
 Symlink .zshrc and .zsh.d
 
