@@ -1,4 +1,5 @@
 brew "asdf"
+brew "awscli"
 brew "colordiff"
 brew "coreutils"
 brew "curl"
