@@ -25,6 +25,11 @@ Some packages may fail under the Mac M1. Try installing with =arch -arm64= that 
 
 : arch -arm64 brew install <package>
 
+Install runtimes with asdf.
+
+: cd asdf
+: sh setup.sh
+
 Change login shell (if it's not zsh yet)
 
 : sudo vim /etc/shells # Add /usr/local/bin/zsh
