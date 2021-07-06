@@ -246,3 +246,4 @@
 [submodule "emacs/site-lisp/plugins/glsl-mode"]
 	path = emacs/site-lisp/plugins/glsl-mode
 	url = https://github.com/jimhourihan/glsl-mode.git
+        ignore = dirty
