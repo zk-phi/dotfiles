@@ -1,1 +1,16 @@
-! git grep $USER
+#!/bin/sh
+
+if git grep $USER; then
+  echo "Username found in the repo. 'git commit --no-verify' to continue"
+  exit 1
+fi
+
+if ! git config --local user.name; then
+  echo "Set git username with 'git configure' (or 'git config --local user.name foo')"
+  exit 1
+fi
+
+if ! git config --local user.email; then
+  echo "Set git email with 'git configure' (or 'git config --local user.email foo@bar.com')"
+  exit 1
+fi
