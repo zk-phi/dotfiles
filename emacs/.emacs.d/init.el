@@ -2429,7 +2429,9 @@ unary operators which can also be binary."
              (push '("\\.[tj]sx?$" . web-mode) auto-mode-alist)
              (push '("\\.s?css$" . web-mode) auto-mode-alist)
              (push '("\\.ejs$" . web-mode) auto-mode-alist)
-             (push '("\\.njk$" . web-mode) auto-mode-alist))
+             (push '("\\.njk$" . web-mode) auto-mode-alist)
+             (push '("\\.vue$" . web-mode) auto-mode-alist)
+             (push '("\\.json$" . web-mode) auto-mode-alist))
 
   (defun my-web-mode-electric-semi ()
     (interactive)
