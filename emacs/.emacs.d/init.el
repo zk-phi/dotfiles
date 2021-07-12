@@ -2456,6 +2456,7 @@ unary operators which can also be binary."
         web-mode-markup-indent-offset             2
         web-mode-css-indent-offset                2
         web-mode-code-indent-offset               2
+        web-mode-attr-indent-offset               4
         web-mode-enable-control-block-indentation nil
         web-mode-enable-auto-quoting              nil
         web-mode-enable-front-matter-block        t)
