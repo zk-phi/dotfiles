@@ -2553,6 +2553,13 @@ unary operators which can also be binary."
       ;; js combos
       (key-combo-web-define "javascript" (kbd "<") " < ")
       (key-combo-web-define "javascript" (kbd "&") '(" & " " && "))
+      (key-combo-web-define "javascript" (kbd "=") '(" = " " == " " === "))
+      (key-combo-web-define "javascript" (kbd "=>") " => ")
+      ;; ts combos
+      (key-combo-web-define "typescript" (kbd "<") '(" < " "<`!!'>"))
+      (key-combo-web-define "typescript" (kbd "&") '(" & " " && "))
+      (key-combo-web-define "typescript" (kbd "=") '(" = " " == " " === "))
+      (key-combo-web-define "typescript" (kbd "=>") " => ")
       ;; jsx combos
       (key-combo-web-define "jsx" (kbd "<") '(" < " "<`!!'>")) ; press twice to start jsx-html
       (key-combo-web-define "jsx" (kbd "&") '(" & " " && "))
