@@ -1,6 +1,6 @@
 # name : skeleton
 # key : kc-sk
-# condition : (and (string= (web-mode-language-at-pos) "html") (= (point-min) (point-max)))
+# condition : (and (= (point-min) (point-max)) (not (and buffer-file-name (string= (file-name-extension buffer-file-name) "vue"))))
 # --
 <!DOCTYPE html>
 <html lang="${1:ja}">
