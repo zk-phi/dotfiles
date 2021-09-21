@@ -18,6 +18,8 @@ brew "wget"
 brew "zsh"
 
 tap "homebrew/cask"
+cask "audacity"
+cask "blackhole-16ch"
 cask "blackhole-2ch"
 cask "discord"
 cask "docker"
