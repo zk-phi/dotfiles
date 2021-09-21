@@ -258,6 +258,7 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias -g c='| cut -d " " -f '
     abbrev-alias -g s='| tr -s " " '
     abbrev-alias -g n='--no-verify '
+    abbrev-alias -g fp='--first-parent '
     abbrev-alias -ge b='$(git symbolic-ref --short HEAD) '
 else
     echo "[.zshrc] abbrev-alias is not unavailable."
