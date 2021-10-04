@@ -247,6 +247,3 @@
 	path = emacs/site-lisp/plugins/glsl-mode
 	url = https://github.com/jimhourihan/glsl-mode.git
         ignore = dirty
-[submodule "emacs/site-lisp/plugins/asdf.el"]
-	path = emacs/site-lisp/plugins/asdf-el
-	url = https://github.com/tabfugnic/asdf.el.git
