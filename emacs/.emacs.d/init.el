@@ -2462,6 +2462,9 @@ unary operators which can also be binary."
         web-mode-enable-front-matter-block        t)
   (push '("lineup-calls" . nil) web-mode-indentation-params)
 
+  ;; fix single-quote pairing
+  (modify-syntax-entry ?\' "\"" web-mode-syntax-table)
+
   ;; tweak JSX syntax highlight
   (copy-face 'web-mode-html-attr-name-face 'web-mode-hash-key-face)
   (setq web-mode-javascript-font-lock-keywords
