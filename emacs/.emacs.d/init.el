@@ -693,7 +693,7 @@ cons of two integers which defines a range of the codepoints."
            git-complete-limit-extension   t
            git-complete-grep-function
            (!if (executable-find "rg") 'git-complete-ripgrep 'git-complete-git-grep))
-     (push '(web-mode "jsx" "js" "scss" "css" "html" "html.ep")
+     (push '(web-mode "jsx" "js" "tsx" "ts" "scss" "css" "html" "html.ep")
            git-complete-major-mode-extensions-alist))
    (setup "company-dwim"
      (setq company-frontends
