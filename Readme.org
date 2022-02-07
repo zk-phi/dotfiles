@@ -37,59 +37,6 @@ Change login shell (if it's not zsh yet)
 
 (See also https://scrapbox.io/zkphi/Mac_PC_%E7%A7%BB%E8%A1%8C)
 
-* zsh
-
-Symlink .zshrc and .zsh.d
-
-: cd ~
-: ln -s ~/dotfiles/zsh/.zshenv
-: ln -s ~/dotfiles/zsh/.zshrc
-: ln -s ~/dotfiles/zsh/.zsh.d
-
-* hyper terminal
-
-Symlink .hyper.js
-
-: cd ~
-: ln -s ~/dotfiles/hyper/.hyper.js
-
-* git
-
-Symlink .gitconfig and .gitignore_global
-
-: cd ~
-: ln -s ~/dotfiles/git/.gitconfig
-: ln -s ~/dotfiles/git/.gitignore_global
-: ln -s ~/dotfiles/git/.git_template
-
-* emacs
-
-Symlink early-init.el, init.el, snippets and site-lisp
-
-: cd ~/.emacs.d
-: ln -s ~/dotfiles/emacs/.emacs.d/init.el
-: ln -s ~/dotfiles/emacs/.emacs.d/early-init.el
-: ln -s ~/dotfiles/emacs/.emacs.d/snippets
-
-: cd /Applications/Emacs.app/Contents/Resources
-: ln -s ~/dotfiles/emacs/site-lisp
-
-Do not forget to symlink .elc too, when you bytecompile it for the
-first time
-
-: ln -s ~/dotfiles/emacs/.emacs.d/early-init.elc
-: ln -s ~/dotfiles/emacs/.emacs.d/init.elc
-
-Optional per-machine configurations are stored in a private repo.
-
-*** fonts
+Build and install required fonts
 
 → https://github.com/zk-phi/nasia
-
-* asdf
-
-Symlink .asdfrc and .tool-versions
-
-: cd ~
-: ln -s ~/dotfiles/asdf/.asdfrc
-: ln -s ~/dotfiles/asdf/.tool-versions
