@@ -21,7 +21,7 @@ Install must-haves via =Brewfile=.
 : cd brew
 : brew bundle
 
-Some packages may fail under the Mac M1. Try installing with =arch -arm64= that case.
+Some packages may fail on Mac M1 machines. Try installing with =arch -arm64= that case.
 
 : arch -arm64 brew install <package>
 
