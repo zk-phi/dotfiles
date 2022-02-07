@@ -18,3 +18,5 @@ ln -s -i $(PWD)/emacs/site-lisp /Applications/Emacs.app/Contents/Resources/site-
 
 ln -s -i $(PWD)/asdf/.asdfrc ~/.asdfrc
 ln -s -i $(PWD)/asdf/.tool-versions ~/.tool-versions
+
+ln -s -i $(PWD)/hammerspoon/.hammerspoon ~/.hammerspoon
