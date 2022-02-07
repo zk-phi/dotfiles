@@ -18,6 +18,7 @@ brew "wget"
 brew "zsh"
 
 tap "homebrew/cask"
+cask "alt-tab"
 cask "audacity"
 cask "blackhole-16ch"
 cask "blackhole-2ch"
