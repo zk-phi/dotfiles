@@ -2406,6 +2406,12 @@ unary operators which can also be binary."
   :prepare (push '("\\.bf" . bfbuilder-mode) auto-mode-alist))
 
 ;;       + other
+;;         + Lua
+
+(setup-lazy '(lua-mode) "lua-mode"
+  :prepare (push '("\\.lua$" . lua-mode) auto-mode-alist)
+  (setq lua-indent-level 2))
+
 ;;         + Nim
 
 (setup-lazy '(nim-mode) "nim-mode"
