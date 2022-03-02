@@ -2556,7 +2556,7 @@ unary operators which can also be binary."
       ;; js combos
       (key-combo-web-define "javascript" (kbd "<") " < ")
       (key-combo-web-define "javascript" (kbd "&") '(" & " " && "))
-      (key-combo-web-define "javascript" (kbd "=") '(" = " " == " " === "))
+      (key-combo-web-define "javascript" (kbd "=") '(" = " " == " " === ")) ; = not working ?
       (key-combo-web-define "javascript" (kbd "=>") " => ")
       ;; ts combos
       (key-combo-web-define "typescript" (kbd "<") '(" < " "<`!!'>"))
