@@ -247,3 +247,6 @@
 	path = emacs/site-lisp/plugins/glsl-mode
 	url = https://github.com/jimhourihan/glsl-mode.git
         ignore = dirty
+[submodule "emacs/site-lisp/plugins/lua-mode"]
+	path = emacs/site-lisp/plugins/lua-mode
+	url = https://github.com/immerrr/lua-mode.git
