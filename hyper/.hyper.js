@@ -45,61 +45,61 @@ nav {
 `;
 
 module.exports = {
-    config: {
-        updateChannel: 'stable', // available: stable, canary
+  config: {
+    updateChannel: 'stable', // available: stable, canary
 
-        // font
-        fontSize: 13,
-        fontFamily: 'nasia, code8903, Monaco, Menlo, "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
-        padding: '6px',
+    // font
+    fontSize: 13,
+    fontFamily: 'nasia, code8903, Monaco, Menlo, "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
+    padding: '6px',
 
-        // colors
-        backgroundColor:   BLACK,
-        foregroundColor:   WHITE,
-        selectionColor:    REGION,
-        cursorColor:       CYAN,
-        cursorAccentColor: BLACK,
-        borderColor:       BORDER,
-        colors: {
-            black:   BLACK,
-            red:     RED,
-            green:   GREEN,
-            yellow:  YELLOW,
-            blue:    BLUE,
-            magenta: MAGENTA,
-            cyan:    CYAN,
-            white:   WHITE,
-            lightBlack:   BLACK,
-            lightRed:     RED,
-            lightGreen:   GREEN,
-            lightYellow:  YELLOW,
-            lightBlue:    BLUE,
-            lightMagenta: MAGENTA,
-            lightCyan:    CYAN,
-            lightWhite:   WHITE,
-        },
-
-        // cursor
-        cursorShape: 'BEAM', // available: BEAM, UNDERLINE, BLOCK
-        cursorBlink: false,
-
-        // extra styles
-        css: CSS,
-
-        // shell process
-        shell: "zsh",
-        shellArgs: ['--login'],
-        env: {},
-
-        // other interface
-        copyOnSelect: false
+    // colors
+    backgroundColor:   BLACK,
+    foregroundColor:   WHITE,
+    selectionColor:    REGION,
+    cursorColor:       CYAN,
+    cursorAccentColor: BLACK,
+    borderColor:       BORDER,
+    colors: {
+      black:   BLACK,
+      red:     RED,
+      green:   GREEN,
+      yellow:  YELLOW,
+      blue:    BLUE,
+      magenta: MAGENTA,
+      cyan:    CYAN,
+      white:   WHITE,
+      lightBlack:   BLACK,
+      lightRed:     RED,
+      lightGreen:   GREEN,
+      lightYellow:  YELLOW,
+      lightBlue:    BLUE,
+      lightMagenta: MAGENTA,
+      lightCyan:    CYAN,
+      lightWhite:   WHITE,
     },
 
-    plugins: [
-        'hyper-search',
-        'hyperlinks'
-    ],
+    // cursor
+    cursorShape: 'BEAM', // available: BEAM, UNDERLINE, BLOCK
+    cursorBlink: false,
 
-    keymaps: {
-    }
+    // extra styles
+    css: CSS,
+
+    // shell process
+    shell: "zsh",
+    shellArgs: ['--login'],
+    env: {},
+
+    // other interface
+    copyOnSelect: false
+  },
+
+  plugins: [
+    'hyper-search',
+    'hyperlinks'
+  ],
+
+  keymaps: {
+  }
 };
