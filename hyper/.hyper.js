@@ -97,7 +97,8 @@ module.exports = {
 
   plugins: [
     'hyper-search',
-    'hyperlinks'
+    'hyperlinks',
+    'hyper-dnd-tabs'
   ],
 
   keymaps: {
