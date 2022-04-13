@@ -350,10 +350,8 @@
   (modify-syntax-entry ,(cdr it) ,(concat ")" (char-to-string (car it)))))
 
 ;; dont let the cursor go into minibuffer prompt
-;; reference | http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
-(setq minibuffer-prompt-properties
-      '(read-only t point-entered minibuffer-avoid-prompt
-                  face minibuffer-prompt))
+(setq minibuffer-prompt-properties '(read-only t cursor-intangible t face minibuffer-prompt))
+(add-hook 'minibuffer-setup-hook 'cursor-intangible-mode)
 
 ;; truncate minibuffer
 (setup-hook 'minibuffer-setup-hook
