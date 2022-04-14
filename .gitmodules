@@ -58,9 +58,6 @@
 [submodule "emacs/site-lisp/my-plugins/key-chord"]
 	path = emacs/site-lisp/my-plugins/key-chord
 	url = https://github.com/zk-phi/key-chord.git
-[submodule "emacs/site-lisp/plugins/flx"]
-	path = emacs/site-lisp/plugins/flx
-	url = https://github.com/lewang/flx.git
 [submodule "emacs/site-lisp/my-plugins/setup"]
 	path = emacs/site-lisp/my-plugins/setup
 	url = https://github.com/zk-phi/setup.git
@@ -105,10 +102,6 @@
 [submodule "emacs/site-lisp/plugins/ipretty"]
 	path = emacs/site-lisp/plugins/ipretty
 	url = https://framagit.org/steckerhalter/ipretty.git
-	ignore = dirty
-[submodule "emacs/site-lisp/plugins/smex"]
-	path = emacs/site-lisp/plugins/smex
-	url = https://github.com/nonsequitur/smex.git
 	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/download-region"]
 	path = emacs/site-lisp/my-plugins/download-region
@@ -197,10 +190,6 @@
 	path = emacs/site-lisp/plugins/commenter
 	url = https://github.com/yuutayamada/commenter.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/ido-completing-read-plus"]
-	path = emacs/site-lisp/plugins/ido-completing-read-plus
-	url = https://github.com/DarwinAwardWinner/ido-completing-read-plus.git
-	ignore = dirty
 [submodule "emacs/site-lisp/plugins/emacs-memoize"]
 	path = emacs/site-lisp/plugins/emacs-memoize
 	url = https://github.com/skeeto/emacs-memoize.git
@@ -211,13 +200,6 @@
 [submodule "emacs/site-lisp/plugins/dumb-jump"]
 	path = emacs/site-lisp/plugins/dumb-jump
 	url = https://github.com/jacktasia/dumb-jump.git
-	ignore = dirty
-[submodule "emacs/site-lisp/plugins/swiper"]
-	path = emacs/site-lisp/plugins/swiper
-	url = https://github.com/abo-abo/swiper.git
-[submodule "emacs/site-lisp/plugins/ivy-xref"]
-	path = emacs/site-lisp/plugins/ivy-xref
-	url = https://github.com/alexmurray/ivy-xref.git
 	ignore = dirty
 [submodule "emacs/site-lisp/plugins/company-mode"]
 	path = emacs/site-lisp/plugins/company-mode
