@@ -1,5 +1,5 @@
 ;;; -*- lexical-binding: t -*-
-;; init.el (for Emacs 27.1) | 2012- zk_phi
+;; init.el (for Emacs 28.1) | 2012- zk_phi
 
 (eval-when-compile
   (require 'setup)
@@ -2131,7 +2131,7 @@ unary operators which can also be binary."
                 (lambda (start end)
                   (goto-char start)
                   (setq cperl-syntax-done-to start)
-                  (save-excursion (cperl-fontify-syntaxically end))
+                  (save-excursion (cperl-fontify-syntactically end))
                   (while (search-forward "$#" end t)
                     (cperl-modify-syntax-type (1- (point)) (string-to-syntax "_")))))
     (with-silent-modifications
@@ -3351,11 +3351,16 @@ unary operators which can also be binary."
       (when (eq (overlay-get ov 'category) 'my-secret-words)
         (message (buffer-substring (overlay-start ov) (overlay-end ov)))))))
 
+(defgroup my-secret-words nil
+  "Minor mode to hide secret words."
+  :group 'emacs)
+
 (define-minor-mode my-secret-words-mode
   "Minor mode to hide secret words in the buffer."
   :init-value nil
   :global nil
   :lighter "Secr"
+  :group 'my-secret-words
   (cond (my-secret-words-mode
          (jit-lock-mode 1)
          (jit-lock-register 'my-secret-words--jit-hider)
