@@ -3560,8 +3560,7 @@ unary operators which can also be binary."
    :inherit 'elemental-dark-fg-face)
   (set-face-attribute
    'mode-line-highlight-face nil
-   :inherit 'elemental-accent-fg-3-face
-   :weight  'bold)
+   :inherit '(elemental-accent-fg-3-face elemental-bold))
   (set-face-attribute
    'mode-line-warning-face nil
    :inherit 'elemental-orange-fg-face)
@@ -3580,8 +3579,7 @@ unary operators which can also be binary."
    :inherit 'elemental-bright-fg-face)
   (set-face-attribute
    'mode-line-palette-face nil
-   :inherit 'elemental-accent-fg-4-face
-   :weight  'bold)
+   :inherit '(elemental-accent-fg-4-face elemental-bold))
 
   ;; "show-eof" face
   (set-face-attribute
