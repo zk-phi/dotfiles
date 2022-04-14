@@ -116,10 +116,6 @@
 
 ;; Common History Datas
 
-(defconst my-smex-save-file
-  (! (concat my-dat-directory "smex"))
-  "File to save smex history.")
-
 (defconst my-mc-list-file
   (! (concat my-dat-directory "mc-list"))
   "File to save the list of multiple-cursors compatible commands.")
@@ -146,6 +142,10 @@
   (! (concat my-dat-directory "scratch_pop_" (system-name) "/"))
   "File to save scratch.")
 
+(defconst my-savehist-history-file
+  (! (concat my-dat-directory "savehist_" (system-name)))
+  "Fileto save minibuffer history.")
+
 (defconst my-company-history-file
   (! (concat my-dat-directory "company_" (system-name)))
   "File to save company-statistics history.")
@@ -157,10 +157,6 @@
 (defconst my-company-symbol-after-symbol-history-file
   (! (concat my-dat-directory "company-sas_" (system-name)))
   "File to save company-symbol-after-symbol history.")
-
-(defconst my-ido-save-file
-  (! (concat my-dat-directory "ido_" (system-name)))
-  "File to save ido history.")
 
 (defconst my-recentf-file
   (! (concat my-dat-directory "recentf_" (system-name)))
@@ -792,6 +788,33 @@ unary operators which can also be binary."
          (commentize-conflict-mode))))
    (setup-hook 'prog-mode-hook 'commentize-conflict-mode)))
 
+;;   + | others
+
+(setup-after "orderless"
+
+  (defun my-matcher-partial-flex (str)
+    (unless (string= str "")
+      (let ((lst (split-string str "" t)))
+        (concat "\\<\\(" (car lst) "\\)"
+                (mapconcat (lambda (s)
+                             (concat "\\(?:.*?\\Sw\\)??\\(" (regexp-quote s) "\\)"))
+                           (cdr lst)
+                           "")))))
+
+  (orderless-define-completion-style my-orderless-literal
+    (orderless-matching-styles '(orderless-literal)))
+
+  (orderless-define-completion-style my-orderless-partial-flex
+    (orderless-matching-styles '(my-matcher-partial-flex)))
+
+  (orderless-define-completion-style my-orderless-flex
+    (orderless-matching-styles '(orderless-flex)))
+
+  (setq completion-styles '(my-orderless-literal my-orderless-partial-flex my-orderless-flex basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion))))
+  )
+
 ;; + | Commands
 ;;   + web browser [eww]
 
@@ -859,24 +882,52 @@ unary operators which can also be binary."
     "R"   'eww-readable)
   )
 
-;;   + ido and recentf [flx-ido]
-;;     + use ido almost everywhere
+;;   + vertico completing-read interface [vertico, marginalia, orderless]
 
-(setup-expecting "ido"
-  ;; taken from "ido-everywhere"
-  (setq read-file-name-function 'ido-read-file-name
-        read-buffer-function 'ido-read-buffer)
-  ;; taken from "ido-ubiquitous-mode"
-  (setup-lazy '(ido-completing-read+) "ido-completing-read+"
-    :prepare (setq completing-read-function 'ido-completing-read+))
-  ;; use ido also for describe-face
-  (setup-lazy '(my-describe-face) "help-fns"
-    (defun my-describe-face (face)
-      (interactive (list (read-face-name "Describe face"
-                                         (or (face-at-point t) 'default))))
-      (describe-face face))))
+(setup-lazy '(vertico--advice) "vertico"
+  :prepare (progn
+             ;; taken from vertico-mode
+             (advice-add 'completing-read-default :around 'vertico--advice)
+             (advice-add 'completing-read-multiple :around 'vertico--advice))
+  (setq vertico-cycle t)
 
-;;     + ido interface for recentf
+  ;; load orderless and if available
+  (setup "orderless")
+  (setup "marginalia" (marginalia-mode))
+
+  ;; enable sorting
+  (setup "savehist"
+    (savehist-mode)
+    (setq savehist-file my-savehist-history-file))
+
+  (setup "vertico-buffer"
+    (vertico-buffer-mode)
+    (setq vertico-buffer-display-action '(display-buffer-below-selected (window-height . 12))))
+
+  (setup-lazy
+    '(my-vertico-spc-or-enter
+      vertico-directory-enter
+      vertico-directory-delete-char
+      vertico-directory-delete-word) "vertico-directory"
+    (defun my-vertico-spc-or-enter ()
+      (interactive)
+      (if (= vertico--total 1)
+          (vertico-directory-enter)
+        (insert " "))))
+
+  (setup-keybinds vertico-map
+    "C-n"   'vertico-next
+    "C-p"   'vertico-previous
+    "C-M-n" 'vertico-next-group
+    "C-M-p" 'vertico-previous-group
+    "DEL"   '("vertico-directory" vertico-directory-delete-char)
+    "C-M-h" '("vertico-directory" vertico-directory-delete-word)
+    "SPC"   '("vertico-directory" my-vertico-spc-or-enter)
+    "RET"   '("vertico-directory" vertico-directory-enter))
+  )
+
+;;   + consult and recentf [consult, recentf]
+;;     + configure recentf
 
 (setup-expecting "recentf"
   (defvar recentf-save-file my-recentf-file))
@@ -888,154 +939,23 @@ unary operators which can also be binary."
                           "~$" "^#[^#]*#$" "^/[^/]*:" "/GitHub/" "\\.emacs\\.d/dat/"
                           "\\.elc$" "\\.dat$" "/deprecated/")))
 
-(setup-expecting "ido"
-  (setup-lazy '(my-ido-recentf-open) "recentf"
-    (defun my-ido-recentf-open ()
-      "Use `ido-completing-read' to \\[find-file] a recent file"
-      (interactive)
-      (if (find-file
-           (ido-completing-read "Find recent file: " recentf-list))
-          (message "Opening file...")
-        (message "Aborting")))))
-
-;;     + settings for ido itself
-;;     + | (prelude)
+;;     + improved completing-read commands
 
 (setup-lazy
-  '(ido-switch-buffer
-    ido-write-file ido-find-file ido-dired
-    ido-read-file-name ido-read-buffer
-    my-completing-read-with-ido) "ido"
+  '(consult-recent-file
+    consult-yank-pop
+    consult-completing-read-multiple) "consult"
+  ;; enable enhanced version of completing-read-multiple
+  :prepare (advice-add 'completing-read-multiple :override 'consult-completing-read-multiple)
+  ;; disable auto-preview except for yank-pop
+  (setq consult-preview-key nil)
+  (consult-customize consult-yank-pop :preview-key 'any))
 
-    (ido-mode t)
+(setup-lazy '(consult-imenu) "consult-imenu")
 
-    ;; + | settings
-
-    (setq ido-enable-regexp                      t
-          ido-auto-merge-work-directories-length nil
-          ido-save-directory-list-file           my-ido-save-file)
-
-    (put 'dired-do-rename 'ido nil)       ; "'ignore" by default
-
-    ;; + | better flex matching [flx-ido]
-
-    (setup "flx-ido"
-
-      (defun my-make-super-flex-keywords (str)
-        (cl-labels ((shuffle-list (lst)
-                                  ;; '(a b c) -> '((b a c) (a c b))
-                                  (when (>= (length lst) 2)
-                                    (cons `(,(cadr lst) ,(car lst) . ,(cddr lst))
-                                          (mapcar (lambda (l) (cons (car lst) l))
-                                                  (shuffle-list (cdr lst)))))))
-          (mapcar (lambda (lst) (mapconcat 'char-to-string lst ""))
-                  (shuffle-list (string-to-list str)))))
-
-      (defun my-super-flx-ido-match (query items)
-        (cl-labels ((mix-lists (lists)
-                               ;; '((a b) (c d) (e f)) -> '(a c e b d f)
-                               (when (setq lists (delq nil lists))
-                                 (nconc (mapcar 'car lists)
-                                        (mix-lists (mapcar 'cdr lists))))))
-          (mix-lists
-           (mapcar (lambda (str) (flx-ido-match str items))
-                   (my-make-super-flex-keywords query)))))
-
-      (defun my-ido-disable-prefix ()
-        (when (and (ido-active) ido-enable-prefix)
-          (run-hooks 'pre-command-hook)
-          (setq ido-enable-prefix nil
-                ido-rescan        t)
-          (run-hooks 'post-command-hook)))
-
-      (defun my-valid-regex-p (regexp)
-        (ignore-errors
-          (string-match regexp "")
-          t))
-
-      (define-advice ido-set-matches-1 (:around (fn items &optional do-full))
-        (let ((retval (or (funcall fn items do-full)
-                          (and ido-enable-prefix
-                               (progn (setq ido-enable-prefix nil)
-                                      (funcall fn items do-full))))))
-          (when (my-valid-regex-p ido-text)
-            (unless retval
-              ;; if not found, try flex matching
-              (catch :too-big
-                (setq retval (flx-ido-match ido-text items))
-                ;; if not found, try super-flex matching
-                (unless retval
-                  (setq retval
-                        (my-super-flx-ido-match ido-text items)))))
-            (let ((rx (concat "^" ido-text))
-                  prefixed prefixed-sans-dir not-prefixed)
-              (dolist (str retval)
-                (cond ((string-match rx str)
-                       (push str prefixed))
-                      ((and (string-match "\\(?:.+/\\)?\\([^/]*\\)" str)
-                            (string-match rx (match-string 1 str)))
-                       (push str prefixed-sans-dir))
-                      (t
-                       (push str not-prefixed))))
-              (setq retval (nconc (nreverse prefixed)
-                                  (nreverse prefixed-sans-dir)
-                                  (nreverse not-prefixed)))))
-          retval))
-
-      ;; enable prefix initially, and disable after 1sec of idle-time
-      (add-hook 'ido-setup-hook (setq ido-enable-prefix t))
-      (run-with-idle-timer 1 t 'my-ido-disable-prefix)
-      )
-
-    ;; + | DWIM commands
-
-    (defun my-ido-spc-or-next ()
-      (interactive)
-      (funcall
-       (cond ((= (length ido-matches) 1) 'ido-exit-minibuffer)
-             ((= (length ido-text) 0) 'ido-next-match)
-             (t 'ido-restrict-to-matches))))
-
-    (defun my-ido-exit-or-select ()
-      (interactive)
-      (funcall
-       (if (= (length ido-matches) 0)
-           'ido-select-text
-         'ido-exit-minibuffer)))
-
-    ;; + | keymap
-
-    ;; reference | http://github.com/milkypostman/dotemacs/init.el
-    (setup-hook 'ido-minibuffer-setup-hook
-      (setup-keybinds ido-completion-map
-        "C-n" 'ido-prev-work-directory
-        "C-p" 'ido-next-work-directory
-        "TAB" 'my-ido-spc-or-next
-        "<S-tab>" 'ido-prev-match
-        "<backtab>" 'ido-prev-match
-        "SPC" 'my-ido-spc-or-next
-        "RET" 'my-ido-exit-or-select
-        "C-SPC" 'ido-select-text
-        "C-<return>" 'ido-select-text))
-
-    ;; + | (sentinel)
-    )
-
-;;   + ivy [ivy, counsel, ivy-xref]
-
-(setup-lazy '(counsel-yank-pop counsel-imenu) "counsel"
-  (setq counsel-yank-pop-separator      "\n----------\n"
-        counsel-yank-pop-preselect-last t))
-
-(setup-lazy '(ivy-xref-show-defs) "ivy-xref"
-  :prepare (setq xref-show-definitions-function 'ivy-xref-show-defs))
-
-(setup-after "ivy"
-  (setup-keybinds ivy-minibuffer-map
-    "C-n" 'ivy-next-line
-    "C-p" 'ivy-previous-line
-    "C-M-u" 'ivy-beginning-of-buffer
-    "C-M-v" 'ivy-end-of-buffer))
+(setup-after "xref"
+  (setup "consult-xref"
+    (setq xref-show-definitions-function 'consult-xref)))
 
 ;;   + yasnippet settings [yasnippet]
 
@@ -1049,10 +969,6 @@ unary operators which can also be binary."
 
   (yas-reload-all)
   (yas-global-mode 1)
-
-  ;; use ido interface to select alternatives
-  (setup-expecting "ido"
-    (custom-set-variables '(yas-prompt-functions '(yas-ido-prompt))))
 
   ;; navigate inside fields
   ;; reference | https://github.com/magnars/.emacs.d/
@@ -1500,11 +1416,6 @@ unary operators which can also be binary."
 
 ;; autoload ipretty
 (setup-lazy '(ipretty-last-sexp) "ipretty")
-
-;; use "smex" instead of M-x
-(setup-lazy '(smex) "smex"
-  (setq smex-save-file my-smex-save-file)
-  (smex-initialize))
 
 ;; dynamic keyboard-macro
 (setup-expecting "dmacro"
@@ -3813,7 +3724,7 @@ unary operators which can also be binary."
   "M-e"     'my-eval-sexp-dwim
   "M-E"     'my-eval-and-replace-sexp
   "M-p"     '("ipretty" ipretty-last-sexp eval-print-last-sexp)
-  "M-x"     '("smex" smex execute-extended-command)
+  "M-x"     'execute-extended-command
   "M-m"     '("dmacro" dmacro-exec repeat)
   "C-M-x"   'eval-defun
   "C-x C-c" 'save-buffers-kill-emacs
@@ -3825,8 +3736,8 @@ unary operators which can also be binary."
 ;;     + | buffer
 
 (setup-keybinds nil
-  "M-b"     '("ido" ido-switch-buffer switch-to-buffer)
-  "C-x C-w" '("ido" ido-write-file write-file)
+  "M-b"     'switch-to-buffer
+  "C-x C-w" 'write-file
   "C-x C-s" 'save-buffer
   "C-x C-x" 'my-rename-current-buffer-file
   "C-x C-b" 'list-buffers
@@ -3872,7 +3783,7 @@ unary operators which can also be binary."
   "C-M-j" 'beginning-of-defun
   "C-M-e" 'end-of-defun
   "M-l"   'goto-line
-  "M-j"   '("counsel" counsel-imenu imenu))
+  "M-j"   '("consult-imenu" consult-imenu imenu))
 
 ;;     + scroll
 
@@ -3929,7 +3840,7 @@ unary operators which can also be binary."
   "M-D"   'kill-sexp
   "M-H"   'backward-kill-sexp
   "M-Y"   'my-overwrite-sexp
-  "M-y"   '("counsel" counsel-yank-pop yank-pop))
+  "M-y"   '("consult" consult-yank-pop yank-pop))
 
 ;;     + newline, indent, format
 
@@ -3980,12 +3891,12 @@ unary operators which can also be binary."
 
 (setup-keybinds nil
   "M-d"     'my-dired-default-directory
-  "M-f"     '("ido" ido-find-file find-file)
+  "M-f"     'find-file
   "M-g"     '("phi-grep" phi-grep-in-directory rgrep)
-  "M-r"     '("ido" my-ido-recentf-open recentf-open-files)
+  "M-r"     '("consult" consult-recent-file recentf-open-files)
   "C-x C-f" '("phi-grep" phi-grep-find-file-flat)
   "C-x C-=" '("ediff" ediff)
-  "C-x C-d" '("ido" ido-dired dired)
+  "C-x C-d" 'dired
   "C-x DEL" '("dumb-jump" xref-find-definitions ff-find-other-file) ; C-x C-h
   )
 
@@ -3996,13 +3907,13 @@ unary operators which can also be binary."
 (setup-keybinds nil
   "<f1>"      'help-map
   "<f1> <f1>" 'info
-  "<f1> b"    '("counsel" counsel-descbinds describe-bindings)
+  "<f1> b"    'describe-bindings
   "<f1> c"    'describe-char
   "<f1> k"    'describe-key
   "<f1> m"    'describe-mode
   "<f1> f"    'describe-function
   "<f1> v"    'describe-variable
-  "<f1> a"    'my-describe-face
+  "<f1> a"    'describe-face
   "<f1> x"    'describe-syntax
   "<f1> s"    'info-lookup-symbol)
 
