@@ -3116,6 +3116,7 @@ unary operators which can also be binary."
 
 (!foreach '(mode-line-bright-face
             mode-line-dark-face
+            mode-line-annotation-face
             mode-line-highlight-face
             mode-line-special-mode-face
             mode-line-warning-face
@@ -3193,7 +3194,7 @@ unary operators which can also be binary."
          (unless (eq (car my-mode-line--mode-name-cache) major-mode)
            (setq my-mode-line--mode-name-cache
                  (cons major-mode
-                       (propertize (format-mode-line mode-name) 'face 'mode-line-dark-face))))
+                       (propertize (format-mode-line mode-name) 'face 'mode-line-annotation-face))))
          (cdr my-mode-line--mode-name-cache))))
 
 (defsubst my-mode-line--process ()
@@ -3212,7 +3213,7 @@ unary operators which can also be binary."
                             ((1) "  CRLF")
                             ((2) "  CR")
                             (else "  ??")))))
-              'face 'mode-line-dark-face))
+              'face 'mode-line-annotation-face))
 
 (defconst my-mode-line--vertical-spacer
   (! (concat (propertize " " 'display '(raise +0.25))
@@ -3562,6 +3563,9 @@ unary operators which can also be binary."
   (set-face-attribute
    'mode-line-dark-face nil
    :inherit 'elemental-dark-fg-face)
+  (set-face-attribute
+   'mode-line-annotation-face nil
+   :inherit '(elemental-dark-fg-face italic))
   (set-face-attribute
    'mode-line-highlight-face nil
    :inherit '(elemental-accent-fg-3-face elemental-bold))
