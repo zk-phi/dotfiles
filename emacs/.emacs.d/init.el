@@ -3121,7 +3121,6 @@ unary operators which can also be binary."
             mode-line-special-mode-face
             mode-line-warning-face
             mode-line-modified-face
-            mode-line-read-only-face
             mode-line-narrowed-face
             mode-line-mc-face
             mode-line-palette-face)
@@ -3167,12 +3166,9 @@ unary operators which can also be binary."
    (if (buffer-narrowed-p)
        (! (propertize "n" 'face 'mode-line-narrowed-face))
      (! (propertize "n" 'face 'mode-line-dark-face)))
-   (if buffer-read-only
-       (! (propertize "%%" 'face 'mode-line-read-only-face))
-     (! (propertize "%%" 'face 'mode-line-dark-face)))
-   (if (buffer-modified-p)
-       (! (propertize "*" 'face 'mode-line-modified-face))
-     (! (propertize "*" 'face 'mode-line-dark-face)))
+   (cond (buffer-read-only (propertize "-" 'face 'mode-line-dark-face))
+         ((buffer-modified-p) (! (propertize "*" 'face 'mode-line-modified-face)))
+         (t (! (propertize "*" 'face 'mode-line-dark-face))))
    (if (bound-and-true-p multiple-cursors-mode)
        (propertize (format "%02d" (mc/num-cursors)) 'face 'mode-line-mc-face)
      (! (propertize "00" 'face 'mode-line-dark-face)))))
@@ -3570,9 +3566,6 @@ unary operators which can also be binary."
   (set-face-attribute
    'mode-line-modified-face nil
    :inherit '(elemental-red-fg-face elemental-bright-bg-face))
-  (set-face-attribute
-   'mode-line-read-only-face nil
-   :inherit '(elemental-blue-fg-face elemental-bright-bg-face))
   (set-face-attribute
    'mode-line-narrowed-face nil
    :inherit '(elemental-accent-fg-4-face elemental-bright-bg-face))
