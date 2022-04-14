@@ -889,7 +889,10 @@ unary operators which can also be binary."
              ;; taken from vertico-mode
              (advice-add 'completing-read-default :around 'vertico--advice)
              (advice-add 'completing-read-multiple :around 'vertico--advice))
-  (setq vertico-cycle t)
+  (setq vertico-cycle t
+        vertico-resize nil
+        vertico-count 8
+        vertico-multiline '("\n" . "…"))
 
   ;; load orderless and if available
   (setup "orderless")
@@ -899,10 +902,6 @@ unary operators which can also be binary."
   (setup "savehist"
     (setq savehist-file my-savehist-history-file)
     (savehist-mode))
-
-  (setup "vertico-buffer"
-    (vertico-buffer-mode)
-    (setq vertico-buffer-display-action '(display-buffer-below-selected (window-height . 12))))
 
   (setup-lazy
     '(my-vertico-spc-or-enter
