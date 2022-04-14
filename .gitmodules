@@ -220,19 +220,21 @@
 [submodule "emacs/site-lisp/plugins/glsl-mode"]
 	path = emacs/site-lisp/plugins/glsl-mode
 	url = https://github.com/jimhourihan/glsl-mode.git
-        ignore = dirty
+	ignore = dirty
 [submodule "emacs/site-lisp/plugins/lua-mode"]
 	path = emacs/site-lisp/plugins/lua-mode
 	url = https://github.com/immerrr/lua-mode.git
 [submodule "emacs/site-lisp/plugins/vertico"]
 	path = emacs/site-lisp/plugins/vertico
 	url = https://github.com/minad/vertico.git
+	ignore = dirty
 [submodule "emacs/site-lisp/plugins/orderless"]
 	path = emacs/site-lisp/plugins/orderless
 	url = https://github.com/oantolin/orderless.git
 [submodule "emacs/site-lisp/plugins/consult"]
 	path = emacs/site-lisp/plugins/consult
 	url = https://github.com/minad/consult.git
+	ignore = dirty
 [submodule "emacs/site-lisp/plugins/marginalia"]
 	path = emacs/site-lisp/plugins/marginalia
 	url = https://github.com/minad/marginalia.git
