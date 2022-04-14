@@ -897,8 +897,8 @@ unary operators which can also be binary."
 
   ;; enable sorting
   (setup "savehist"
-    (savehist-mode)
-    (setq savehist-file my-savehist-history-file))
+    (setq savehist-file my-savehist-history-file)
+    (savehist-mode))
 
   (setup "vertico-buffer"
     (vertico-buffer-mode)
