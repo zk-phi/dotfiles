@@ -3201,12 +3201,18 @@ unary operators which can also be binary."
   (propertize (format-mode-line mode-line-process) 'face 'mode-line-highlight-face))
 
 (defsubst my-mode-line--encoding ()
-  (propertize (format "(%c%c)"
-                      (coding-system-mnemonic buffer-file-coding-system)
+  (propertize (format "%s%s"
+                      (let ((type (coding-system-type buffer-file-coding-system)))
+                        (if (memq type '(undecided utf-8))
+                            ""
+                          (concat "  " (upcase (symbol-name type)))))
                       (let ((eol-type (coding-system-eol-type buffer-file-coding-system)))
                         (if (vectorp eol-type) ?-
                           (cl-case eol-type
-                            ((0) ?u) ((1) ?d) ((2) ?m) (else ?-)))))
+                            ((0) "")
+                            ((1) "  CRLF")
+                            ((2) "  CR")
+                            (else "  ??")))))
               'face 'mode-line-dark-face))
 
 (defconst my-mode-line--vertical-spacer
@@ -3226,7 +3232,7 @@ unary operators which can also be binary."
           (format-mode-line
            (list (my-mode-line--mode-name)
                  (my-mode-line--process)
-                 " " (my-mode-line--encoding)
+                 (my-mode-line--encoding)
                  "  " (my-mode-line--linum)
                  ":" (my-mode-line--colnum))))
          (lmargin
