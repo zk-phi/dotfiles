@@ -3216,8 +3216,8 @@ unary operators which can also be binary."
               'face 'mode-line-annotation-face))
 
 (defconst my-mode-line--vertical-spacer
-  (! (concat (propertize " " 'display '(raise +0.25))
-             (propertize " " 'display '(raise -0.25)))))
+  (! (concat (propertize " " 'display '(raise +0.15))
+             (propertize " " 'display '(raise -0.15)))))
 
 (defun my-generate-mode-line-format ()
   (let* ((lstr
