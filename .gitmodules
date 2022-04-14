@@ -176,10 +176,6 @@
 	path = emacs/site-lisp/plugins/tinysegmenter-el
 	url = https://github.com/myuhe/tinysegmenter.el.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/spinner.el"]
-	path = emacs/site-lisp/plugins/spinner-el
-	url = https://github.com/Malabarba/spinner.el.git
-	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/gitmole"]
 	path = emacs/site-lisp/my-plugins/gitmole
 	url = https://github.com/zk-phi/gitmole.git
@@ -189,10 +185,6 @@
 [submodule "emacs/site-lisp/plugins/commenter"]
 	path = emacs/site-lisp/plugins/commenter
 	url = https://github.com/yuutayamada/commenter.git
-	ignore = dirty
-[submodule "emacs/site-lisp/plugins/emacs-memoize"]
-	path = emacs/site-lisp/plugins/emacs-memoize
-	url = https://github.com/skeeto/emacs-memoize.git
 	ignore = dirty
 [submodule "emacs/site-lisp/plugins/dash.el"]
 	path = emacs/site-lisp/plugins/dash-el
