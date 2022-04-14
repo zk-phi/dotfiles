@@ -3571,13 +3571,13 @@ unary operators which can also be binary."
    :weight  'bold)
   (set-face-attribute
    'mode-line-modified-face nil
-   :inherit '(elemental-red-fg-face elemental-bright-bg-face))
+   :inherit 'elemental-red-fg-face)
   (set-face-attribute
    'mode-line-narrowed-face nil
-   :inherit '(elemental-accent-fg-4-face elemental-bright-bg-face))
+   :inherit 'elemental-accent-fg-4-face)
   (set-face-attribute
    'mode-line-mc-face nil
-   :inherit '(elemental-bright-fg-face elemental-bright-bg-face))
+   :inherit 'elemental-bright-fg-face)
   (set-face-attribute
    'mode-line-palette-face nil
    :inherit 'elemental-accent-fg-4-face
