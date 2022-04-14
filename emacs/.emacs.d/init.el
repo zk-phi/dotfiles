@@ -3210,14 +3210,14 @@ unary operators which can also be binary."
               'face 'mode-line-dark-face))
 
 (defconst my-mode-line--vertical-spacer
-  (! (concat (propertize " " 'display '(raise +0.15))
-             (propertize " " 'display '(raise -0.15)))))
+  (! (concat (propertize " " 'display '(raise +0.25))
+             (propertize " " 'display '(raise -0.25)))))
 
 (defun my-generate-mode-line-format ()
   (let* ((lstr
           (concat (my-mode-line--macro)
-                  (my-mode-line--indicators) " "
-                  my-mode-line--filename
+                  (my-mode-line--indicators)
+                  "  " my-mode-line--filename
                   (my-mode-line--palette-status)
                   my-mode-line--recur-status
                   my-mode-line--vertical-spacer))
@@ -3225,10 +3225,10 @@ unary operators which can also be binary."
           ;; use format-mode-line to get "correct" string width
           (format-mode-line
            (list (my-mode-line--mode-name)
-                 (my-mode-line--process) " "
-                 (my-mode-line--encoding) " "
-                 (my-mode-line--linum) ":"
-                 (my-mode-line--colnum))))
+                 (my-mode-line--process)
+                 " " (my-mode-line--encoding)
+                 "  " (my-mode-line--linum)
+                 ":" (my-mode-line--colnum))))
          (lmargin
           (propertize " " 'display '((space :align-to (+ 1 left-fringe)))))
          (rmargin
