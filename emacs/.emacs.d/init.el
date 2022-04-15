@@ -505,6 +505,9 @@ cons of two integers which defines a range of the codepoints."
                      (overlay-put ov 'invisible nil)))))
           (overlays-at (point)))))
 
+(setup-after "uniquify"
+  (setq uniquify-buffer-name-style 'post-forward))
+
 ;;   + | compilation
 
 ;; setting for compilation result buffer
