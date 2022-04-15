@@ -3219,8 +3219,8 @@ unary operators which can also be binary."
               'face 'mode-line-annotation-face))
 
 (defconst my-mode-line--vertical-spacer
-  (! (concat (propertize " " 'display '(raise +0.15))
-             (propertize " " 'display '(raise -0.15)))))
+  (! (concat (propertize " " 'display '(raise +0.25))
+             (propertize " " 'display '(raise -0.25)))))
 
 (defun my-generate-mode-line-format ()
   (let* ((lstr
@@ -3571,7 +3571,7 @@ unary operators which can also be binary."
    :inherit '(elemental-dark-fg-face italic))
   (set-face-attribute
    'mode-line-highlight-face nil
-   :inherit '(elemental-accent-fg-3-face elemental-bold))
+   :inherit '(elemental-accent-fg-3-face bold))
   (set-face-attribute
    'mode-line-warning-face nil
    :inherit 'elemental-orange-fg-face)
@@ -3590,7 +3590,7 @@ unary operators which can also be binary."
    :inherit 'elemental-bright-fg-face)
   (set-face-attribute
    'mode-line-palette-face nil
-   :inherit '(elemental-accent-fg-4-face elemental-bold))
+   :inherit '(elemental-accent-fg-4-face bold))
 
   ;; "show-eof" face
   (set-face-attribute
