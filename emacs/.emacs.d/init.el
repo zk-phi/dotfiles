@@ -3907,7 +3907,7 @@ unary operators which can also be binary."
 (setup-keybinds nil
   "<f1>"      'help-map
   "<f1> <f1>" 'info
-  "<f1> b"    'describe-bindings
+  "<f1> b"    'describe-keymap
   "<f1> c"    'describe-char
   "<f1> k"    'describe-key
   "<f1> m"    'describe-mode
