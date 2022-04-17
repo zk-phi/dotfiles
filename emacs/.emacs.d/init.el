@@ -276,7 +276,6 @@
 ;;   + Misc: core
 ;;   + | system
 
-(defalias 'yes-or-no-p 'y-or-n-p)
 (define-key query-replace-map (kbd "SPC") nil) ; do not accept SPC in y-or-n-p
 
 (setq frame-title-format                    "Emacs"
@@ -290,6 +289,7 @@
       delete-by-moving-to-trash             t
       scroll-preserve-screen-position       t
       line-spacing                          0
+      use-short-answers                     t
       ;; select.el
       select-enable-clipboard               t
       ;; mule-cmds.el
