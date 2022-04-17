@@ -556,6 +556,14 @@ cons of two integers which defines a range of the codepoints."
 ;; disable vcs integration
 (setq vc-handled-backends nil)
 
+;;   + | others
+
+(setup-after "help-fns"
+  ;; auto load autoloaded functions with describe-function
+  (setq help-enable-symbol-autoload t)
+  ;; workaround "can't find library" issue with .el.gz files (Brew Cask Emacs 28.1)
+  (auto-compression-mode 1))
+
 ;;   + Misc: plug-ins
 ;;   + | buffers / windows
 
