@@ -3912,6 +3912,7 @@ unary operators which can also be binary."
   "<f1> k"    'describe-key
   "<f1> m"    'describe-mode
   "<f1> f"    'describe-function
+  "<f1> i"    'describe-command
   "<f1> v"    'describe-variable
   "<f1> a"    'describe-face
   "<f1> x"    'describe-syntax
