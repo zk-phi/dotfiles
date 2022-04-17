@@ -3381,31 +3381,6 @@ unary operators which can also be binary."
 (!when my-secret-words
   (my-global-secret-words-mode 1))
 
-;;   + "show-eof" minor-mode
-
-(defvar-local my-show-eof-ov nil)
-
-(make-face 'my-show-eof-face)
-(set-face-attribute 'my-show-eof-face nil :inherit 'font-lock-comment-face)
-
-(define-minor-mode my-show-eof-mode
-  "Minor mode to show EOF marker."
-  :init-value nil
-  :global nil
-  (if my-show-eof-mode
-      (unless my-show-eof-ov
-        (let ((ov (make-overlay (point-max) (point-max) (current-buffer) nil t))
-              (str (propertize "[EOF]" 'face 'my-show-eof-face)))
-          (put-text-property 0 1 'cursor 1 str)
-          (overlay-put ov 'after-string str)
-          (setq my-show-eof-ov ov)))
-    (when my-show-eof-ov
-      (delete-overlay my-show-eof-ov)
-      (setq my-show-eof-ov nil))))
-
-(add-hook 'prog-mode-hook 'my-show-eof-mode)
-(add-hook 'text-mode-hook 'my-show-eof-mode)
-
 ;;   + colorscheme
 
 ;; utility to mix two colors
@@ -3593,9 +3568,10 @@ unary operators which can also be binary."
    :inherit '(elemental-accent-fg-4-face bold))
 
   ;; "show-eof" face
-  (set-face-attribute
-   'my-show-eof-face nil
-   :inherit 'elemental-ui-ghost)
+  (setup-after "show-eof-mode"
+    (set-face-attribute
+     'show-eof-mode-marker-face nil
+     :inherit 'elemental-ui-ghost))
 
   (setup-after "highlight-parentheses"
     (setq highlight-parentheses-colors nil
@@ -3663,6 +3639,12 @@ unary operators which can also be binary."
 (!- (setup "rainbow-delimiters"))
 
 (!- (setup "rainbow-mode"))
+
+(!-
+ (setup-lazy '(show-eof-mode) "show-eof-mode"
+   :prepare (progn
+              (setup-hook 'prog-mode-hook 'show-eof-mode)
+              (setup-hook 'text-mode-hook 'show-eof-mode))))
 
 (setup-lazy '(my-stripe-buffer) "stripe-buffer"
   (defun my-stripe-buffer ()
