@@ -3550,7 +3550,7 @@ unary operators which can also be binary."
    :inherit 'elemental-dark-fg-face)
   (set-face-attribute
    'mode-line-annotation-face nil
-   :inherit '(elemental-dark-fg-face italic))
+   :inherit '(elemental-accent-fg-2-face italic))
   (set-face-attribute
    'mode-line-highlight-face nil
    :inherit '(elemental-accent-fg-3-face bold))
