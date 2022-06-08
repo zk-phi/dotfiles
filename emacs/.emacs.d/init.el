@@ -311,16 +311,14 @@
       ;; mouse.el
       mouse-drag-and-drop-region            t)
 
-(setq-default tab-width             4
+(setq-default indent-tabs-mode      nil
+              tab-width             4
               truncate-lines        nil
               line-move-visual      t
               cursor-type           'bar
               fill-column           100
               ;; files.el
               require-final-newline t)
-
-;; prefer SPC to indent
-(indent-tabs-mode -1)
 
 ;; use UTF-8 as the default coding system
 (prefer-coding-system 'utf-8-unix)
