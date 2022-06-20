@@ -925,6 +925,7 @@ unary operators which can also be binary."
   (setup-keybinds vertico-map
     "C-n"   'vertico-next
     "C-p"   'vertico-previous
+    "C-j"   'vertico-exit-input
     "C-M-n" 'vertico-next-group
     "C-M-p" 'vertico-previous-group
     "DEL"   '("vertico-directory" vertico-directory-delete-char)
