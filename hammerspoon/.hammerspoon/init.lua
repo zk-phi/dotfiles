@@ -1,7 +1,14 @@
 hs.window.animationDuration = 0
+hs.alert.defaultStyle.textSize = 16
+hs.alert.defaultStyle.radius = 8
+
+--
+-- Window Tiler
+--
 
 savedFrames = {}
 lastKnownFrames = {}
+currentCommand = nil
 
 function sameFrame (f1, f2)
   if f1 and
@@ -19,7 +26,11 @@ end
 function moveWindow (position)
   local window = hs.window.focusedWindow()
   local frame = window:frame()
+  -- either
+  -- 1. lastKnownFrames is not set (= first invocation) or
+  -- 2. user hand-modified the window size
   if not sameFrame(frame, lastKnownFrames[window:id()]) then
+    hs.alert("Frame size saved")
     savedFrames[window:id()] = frame
   end
   window:move(position, nil, true)
@@ -37,23 +48,79 @@ end
 hs.hotkey.bind(
   { 'command', 'ctrl' },
   'right',
-  function () moveWindow({ x = 0.50, y = 0.00, w = 0.50, h = 1.00 }) end
+  function ()
+    if currentCommand == 'up' then
+      moveWindow({ x = 0.50, y = 0.00, w = 0.50, h = 0.50 })
+    elseif currentCommand == 'down' then
+      moveWindow({ x = 0.50, y = 0.50, w = 0.50, h = 0.50 })
+    else
+      currentCommand = 'right'
+      moveWindow({ x = 0.50, y = 0.00, w = 0.50, h = 1.00 })
+    end
+  end,
+  function ()
+    if currentCommand == 'right' then
+      currentCommand = nil
+    end
+  end
 )
 
 hs.hotkey.bind(
   { 'command', 'ctrl' },
   'left',
-  function () moveWindow({ x = 0.00, y = 0.00, w = 0.50, h = 1.00 }) end
+  function ()
+    if currentCommand == 'up' then
+      moveWindow({ x = 0.00, y = 0.00, w = 0.50, h = 0.50 })
+    elseif currentCommand == 'down' then
+      moveWindow({ x = 0.00, y = 0.50, w = 0.50, h = 0.50 })
+    else
+      currentCommand = 'left'
+      moveWindow({ x = 0.00, y = 0.00, w = 0.50, h = 1.00 })
+    end
+  end,
+  function ()
+    if currentCommand == 'left' then
+      currentCommand = nil
+    end
+  end
 )
 
 hs.hotkey.bind(
   { 'command', 'ctrl' },
   'up',
-  function () moveWindow({ x = 0.00, y = 0.00, w = 1.00, h = 1.00 }) end
+  function ()
+    if currentCommand == 'left' then
+      moveWindow({ x = 0.00, y = 0.00, w = 0.50, h = 0.50 })
+    elseif currentCommand == 'right' then
+      moveWindow({ x = 0.50, y = 0.00, w = 0.50, h = 0.50 })
+    else
+      currentCommand = 'up'
+      moveWindow({ x = 0.00, y = 0.00, w = 1.00, h = 1.00 })
+    end
+  end,
+  function ()
+    if currentCommand == 'up' then
+      currentCommand = nil
+    end
+  end
 )
 
 hs.hotkey.bind(
   { 'command', 'ctrl' },
   'down',
-  function () restoreWindow() end
+  function ()
+    if currentCommand == 'left' then
+      moveWindow({ x = 0.00, y = 0.50, w = 0.50, h = 0.50 })
+    elseif currentCommand == 'right' then
+      moveWindow({ x = 0.50, y = 0.50, w = 0.50, h = 0.50 })
+    else
+      currentCommand = 'down'
+      restoreWindow()
+    end
+  end,
+  function ()
+    if currentCommand == 'down' then
+      currentCommand = nil
+    end
+  end
 )
