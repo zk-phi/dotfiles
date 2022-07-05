@@ -2323,6 +2323,11 @@ unary operators which can also be binary."
   :prepare (push '("\\.bf" . bfbuilder-mode) auto-mode-alist))
 
 ;;       + other
+;;         + Go
+
+(setup-lazy '(go-mode) "go-mode"
+  :prepare (push '("\\.go$" . go-mode) auto-mode-alist))
+
 ;;         + Lua
 
 (setup-lazy '(lua-mode) "lua-mode"
