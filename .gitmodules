@@ -241,3 +241,6 @@
 [submodule "emacs/site-lisp/my-plugins/show-eof-mode"]
 	path = emacs/site-lisp/my-plugins/show-eof-mode
 	url = https://github.com/zk-phi/show-eof-mode.git
+[submodule "emacs/site-lisp/plugins/go-mode.el"]
+	path = emacs/site-lisp/plugins/go-mode.el
+	url = https://github.com/dominikh/go-mode.el.git
