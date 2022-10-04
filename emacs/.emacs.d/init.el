@@ -2326,7 +2326,9 @@ unary operators which can also be binary."
 ;;         + Go
 
 (setup-lazy '(go-mode) "go-mode"
-  :prepare (push '("\\.go$" . go-mode) auto-mode-alist))
+  :prepare (push '("\\.go$" . go-mode) auto-mode-alist)
+  (setup-after "smart-compile"
+    (push `(go-mode . "go run %f") smart-compile-alist)))
 
 ;;         + Lua
 
