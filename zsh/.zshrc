@@ -217,6 +217,7 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias gb='git branch '
     abbrev-alias gd='git diff --irreversible-delete '
     abbrev-alias gds='git diff --staged --irreversible-delete '
+    abbrev-alias gde='git checkout --detach '
     abbrev-alias gl='git log '
     abbrev-alias glog='git log --oneline --decorate --graph '
     abbrev-alias gr='git reset '
