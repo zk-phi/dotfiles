@@ -290,6 +290,7 @@
       scroll-preserve-screen-position       t
       line-spacing                          0
       use-short-answers                     t
+      redisplay-skip-fontification-on-input t
       ;; select.el
       select-enable-clipboard               t
       ;; mule-cmds.el
