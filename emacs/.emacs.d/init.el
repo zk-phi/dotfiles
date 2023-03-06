@@ -14,6 +14,15 @@
         setup-disable-magic-file-name t))
 (setup-initialize)
 
+;; vuln workaround (see also .zshrc)
+
+(setup-after "htmlfontify"
+  (defun hfy-text-p (srcdir file)
+    (error "this function is known to be vulnerable in emacs 28.2 (CVE-2022-48339)")))
+(setup-after "ruby-mode"
+  (defun ruby-find-library-file (&optional feature-name)
+    (error "this function is known to be vulnerable in emacs 28.2 (CVE-2022-48338)")))
+
 ;; + Cheat Sheet :
 ;; + | global
 

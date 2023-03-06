@@ -1,5 +1,14 @@
 ZSH=$HOME/.zsh.d
 
+# vuln workaround (see also init.el)
+
+function etags {
+    echo "etags in Emacs 28.2 is known to be vulnerable (CVE-2022-48337)"
+}
+function ctags {
+    echo "ctags in Emacs 28.2 is known to be vulnerable (CVE-2022-45939)"
+}
+
 # ------------------------------
 # load plugins
 # ------------------------------
