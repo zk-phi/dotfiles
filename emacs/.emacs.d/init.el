@@ -3177,14 +3177,14 @@ unary operators which can also be binary."
 (defsubst my-mode-line--linum ()
   (if (not mark-active)
       (! (propertize "%l" 'face 'mode-line-bright-face))
-    (propertize (format "%d" (- (region-end) (region-beginning)))
+    (propertize (format "%d" (count-lines (region-beginning) (region-end)))
                 'face 'mode-line-highlight-face)))
 
 ;; either linum or colnum must be %-notated to be updated correctrly
 (defsubst my-mode-line--colnum ()
   (if (not mark-active)
       (propertize "%c" 'face 'mode-line-bright-face)
-    (propertize (format "%d" (count-lines (region-beginning) (region-end)))
+    (propertize (format "%d" (- (region-end) (region-beginning)))
                 'face 'mode-line-highlight-face)))
 
 (defsubst my-mode-line--indicators ()
