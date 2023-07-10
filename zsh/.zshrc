@@ -36,7 +36,7 @@ setopt auto_cd                  # "cd" with directory names
 # language-specific settings
 # ------------------------------
 
-. $(brew --prefix asdf)/asdf.sh
+. $(brew --prefix asdf)/libexec/asdf.sh
 
 # ------------------------------
 # prompt
