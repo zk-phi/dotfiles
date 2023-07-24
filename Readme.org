@@ -2,41 +2,45 @@ zk-phi's Dotfiles
 
 * Setup (Mac)
 
-Open Terminal.app.
+- Open Terminal.app
 
-Install Xcode CLI tool.
+- Install Xcode CLI tool
 
-: xcode-select --install
+  : xcode-select --install
 
-Install homebrew (look the official page) and follow the instruction to add to PATH.
+- Install Homebrew (see the official web for the install command) and follow the instruction to add to =PATH=
 
-Clone this repo and submodules
+- Clone this repo and submodules
 
-: git clone https://github.com/zk-phi/dotfiles.git
-: cd dotfiles
-: git submodule update --init
+  : git clone https://github.com/zk-phi/dotfiles.git
+  : cd dotfiles
+  : git submodule update --init
 
-Install must-haves via =Brewfile=.
+- Symlink dotfiles
 
-: cd brew
-: brew bundle
+  : sh link.sh
 
-Some packages may fail on Mac M1 machines. Try installing with =arch -arm64= that case.
+- Install tools via =Brewfile=.
 
-: arch -arm64 brew install <package>
+  : cd brew
+  : brew bundle
 
-Install runtimes with asdf.
+  Some packages may fail on Mac M1 machines. Try installing with =arch -arm64= that case.
 
-: cd asdf
-: sh setup.sh
+  : arch -arm64 brew install <package-name>
 
-Change login shell (if it's not zsh yet)
+- Change the login shell (if it's not =zsh= yet)
 
-: sudo vim /etc/shells # Add /usr/local/bin/zsh
-: chsh -s /usr/local/bin/zsh
+  : sudo vim /etc/shells # Add /usr/local/bin/zsh
+  : chsh -s /usr/local/bin/zsh
+
+- Install runtimes with =asdf=
+
+  : cd asdf
+  : sh setup.sh
+
+- Build and install required fonts
+
+  → https://github.com/zk-phi/nasia
 
 (See also https://scrapbox.io/zkphi/Mac_PC_%E7%A7%BB%E8%A1%8C)
-
-Build and install required fonts
-
-→ https://github.com/zk-phi/nasia
