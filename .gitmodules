@@ -244,3 +244,9 @@
 [submodule "emacs/site-lisp/plugins/go-mode.el"]
 	path = emacs/site-lisp/plugins/go-mode.el
 	url = https://github.com/dominikh/go-mode.el.git
+[submodule "aquaskk/skk-emoji-jisyo"]
+	path = aquaskk/skk-emoji-jisyo
+	url = https://github.com/uasi/skk-emoji-jisyo.git
+[submodule "aquaskk/SKK-JISYO.emoji-ja"]
+	path = aquaskk/SKK-JISYO.emoji-ja
+	url = https://github.com/ymrl/SKK-JISYO.emoji-ja.git
