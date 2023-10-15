@@ -19,6 +19,7 @@ brew "yt-dlp"
 brew "zsh"
 
 tap "homebrew/cask"
+cask "aquaskk"
 cask "audacity"
 cask "blackhole-16ch"
 cask "blackhole-2ch"
