@@ -259,13 +259,18 @@
          (kill-buffer (current-buffer)))))))
 
 ;; delete-trailing-whitespace on save
+(defconst my-keep-trailing-whitespace-files
+  '("kana-rule.conf"))
 (!-
  (setup-hook 'before-save-hook
-   (when (not (string= (buffer-string)
-                       (progn (delete-trailing-whitespace)
-                              (buffer-string))))
-     (message "trailing whitespace deleted")
-     (sit-for 0.4))))
+   (cond ((member (file-name-nondirectory buffer-file-name)
+                  my-keep-trailing-whitespace-files)
+          (message "skipped deleting trailing whitespaces"))
+         ((not (string= (buffer-string)
+                        (progn (delete-trailing-whitespace)
+                               (buffer-string))))
+          (message "trailing whitespace deleted")))
+   (sit-for 0.4)))
 
 ;; query switch to root
 (setup-hook 'find-file-hook
@@ -321,12 +326,13 @@
       ;; mouse.el
       mouse-drag-and-drop-region            t)
 
-(setq-default indent-tabs-mode      nil
-              tab-width             4
-              truncate-lines        nil
-              line-move-visual      t
-              cursor-type           'bar
-              fill-column           100
+(setq-default indent-tabs-mode         nil
+              tab-width                4
+              truncate-lines           nil
+              line-move-visual         t
+              cursor-type              'bar
+              fill-column              100
+              show-trailing-whitespace t
               ;; files.el
               require-final-newline t)
 
