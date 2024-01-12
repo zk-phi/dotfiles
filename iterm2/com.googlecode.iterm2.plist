@@ -8,6 +8,8 @@
 	<real>32</real>
 	<key>Default Bookmark Guid</key>
 	<string>44414645-4FA5-4A98-B385-253964AF0A01</string>
+	<key>DefaultTabStopWidth</key>
+	<integer>4</integer>
 	<key>DimBackgroundWindows</key>
 	<false/>
 	<key>DimInactiveSplitPanes</key>
@@ -301,7 +303,7 @@
 			<key>Custom Command</key>
 			<string>No</string>
 			<key>Custom Directory</key>
-			<string>No</string>
+			<string>Recycle</string>
 			<key>Default Bookmark</key>
 			<string>No</string>
 			<key>Description</key>
