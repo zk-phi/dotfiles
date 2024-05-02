@@ -2697,7 +2697,7 @@ unary operators which can also be binary."
 ;;       + gfm-mode [markdown-mode]
 
 (setup-lazy '(gfm-mode) "markdown-mode"
-  :prepare (push '("\\.m\\(ark\\)?d\\(own\\)?$" . gfm-mode) auto-mode-alist)
+  :prepare (push '("\\.m\\(ark\\)?d\\(x\\|own\\)?$" . gfm-mode) auto-mode-alist)
   (setup-keybinds gfm-mode-map
     '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
     "TAB" 'markdown-cycle))
