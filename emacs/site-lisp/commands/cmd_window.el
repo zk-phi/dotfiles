@@ -156,4 +156,5 @@ kill-buffer-query-functions."
               (setq this-command 'my-split-window-horizontally-1))
              (t
               (split 2 t)
-              (setq this-command 'my-split-window-vertically-1)))))))
+              (setq this-command 'my-split-window-vertically-1)))))
+    (other-window 1)))
