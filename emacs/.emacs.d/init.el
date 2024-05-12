@@ -824,6 +824,8 @@ unary operators which can also be binary."
                              (concat "\\(?:.*?\\Sw\\)??\\(" (regexp-quote s) "\\)"))
                            (cdr lst)
                            "")))))
+  ;; regex も対応させたさあるけど、空文字列とかめちゃくちゃ強い regex が引っかかることがある
+  ;; あとマイナス検索もしたいよね
 
   (orderless-define-completion-style my-orderless-literal
     (orderless-matching-styles '(orderless-literal)))

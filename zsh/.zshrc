@@ -147,7 +147,7 @@ HISTFILE=$HOME/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
 
-setopt append_history          # append new commands to the HISTFILE,
+setopt append_history          # append new commands to the HISTFILE (instead of making new)
 setopt hist_ignore_dups        # do not repeat identical entries
 setopt hist_ignore_space       # filter commands starts with a space
 setopt hist_reduce_blanks      # remove unuseful spaces
