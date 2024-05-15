@@ -703,16 +703,6 @@ cons of two integers which defines a range of the codepoints."
      (setq company-symbol-after-symbol-history-file my-company-symbol-after-symbol-history-file)
      (push 'company-symbol-after-symbol (cdr company-backends))
      (company-symbol-after-symbol-initialize))
-   (setup "git-complete-company"
-     (push 'git-complete-company-omni-backend company-backends)
-     (push 'git-complete-company-whole-line-backend company-backends)
-     ;; invoke (git-complete-)company when expand-dwim fails
-     (setq my-expand-dwim-fallback        'company-manual-begin
-           git-complete-limit-extension   t
-           git-complete-grep-function
-           (!if (executable-find "rg") 'git-complete-ripgrep 'git-complete-git-grep))
-     (push '(web-mode "jsx" "js" "tsx" "ts" "scss" "css" "html" "html.ep")
-           git-complete-major-mode-extensions-alist))
    (setup "company-dwim"
      (setq company-frontends
            '(company-pseudo-tooltip-unless-just-one-frontend
@@ -1270,7 +1260,9 @@ unary operators which can also be binary."
     my-shrink-whitespaces
     my-expand-dwim
     my-indent-or-expand-dwim
-    my-map-lines-from-here) "cmd_edit")
+    my-map-lines-from-here) "cmd_edit"
+    (setup-lazy '(git-complete) "git-complete"
+      :prepare (setq my-expand-dwim-fallback 'git-complete)))
 
 ;; shrink indentation on "kill-line"
 ;; reference | http://www.emacswiki.org/emacs/AutoIndentation

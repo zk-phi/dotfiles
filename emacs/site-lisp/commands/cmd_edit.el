@@ -108,7 +108,10 @@
   When LINES is specified, matches must be at most LINES lines
   far from the cursor.
 
-- elisp package name if the cursor is after \"(\", \"@\" etc"
+- elisp package name if the cursor is after \"(\", \"@\" etc
+
+If no candidates above are available, call
+`my-expand-dwim-fallback' function (if set),"
   (interactive)
   (cond ((and (catch 'flyspell-error-found
                 (dolist (ov (overlays-in (1- (point)) (point)))
