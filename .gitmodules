@@ -247,3 +247,12 @@
 [submodule "aquaskk/SKK-JISYO.emoji-ja"]
 	path = aquaskk/SKK-JISYO.emoji-ja
 	url = https://github.com/ymrl/SKK-JISYO.emoji-ja.git
+[submodule "emacs/site-lisp/cape"]
+	path = emacs/site-lisp/plugins/cape
+	url = https://github.com/minad/cape.git
+[submodule "emacs/site-lisp/compat"]
+	path = emacs/site-lisp/plugins/compat
+	url = https://github.com/emacs-compat/compat.git
+[submodule "emacs/site-lisp/plugins/corfu"]
+	path = emacs/site-lisp/plugins/corfu
+	url = https://github.com/minad/corfu.git
