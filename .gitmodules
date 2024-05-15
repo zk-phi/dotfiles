@@ -211,9 +211,6 @@
 [submodule "emacs/site-lisp/my-plugins/company-symbol-after-symbol"]
 	path = emacs/site-lisp/my-plugins/company-symbol-after-symbol
 	url = https://github.com/zk-phi/company-symbol-after-symbol.git
-[submodule "emacs/site-lisp/my-plugins/git-complete-company"]
-	path = emacs/site-lisp/my-plugins/git-complete-company
-	url = https://github.com/zk-phi/git-complete-company.git
 [submodule "emacs/site-lisp/plugins/s.el"]
 	path = emacs/site-lisp/plugins/s-el
 	url = https://github.com/magnars/s.el.git
