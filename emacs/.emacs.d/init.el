@@ -208,8 +208,8 @@
         scratch-pop-kept-old-backups   200)
   (scratch-pop-restore-scratches 1)
   (setup-hook 'kill-emacs-hook 'scratch-pop-backup-scratches)
-  (setup-after "popwin"
-    (setq scratch-pop-popup-function 'popwin:popup-buffer)))
+  (setup-after "shackle-pop"
+    (setq scratch-pop-popup-function 'shackle-pop-popup-buffer)))
 
 ;;   + | make *scratch* persistent
 
@@ -524,8 +524,8 @@ cons of two integers which defines a range of the codepoints."
 (setup-after "compile"
   (setq compilation-scroll-output  'first-error
         compilation-ask-about-save nil)
-  (setup-after "popwin"
-    (push '("*compilation*" :noselect t) popwin:special-display-config))
+  (setup-after "shackle"
+    (push '("*compilation*" :select nil :popup t) shackle-rules))
   (setup-keybinds compilation-shell-minor-mode-map
     '("C-M-p" "C-M-n" "C-M-p" "C-M-p") nil))
 
@@ -580,19 +580,25 @@ cons of two integers which defines a range of the codepoints."
    (smooth-scrolling-mode 1)
    (setq smooth-scroll-margin 3)))
 
-(setup-expecting "popwin"
-  (defvar popwin:special-display-config nil) ; disable default settings
-  (!-
-   (setup "popwin"
-     (setq popwin:reuse-window nil
-           popwin:special-display-config
-           (nconc '(("*Warnings*")
-                    ("*Shell Command Output*")
-                    ("*Compile-Log*" :noselect t) ; when selected compilation may fail ?
-                    ("*Backtrace*")
-                    ("*Completions*" :noselect t))
-                  popwin:special-display-config))
-     (popwin-mode 1))))
+;; pre-define shackle-rules here to accept new entries from (setup-after "shackle" ...)
+(setup-expecting "shackle"
+  (defvar shackle-rules nil))
+(!-
+ (setup "shackle"
+   (setup "shackle-pop")
+   ;; here some shackle-rules may be already pushed by (setup-after "shackle" ...)
+   ;; so use nconc to append new rules to them
+   (setq shackle-rules (nconc '(("*Warnings*"             :select t   :popup t)
+                                ("*Shell Command Output*" :select t   :popup t)
+                                ;; when selected compilation may fail ?
+                                ("*Compile-Log*"          :select nil :popup t)
+                                ("*Backtrace*"            :select t   :popup t)
+                                ("*Completions*"          :select nil :popup t))
+                              shackle-rules)
+         shackle-default-rule '(:same t)
+         shackle-default-alignment 'below
+         shackle-default-size 0.33)
+   (shackle-mode 1)))
 
 ;;   + | mark / region
 
@@ -2847,8 +2853,8 @@ unary operators which can also be binary."
     (setup-hook 'debugger-mode-hook 'my-kindly-view-mode)))
 
 (setup-after "help-mode"
-  (setup-after "popwin"
-    (push '("*Help*") popwin:special-display-config))
+  (setup-after "shackle"
+    (push '("*Help*" :select t :popup t) shackle-rules))
   (setup-expecting "vi"
     (setup-hook 'help-mode-hook 'my-kindly-view-mode)
     (setup-keybinds help-mode-map
@@ -2858,8 +2864,8 @@ unary operators which can also be binary."
       "f" '("ace-link" ace-link-help))))
 
 (setup-after "info"
-  (setup-after "popwin"
-    (push '("*info*") popwin:special-display-config))
+  (setup-after "shackle"
+    (push '("*info*" :select t :popup t) shackle-rules))
   (setup-expecting "vi"
     ;; "Info-mode-map" does not work ?
     (setup-hook 'Info-mode-hook 'my-kindly-view-mode)
@@ -3094,8 +3100,8 @@ unary operators which can also be binary."
 ;;     + Buffer-menu
 
 ;; buff-menu.el (loaded before init.el)
-(setup-after "popwin"
-  (push '("*Buffer List*") popwin:special-display-config))
+(setup-after "shackle"
+  (push '("*Buffer List*" :select t :popup t) shackle-rules))
 (setup-hook 'Buffer-menu-mode-hook
   :oneshot
   (setup-keybinds Buffer-menu-mode-map
