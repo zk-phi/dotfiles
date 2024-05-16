@@ -51,7 +51,7 @@
 
 ;; M-* (Other Commands 1)
 ;; |KlAWn|MkWnd|RszWn|     |     |     |     |TrWnd|PvWnd|NxWnd|JmpBk|     |     |
-;;    |Scrat|Palet| Eval|Recnt|     |YankP|UndoT|Shell|Opcty|EvlPr|     |     |
+;;    |Scrat|     | Eval|Recnt|     |YankP|UndoT|Shell|Opcty|EvlPr|     |     |
 ;;       |Artst|GrpFl|Dired|FFile|GrpDr|Shrnk|iMenu|KlWnd|GotoL|     |     |     |
 ;;          |     | M-x |Cmpil|     |SwBuf|Narrw|DMcro|     |     |     |
 
@@ -134,10 +134,6 @@
 (defconst my-auto-save-list-directory
   (! (concat my-dat-directory "auto-save-list_" (system-name) "/"))
   "Directory to save auto-save-list(s) in.")
-
-(defconst my-palette-directory
-  (! (concat my-dat-directory "palette_" (system-name) "/"))
-  "Directory to save scratch-palette(s).")
 
 (defconst my-backup-directory
   (! (concat my-dat-directory "backups_" (system-name) "/"))
@@ -1337,15 +1333,6 @@ unary operators which can also be binary."
 
 ;; insert import statement
 (setup-lazy '(include-anywhere) "include-anywhere")
-
-;;   + | pop-up windows
-
-;; make and popup scratch-notes for each files
-(!- (setup "scratch-palette"))
-(setup-lazy '(scratch-palette-popup) "scratch-palette"
-  :prepare (defvar scratch-palette-directory my-palette-directory)
-  (setup-keybinds scratch-palette-minor-mode-map
-    "M-w" 'scratch-palette-kill))
 
 ;;   + | trace changes
 
