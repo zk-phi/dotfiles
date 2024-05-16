@@ -155,10 +155,6 @@
   (! (concat my-dat-directory "savehist_" (system-name)))
   "Fileto save minibuffer history.")
 
-(defconst my-company-history-file
-  (! (concat my-dat-directory "company_" (system-name)))
-  "File to save company-statistics history.")
-
 (defconst my-company-same-mode-buffers-history-file
   (! (concat my-dat-directory "company-smb_" (system-name)))
   "File to save company-same-mode-buffers history.")
@@ -633,14 +629,15 @@ cons of two integers which defines a range of the codepoints."
 (setup "phi-autopair"
   (nconc phi-autopair-lispy-modes my-lispy-modes)
   (phi-autopair-global-mode 1)
-  (setup-after "company"
-    (push 'phi-autopair-open company-begin-commands)))
+  (setup-after "corfu"
+    (push 'phi-autopair-open corfu-auto-commands)
+    (push 'phi-autopair-delete-backward corfu-auto-commands)))
 
 (setup-lazy '(electric-align-mode) "electric-align"
   :prepare (setup-hook 'prog-mode-hook 'electric-align-mode)
   (setq electric-align-shortcut-commands '(my-smart-comma))
-  (setup-after "company"
-    (push 'electric-align-SPC company-begin-commands)))
+  (setup-after "corfu"
+    (push 'electric-align-SPC corfu-auto-commands)))
 
 ;; not "electric-spacing" hosted in MELPA, but my own one
 (setup-lazy '(electric-spacing-mode) "electric-spacing"
@@ -653,80 +650,46 @@ cons of two integers which defines a range of the codepoints."
 (setup-lazy '(subword-mode) "subword"
   :prepare (setup-hook 'prog-mode-hook 'subword-mode))
 
-;; TODO: company equivalent of
-;; - ac-c-headers
-;; - ac-c-header-symbols
-;; - ac-source-dictionary
-;; - web-mode-ac-sources-alist
-;; maybe ?
 (!-
- (setup "company"
-   (defun company-my-current-file-name (command &optional arg &rest ignored)
-     "`company-mode' for current file name."
-     (interactive (list 'interactive))
-     (cl-case command
-       (interactive (company-begin-backend 'company-my-current-file-name))
-       (prefix (and buffer-file-name
-                    (not (file-remote-p buffer-file-name))
-                    (company-grab-symbol)))
-       (candidates (all-completions arg (list (file-name-base buffer-file-name))))))
-   (setq company-idle-delay 0
-         company-require-match 'never
-         company-dabbrev-downcase nil
-         company-minimum-prefix-length 2
-         company-selection-wrap-around t
-         company-tooltip-align-annotations t
-         company-transformers
-         '(company-sort-by-occurrence
-           company-sort-by-backend-importance
-           company-sort-prefer-same-case-prefix)
-         company-backends
-         '(company-files
-           (company-css :with company-dabbrev-code company-my-current-file-name)
-           (company-keywords :with company-dabbrev-code company-my-current-file-name)
-           (company-capf :with company-dabbrev-code company-my-current-file-name)
-           (company-dabbrev-code :with company-my-current-file-name)
-           company-dabbrev))
-   (setup "company-same-mode-buffers"
-     (setq company-same-mode-buffers-history-file my-company-same-mode-buffers-history-file
-           company-backends
-           ;; NOTE: `company-css' is deprecated in Emacs>=26 since
-           ;; `css-mode' now supports CAPF. But I want to enable
-           ;; `company-css' since `web-mode' does not support CAPF.
-           '(company-files
-             (company-css :with company-same-mode-buffers company-my-current-file-name)
-             (company-keywords :with company-same-mode-buffers company-my-current-file-name)
-             (company-same-mode-buffers :with company-my-current-file-name)
-             company-dabbrev))
-     (company-same-mode-buffers-initialize))
-   (setup "company-symbol-after-symbol"
-     (setq company-symbol-after-symbol-history-file my-company-symbol-after-symbol-history-file)
-     (push 'company-symbol-after-symbol (cdr company-backends))
-     (company-symbol-after-symbol-initialize))
-   (setup "company-dwim"
-     (setq company-frontends
-           '(company-pseudo-tooltip-unless-just-one-frontend
-             company-dwim-frontend
-             company-echo-metadata-frontend)))
-   (setup "company-statistics"
-     (setq company-statistics-file my-company-history-file)
-     (push 'company-sort-by-statistics company-transformers)
-     (company-statistics-mode))
-   (setup "company-anywhere")
-   (global-company-mode)
-   (setup-keybinds company-active-map
-     "C-p" '("company-dwim" company-dwim-select-previous company-select-previous)
-     "C-n" '("company-dwim" company-dwim-select-next company-select-next)
-     "C-u" 'company-previous-page
-     "C-v" 'company-next-page
-     "C-s" 'company-filter-candidates
-     "TAB" '("company-dwim" company-dwim company-complete-common-or-cycle)
-     "RET" 'company-complete-selection
-     "<S-tab>" 'company-select-previous
-     '("<f1>" "<tab>" "<return>") nil)
-   (setup-keybinds company-search-map
-     "C-p" 'company-search-repeat-backward
-     "C-n" 'company-search-repeat-forward)))
+ (setup "corfu"
+   (setup "orderless")
+   (setq corfu-auto t
+         corfu-auto-prefix 0
+         corfu-auto-delay 0.01
+         corfu-preselect 'prompt
+         corfu-cycle t
+         corfu-quit-no-match t
+         corfu-count 3)
+   ;; on Mac, creating child frame causes beep (probably due to a bug)
+   ;; so use overlay interface instead
+   (defvar corfu-terminal-mode nil)   ; suppress warning (issue #27)
+   (setup "corfu-terminal"
+     (setq corfu-terminal-disable-on-gui nil)
+     (corfu-terminal-mode 1))
+   ;; sort with history
+   (setup "savehist"
+     (setup "corfu-history"
+       (corfu-history-mode 1)
+       (push 'corfu-history savehist-additional-variables)))
+   ;; add some backends
+   (setup "cape"
+     (setup "complete-same-mode-buffers"
+       (setq company-same-mode-buffers-history-file my-company-same-mode-buffers-history-file)
+       (company-same-mode-buffers-initialize)
+       (setq-default completion-at-point-functions
+                     (nconc (default-value 'completion-at-point-functions)
+                            (list (cape-capf-buster 'complete-same-mode-buffers)))))
+     (setup "complete-symbol-after-symbol"
+       (setq company-symbol-after-symbol-history-file my-company-symbol-after-symbol-history-file)
+       (company-symbol-after-symbol-initialize)
+       (push 'complete-symbol-after-symbol (default-value 'completion-at-point-functions)))
+     (push 'cape-file (default-value 'completion-at-point-functions)))
+   (global-corfu-mode 1)
+   (setup-keybinds corfu-map
+     "<tab>" 'corfu-next
+     "<backtab>" 'corfu-previous
+     "C-n" 'corfu-next
+     "C-p" 'corfu-previous)))
 
 ;;   + | keyboards
 
@@ -809,7 +772,7 @@ unary operators which can also be binary."
   (defun my-matcher-partial-flex (str)
     (unless (string= str "")
       (let ((lst (split-string str "" t)))
-        (concat "\\<\\(" (car lst) "\\)"
+        (concat "\\<\\(" (regexp-quote (car lst)) "\\)"
                 (mapconcat (lambda (s)
                              (concat "\\(?:.*?\\Sw\\)??\\(" (regexp-quote s) "\\)"))
                            (cdr lst)
@@ -900,6 +863,11 @@ unary operators which can also be binary."
 
 ;;   + vertico completing-read interface [vertico, marginalia, orderless]
 
+;; enable sorting for vertico and corfu
+(setup-after "savehist"
+  (setq savehist-file my-savehist-history-file)
+  (savehist-mode))
+
 (setup-lazy '(vertico--advice) "vertico"
   :prepare (progn
              ;; taken from vertico-mode
@@ -910,14 +878,10 @@ unary operators which can also be binary."
         vertico-count 8
         vertico-multiline '("\n" . "…"))
 
-  ;; load orderless and if available
+  ;; load orderless, savehist, marginalia if available
   (setup "orderless")
+  (setup "savehist")
   (setup "marginalia" (marginalia-mode))
-
-  ;; enable sorting
-  (setup "savehist"
-    (setq savehist-file my-savehist-history-file)
-    (savehist-mode))
 
   (setup-lazy
     '(my-vertico-spc-or-enter
@@ -1262,7 +1226,9 @@ unary operators which can also be binary."
     my-indent-or-expand-dwim
     my-map-lines-from-here) "cmd_edit"
     (setup-lazy '(git-complete) "git-complete"
-      :prepare (setq my-expand-dwim-fallback 'git-complete)))
+      :prepare (setq my-expand-dwim-fallback 'git-complete))
+    (setup-after "cmd_edit"
+      (push 'my-smart-comma corfu-auto-commands)))
 
 ;; shrink indentation on "kill-line"
 ;; reference | http://www.emacswiki.org/emacs/AutoIndentation
@@ -1520,6 +1486,11 @@ unary operators which can also be binary."
   (setup-expecting "key-combo"
     (key-combo-define-local (kbd "##") ";;;###autoload")
     (key-combo-define-local (kbd "#!") "#!/usr/bin/emacs --script")))
+(setup-expecting "complete-same-mode-buffers"
+  ;; when complete-same-mode-buffers is available,
+  ;; elisp-completion-at-point is no longer needed
+  (setup-hook 'emacs-lisp-mode-hook
+    (setq-local completion-at-point-functions '(t))))
 (!- (setup "setup"))          ; also lazy-load for syntax highlighting
 (setup-after "rainbow-mode"
   (dolist (buf (buffer-list))
@@ -2435,6 +2406,16 @@ unary operators which can also be binary."
                            ("<%%" . " | %")
                            ("<%#" . " | %")))
         web-mode-engines-auto-pairs)
+
+  ;; enable CSS completion in web-mode
+  (defun my-web-capf (lang capf)
+    (lambda () (and (string= lang (web-mode-language-at-pos)) (funcall capf))))
+  (setup "cape"
+    (setup "css-mode"
+      (defalias 'css-completion-at-point-nonexclusive
+        (my-web-capf "css" (cape-capf-nonexclusive 'css-completion-at-point)))
+      (setup-hook 'web-mode-hook
+        (setq-local completion-at-point-functions '(css-completion-at-point-nonexclusive t)))))
 
   (setup-after "rainbow-mode"
     (dolist (buf (buffer-list))
