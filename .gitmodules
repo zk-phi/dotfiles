@@ -7,9 +7,6 @@
 [submodule "zsh/.zsh.d/plugins/zsh-abbrev-alias"]
 	path = zsh/.zsh.d/plugins/zsh-abbrev-alias
 	url = https://github.com/zk-phi/zsh-abbrev-alias.git
-[submodule "emacs/site-lisp/plugins/popwin-el"]
-	path = emacs/site-lisp/plugins/popwin-el
-	url = https://github.com/m2ym/popwin-el.git
 [submodule "emacs/site-lisp/my-plugins/scratch-pop"]
 	path = emacs/site-lisp/my-plugins/scratch-pop
 	url = https://github.com/zk-phi/scratch-pop.git
@@ -89,9 +86,6 @@
 [submodule "emacs/site-lisp/my-plugins/include-anywhere"]
 	path = emacs/site-lisp/my-plugins/include-anywhere
 	url = https://github.com/zk-phi/include-anywhere.git
-[submodule "emacs/site-lisp/my-plugins/scratch-palette"]
-	path = emacs/site-lisp/my-plugins/scratch-palette
-	url = https://github.com/zk-phi/scratch-palette.git
 [submodule "emacs/site-lisp/my-plugins/rpn-calc"]
 	path = emacs/site-lisp/my-plugins/rpn-calc
 	url = https://github.com/zk-phi/rpn-calc.git
