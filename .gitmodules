@@ -193,21 +193,9 @@
 	path = emacs/site-lisp/plugins/dumb-jump
 	url = https://github.com/jacktasia/dumb-jump.git
 	ignore = dirty
-[submodule "emacs/site-lisp/plugins/company-mode"]
-	path = emacs/site-lisp/plugins/company-mode
-	url = https://github.com/company-mode/company-mode.git
-[submodule "emacs/site-lisp/plugins/company-statistics"]
-	path = emacs/site-lisp/plugins/company-statistics
-	url = https://github.com/company-mode/company-statistics.git
 [submodule "emacs/site-lisp/my-plugins/company-same-mode-buffers"]
 	path = emacs/site-lisp/my-plugins/company-same-mode-buffers
 	url = https://github.com/zk-phi/company-same-mode-buffers.git
-[submodule "emacs/site-lisp/my-plugins/company-dwim"]
-	path = emacs/site-lisp/my-plugins/company-dwim
-	url = https://github.com/zk-phi/company-dwim.git
-[submodule "emacs/site-lisp/my-plugins/company-anywhere"]
-	path = emacs/site-lisp/my-plugins/company-anywhere
-	url = https://github.com/zk-phi/company-anywhere.git
 [submodule "emacs/site-lisp/my-plugins/company-symbol-after-symbol"]
 	path = emacs/site-lisp/my-plugins/company-symbol-after-symbol
 	url = https://github.com/zk-phi/company-symbol-after-symbol.git
