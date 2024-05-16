@@ -252,3 +252,6 @@
 	path = emacs/site-lisp/plugins/popon
 	url = https://codeberg.org/akib/emacs-popon.git
 	ignore = dirty
+[submodule "emacs/site-lisp/plugins/shackle"]
+	path = emacs/site-lisp/plugins/shackle
+	url = https://depp.brause.cc/shackle.git
