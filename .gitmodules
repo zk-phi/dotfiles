@@ -259,6 +259,8 @@
 [submodule "emacs/site-lisp/plugins/emacs-corfu-terminal"]
 	path = emacs/site-lisp/plugins/corfu-terminal
 	url = https://codeberg.org/akib/emacs-corfu-terminal.git
+	ignore = dirty
 [submodule "emacs/site-lisp/plugins/emacs-popon"]
 	path = emacs/site-lisp/plugins/popon
 	url = https://codeberg.org/akib/emacs-popon.git
+	ignore = dirty
