@@ -255,6 +255,7 @@
 [submodule "emacs/site-lisp/plugins/shackle"]
 	path = emacs/site-lisp/plugins/shackle
 	url = https://depp.brause.cc/shackle.git
+	ignore = dirty
 [submodule "emacs/site-lisp/my-plugins/shackle-pop"]
 	path = emacs/site-lisp/my-plugins/shackle-pop
 	url = https://github.com/zk-phi/shackle-pop.git
