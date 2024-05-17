@@ -591,7 +591,7 @@ cons of two integers which defines a range of the codepoints."
                                 ("*Backtrace*"            :select t   :popup t)
                                 ("*Completions*"          :select nil :popup t))
                               shackle-rules)
-         shackle-default-rule '(:same t)
+         shackle-default-rule '()
          shackle-default-alignment 'below
          shackle-default-size 0.33)
    (shackle-mode 1)))
