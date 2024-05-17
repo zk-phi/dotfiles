@@ -3118,7 +3118,9 @@ unary operators which can also be binary."
 (!foreach '(mode-line-bright-face
             mode-line-dark-face
             mode-line-annotation-face
+            mode-line-annotation-inactive-face
             mode-line-highlight-face
+            mode-line-highlight-inactive-face
             mode-line-special-mode-face
             mode-line-warning-face
             mode-line-modified-face
@@ -3129,6 +3131,20 @@ unary operators which can also be binary."
   (set-face-attribute ,it nil :inherit 'mode-line))
 
 ;;   + | the mode-line-format
+
+;; active status (see also: doom-modeline)
+(defvar my-active-window (selected-window))
+(defun my-track-active-window (&rest _)
+  (let ((win (selected-window)))
+    (setq my-active-window
+          (if (minibuffer-window-active-p win)
+              (minibuffer-selected-window)
+            win))))
+(setup-hook 'pre-redisplay-functions 'my-track-active-window)
+(defun my-window-active-p (&optional wnd)
+  (eq (or wnd (selected-window)) my-active-window))
+(defun my-dispatch-face (active-face inactive-face)
+  (if (my-window-active-p) active-face inactive-face))
 
 ;; scratch-palette status
 (defvar-local my-palette-available-p nil)
@@ -3150,14 +3166,14 @@ unary operators which can also be binary."
     ""))
 
 (defsubst my-mode-line--linum ()
-  (if (not mark-active)
+  (if (not (and (my-window-active-p) mark-active))
       (! (propertize "%l" 'face 'mode-line-bright-face))
     (propertize (format "%d" (count-lines (region-beginning) (region-end)))
                 'face 'mode-line-highlight-face)))
 
 ;; either linum or colnum must be %-notated to be updated correctrly
 (defsubst my-mode-line--colnum ()
-  (if (not mark-active)
+  (if (not (and (my-window-active-p) mark-active))
       (propertize "%c" 'face 'mode-line-bright-face)
     (propertize (format "%d" (- (region-end) (region-beginning)))
                 'face 'mode-line-highlight-face)))
@@ -3174,8 +3190,10 @@ unary operators which can also be binary."
        (propertize (format "%02d" (mc/num-cursors)) 'face 'mode-line-mc-face)
      (! (propertize "00" 'face 'mode-line-dark-face)))))
 
-(defconst my-mode-line--filename
-  (! (propertize "%b" 'face 'mode-line-highlight-face)))
+(defsubst my-mode-line--filename ()
+  (propertize
+   "%b" 'face
+   (my-dispatch-face 'mode-line-highlight-face 'mode-line-highlight-inactive-face)))
 
 (defsubst my-mode-line--palette-status ()
   (if my-palette-available-p
@@ -3193,28 +3211,32 @@ unary operators which can also be binary."
          (! (propertize "*OrgTbl*" 'face 'mode-line-special-mode-face)))
         (t
          (unless (eq (car my-mode-line--mode-name-cache) major-mode)
-           (setq my-mode-line--mode-name-cache
-                 (cons major-mode
-                       (propertize (format-mode-line mode-name) 'face 'mode-line-annotation-face))))
-         (cdr my-mode-line--mode-name-cache))))
+           (setq my-mode-line--mode-name-cache (cons major-mode (format-mode-line mode-name))))
+         (propertize
+          (cdr my-mode-line--mode-name-cache) 'face
+          (my-dispatch-face 'mode-line-annotation-face 'mode-line-annotation-inactive-face)))))
 
 (defsubst my-mode-line--process ()
-  (propertize (format-mode-line mode-line-process) 'face 'mode-line-highlight-face))
+  (propertize
+   (format-mode-line mode-line-process) 'face
+   (my-dispatch-face 'mode-line-highlight-face 'mode-line-highlight-inactive-face)))
 
 (defsubst my-mode-line--encoding ()
-  (propertize (format "%s%s"
-                      (let ((type (coding-system-type buffer-file-coding-system)))
-                        (if (memq type '(undecided utf-8))
-                            ""
-                          (concat "  " (upcase (symbol-name type)))))
-                      (let ((eol-type (coding-system-eol-type buffer-file-coding-system)))
-                        (if (vectorp eol-type) ?-
-                          (cl-case eol-type
-                            ((0) "")
-                            ((1) "  CRLF")
-                            ((2) "  CR")
-                            (else "  ??")))))
-              'face 'mode-line-annotation-face))
+  (propertize
+   (format "%s%s"
+           (let ((type (coding-system-type buffer-file-coding-system)))
+             (if (memq type '(undecided utf-8))
+                 ""
+               (concat "  " (upcase (symbol-name type)))))
+           (let ((eol-type (coding-system-eol-type buffer-file-coding-system)))
+             (if (vectorp eol-type) ?-
+               (cl-case eol-type
+                 ((0) "")
+                 ((1) "  CRLF")
+                 ((2) "  CR")
+                 (else "  ??")))))
+   'face
+   (my-dispatch-face 'mode-line-annotation-face 'mode-line-annotation-inactive-face)))
 
 (defconst my-mode-line--vertical-spacer
   (! (concat (propertize " " 'display '(raise +0.375))
@@ -3224,7 +3246,7 @@ unary operators which can also be binary."
   (let* ((lstr
           (concat (my-mode-line--macro)
                   (my-mode-line--indicators)
-                  "  " my-mode-line--filename
+                  "  " (my-mode-line--filename)
                   (my-mode-line--palette-status)
                   my-mode-line--recur-status
                   my-mode-line--vertical-spacer))
@@ -3543,8 +3565,14 @@ unary operators which can also be binary."
    'mode-line-annotation-face nil
    :inherit '(elemental-accent-fg-2-face italic))
   (set-face-attribute
+   'mode-line-annotation-inactive-face nil
+   :inherit '(italic))
+  (set-face-attribute
    'mode-line-highlight-face nil
    :inherit '(elemental-accent-fg-3-face bold))
+  (set-face-attribute
+   'mode-line-highlight-inactive-face nil
+   :inherit 'unspecified)
   (set-face-attribute
    'mode-line-warning-face nil
    :inherit 'elemental-orange-fg-face)
