@@ -3125,7 +3125,8 @@ unary operators which can also be binary."
             mode-line-warning-face
             mode-line-modified-face
             mode-line-narrowed-face
-            mode-line-mc-face)
+            mode-line-mc-face
+            mode-line-indicator-inactive-face)
   (make-face ,it)
   (set-face-attribute ,it nil :inherit 'mode-line))
 
@@ -3165,15 +3166,26 @@ unary operators which can also be binary."
 
 (defsubst my-mode-line--indicators ()
   (concat
-   (if (buffer-narrowed-p)
-       (! (propertize "n" 'face 'mode-line-narrowed-face))
-     (! (propertize "n" 'face 'mode-line-dark-face)))
-   (cond (buffer-read-only (propertize "-" 'face 'mode-line-dark-face))
-         ((buffer-modified-p) (! (propertize "*" 'face 'mode-line-modified-face)))
-         (t (! (propertize "*" 'face 'mode-line-dark-face))))
-   (if (bound-and-true-p multiple-cursors-mode)
-       (propertize (format "%02d" (mc/num-cursors)) 'face 'mode-line-mc-face)
-     (! (propertize "00" 'face 'mode-line-dark-face)))))
+   (cond ((not (buffer-narrowed-p))
+          (! (propertize "n" 'face 'mode-line-dark-face)))
+         ((my-window-active-p)
+          (propertize "n" 'face 'mode-line-narrowed-face))
+         (t
+          (propertize "n" 'face 'mode-line-indicator-inactive-face)))
+   (cond (buffer-read-only
+          (propertize "-" 'face 'mode-line-dark-face))
+         ((not (buffer-modified-p))
+          (! (propertize "*" 'face 'mode-line-dark-face)))
+         ((my-window-active-p)
+          (! (propertize "*" 'face 'mode-line-modified-face)))
+         (t
+          (! (propertize "*" 'face 'mode-line-indicator-inactive-face))))
+   (cond ((bound-and-true-p multiple-cursors-mode)
+          (propertize
+           (format "%02d" (mc/num-cursors)) 'face
+           (my-dispatch-face 'mode-line-mc-face 'mode-line-indicator-inactive-face)))
+         (t
+          (! (propertize "00" 'face 'mode-line-dark-face))))))
 
 (defsubst my-mode-line--filename ()
   (propertize
@@ -3536,7 +3548,7 @@ unary operators which can also be binary."
   ;; extra mode-line faces
   (set-face-attribute
    'mode-line-bright-face nil
-   :inherit 'unspecified)
+   :inherit '())
   (set-face-attribute
    'mode-line-dark-face nil
    :inherit 'elemental-dark-fg-face)
@@ -3551,7 +3563,7 @@ unary operators which can also be binary."
    :inherit '(elemental-accent-fg-3-face bold))
   (set-face-attribute
    'mode-line-highlight-inactive-face nil
-   :inherit 'unspecified)
+   :inherit '())
   (set-face-attribute
    'mode-line-warning-face nil
    :inherit 'elemental-orange-fg-face)
@@ -3568,6 +3580,9 @@ unary operators which can also be binary."
   (set-face-attribute
    'mode-line-mc-face nil
    :inherit 'elemental-bright-fg-face)
+  (set-face-attribute
+   'mode-line-indicator-inactive-face nil
+   :inherit '())
 
   ;; "show-eof" face
   (setup-after "show-eof-mode"
