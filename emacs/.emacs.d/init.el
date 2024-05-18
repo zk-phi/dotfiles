@@ -3125,8 +3125,7 @@ unary operators which can also be binary."
             mode-line-warning-face
             mode-line-modified-face
             mode-line-narrowed-face
-            mode-line-mc-face
-            mode-line-palette-face)
+            mode-line-mc-face)
   (make-face ,it)
   (set-face-attribute ,it nil :inherit 'mode-line))
 
@@ -3145,20 +3144,6 @@ unary operators which can also be binary."
   (eq (or wnd (selected-window)) my-active-window))
 (defun my-dispatch-face (active-face inactive-face)
   (if (my-window-active-p) active-face inactive-face))
-
-;; scratch-palette status
-(defvar-local my-palette-available-p nil)
-(setup-after "scratch-palette"
-  (defun my-update-palette-status ()
-    (when (and buffer-file-name
-               (file-exists-p (scratch-palette--file-name buffer-file-name)))
-      (setq my-palette-available-p t)))
-  (dolist (buf (buffer-list))
-    (with-current-buffer buf
-      (my-update-palette-status)))
-  (setup-hook 'find-file-hook 'my-update-palette-status)
-  (define-advice scratch-palette-kill (:after (&rest _))
-    (my-update-palette-status)))
 
 (defsubst my-mode-line--macro ()
   (if defining-kbd-macro
@@ -3194,11 +3179,6 @@ unary operators which can also be binary."
   (propertize
    "%b" 'face
    (my-dispatch-face 'mode-line-highlight-face 'mode-line-highlight-inactive-face)))
-
-(defsubst my-mode-line--palette-status ()
-  (if my-palette-available-p
-      (! (propertize ":p" 'face 'mode-line-palette-face))
-    ""))
 
 (defconst my-mode-line--recur-status
   (! (propertize "%]" 'face 'mode-line-dark-face)))
@@ -3247,7 +3227,6 @@ unary operators which can also be binary."
           (concat (my-mode-line--macro)
                   (my-mode-line--indicators)
                   "  " (my-mode-line--filename)
-                  (my-mode-line--palette-status)
                   my-mode-line--recur-status
                   my-mode-line--vertical-spacer))
          (rstr
@@ -3589,9 +3568,6 @@ unary operators which can also be binary."
   (set-face-attribute
    'mode-line-mc-face nil
    :inherit 'elemental-bright-fg-face)
-  (set-face-attribute
-   'mode-line-palette-face nil
-   :inherit '(elemental-accent-fg-4-face bold))
 
   ;; "show-eof" face
   (setup-after "show-eof-mode"
@@ -3941,7 +3917,7 @@ unary operators which can also be binary."
   "M-<kanji>" 'ignore
   "C-q"       'quoted-insert
   ","         'my-smart-comma
-  "M-w"       '("scratch-palette" scratch-palette-popup)
+  "M-w"       'ignore
   "M-q"       '("scratch-pop" scratch-pop)
   "C-="       'text-scale-increase
   "C-M-="     'text-scale-decrease
