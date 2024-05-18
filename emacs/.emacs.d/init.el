@@ -3123,9 +3123,7 @@ unary operators which can also be binary."
             mode-line-highlight-inactive-face
             mode-line-recording-face
             mode-line-modified-face
-            mode-line-narrowed-face
-            mode-line-mc-face
-            mode-line-indicator-inactive-face)
+            mode-line-modified-inactive-face)
   (make-face ,it)
   (set-face-attribute ,it nil :inherit 'mode-line))
 
@@ -3163,14 +3161,8 @@ unary operators which can also be binary."
     (propertize (format "%d" (- (region-end) (region-beginning)))
                 'face 'mode-line-highlight-face)))
 
-(defsubst my-mode-line--indicators ()
+(defsubst my-mode-line--indicator ()
   (concat
-   (cond ((not (buffer-narrowed-p))
-          (! (propertize "n" 'face 'mode-line-dark-face)))
-         ((my-window-active-p)
-          (propertize "n" 'face 'mode-line-narrowed-face))
-         (t
-          (propertize "n" 'face 'mode-line-indicator-inactive-face)))
    (cond (buffer-read-only
           (propertize "-" 'face 'mode-line-dark-face))
          ((not (buffer-modified-p))
@@ -3178,13 +3170,7 @@ unary operators which can also be binary."
          ((my-window-active-p)
           (! (propertize "*" 'face 'mode-line-modified-face)))
          (t
-          (! (propertize "*" 'face 'mode-line-indicator-inactive-face))))
-   (cond ((bound-and-true-p multiple-cursors-mode)
-          (propertize
-           (format "%02d" (mc/num-cursors)) 'face
-           (my-dispatch-face 'mode-line-mc-face 'mode-line-indicator-inactive-face)))
-         (t
-          (! (propertize "00" 'face 'mode-line-dark-face))))))
+          (! (propertize "*" 'face 'mode-line-modified-inactive-face))))))
 
 (defsubst my-mode-line--filename ()
   (propertize
@@ -3239,8 +3225,8 @@ unary operators which can also be binary."
 (defun my-generate-mode-line-format ()
   (let* ((lstr
           (concat (my-mode-line--macro)
-                  (my-mode-line--indicators)
-                  "  " (my-mode-line--filename)
+                  (my-mode-line--indicator)
+                  " " (my-mode-line--filename)
                   my-mode-line--recur-status
                   my-mode-line--vertical-spacer))
          (rstr
@@ -3573,13 +3559,7 @@ unary operators which can also be binary."
    'mode-line-modified-face nil
    :inherit 'elemental-red-fg-face)
   (set-face-attribute
-   'mode-line-narrowed-face nil
-   :inherit 'elemental-accent-fg-4-face)
-  (set-face-attribute
-   'mode-line-mc-face nil
-   :inherit 'elemental-bright-fg-face)
-  (set-face-attribute
-   'mode-line-indicator-inactive-face nil
+   'mode-line-modified-inactive-face nil
    :inherit '())
 
   ;; "show-eof" face
