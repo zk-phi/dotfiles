@@ -3121,7 +3121,6 @@ unary operators which can also be binary."
             mode-line-annotation-inactive-face
             mode-line-highlight-face
             mode-line-highlight-inactive-face
-            mode-line-special-mode-face
             mode-line-recording-face
             mode-line-modified-face
             mode-line-narrowed-face
@@ -3197,16 +3196,19 @@ unary operators which can also be binary."
 
 (defvar-local my-mode-line--mode-name-cache nil)
 (defsubst my-mode-line--mode-name ()
-  (cond ((bound-and-true-p artist-mode)
-         (! (propertize "*Artist*" 'face 'mode-line-special-mode-face)))
-        ((bound-and-true-p orgtbl-mode)
-         (! (propertize "*OrgTbl*" 'face 'mode-line-special-mode-face)))
-        (t
-         (unless (eq (car my-mode-line--mode-name-cache) major-mode)
-           (setq my-mode-line--mode-name-cache (cons major-mode (format-mode-line mode-name))))
-         (propertize
-          (cdr my-mode-line--mode-name-cache) 'face
-          (my-dispatch-face 'mode-line-annotation-face 'mode-line-annotation-inactive-face)))))
+  (propertize
+   (cond ((bound-and-true-p multiple-cursors-mode)
+          (format "*MCsr:%d*" (mc/num-cursors)))
+         ((bound-and-true-p artist-mode)
+          "*Artist*")
+         ((bound-and-true-p orgtbl-mode)
+          "*OrgTbl*")
+         (t
+          (unless (eq (car my-mode-line--mode-name-cache) major-mode)
+            (setq my-mode-line--mode-name-cache (cons major-mode (format-mode-line mode-name))))
+          (cdr my-mode-line--mode-name-cache)))
+   'face
+   (my-dispatch-face 'mode-line-annotation-face 'mode-line-annotation-inactive-face)))
 
 (defsubst my-mode-line--process ()
   (propertize
@@ -3567,10 +3569,6 @@ unary operators which can also be binary."
   (set-face-attribute
    'mode-line-recording-face nil
    :inherit 'elemental-orange-fg-face)
-  (set-face-attribute
-   'mode-line-special-mode-face nil
-   :inherit 'elemental-accent-fg-4-face
-   :weight  'bold)
   (set-face-attribute
    'mode-line-modified-face nil
    :inherit 'elemental-red-fg-face)
