@@ -3122,7 +3122,7 @@ unary operators which can also be binary."
             mode-line-highlight-face
             mode-line-highlight-inactive-face
             mode-line-special-mode-face
-            mode-line-warning-face
+            mode-line-recording-face
             mode-line-modified-face
             mode-line-narrowed-face
             mode-line-mc-face
@@ -3148,7 +3148,7 @@ unary operators which can also be binary."
 
 (defsubst my-mode-line--macro ()
   (if defining-kbd-macro
-      (! (propertize "● " 'face 'mode-line-warning-face))
+      (! (propertize "● " 'face 'mode-line-recording-face))
     ""))
 
 (defsubst my-mode-line--linum ()
@@ -3565,7 +3565,7 @@ unary operators which can also be binary."
    'mode-line-highlight-inactive-face nil
    :inherit '())
   (set-face-attribute
-   'mode-line-warning-face nil
+   'mode-line-recording-face nil
    :inherit 'elemental-orange-fg-face)
   (set-face-attribute
    'mode-line-special-mode-face nil
