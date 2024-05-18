@@ -659,7 +659,7 @@ cons of two integers which defines a range of the codepoints."
    (setq corfu-auto t
          corfu-auto-prefix 0
          corfu-auto-delay 0.01
-         corfu-preselect 'prompt
+         corfu-preselect 'first
          corfu-cycle t
          corfu-quit-no-match t
          corfu-count 3)
