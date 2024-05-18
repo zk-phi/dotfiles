@@ -3554,7 +3554,7 @@ unary operators which can also be binary."
    :inherit '())
   (set-face-attribute
    'mode-line-recording-face nil
-   :inherit 'elemental-orange-fg-face)
+   :inherit 'elemental-red-fg-face)
   (set-face-attribute
    'mode-line-modified-face nil
    :inherit 'elemental-red-fg-face)
