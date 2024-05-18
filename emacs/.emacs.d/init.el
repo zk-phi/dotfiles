@@ -3188,7 +3188,7 @@ unary operators which can also be binary."
 
 (defsubst my-mode-line--filename ()
   (propertize
-   "%b" 'face
+   (concat (and (buffer-narrowed-p) "⇅ ") "%b") 'face
    (my-dispatch-face 'mode-line-highlight-face 'mode-line-highlight-inactive-face)))
 
 (defconst my-mode-line--recur-status
