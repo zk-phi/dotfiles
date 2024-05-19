@@ -3170,13 +3170,13 @@ unary operators which can also be binary."
 (defsubst my-mode-line--indicator ()
   (concat
    (cond (buffer-read-only
-          (propertize "-" 'face 'mode-line-dark-face))
+          (! (propertize "％" 'face 'mode-line-bright-face)))
          ((not (buffer-modified-p))
-          (! (propertize "*" 'face 'mode-line-dark-face)))
+          (! (propertize "＊" 'face 'mode-line-dark-face)))
          ((my-window-active-p)
-          (! (propertize "*" 'face 'mode-line-modified-face)))
+          (! (propertize "＊" 'face 'mode-line-modified-face)))
          (t
-          (! (propertize "*" 'face 'mode-line-modified-inactive-face))))))
+          (! (propertize "＊" 'face 'mode-line-modified-inactive-face))))))
 
 (defsubst my-mode-line--filename ()
   (propertize
