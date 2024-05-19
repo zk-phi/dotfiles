@@ -3186,20 +3186,25 @@ unary operators which can also be binary."
 (defconst my-mode-line--recur-status
   (! (propertize "%]" 'face 'mode-line-dark-face)))
 
-(defvar-local my-mode-line--mode-name-cache nil)
-(defsubst my-mode-line--mode-name ()
+(defsubst my-mode-line--special-mode-name ()
   (propertize
    (cond ((bound-and-true-p multiple-cursors-mode)
-          (format "*MCsr:%d*" (mc/num-cursors)))
+          (format "MCsr:%d " (mc/num-cursors)))
          ((bound-and-true-p artist-mode)
-          "*Artist*")
+          "Artist ")
          ((bound-and-true-p orgtbl-mode)
-          "*OrgTbl*")
+          "OrgTbl ")
          (t
-          (unless (eq (car my-mode-line--mode-name-cache) major-mode)
-            (setq my-mode-line--mode-name-cache (cons major-mode (format-mode-line mode-name))))
-          (cdr my-mode-line--mode-name-cache)))
+          ""))
    'face
+   (my-dispatch-face 'mode-line-annotation-face 'mode-line-annotation-inactive-face)))
+
+(defvar-local my-mode-line--mode-name-cache nil)
+(defsubst my-mode-line--mode-name ()
+  (unless (eq (car my-mode-line--mode-name-cache) major-mode)
+    (setq my-mode-line--mode-name-cache (cons major-mode (format-mode-line mode-name))))
+  (propertize
+   (cdr my-mode-line--mode-name-cache) 'face
    (my-dispatch-face 'mode-line-annotation-face 'mode-line-annotation-inactive-face)))
 
 (defsubst my-mode-line--process ()
@@ -3238,7 +3243,8 @@ unary operators which can also be binary."
          (rstr
           ;; use format-mode-line to get "correct" string width
           (format-mode-line
-           (list (my-mode-line--mode-name)
+           (list (my-mode-line--special-mode-name)
+                 (my-mode-line--mode-name)
                  (my-mode-line--process)
                  (my-mode-line--encoding)
                  "  " (my-mode-line--linum)
