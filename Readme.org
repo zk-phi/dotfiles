@@ -8,7 +8,7 @@ zk-phi's Dotfiles
 
   : xcode-select --install
 
-- Install Homebrew (see the official web for the install command) and follow the instruction to add to =PATH=
+- Install Homebrew (see the official web for the install command) and add to =PATH=
 
 - Clone this repo and submodules
 
@@ -16,7 +16,7 @@ zk-phi's Dotfiles
   : cd dotfiles
   : git submodule update --init
 
-- Symlink dotfiles
+- Create symlinks
 
   : sh link.sh
 
@@ -25,7 +25,9 @@ zk-phi's Dotfiles
   : cd brew
   : brew bundle
 
-  Some packages may fail on Mac M1 machines. Try installing with =arch -arm64= that case.
+  Some packages may fail to install on ARM (Mac M1) machines.
+
+  Try installing the package with =arch -arm64= that case.
 
   : arch -arm64 brew install <package-name>
 
@@ -34,7 +36,7 @@ zk-phi's Dotfiles
   : sudo vim /etc/shells # Add /usr/local/bin/zsh
   : chsh -s /usr/local/bin/zsh
 
-- Install runtimes with =asdf=
+- Install compilers/interpreters with =asdf=
 
   : cd asdf
   : sh setup.sh

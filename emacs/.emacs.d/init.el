@@ -385,7 +385,7 @@ cons of two integers which defines a range of the codepoints."
 ;; font settings (mac)
 ;; reference | http://macemacsjp.sourceforge.jp/matsuan/FontSettingJp.html
 (!when (eq system-type 'darwin)
-  ;; ascii
+  ;; base (0)
   (!cond
    ;; https://github.com/zk-phi/nasia
    ((member "nasia" (font-family-list))
@@ -393,9 +393,10 @@ cons of two integers which defines a range of the codepoints."
    ;; https://github.com/zk-phi/code8903
    ((member "code8903" (font-family-list))
     (set-face-attribute 'default nil :family "code8903" :height 130))
-   (t
+   ;; Built-in
+   ((member "Monaco" (font-family-list))
     (set-face-attribute 'default nil :family "Monaco" :height 130)))
-  ;; unicode (fallback)
+  ;; unicode fallback (-1)
   (!cond
    ((member "nasia" (font-family-list))
     (my-set-fontset-font "nasia" 'unicode nil))
@@ -403,8 +404,9 @@ cons of two integers which defines a range of the codepoints."
     (my-set-fontset-font "code8903" 'unicode nil))
    ((member "SawarabiGothic phi" (font-family-list))
     (my-set-fontset-font "SawarabiGothic phi" 'unicode nil)))
-  ;; unicode (emoji)
-  (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95 'prepend))
+  ;; emoji override (+1)
+  (!when (member "Apple Color Emoji" (font-family-list))
+    (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95 'prepend)))
 
 ;; font settings (windows)
 (!when (eq system-type 'windows-nt)
@@ -414,12 +416,16 @@ cons of two integers which defines a range of the codepoints."
          (member "Symbola" (font-family-list))
          (member "VLゴシック phi" (font-family-list))
          (member "さわらびゴシック phi" (font-family-list)))
-    (set-face-attribute 'default nil :family "Source Code Pro" :height 90) ; base
-    (my-set-fontset-font "Unifont" 'unicode) ; unicode (fallback 4)
-    ;; (my-set-fontset-font "Arial Unicode MS" 'unicode nil 'prepend) ; unicode (fallback 3)
-    (my-set-fontset-font "Symbola" 'unicode nil 'prepend) ; unicode (fallback 2)
-    (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend) ; unicode (fallback)
-    (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend)))) ; unicode (japanese)
+    ;; base (0)
+    (set-face-attribute 'default nil :family "Source Code Pro" :height 90)
+    ;; unicode fallback (-1)
+    (my-set-fontset-font "Unifont" 'unicode)
+    ;; symbols override (+1)
+    (my-set-fontset-font "Symbola" 'unicode nil 'prepend)
+    ;; other letters override (+2)
+    (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend)
+    ;; japanese letters override (+3)
+    (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend))))
 
 ;; do not treat symbols specially when determining font
 (setq use-default-font-for-symbols nil)
