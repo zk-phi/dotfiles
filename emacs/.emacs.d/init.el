@@ -3356,8 +3356,8 @@ unary operators which can also be binary."
          (mode          (if (< brightness-bg brightness-fg) 'dark 'light))
          (bright-bg     (my-blend-colors bg-base fg-base (if (eq mode 'dark) 15 6)))
          (brighter-bg   (my-blend-colors bg-base fg-base (if (eq mode 'dark) 30 12)))
-         (darker-fg     (my-blend-colors fg-base bg-base (if (eq mode 'dark) 74 84)))
-         (dark-fg       (my-blend-colors fg-base bg-base (if (eq mode 'dark) 37 42)))
+         (darker-fg     (my-blend-colors fg-base bg-base (if (eq mode 'dark) 60 60)))
+         (dark-fg       (my-blend-colors fg-base bg-base (if (eq mode 'dark) 30 30)))
          (bright-fg     (my-blend-colors fg-base bg-base (if (eq mode 'dark) -30 -12))))
     `(progn
        (custom-theme-set-variables 'elemental-theme '(frame-background-mode ',mode))
