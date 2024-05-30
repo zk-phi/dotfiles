@@ -390,6 +390,7 @@ cons of two integers which defines a range of the codepoints."
 (!when (eq system-type 'darwin)
   ;; base (0)
   (!cond
+   ;; https://github.com/zk-phi/nasucode
    ((member "nasucode" (font-family-list))
     (set-face-attribute 'default nil :family "nasucode" :height 140))
    ;; https://github.com/zk-phi/nasia
