@@ -387,6 +387,8 @@ cons of two integers which defines a range of the codepoints."
 (!when (eq system-type 'darwin)
   ;; base (0)
   (!cond
+   ((member "nasucode" (font-family-list))
+    (set-face-attribute 'default nil :family "nasucode" :height 140))
    ;; https://github.com/zk-phi/nasia
    ((member "nasia" (font-family-list))
     (set-face-attribute 'default nil :family "nasia" :height 140))
@@ -396,17 +398,19 @@ cons of two integers which defines a range of the codepoints."
    ;; Built-in
    ((member "Monaco" (font-family-list))
     (set-face-attribute 'default nil :family "Monaco" :height 130)))
-  ;; unicode fallback (-1)
-  (!cond
-   ((member "nasia" (font-family-list))
-    (my-set-fontset-font "nasia" 'unicode nil))
-   ((member "code8903" (font-family-list))
-    (my-set-fontset-font "code8903" 'unicode nil))
-   ((member "SawarabiGothic phi" (font-family-list))
-    (my-set-fontset-font "SawarabiGothic phi" 'unicode nil)))
-  ;; emoji override (+1)
+  ;; emoji override (+2)
   (!when (member "Apple Color Emoji" (font-family-list))
-    (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95 'prepend)))
+    (my-set-fontset-font "Apple Color Emoji" 'unicode 0.95))
+  ;; unicode fallback (+1)
+  (!cond
+   ((member "nasucode" (font-family-list))
+    (my-set-fontset-font "nasucode" 'unicode nil 'append))
+   ((member "nasia" (font-family-list))
+    (my-set-fontset-font "nasia" 'unicode nil 'append))
+   ((member "code8903" (font-family-list))
+    (my-set-fontset-font "code8903" 'unicode nil 'append))
+   ((member "SawarabiGothic phi" (font-family-list))
+    (my-set-fontset-font "SawarabiGothic phi" 'unicode nil 'append))))
 
 ;; font settings (windows)
 (!when (eq system-type 'windows-nt)
@@ -418,13 +422,13 @@ cons of two integers which defines a range of the codepoints."
          (member "さわらびゴシック phi" (font-family-list)))
     ;; base (0)
     (set-face-attribute 'default nil :family "Source Code Pro" :height 90)
-    ;; unicode fallback (-1)
+    ;; unicode override (+1)
     (my-set-fontset-font "Unifont" 'unicode)
-    ;; symbols override (+1)
+    ;; symbols override (+2)
     (my-set-fontset-font "Symbola" 'unicode nil 'prepend)
-    ;; other letters override (+2)
+    ;; other letters override (+3)
     (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend)
-    ;; japanese letters override (+3)
+    ;; japanese letters override (+4)
     (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend))))
 
 ;; do not treat symbols specially when determining font

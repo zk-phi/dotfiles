@@ -43,6 +43,6 @@ zk-phi's Dotfiles
 
 - Build and install required fonts
 
-  → https://github.com/zk-phi/nasia
+  → https://github.com/zk-phi/nasucode
 
 (See also https://scrapbox.io/zkphi/Mac_PC_%E7%A7%BB%E8%A1%8C)
