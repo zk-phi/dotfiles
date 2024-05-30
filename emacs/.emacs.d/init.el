@@ -3082,9 +3082,9 @@ unary operators which can also be binary."
               (minibuffer-selected-window)
             win))))
 (setup-hook 'pre-redisplay-functions 'my-track-active-window)
-(defun my-window-active-p (&optional wnd)
+(defsubst my-window-active-p (&optional wnd)
   (eq (or wnd (selected-window)) my-active-window))
-(defun my-dispatch-face (active-face inactive-face)
+(defsubst my-dispatch-face (active-face inactive-face)
   (if (my-window-active-p) active-face inactive-face))
 
 (defsubst my-mode-line--macro ()
