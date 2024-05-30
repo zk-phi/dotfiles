@@ -3443,11 +3443,11 @@ unary operators which can also be binary."
   ;;   "#2A1F1B" "#887f73" "#adb78d" "#d4576f" "#768d82" "#849f98"
   ;;   "#bb4e62" "#d99481" "#adb78d" "#849f98")
 
-  ;; "planet" palette
-  ;; reference | https://github.com/cmack/emacs-planet-theme/
-  (my-elemental-theme-apply-colors
-    "#192129" "#79828c" "#729fcf" "#c4dde8" "#e9b96e" "#649d8a"
-    "#fe5450" "#e9b96e" "#649d8a" "#729fcf")
+  ;; ;; "planet" palette
+  ;; ;; reference | https://github.com/cmack/emacs-planet-theme/
+  ;; (my-elemental-theme-apply-colors
+  ;;   "#192129" "#79828c" "#729fcf" "#c4dde8" "#e9b96e" "#649d8a"
+  ;;   "#fe5450" "#e9b96e" "#649d8a" "#729fcf")
 
   ;; ;; "kagamine len" inspired palette (bg modified)
   ;; ;; reference | http://vocaloidcolorpalette.tumblr.com/
@@ -3492,6 +3492,11 @@ unary operators which can also be binary."
   ;; (my-elemental-theme-apply-colors
   ;;   "#202020" "#808080" "#c0c0c0" "#a0a0a0" "#c0c0c0" "#c0c0c0"
   ;;   "#ed9494" "#edd694" "#94edaa" "#94eded")
+
+  ;; white-vivid ("monochrome" inspired palette 3')
+  (my-elemental-theme-apply-colors
+    "#202020" "#808080" "#d0d0d0" "#b0b0b0" "#d0d0d0" "#d0d0d0"
+    "#ff8683" "#e0b776" "#649d8a" "#729fcf")
 
   ;; ;; less colorful "planet" theme based on "monochrome"
   ;; (my-elemental-theme-apply-colors
