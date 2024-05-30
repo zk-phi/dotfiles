@@ -181,6 +181,9 @@
   (when (apply 'derived-mode-p my-listy-modes)
     (run-hooks 'my-listy-mode-common-hook)))
 
+(defvar my-enable-nerd-font nil)
+(defconst my-mode-name-symbols (make-hash-table :test 'eq))
+
 (defun my-open-file (file)
   (!cond ((eq system-type 'windows-nt)
           (w32-shell-execute "open" file))
@@ -430,6 +433,10 @@ cons of two integers which defines a range of the codepoints."
     (my-set-fontset-font "VLゴシック phi" 'unicode nil 'prepend)
     ;; japanese letters override (+4)
     (my-set-fontset-font "さわらびゴシック phi" '(han kana) nil 'prepend))))
+
+;; mark all nerd-font symbols as double-width
+(set-char-table-range char-width-table '(#xe000 . #xf8ff) 2)
+(set-char-table-range char-width-table '(#xf0000 . #x10ffff) 2)
 
 ;; do not treat symbols specially when determining font
 (setq use-default-font-for-symbols nil)
@@ -1409,6 +1416,7 @@ unary operators which can also be binary."
 ;;         + Emacs Lisp [setup]
 
 ;; lisp-mode.el (loaded before init.el)
+(puthash 'emacs-lisp-mode " Elisp" my-mode-name-symbols)
 (setup-hook 'emacs-lisp-mode-hook
   :oneshot
   (font-lock-add-keywords
@@ -2013,6 +2021,8 @@ unary operators which can also be binary."
 (setup-lazy '(cperl-mode) "cperl-mode"
   :prepare (push '("\\.\\(?:t\\|p[lm]\\|psgi\\)$" . cperl-mode) auto-mode-alist)
 
+  (puthash 'cperl-mode " Perl" my-mode-name-symbols)
+
   ;; setup indent style and electricity
   (setq cperl-indent-level               4
         cperl-continued-statement-offset 4
@@ -2169,6 +2179,8 @@ unary operators which can also be binary."
 (setup-lazy '(prolog-mode) "prolog"
   :prepare (push '("\\.\\(?:pro\\|swi\\)$" . prolog-mode) auto-mode-alist)
 
+  (puthash 'prolog-mode " Prolog" my-mode-name-symbols)
+
   (setup-keybinds prolog-mode-map
     "C-c C-l" 'prolog-consult-file
     "C-c C-e" 'my-prolog-consult-dwim
@@ -2246,6 +2258,7 @@ unary operators which can also be binary."
 
 (setup-lazy '(go-mode) "go-mode"
   :prepare (push '("\\.go$" . go-mode) auto-mode-alist)
+  (puthash 'go-mode "󰟓 Go" my-mode-name-symbols)
   (setup-after "smart-compile"
     (push `(go-mode . "go run %f") smart-compile-alist)))
 
@@ -2253,12 +2266,14 @@ unary operators which can also be binary."
 
 (setup-lazy '(lua-mode) "lua-mode"
   :prepare (push '("\\.lua$" . lua-mode) auto-mode-alist)
+  (puthash 'lua-mode " Lua" my-mode-name-symbols)
   (setq lua-indent-level 2))
 
 ;;         + Nim
 
 (setup-lazy '(nim-mode) "nim-mode"
   :prepare (push '("\\.nim$" . nim-mode) auto-mode-alist)
+  (puthash 'nim-mode " Nim" my-mode-name-symbols)
   (setup-after "phi-autopair"
     (push (cons 'nim-mode nim-indent-offset) phi-autopair-indent-offset-alist))
   (setup-after "smart-compile"
@@ -2267,7 +2282,8 @@ unary operators which can also be binary."
 ;;         + shell
 
 (setup-lazy '(shell-script-mode) "sh-script"
-  :prepare (push '("\\.z?sh$" . shell-script-mode) auto-mode-alist))
+  :prepare (push '("\\.z?sh$" . shell-script-mode) auto-mode-alist)
+  (puthash 'sh-mode " Shell" my-mode-name-symbols))
 
 ;;     + web
 ;;       + web-mode
@@ -2281,6 +2297,8 @@ unary operators which can also be binary."
              (push '("\\.njk$" . web-mode) auto-mode-alist)
              (push '("\\.vue$" . web-mode) auto-mode-alist)
              (push '("\\.json$" . web-mode) auto-mode-alist))
+
+  (puthash 'web-mode "󰖟 Web" my-mode-name-symbols)
 
   (defun my-web-mode-electric-semi ()
     (interactive)
@@ -2438,7 +2456,8 @@ unary operators which can also be binary."
 ;;       + Dockerfile
 
 (setup-lazy '(dockerfile-mode) "dockerfile-mode"
-  :prepare (push '("Dockerfile$" . dockerfile-mode) auto-mode-alist))
+  :prepare (push '("Dockerfile$" . dockerfile-mode) auto-mode-alist)
+  (puthash 'dockerfile-mode " Dockerfile" my-mode-name-symbols))
 
 ;;       + generic-mode
 
@@ -2549,6 +2568,8 @@ unary operators which can also be binary."
 
 (setup-after "org"
 
+  (puthash 'org-mode " Org" my-mode-name-symbols)
+
   (setup-hook 'org-mode-hook 'iimage-mode)
   (setup-hook 'org-mode-hook 'turn-on-auto-fill)
 
@@ -2588,10 +2609,9 @@ unary operators which can also be binary."
 
 ;;       + latex-mode [magic-latex-buffer]
 
-(setup-expecting "tex-mode"
-  (push '("\\.tex$" . latex-mode) auto-mode-alist))
-
-(setup-after "tex-mode"
+(setup-lazy '(latex-mode) "tex-mode"
+  :prepare (push '("\\.tex$" . latex-mode) auto-mode-alist)
+  (puthash 'latex-mode " TeX" my-mode-name-symbols)
   (push "Verbatim" tex-verbatim-environments)
   (push "BVerbatim" tex-verbatim-environments)
   (push "lstlisting" tex-verbatim-environments)
@@ -2611,6 +2631,9 @@ unary operators which can also be binary."
 
 (setup-lazy '(gfm-mode) "markdown-mode"
   :prepare (push '("\\.m\\(ark\\)?d\\(x\\|own\\)?$" . gfm-mode) auto-mode-alist)
+  ;; markdown-mode overwrites auto-mode-alist, so we restore here
+  (push '("\\.m\\(ark\\)?d\\(x\\|own\\)?$" . gfm-mode) auto-mode-alist)
+  (puthash 'gfm-mode " Markdown" my-mode-name-symbols)
   (setup-keybinds gfm-mode-map
     '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
     "TAB" 'markdown-cycle))
@@ -3127,7 +3150,7 @@ unary operators which can also be binary."
 (defsubst my-mode-line--special-mode-name ()
   (propertize
    (cond ((bound-and-true-p multiple-cursors-mode)
-          (format "MCsr:%d " (mc/num-cursors)))
+          (format (if my-enable-nerd-font "󰆿x%d " "MCsr:%d ") (mc/num-cursors)))
          ((bound-and-true-p artist-mode)
           "Artist ")
          ((bound-and-true-p orgtbl-mode)
@@ -3140,7 +3163,10 @@ unary operators which can also be binary."
 (defvar-local my-mode-line--mode-name-cache nil)
 (defsubst my-mode-line--mode-name ()
   (unless (eq (car my-mode-line--mode-name-cache) major-mode)
-    (setq my-mode-line--mode-name-cache (cons major-mode (format-mode-line mode-name))))
+    (setq my-mode-line--mode-name-cache
+          (cons major-mode
+                (or (and my-enable-nerd-font (gethash major-mode my-mode-name-symbols))
+                    (format-mode-line mode-name)))))
   (propertize
    (cdr my-mode-line--mode-name-cache) 'face
    (my-dispatch-face 'mode-line-annotation-face 'mode-line-annotation-inactive-face)))
@@ -3182,15 +3208,15 @@ unary operators which can also be binary."
           ;; use format-mode-line to get "correct" string width
           (format-mode-line
            (list (my-mode-line--special-mode-name)
-                 (my-mode-line--mode-name)
                  (my-mode-line--process)
                  (my-mode-line--encoding)
+                 "  " (my-mode-line--mode-name)
                  "  " (my-mode-line--linum)
                  ":" (my-mode-line--colnum))))
          (lmargin
           (propertize " " 'display '((space :align-to (+ 1 left-fringe)))))
          (rmargin
-          (propertize " " 'display `((space :align-to (- right-fringe ,(length rstr)))))))
+          (propertize " " 'display `((space :align-to (- right-fringe ,(string-width rstr)))))))
     (concat lmargin lstr rmargin rstr)))
 
 (setq-default mode-line-format '((:eval (my-generate-mode-line-format))))
@@ -3492,10 +3518,10 @@ unary operators which can also be binary."
    :inherit 'elemental-dark-fg-face)
   (set-face-attribute
    'mode-line-annotation-face nil
-   :inherit '(elemental-accent-fg-2-face italic))
+   :inherit '(elemental-accent-fg-2-face))
   (set-face-attribute
    'mode-line-annotation-inactive-face nil
-   :inherit '(italic))
+   :inherit '())
   (set-face-attribute
    'mode-line-highlight-face nil
    :inherit '(elemental-accent-fg-3-face bold))
