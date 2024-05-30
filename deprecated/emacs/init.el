@@ -2095,3 +2095,69 @@ displayed, use substring of the buffer."
       (compile "make --makefile=/usr/share/arduino/Arduino.mk upload"))
     (setup-after "smart-compile"
       (push '(arduino-mode . (my-arduino-compile-and-upload)) smart-compile-alist))))
+
+;; + EWW
+
+(setup-lazy '(eww) "eww"
+
+  (setq eww-search-prefix      "http://search.yahoo.co.jp/search?p="
+        eww-download-directory my-eww-download-directory
+        eww-header-line-format nil)
+
+  ;; disable colors by default
+  ;; Reference | http://rubikitch.com/2014/11/19/eww-nocolor/
+  (defvar my-eww-enable-colors nil)
+  (define-advice shr-colorize-region (:before-while (&rest _))
+    my-eww-enable-colors)
+  (define-advice eww-colorize-region (:before-while (&rest _))
+    my-eww-enable-colors)
+  (defun my-eww-enable-colors ()
+    "Enable colors in this eww buffer."
+    (interactive)
+    (setq-local my-eww-enable-colors t)
+    (eww-reload))
+
+  ;; disable sublimity-attractive-centering
+  (setup-after "sublimity-attractive"
+    (setup-hook 'eww-mode-hook
+      (setq-local sublimity-attractive-centering-width nil)
+      (set-window-margins (selected-window) nil nil)))
+
+  ;; disable key-chord
+  (setup-after "key-chord"
+    (setup-hook 'eww-mode-hook
+      (setq-local key-chord-mode        nil
+                  input-method-function nil)))
+
+  ;; disable hl-line
+  (setup-after "hl-line"
+    (setup-hook 'eww-mode-hook
+      (setq-local global-hl-line-mode nil)))
+
+  (setup-keybinds eww-mode-map
+    ;; fundamental
+    "q"   'quit-window
+    "r"   'eww-reload
+    ;; navigation
+    "p"   'shr-previous-link
+    "n"   'shr-next-link
+    "h"   'eww-back-url
+    "j"   'my-scroll-up-by-row
+    "k"   'my-scroll-down-by-row
+    "C-f" 'scroll-up-command
+    "C-b" 'scroll-down-command
+    " "   'scroll-up-command
+    "DEL" 'scroll-down-command
+    "l"   'eww-forward-url
+    "f"   '("ace-link" ace-link-eww)
+    "g"   'beginning-of-buffer
+    "G"   'end-of-buffer
+    ;; others
+    "d"   'eww-download
+    "w"   'eww-copy-page-url
+    "x"   'eww-browse-with-external-browser
+    "v"   'eww-view-source
+    "C"   'url-cookie-list
+    "H"   'eww-list-histories
+    "R"   'eww-readable)
+  )
