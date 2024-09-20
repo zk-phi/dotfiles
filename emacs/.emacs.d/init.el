@@ -2293,7 +2293,7 @@ unary operators which can also be binary."
 (setup-lazy '(web-mode) "web-mode"
   :prepare (progn
              (push '("\\.html?[^/]*$" . web-mode) auto-mode-alist)
-             (push '("\\.[tj]sx?$" . web-mode) auto-mode-alist)
+             (push '("\\.m?[tj]sx?$" . web-mode) auto-mode-alist)
              (push '("\\.s?css$" . web-mode) auto-mode-alist)
              (push '("\\.ejs$" . web-mode) auto-mode-alist)
              (push '("\\.njk$" . web-mode) auto-mode-alist)
