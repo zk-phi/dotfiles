@@ -379,7 +379,7 @@ in charset-script-alist), charsets (listed in charset-list), or a
 cons of two integers which defines a range of the codepoints."
   (let ((font-spec (font-spec :family family)))
     (when rescale-rate
-      (push (cons font-spec rescale-rate) face-font-rescale-alist))
+      (push (cons family rescale-rate) face-font-rescale-alist))
     (unless (and (consp targets) (listp (cdr targets)))
       (setq targets (list targets)))
     (dolist (target targets)
@@ -392,6 +392,7 @@ cons of two integers which defines a range of the codepoints."
   (!cond
    ;; https://github.com/zk-phi/nasucode
    ((member "nasucode" (font-family-list))
+    (setq my-enable-nerd-font t)
     (set-face-attribute 'default nil :family "nasucode" :height 140))
    ;; https://github.com/zk-phi/nasia
    ((member "nasia" (font-family-list))
