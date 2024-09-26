@@ -8,7 +8,7 @@ zk-phi's Dotfiles
 
   : xcode-select --install
 
-- Install Homebrew (see the official web for the install command) and add to =PATH=
+  You may skip this step, but you'll be prompted to install later, when running =git= command.
 
 - Clone this repo and submodules
 
@@ -16,33 +16,29 @@ zk-phi's Dotfiles
   : cd dotfiles
   : git submodule update --init
 
-- Create symlinks
-
-  : sh link.sh
+- Install Homebrew (see the official web for the install command) and add to =PATH=
 
 - Install tools via =Brewfile=.
 
   : cd brew
   : brew bundle
 
-  Some packages may fail to install on ARM (Mac M1) machines.
+- Build and install font (or copy from another machine)
 
-  Try installing the package with =arch -arm64= that case.
+  Clone https://github.com/zk-phi/nasucode and follow the instructions to build.
 
-  : arch -arm64 brew install <package-name>
+- Create symlinks
 
-- Change the login shell (if it's not =zsh= yet)
-
-  : sudo vim /etc/shells # Add /usr/local/bin/zsh
-  : chsh -s /usr/local/bin/zsh
+  : sudo sh link.sh
 
 - Install compilers/interpreters with =asdf=
 
   : cd asdf
   : sh setup.sh
 
-- Build and install required fonts
+- Change the login shell (if it's not =zsh= yet)
 
-  → https://github.com/zk-phi/nasucode
+  : sudo vim /etc/shells # Add /usr/local/bin/zsh
+  : chsh -s /usr/local/bin/zsh
 
 (See also https://scrapbox.io/zkphi/Mac_PC_%E7%A7%BB%E8%A1%8C)
