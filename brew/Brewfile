@@ -21,7 +21,6 @@ brew "wget"
 brew "yt-dlp"
 brew "zsh"
 
-tap "homebrew/cask"
 cask "alt-tab"
 cask "aquaskk"
 cask "audacity"
