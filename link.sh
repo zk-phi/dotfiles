@@ -21,6 +21,6 @@ ln -s -i $(PWD)/asdf/.tool-versions ~/.tool-versions
 
 ln -s -i $(PWD)/hammerspoon/.hammerspoon ~/.hammerspoon
 
-mkdir /Library/Application\ Support/AquaSKK/
-ln -s -i $(PWD)/aquaskk/kana-rule.conf /Library/Application\ Support/AquaSKK/kana-rule.conf
-ln -s -i $(PWD)/aquaskk/keymap.conf /Library/Application\ Support/AquaSKK/keymap.conf
+mkdir ~/Library/Application\ Support/AquaSKK/
+ln -s -i $(PWD)/aquaskk/kana-rule.conf ~/Library/Application\ Support/AquaSKK/kana-rule.conf
+ln -s -i $(PWD)/aquaskk/keymap.conf ~/Library/Application\ Support/AquaSKK/keymap.conf
