@@ -2,8 +2,6 @@ ln -s -i $(PWD)/zsh/.zshenv ~/.zshenv
 ln -s -i $(PWD)/zsh/.zshrc ~/.zshrc
 ln -s -i $(PWD)/zsh/.zsh.d ~/.zsh.d
 
-ln -s -i $(PWD)/hyper/.hyper.js ~/.hyper.js
-
 ln -s -i $(PWD)/git/.gitconfig ~/.gitconfig
 ln -s -i $(PWD)/git/.gitignore_global ~/.gitignore_global
 ln -s -i $(PWD)/git/.git_template ~/.git_template
