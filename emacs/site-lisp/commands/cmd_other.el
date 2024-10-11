@@ -43,7 +43,7 @@
   (interactive (list (read-directory-name "DIR: ")))
   (let ((errors nil))
     (dolist (file (directory-files-recursively dir "\\.el$"))
-      (unless (byte-compile-file file t)
+      (unless (ignore-errors (byte-compile-file file t))
         (push file errors)))
     (message "Following files have failed to compile: %s"
              (mapcar (lambda (x) (file-name-nondirectory x)) errors))))
