@@ -29,7 +29,10 @@ zk-phi's Dotfiles
 
 - Create symlinks
 
-  : sudo sh link.sh
+  : sh link.sh
+  : sudo sh link_sudo.sh
+
+  Make shure to run =link.sh= without =sudo=, so that the created directories belong to the default user.
 
 - Install compilers/interpreters with =asdf=
 

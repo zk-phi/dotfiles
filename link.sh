@@ -13,9 +13,6 @@ ln -s -i $(PWD)/emacs/.emacs.d/init.el ~/.emacs.d/init.el
 ln -s -i $(PWD)/emacs/.emacs.d/early-init.el ~/.emacs.d/early-init.el
 ln -s -i $(PWD)/emacs/.emacs.d/snippets ~/.emacs.d/snippets
 
-mkdir /Library/Application\ Support/Emacs
-ln -s -i $(PWD)/emacs/site-lisp /Library/Application\ Support/Emacs/site-lisp
-
 ln -s -i $(PWD)/asdf/.asdfrc ~/.asdfrc
 ln -s -i $(PWD)/asdf/.tool-versions ~/.tool-versions
 
