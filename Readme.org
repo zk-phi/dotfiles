@@ -4,19 +4,17 @@ zk-phi's Dotfiles
 
 - Open Terminal.app
 
-- Install Xcode CLI tool
-
-  : xcode-select --install
-
-  You may skip this step, but you'll be prompted to install later, when running =git= command.
-
 - Clone this repo and submodules
 
   : git clone https://github.com/zk-phi/dotfiles.git
   : cd dotfiles
   : git submodule update --init
 
-- Install Homebrew (see the official web for the install command) and add to =PATH=
+  You may prompted to accept "Xcode CLI tool" to be installed on your system.
+
+- Install Homebrew (see the official web for the install command)
+
+  Note that you may need to add =brew= to =PATH= manually, by following the instructions.
 
 - Install tools via =Brewfile=.
 
@@ -39,7 +37,9 @@ zk-phi's Dotfiles
   : cd asdf
   : sh setup.sh
 
-- Change the login shell (if it's not =zsh= yet)
+- (Optional) Change the login shell, iff it's not =zsh= yet
+
+  You probably can skip this step, since recent Mac systems use =zsh= by default.
 
   : sudo vim /etc/shells # Add /usr/local/bin/zsh
   : chsh -s /usr/local/bin/zsh
