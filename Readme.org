@@ -21,6 +21,16 @@ zk-phi's Dotfiles
   : cd brew
   : brew bundle
 
+  Some tools may fail to install on Apple Silicon machines. That case, enable Rosetta2 (x86
+  emulation layer) to install.
+
+  : arch -x86_64 brew install <tool-name-to-install>
+
+  If asdf says "Bad CPU type in executable", then Rosetta2 may not be installed on your machine. Use
+  =softwareupdate= command to install manually that case.
+
+  : softwareupdate --install-rosetta
+
 - Build and install font (or copy from another machine)
 
   Clone https://github.com/zk-phi/nasucode and follow the instructions to build.
