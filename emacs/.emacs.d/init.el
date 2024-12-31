@@ -173,7 +173,8 @@
     (run-hooks 'my-listy-mode-common-hook)))
 
 (defvar my-enable-nerd-font nil)
-(defconst my-mode-name-symbols (make-hash-table :test 'eq))
+(defconst my-mode-name-remap-table (make-hash-table :test 'eq))
+(defconst my-mode-symbol-table (make-hash-table :test 'eq))
 
 (defun my-open-file (file)
   (!cond ((eq system-type 'windows-nt)
@@ -1409,7 +1410,8 @@ unary operators which can also be binary."
 ;;         + Emacs Lisp [setup]
 
 ;; lisp-mode.el (loaded before init.el)
-(puthash 'emacs-lisp-mode " Elisp" my-mode-name-symbols)
+(puthash 'emacs-lisp-mode "elisp" my-mode-name-remap-table)
+(puthash 'emacs-lisp-mode "" my-mode-symbol-table)
 (setup-hook 'emacs-lisp-mode-hook
   :oneshot
   (font-lock-add-keywords
@@ -2014,7 +2016,7 @@ unary operators which can also be binary."
 (setup-lazy '(cperl-mode) "cperl-mode"
   :prepare (push '("\\.\\(?:t\\|p[lm]\\|psgi\\)$" . cperl-mode) auto-mode-alist)
 
-  (puthash 'cperl-mode " Perl" my-mode-name-symbols)
+  (puthash 'cperl-mode "" my-mode-symbol-table)
 
   ;; setup indent style and electricity
   (setq cperl-indent-level               4
@@ -2172,7 +2174,7 @@ unary operators which can also be binary."
 (setup-lazy '(prolog-mode) "prolog"
   :prepare (push '("\\.\\(?:pro\\|swi\\)$" . prolog-mode) auto-mode-alist)
 
-  (puthash 'prolog-mode " Prolog" my-mode-name-symbols)
+  (puthash 'prolog-mode "" my-mode-symbol-table)
 
   (setup-keybinds prolog-mode-map
     "C-c C-l" 'prolog-consult-file
@@ -2251,7 +2253,7 @@ unary operators which can also be binary."
 
 (setup-lazy '(go-mode) "go-mode"
   :prepare (push '("\\.go$" . go-mode) auto-mode-alist)
-  (puthash 'go-mode "󰟓 Go" my-mode-name-symbols)
+  (puthash 'go-mode "󰟓" my-mode-symbol-table)
   (setup-after "smart-compile"
     (push `(go-mode . "go run %f") smart-compile-alist)))
 
@@ -2259,14 +2261,14 @@ unary operators which can also be binary."
 
 (setup-lazy '(lua-mode) "lua-mode"
   :prepare (push '("\\.lua$" . lua-mode) auto-mode-alist)
-  (puthash 'lua-mode " Lua" my-mode-name-symbols)
+  (puthash 'lua-mode "" my-mode-symbol-table)
   (setq lua-indent-level 2))
 
 ;;         + Nim
 
 (setup-lazy '(nim-mode) "nim-mode"
   :prepare (push '("\\.nim$" . nim-mode) auto-mode-alist)
-  (puthash 'nim-mode " Nim" my-mode-name-symbols)
+  (puthash 'nim-mode "" my-mode-symbol-table)
   (setup-after "phi-autopair"
     (push (cons 'nim-mode nim-indent-offset) phi-autopair-indent-offset-alist))
   (setup-after "smart-compile"
@@ -2276,7 +2278,7 @@ unary operators which can also be binary."
 
 (setup-lazy '(shell-script-mode) "sh-script"
   :prepare (push '("\\.z?sh$" . shell-script-mode) auto-mode-alist)
-  (puthash 'sh-mode " Shell" my-mode-name-symbols))
+  (puthash 'sh-mode "" my-mode-symbol-table))
 
 ;;     + web
 ;;       + web-mode
@@ -2291,7 +2293,7 @@ unary operators which can also be binary."
              (push '("\\.vue$" . web-mode) auto-mode-alist)
              (push '("\\.json$" . web-mode) auto-mode-alist))
 
-  (puthash 'web-mode "󰖟 Web" my-mode-name-symbols)
+  (puthash 'web-mode "󰖟" my-mode-symbol-table)
 
   (defun my-web-mode-electric-semi ()
     (interactive)
@@ -2450,7 +2452,7 @@ unary operators which can also be binary."
 
 (setup-lazy '(dockerfile-mode) "dockerfile-mode"
   :prepare (push '("Dockerfile$" . dockerfile-mode) auto-mode-alist)
-  (puthash 'dockerfile-mode " Dockerfile" my-mode-name-symbols))
+  (puthash 'dockerfile-mode "" my-mode-symbol-table))
 
 ;;       + generic-mode
 
@@ -2561,7 +2563,7 @@ unary operators which can also be binary."
 
 (setup-after "org"
 
-  (puthash 'org-mode " Org" my-mode-name-symbols)
+  (puthash 'org-mode "" my-mode-symbol-table)
 
   (setup-hook 'org-mode-hook 'iimage-mode)
   (setup-hook 'org-mode-hook 'turn-on-auto-fill)
@@ -2604,7 +2606,7 @@ unary operators which can also be binary."
 
 (setup-lazy '(latex-mode) "tex-mode"
   :prepare (push '("\\.tex$" . latex-mode) auto-mode-alist)
-  (puthash 'latex-mode " TeX" my-mode-name-symbols)
+  (puthash 'latex-mode "" my-mode-symbol-table)
   (push "Verbatim" tex-verbatim-environments)
   (push "BVerbatim" tex-verbatim-environments)
   (push "lstlisting" tex-verbatim-environments)
@@ -2626,7 +2628,7 @@ unary operators which can also be binary."
   :prepare (push '("\\.m\\(ark\\)?d\\(x\\|own\\)?$" . gfm-mode) auto-mode-alist)
   ;; markdown-mode overwrites auto-mode-alist, so we restore here
   (push '("\\.m\\(ark\\)?d\\(x\\|own\\)?$" . gfm-mode) auto-mode-alist)
-  (puthash 'gfm-mode " Markdown" my-mode-name-symbols)
+  (puthash 'gfm-mode "" my-mode-symbol-table)
   (setup-keybinds gfm-mode-map
     '("M-n" "M-p" "M-{" "M-}" "C-M-i") nil
     "TAB" 'markdown-cycle))
@@ -2868,6 +2870,8 @@ unary operators which can also be binary."
 
   ;; add "[Dired]" prefix to buffer names
   (setup-hook 'dired-mode-hook
+    (puthash 'dired-mode "dired" my-mode-name-remap-table)
+    (puthash 'dired-mode "" my-mode-symbol-table)
     (rename-buffer (concat "[Dired]" (buffer-name)) t)
     ;; use '*' instead of 'D'
     (add-hook 'post-command-hook
@@ -3133,9 +3137,11 @@ unary operators which can also be binary."
           (! (propertize "＊" 'face 'mode-line-modified-inactive-face))))))
 
 (defsubst my-mode-line--filename ()
-  (propertize
-   (concat (and (buffer-narrowed-p) "⇅ ") "%b") 'face
-   (my-dispatch-face 'mode-line-highlight-face 'mode-line-highlight-inactive-face)))
+  (let ((symbol (and my-enable-nerd-font
+                     (concat (or (gethash major-mode my-mode-symbol-table) "？") " "))))
+    (propertize
+     (concat symbol "%b" (and (buffer-narrowed-p) " ⇅")) 'face
+     (my-dispatch-face 'mode-line-highlight-face 'mode-line-highlight-inactive-face))))
 
 (defconst my-mode-line--recur-status
   (! (propertize "%]" 'face 'mode-line-dark-face)))
@@ -3158,11 +3164,15 @@ unary operators which can also be binary."
   (unless (eq (car my-mode-line--mode-name-cache) major-mode)
     (setq my-mode-line--mode-name-cache
           (cons major-mode
-                (or (and my-enable-nerd-font (gethash major-mode my-mode-name-symbols))
-                    (format-mode-line mode-name)))))
+                (concat
+                 "("
+                 (or (gethash major-mode my-mode-name-remap-table)
+                     (downcase (format-mode-line mode-name)))
+                 " mode"
+                 ")"))))
   (propertize
-   (cdr my-mode-line--mode-name-cache) 'face
-   (my-dispatch-face 'mode-line-annotation-face 'mode-line-annotation-inactive-face)))
+   (cdr my-mode-line--mode-name-cache)
+   'face (my-dispatch-face 'mode-line-annotation-face 'mode-line-annotation-inactive-face)))
 
 (defsubst my-mode-line--process ()
   (propertize
@@ -3195,6 +3205,7 @@ unary operators which can also be binary."
           (concat (my-mode-line--macro)
                   (my-mode-line--indicator)
                   " " (my-mode-line--filename)
+                  " " (my-mode-line--mode-name)
                   my-mode-line--recur-status
                   my-mode-line--vertical-spacer))
          (rstr
@@ -3203,7 +3214,6 @@ unary operators which can also be binary."
            (list (my-mode-line--special-mode-name)
                  (my-mode-line--process)
                  (my-mode-line--encoding)
-                 "  " (my-mode-line--mode-name)
                  "  " (my-mode-line--linum)
                  ":" (my-mode-line--colnum))))
          (lmargin
