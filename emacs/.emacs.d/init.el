@@ -452,7 +452,7 @@ cons of two integers which defines a range of the codepoints."
       (and (ignore-errors
              (save-excursion
                (call-process (getenv "SHELL") nil t nil "-l" "-c" "echo $PATH")))
-           (buffer-substring (point-min) (point-at-eol))))))
+           (buffer-substring (point-min) (pos-eol))))))
 (!when my-exec-path
   (setenv "PATH" (! my-exec-path))
   (setq exec-path (! (split-string my-exec-path ":"))))
@@ -722,8 +722,8 @@ cons of two integers which defines a range of the codepoints."
 unary operators which can also be binary."
   `(lambda ()
      (interactive)
-     (if (and (looking-back "[])\"a-zA-Z0-9_] *" (point-at-bol))
-              (not (looking-back "\\(return\\|my\\|our\\) *" (point-at-bol))))
+     (if (and (looking-back "[])\"a-zA-Z0-9_] *" (pos-bol))
+              (not (looking-back "\\(return\\|my\\|our\\) *" (pos-bol))))
          (let ((back (unless (= (char-before) ?\s) " "))
                (forward (unless (= (char-after) ?\s) " ")))
            (insert (concat back ,str forward)))
@@ -1019,7 +1019,7 @@ unary operators which can also be binary."
                    ((and (save-excursion  ; whole word is selected
                            (goto-char (region-beginning)) (looking-at "\\<"))
                          (save-excursion
-                           (goto-char (region-end)) (looking-back "\\>" (point-at-bol))))
+                           (goto-char (region-end)) (looking-back "\\>" (pos-bol))))
                     (setq my-mc/mark-all-last-executed 'words-defun)
                     (mc/mark-all-words-like-this-in-defun)
                     (message "[WORDS defun] -> WORDS -> ALL"))
@@ -1902,7 +1902,7 @@ unary operators which can also be binary."
   (setup-expecting "key-combo"
     (defun my-c-smart-angles ()
       (interactive)
-      (if (looking-back "#include *" (point-at-bol))
+      (if (looking-back "#include *" (pos-bol))
           (progn
             (insert "<>")
             (backward-char 1))
@@ -3032,7 +3032,7 @@ unary operators which can also be binary."
                              num-files (1+ num-files))
                        (while (ignore-errors
                                 (let* ((beg (goto-char (comment-search-forward (point-max))))
-                                       (beg-okay (looking-back "^[\s\t]*" (point-at-bol))))
+                                       (beg-okay (looking-back "^[\s\t]*" (pos-bol))))
                                   (forward-comment 1)
                                   (when (and beg-okay (looking-at "^[\s\t]*\\|[\s\t]*$"))
                                     (setq comments (+ (count-lines beg (point)) comments))))
