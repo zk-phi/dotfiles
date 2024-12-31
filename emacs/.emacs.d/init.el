@@ -2548,16 +2548,18 @@ unary operators which can also be binary."
     (my-auto-kutoten-mode -1)))
 
 ;; text-mode.el (loaded before init.el)
-(setup-hook 'text-mode-hook 'my-auto-kutoten-mode)
-(setup-hook 'text-mode-hook
-  :oneshot
-  (setup-keybinds text-mode-map "C-M-i" nil))
-(setup-expecting "electric-spacing"
-  (setup-hook 'text-mode-hook 'electric-spacing-mode))
-(setup-expecting "jaword"
-  (setup-hook 'text-mode-hook 'jaword-mode))
-(setup-after "mark-hacks"
-  (push 'text-mode mark-hacks-auto-indent-inhibit-modes))
+(setup-after "text-mode"
+  (puthash 'text-mode "" my-mode-symbol-table)
+  (setup-hook 'text-mode-hook 'my-auto-kutoten-mode)
+  (setup-hook 'text-mode-hook
+    :oneshot
+    (setup-keybinds text-mode-map "C-M-i" nil))
+  (setup-expecting "electric-spacing"
+    (setup-hook 'text-mode-hook 'electric-spacing-mode))
+  (setup-expecting "jaword"
+    (setup-hook 'text-mode-hook 'jaword-mode))
+  (setup-after "mark-hacks"
+    (push 'text-mode mark-hacks-auto-indent-inhibit-modes)))
 
 ;;       + org-mode
 
@@ -3068,6 +3070,7 @@ unary operators which can also be binary."
 ;;     + fundamental-mode
 
 (setup-after "simple"
+  (puthash 'fundamental-mode "󰢤" my-mode-symbol-table)
   (setup-after "mark-hacks"
     (push 'fundamental-mode mark-hacks-auto-indent-inhibit-modes)))
 
