@@ -2874,7 +2874,6 @@ unary operators which can also be binary."
   (setup-hook 'dired-mode-hook
     (puthash 'dired-mode "dired" my-mode-name-remap-table)
     (puthash 'dired-mode "" my-mode-symbol-table)
-    (rename-buffer (concat "[Dired]" (buffer-name)) t)
     ;; use '*' instead of 'D'
     (add-hook 'post-command-hook
               (lambda () (dired-change-marks ?D dired-marker-char)) nil t))
