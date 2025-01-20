@@ -14,6 +14,8 @@ zk-phi's Dotfiles
 
 - Install Homebrew (see the official web for the install command)
 
+  BE CAREFUL NOT INSTALL FROM SCAM (FAKE) WEBSITES.
+
   Note that you may need to add =brew= to =PATH= manually, by following the instructions.
 
 - Install tools via =Brewfile=.
