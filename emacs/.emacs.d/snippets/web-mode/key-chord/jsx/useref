@@ -1,0 +1,5 @@
+# name : useref
+# key : kc-ur
+# condition : (and (fboundp 'web-mode-language-at-pos) (string= (web-mode-language-at-pos) "jsx"))
+# --
+const ${1:ref} = useRef($0);

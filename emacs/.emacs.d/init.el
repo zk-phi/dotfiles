@@ -915,6 +915,10 @@ unary operators which can also be binary."
           (move-beginning-of-line 1)
         (goto-char pos))))
 
+  ;; utility functions for snippets
+  (defun my-capitalize-first-letter (str)
+    (concat (upcase (substring str 0 1)) (substring str 1)))
+
   ;; indent current line after expanding snippet
   (setup-hook 'yas-after-exit-snippet-hook
     (funcall indent-line-function))
@@ -2410,6 +2414,10 @@ unary operators which can also be binary."
         (key-chord-define-local "st" (my-yas "kc-st")) ; html/head/stylesheet
         (key-chord-define-local "og" (my-yas "kc-og")) ; html/head/OGP
         (key-chord-define-local "sc" (my-yas "kc-sc")) ; html/head/script
+        (key-chord-define-local "us" (my-yas "kc-us")) ; jsx/usestate
+        (key-chord-define-local "uc" (my-yas "kc-uc")) ; jsx/usecallback
+        (key-chord-define-local "um" (my-yas "kc-um")) ; jsx/usememo
+        (key-chord-define-local "ur" (my-yas "kc-ur")) ; jsx/useref
         )))
 
   (setup "key-combo-web"

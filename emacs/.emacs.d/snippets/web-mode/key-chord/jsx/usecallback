@@ -1,0 +1,7 @@
+# name : usecallback
+# key : kc-uc
+# condition : (and (fboundp 'web-mode-language-at-pos) (string= (web-mode-language-at-pos) "jsx"))
+# --
+const ${1:callback} = useCallback((${2:args}) => {
+  $0
+}, [${3:deps}]);

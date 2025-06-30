@@ -1,0 +1,7 @@
+# name : usememo
+# key : kc-um
+# condition : (and (fboundp 'web-mode-language-at-pos) (string= (web-mode-language-at-pos) "jsx"))
+# --
+const ${1:memoized} = useMemo(() => {
+  $0
+}, [${2:deps}]);

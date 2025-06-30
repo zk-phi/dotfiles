@@ -1,0 +1,5 @@
+# name : usestate
+# key : kc-us
+# condition : (and (fboundp 'web-mode-language-at-pos) (string= (web-mode-language-at-pos) "jsx"))
+# --
+const [${1:state}, set${1:$(my-capitalize-first-letter yas-text)}] = useState($0);
