@@ -47,3 +47,11 @@
         (push file errors)))
     (message "Following files have failed to compile: %s"
              (mapcar (lambda (x) (file-name-nondirectory x)) errors))))
+
+(defun my-async-shell-command (command)
+  (interactive (list (read-string "Async shell command : ")))
+  (let ((buf (generate-new-buffer (format "*%s*" command))))
+    (save-window-excursion
+      (async-shell-command command buf))
+    (with-selected-window (split-window-vertically -15 (frame-root-window))
+      (switch-to-buffer buf))))

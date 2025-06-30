@@ -1197,7 +1197,8 @@ unary operators which can also be binary."
     my-toggle-transparency
     my-url-decode-region
     my-url-encode-region
-    my-byte-compile-dir) "cmd_other")
+    my-byte-compile-dir
+    my-async-shell-command) "cmd_other")
 
 ;;   + Misc: built-ins
 ;;   + | files
@@ -3912,6 +3913,7 @@ unary operators which can also be binary."
   "M-a"       'artist-mode
   "M-n"       'my-toggle-narrowing
   "M-c"       '("smart-compile" smart-compile compile)
+  "C-x C-1"   '("cmd_other" my-async-shell-command)
   "C-x C-t"   'toggle-truncate-lines
   "C-x C-p"   'my-restore-from-backup
   "C-x C-,"   '("download-region" download-region-as-url))
