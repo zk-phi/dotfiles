@@ -22,6 +22,7 @@ brew "yt-dlp"
 brew "zsh"
 
 cask "alt-tab"
+cask "android-studio"
 cask "aquaskk"
 cask "audacity"
 cask "blackhole-16ch"
