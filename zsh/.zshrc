@@ -258,6 +258,7 @@ if whence abbrev-alias > /dev/null; then
 
     # global aliases
     abbrev-alias -g g='| grep '
+    abbrev-alias -g gi='| grep -v ' # grep inverse
     abbrev-alias -g l='| less -R '
     abbrev-alias -g c='| cut -d " " -f '
     abbrev-alias -g s='| tr -s " " '
