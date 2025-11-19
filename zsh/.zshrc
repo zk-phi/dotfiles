@@ -253,6 +253,9 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias ll='ls -lh '
     abbrev-alias lla='ls -lah '
 
+    # others
+    abbrev-alias sq='xattr -d com.apple.quarantine ' # skip quarantine
+
     # global aliases
     abbrev-alias -g g='| grep '
     abbrev-alias -g l='| less -R '
