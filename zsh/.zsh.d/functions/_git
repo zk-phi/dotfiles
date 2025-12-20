@@ -2,9 +2,14 @@
 
 source /usr/local/share/zsh/site-functions/_git
 
-# Overwrite original definition of _git_checkout, defined in
-# "/usr/local/share/zsh/site-functions/git-completion.bash", loaded in
-# "_git", NOT to complete remote branches when checking out.
+# Overwrite original definition of _git_checkout, in order to skip
+# enumerating remote branches when completing branch names.
+#
+# Original definition is found at:
+# - "/usr/local/share/zsh/site-functions/git-completion.bash",
+# which is loaded in:
+# - "/usr/local/share/zsh/site-functions/_git",
+
 _git_checkout () {
     __git_has_doubledash && return
     case "$cur" in

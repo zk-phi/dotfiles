@@ -159,11 +159,13 @@ if which colordiff > /dev/null; then
     diffcmd=colordiff
 else
     diffcmd=diff
+    echo "[.zshrc] colordiff is not installed."
 fi
 if which diff-highlight > /dev/null; then
     postdiff=diff-highlight
 else
     postdiff=cat
+    echo "[.zshrc] diff-highlight is not installed."
 fi
 function diff () { $diffcmd -u $* | $postdiff | less -R }
 
@@ -266,7 +268,7 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias -g fp='--first-parent '
     abbrev-alias -ge b='$(git symbolic-ref --short HEAD) '
 else
-    echo "[.zshrc] abbrev-alias is not unavailable."
+    echo "[.zshrc] abbrev-alias is not installed."
 fi
 
 # ------------------------------
