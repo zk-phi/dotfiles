@@ -255,6 +255,18 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias ll='ls -lh '
     abbrev-alias lla='ls -lah '
 
+    # npm
+    abbrev-alias -e ni='$(_ni_ni)'
+    abbrev-alias -e na='$(_ni_na)'
+    abbrev-alias -e nad='$(_ni_nad)'
+    abbrev-alias -e nr='$(_ni_nr)'
+    abbrev-alias -e nup='$(_ni_nup)'
+    abbrev-alias -e nu='$(_ni_nu)'
+    abbrev-alias -e ne='$(_ni_ne)'
+    abbrev-alias -e nx='$(_ni_nx)'
+    abbrev-alias -e nd='$(_ni_nd)'
+    abbrev-alias -e nci='$(_ni_nci)'
+
     # others
     abbrev-alias sq='xattr -d com.apple.quarantine ' # skip quarantine
 
@@ -269,6 +281,10 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias -ge b='$(git symbolic-ref --short HEAD) '
 else
     echo "[.zshrc] abbrev-alias is not installed."
+fi
+
+if ! which sfw > /dev/null; then
+    echo "[.zshrc] sfw is not installed."
 fi
 
 # ------------------------------

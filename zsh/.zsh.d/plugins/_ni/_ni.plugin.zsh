@@ -1,0 +1,231 @@
+# see also https://github.com/antfu-collective/ni ((C) Anthony Fu / MIT)
+# see also https://github.com/azu/ni.zsh ((C) azu / MIT)
+
+function _ni_getFirewallCmd () {
+    if which sfw > /dev/null; then
+        echo "sfw "
+    else
+        echo ""
+    fi
+}
+
+function _ni_detectManager () {
+    local cwd=${1:-$(pwd)}
+
+    if [ -f "${cwd}/deno.lock" ] || [ -f "${cwd}/deno.json" ]; then
+        echo "deno"
+    elif [ -f "${cwd}/pnpm-lock.yaml" ]; then
+        echo "pnpm"
+    elif [ -f "${cwd}/bun.lock" ] || [ -f "${cwd}/bun.lockb" ]; then
+        # choose bun if both bun.lockb and yarn.lock exist
+        # bun generate yarn.lock and bun.lockb when print=yarn is set
+        # https://bun.sh/docs/install/lockfile
+        echo "bun"
+    elif [ -f "${cwd}/yarn.lock" ]; then
+        echo "yarn"
+    elif [ -f "${cwd}/package-lock.json" ]; then
+        echo "npm"
+    else
+        # search parents recursively
+        local parentDir=$(dirname "$cwd")
+        if [[ "$parentDir" == "/" ]]; then
+            # use npm as default
+            echo "npm"
+            return
+        fi
+        echo $(_ni_detectManager "$parentDir")
+    fi
+}
+
+function _ni_ni () {
+    local manager=$(_ni_detectManager)
+    case $manager in
+        npm)
+            echo "$(_ni_getFirewallCmd)npm install "
+            ;;
+        yarn)
+            echo "$(_ni_getFirewallCmd)yarn install "
+            ;;
+        pnpm)
+            echo "$(_ni_getFirewallCmd)pnpm install "
+            ;;
+        bun)
+            echo "$(_ni_getFirewallCmd)bun install "
+            ;;
+        deno)
+            echo "$(_ni_getFirewallCmd)deno install "
+            ;;
+    esac
+}
+
+function _ni_na () {
+    local manager=$(_ni_detectManager)
+    case $manager in
+        npm)
+            echo "$(_ni_getFirewallCmd)npm install "
+            ;;
+        yarn)
+            echo "$(_ni_getFirewallCmd)yarn add "
+            ;;
+        pnpm)
+            echo "$(_ni_getFirewallCmd)pnpm add "
+            ;;
+        bun)
+            echo "$(_ni_getFirewallCmd)bun add "
+            ;;
+        deno)
+            echo "$(_ni_getFirewallCmd)deno add npm:"
+            ;;
+    esac
+}
+
+function _ni_nad () {
+    local manager=$(_ni_detectManager)
+    case $manager in
+        npm)
+            echo "$(_ni_getFirewallCmd)npm install -D "
+            ;;
+        yarn)
+            echo "$(_ni_getFirewallCmd)yarn add -D "
+            ;;
+        pnpm)
+            echo "$(_ni_getFirewallCmd)pnpm add -D "
+            ;;
+        bun)
+            echo "$(_ni_getFirewallCmd)bun add -d "
+            ;;
+        deno)
+            echo "$(_ni_getFirewallCmd)deno add -D npm:"
+            ;;
+    esac
+}
+
+function _ni_nr () {
+    echo "$(_ni_detectManager) run "
+}
+
+function _ni_nup () {
+    local manager=$(_ni_detectManager)
+    case $manager in
+        npm)
+            echo "$(_ni_getFirewallCmd)npm upgrade "
+            ;;
+        yarn)
+            echo "$(_ni_getFirewallCmd)yarn upgrade "
+            ;;
+        pnpm)
+            echo "$(_ni_getFirewallCmd)pnpm update "
+            ;;
+        bun)
+            echo "$(_ni_getFirewallCmd)bun update "
+            ;;
+        deno)
+            echo "$(_ni_getFirewallCmd)deno outdated --update "
+            ;;
+    esac
+}
+
+function _ni_nu () {
+    local manager=$(_ni_detectManager)
+    case $manager in
+        npm)
+            echo "npm uninstall "
+            ;;
+        yarn)
+            echo "yarn remove "
+            ;;
+        pnpm)
+            echo "pnpm remove "
+            ;;
+        bun)
+            echo "bun remove "
+            ;;
+        deno)
+            echo "deno uninstall npm:"
+            ;;
+    esac
+}
+
+function _ni_ne () {
+    local manager=$(_ni_detectManager)
+    case $manager in
+        npm)
+            echo "npm exec "
+            ;;
+        yarn)
+            echo "yarn exec "
+            ;;
+        pnpm)
+            echo "pnpm exec "
+            ;;
+        bun)
+            echo "bunx "
+            ;;
+        deno)
+            echo "ne "
+            ;;
+    esac
+}
+
+function _ni_nx () {
+    local manager=$(_ni_detectManager)
+    case $manager in
+        npm)
+            echo "npx "
+            ;;
+        yarn)
+            echo "yarn dlx "
+            ;;
+        pnpm)
+            echo "pnpm dlx "
+            ;;
+        bun)
+            echo "bunx "
+            ;;
+        deno)
+            echo "nx "
+            ;;
+    esac
+}
+
+function _ni_nd () {
+    local manager=$(_ni_detectManager)
+    case $manager in
+        npm)
+            echo "npm dedupe "
+            ;;
+        yarn)
+            echo "yarn dedupe "
+            ;;
+        pnpm)
+            echo "pnpm dedupe "
+            ;;
+        bun)
+            echo "nd "
+            ;;
+        deno)
+            echo "nd "
+            ;;
+    esac
+}
+
+function _ni_nci () {
+    local manager=$(_ni_detectManager)
+    case $manager in
+        npm)
+            echo "npm ci "
+            ;;
+        yarn)
+            echo "yarn install --frozen-lockfile "
+            ;;
+        pnpm)
+            echo "pnpm install --frozen-lockfile "
+            ;;
+        bun)
+            echo "bun install --frozen-lockfile "
+            ;;
+        deno)
+            echo "deno cache --reload "
+            ;;
+    esac
+}
