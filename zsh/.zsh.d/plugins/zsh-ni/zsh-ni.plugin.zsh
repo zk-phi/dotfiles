@@ -229,3 +229,18 @@ function _ni_nci () {
             ;;
     esac
 }
+
+if whence abbrev-alias > /dev/null; then
+    abbrev-alias -e ni='$(_ni_ni)'
+    abbrev-alias -e na='$(_ni_na)'
+    abbrev-alias -e nad='$(_ni_nad)'
+    abbrev-alias -e nr='$(_ni_nr)'
+    abbrev-alias -e nup='$(_ni_nup)'
+    abbrev-alias -e nu='$(_ni_nu)'
+    abbrev-alias -e ne='$(_ni_ne)'
+    abbrev-alias -e nx='$(_ni_nx)'
+    abbrev-alias -e nd='$(_ni_nd)'
+    abbrev-alias -e nci='$(_ni_nci)'
+else
+    echo "[zsh-ni] This plugin requires zsh-abbrev-alias plugin to work."
+fi
