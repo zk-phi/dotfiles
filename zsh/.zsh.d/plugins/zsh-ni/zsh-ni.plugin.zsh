@@ -1,7 +1,7 @@
 # see also https://github.com/antfu-collective/ni ((C) Anthony Fu / MIT)
 # see also https://github.com/azu/ni.zsh ((C) azu / MIT)
 
-function _ni_getFirewallCmd () {
+function _ni_get_firewall_cmd () {
     if which sfw > /dev/null; then
         echo "sfw "
     else
@@ -9,7 +9,7 @@ function _ni_getFirewallCmd () {
     fi
 }
 
-function _ni_detectManager () {
+function _ni_detect_package_manager () {
     local cwd=${1:-$(pwd)}
 
     if [ -f "${cwd}/deno.lock" ] || [ -f "${cwd}/deno.json" ]; then
@@ -33,100 +33,100 @@ function _ni_detectManager () {
             echo "npm"
             return
         fi
-        echo $(_ni_detectManager "$parentDir")
+        echo $(_ni_detect_package_manager "$parentDir")
     fi
 }
 
 function _ni_ni () {
-    local manager=$(_ni_detectManager)
+    local manager=$(_ni_detect_package_manager)
     case $manager in
         npm)
-            echo "$(_ni_getFirewallCmd)npm install "
+            echo "$(_ni_get_firewall_cmd)npm install "
             ;;
         yarn)
-            echo "$(_ni_getFirewallCmd)yarn install "
+            echo "$(_ni_get_firewall_cmd)yarn install "
             ;;
         pnpm)
-            echo "$(_ni_getFirewallCmd)pnpm install "
+            echo "$(_ni_get_firewall_cmd)pnpm install "
             ;;
         bun)
-            echo "$(_ni_getFirewallCmd)bun install "
+            echo "$(_ni_get_firewall_cmd)bun install "
             ;;
         deno)
-            echo "$(_ni_getFirewallCmd)deno install "
+            echo "$(_ni_get_firewall_cmd)deno install "
             ;;
     esac
 }
 
 function _ni_na () {
-    local manager=$(_ni_detectManager)
+    local manager=$(_ni_detect_package_manager)
     case $manager in
         npm)
-            echo "$(_ni_getFirewallCmd)npm install "
+            echo "$(_ni_get_firewall_cmd)npm install "
             ;;
         yarn)
-            echo "$(_ni_getFirewallCmd)yarn add "
+            echo "$(_ni_get_firewall_cmd)yarn add "
             ;;
         pnpm)
-            echo "$(_ni_getFirewallCmd)pnpm add "
+            echo "$(_ni_get_firewall_cmd)pnpm add "
             ;;
         bun)
-            echo "$(_ni_getFirewallCmd)bun add "
+            echo "$(_ni_get_firewall_cmd)bun add "
             ;;
         deno)
-            echo "$(_ni_getFirewallCmd)deno add npm:"
+            echo "$(_ni_get_firewall_cmd)deno add npm:"
             ;;
     esac
 }
 
 function _ni_nad () {
-    local manager=$(_ni_detectManager)
+    local manager=$(_ni_detect_package_manager)
     case $manager in
         npm)
-            echo "$(_ni_getFirewallCmd)npm install -D "
+            echo "$(_ni_get_firewall_cmd)npm install -D "
             ;;
         yarn)
-            echo "$(_ni_getFirewallCmd)yarn add -D "
+            echo "$(_ni_get_firewall_cmd)yarn add -D "
             ;;
         pnpm)
-            echo "$(_ni_getFirewallCmd)pnpm add -D "
+            echo "$(_ni_get_firewall_cmd)pnpm add -D "
             ;;
         bun)
-            echo "$(_ni_getFirewallCmd)bun add -d "
+            echo "$(_ni_get_firewall_cmd)bun add -d "
             ;;
         deno)
-            echo "$(_ni_getFirewallCmd)deno add -D npm:"
+            echo "$(_ni_get_firewall_cmd)deno add -D npm:"
             ;;
     esac
 }
 
 function _ni_nr () {
-    echo "$(_ni_detectManager) run "
+    echo "$(_ni_detect_package_manager) run "
 }
 
 function _ni_nup () {
-    local manager=$(_ni_detectManager)
+    local manager=$(_ni_detect_package_manager)
     case $manager in
         npm)
-            echo "$(_ni_getFirewallCmd)npm upgrade "
+            echo "$(_ni_get_firewall_cmd)npm upgrade "
             ;;
         yarn)
-            echo "$(_ni_getFirewallCmd)yarn upgrade "
+            echo "$(_ni_get_firewall_cmd)yarn upgrade "
             ;;
         pnpm)
-            echo "$(_ni_getFirewallCmd)pnpm update "
+            echo "$(_ni_get_firewall_cmd)pnpm update "
             ;;
         bun)
-            echo "$(_ni_getFirewallCmd)bun update "
+            echo "$(_ni_get_firewall_cmd)bun update "
             ;;
         deno)
-            echo "$(_ni_getFirewallCmd)deno outdated --update "
+            echo "$(_ni_get_firewall_cmd)deno outdated --update "
             ;;
     esac
 }
 
 function _ni_nu () {
-    local manager=$(_ni_detectManager)
+    local manager=$(_ni_detect_package_manager)
     case $manager in
         npm)
             echo "npm uninstall "
@@ -147,7 +147,7 @@ function _ni_nu () {
 }
 
 function _ni_ne () {
-    local manager=$(_ni_detectManager)
+    local manager=$(_ni_detect_package_manager)
     case $manager in
         npm)
             echo "npm exec "
@@ -168,7 +168,7 @@ function _ni_ne () {
 }
 
 function _ni_nx () {
-    local manager=$(_ni_detectManager)
+    local manager=$(_ni_detect_package_manager)
     case $manager in
         npm)
             echo "npx "
@@ -189,7 +189,7 @@ function _ni_nx () {
 }
 
 function _ni_nd () {
-    local manager=$(_ni_detectManager)
+    local manager=$(_ni_detect_package_manager)
     case $manager in
         npm)
             echo "npm dedupe "
@@ -210,7 +210,7 @@ function _ni_nd () {
 }
 
 function _ni_nci () {
-    local manager=$(_ni_detectManager)
+    local manager=$(_ni_detect_package_manager)
     case $manager in
         npm)
             echo "npm ci "
