@@ -29,8 +29,14 @@ _zsh_directory_history_directory_changed () {
     _zsh_directory_history_switch_histfile $(_zsh_directory_history_file_name)
 }
 
+# Simulate initial chpwd (this runs just once per a session)
+_zsh_directory_history_initialize () {
+    _zsh_directory_history_directory_changed
+    add-zsh-hook -d precmd _zsh_directory_history_initialize
+}
+
 mkdir -p "$HISTORY_BASEDIR"
-_zsh_directory_history_directory_changed
 
 autoload -Uz add-zsh-hook
 add-zsh-hook chpwd _zsh_directory_history_directory_changed
+add-zsh-hook precmd _zsh_directory_history_initialize
