@@ -250,3 +250,6 @@
 [submodule "emacs/site-lisp/my-plugins/shackle-pop"]
 	path = emacs/site-lisp/my-plugins/shackle-pop
 	url = https://github.com/zk-phi/shackle-pop.git
+[submodule "hammerspoon/.hammerspoon/Spoons/EWOM.spoon"]
+	path = hammerspoon/.hammerspoon/Spoons/EWOM.spoon
+	url = https://github.com/zk-phi/EWOM.spoon.git
