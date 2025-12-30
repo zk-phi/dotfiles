@@ -6,7 +6,7 @@ hs.alert.defaultStyle.radius = 8
 -- Window Tiler
 --
 
-hs.loadSpoon("WindowTiler");
+local WindowTiler = hs.loadSpoon("WindowTiler")
 
 -- Window manipulation commands
 
@@ -24,30 +24,7 @@ hs.loadSpoon("WindowTiler");
 --   C-M-up    Maximize window
 --   C-M-down  Restore window size
 
-hs.hotkey.bind(
-  { 'command', 'ctrl' },
-  'right',
-  function () spoon.WindowTiler:tileRight() end,
-  function () spoon.WindowTiler:releaseRight() end
-)
-
-hs.hotkey.bind(
-  { 'command', 'ctrl' },
-  'left',
-  function () spoon.WindowTiler:tileLeft() end,
-  function () spoon.WindowTiler:releaseLeft() end
-)
-
-hs.hotkey.bind(
-  { 'command', 'ctrl' },
-  'up',
-  function () spoon.WindowTiler:tileUp() end,
-  function () spoon.WindowTiler:releaseUp() end
-)
-
-hs.hotkey.bind(
-  { 'command', 'ctrl' },
-  'down',
-  function () spoon.WindowTiler:tileDown() end,
-  function () spoon.WindowTiler:releaseDown() end
-)
+hs.hotkey.bind({ 'command', 'ctrl' }, 'right', WindowTiler.tileRight, WindowTiler.releaseRight)
+hs.hotkey.bind({ 'command', 'ctrl' }, 'left', WindowTiler.tileLeft, WindowTiler.releaseLeft)
+hs.hotkey.bind({ 'command', 'ctrl' }, 'up', WindowTiler.tileUp, WindowTiler.releaseUp)
+hs.hotkey.bind({ 'command', 'ctrl' }, 'down',  WindowTiler.tileDown, WindowTiler.releaseDown)
