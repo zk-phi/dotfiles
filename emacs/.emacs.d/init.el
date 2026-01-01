@@ -3699,6 +3699,7 @@ unary operators which can also be binary."
 
 (setup-keybinds nil
   "C-g"     'keyboard-quit
+  "C-z"     'suspend-frame
   "M-G"     'keyboard-quit
   "C-M-g"   'abort-recursive-edit
   "M-e"     'my-eval-sexp-dwim

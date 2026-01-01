@@ -282,4 +282,5 @@ EWOM.globalSetKey(M_, 'g', EWOM.cmd.unsupported('grepInDirectory'))
 EWOM.globalSetKey({}, ',', EWOM.cmd.mySmartComma)
 EWOM.globalSetKey(S_, '9', EWOM.cmd.mySmartParen)
 EWOM.globalSetKey(S_, '[', EWOM.cmd.mySmartBrace)
+EWOM.globalSetKey(C_, 'z', EWOM.cmd.suspendFrame)
 -- EWOM.globalSetKey({}, '[', EWOM.cmd.mySmartBracket) -- disable for Cosense
