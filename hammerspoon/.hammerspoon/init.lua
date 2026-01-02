@@ -86,12 +86,14 @@ end
 function EWOM.cmd.myKillLineBackward ()
   EWOM.sendKey({ 'command', 'shift' }, 'left')
   EWOM.sendKey({ 'command' }, 'x')
+  EWOM.runHooks(EWOM.afterChangeHook)
 end
 
 function EWOM.cmd.myBackwardKillWord (arg)
   for i = 1, math.max(1, arg) do
     EWOM.sendKey({ 'option', 'shift' }, 'left')
     EWOM.sendKey({ 'command' }, 'x')
+    EWOM.runHooks(EWOM.afterChangeHook)
   end
 end
 
@@ -101,6 +103,7 @@ function EWOM.cmd.myNewlineBetween (arg)
     EWOM.sendKey({}, 'return')
     EWOM.sendKey({}, 'left')
   end
+  EWOM.runHooks(EWOM.afterChangeHook)
 end
 
 function EWOM.cmd.myNextOpenedLine (arg)
@@ -108,9 +111,10 @@ function EWOM.cmd.myNextOpenedLine (arg)
     EWOM.sendKey({ 'command' }, 'right')
     EWOM.sendKey({}, 'return')
   end
+  EWOM.runHooks(EWOM.afterChangeHook)
 end
 
-function EWOM.cmd.myBackwardTransposeWords (arg)
+function EWOM.cmd.myBackwardTransposeWords ()
   EWOM.sendKey({ 'option' }, 'left')
   EWOM.sendKey({ 'option' }, 'left')
   EWOM.sendKey({ 'option' }, 'left')
@@ -119,9 +123,10 @@ function EWOM.cmd.myBackwardTransposeWords (arg)
   EWOM.sendKey({ 'command' }, 'x')
   EWOM.sendKey({ 'option' }, 'right')
   EWOM.sendKey({ 'command' }, 'v')
+  EWOM.runHooks(EWOM.afterChangeHook)
 end
 
-function EWOM.cmd.myBackwardTransposeLines (arg)
+function EWOM.cmd.myBackwardTransposeLines ()
   EWOM.sendKey({ 'command' }, 'right')
   EWOM.sendKey({ 'shift' }, 'up')
   EWOM.sendKey({ 'command', 'shift' }, 'right')
@@ -129,11 +134,13 @@ function EWOM.cmd.myBackwardTransposeLines (arg)
   EWOM.sendKey({}, 'up')
   EWOM.sendKey({ 'command' }, 'right')
   EWOM.sendKey({ 'command' }, 'v')
+  EWOM.runHooks(EWOM.afterChangeHook)
 end
 
 function EWOM.cmd.mySmartComma ()
   EWOM.sendKey({}, ',')
   EWOM.sendKey({}, 'space')
+  EWOM.runHooks(EWOM.afterChangeHook)
 end
 
 function EWOM.cmd.mySmartParen ()
@@ -144,6 +151,7 @@ function EWOM.cmd.mySmartParen ()
   -- EWOM.sendKey({ 'shift' }, '9')
   -- EWOM.sendKey({ 'shift' }, '0')
   EWOM.sendKey({}, 'left')
+  EWOM.runHooks(EWOM.afterChangeHook)
 end
 
 function EWOM.cmd.mySmartBrace ()
@@ -154,6 +162,7 @@ function EWOM.cmd.mySmartBrace ()
   -- EWOM.sendKey({ 'shift' }, '[')
   -- EWOM.sendKey({ 'shift' }, ']')
   EWOM.sendKey({}, 'left')
+  EWOM.runHooks(EWOM.afterChangeHook)
 end
 
 function EWOM.cmd.mySmartBracket ()
@@ -165,6 +174,7 @@ function EWOM.cmd.mySmartBracket ()
     EWOM.sendKey({}, '\\')
     EWOM.sendKey({}, 'left')
   end
+  EWOM.runHooks(EWOM.afterChangeHook)
 end
 
 EWOM.registerBaseKeymap()
