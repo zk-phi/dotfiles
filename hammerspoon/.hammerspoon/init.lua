@@ -121,8 +121,12 @@ function EWOM.cmd.myBackwardTransposeWords ()
   EWOM.sendKey({ 'option' }, 'right')
   EWOM.sendKey({ 'option', 'shift' }, 'right')
   EWOM.sendKey({ 'command' }, 'x')
-  EWOM.sendKey({ 'option' }, 'right')
-  EWOM.sendKey({ 'command' }, 'v')
+  EWOM.usePasteboard(
+    function ()
+      EWOM.sendKey({ 'option' }, 'right')
+      EWOM.sendKey({ 'command' }, 'v')
+    end
+  )
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
@@ -131,9 +135,13 @@ function EWOM.cmd.myBackwardTransposeLines ()
   EWOM.sendKey({ 'shift' }, 'up')
   EWOM.sendKey({ 'command', 'shift' }, 'right')
   EWOM.sendKey({ 'command' }, 'x')
-  EWOM.sendKey({}, 'up')
-  EWOM.sendKey({ 'command' }, 'right')
-  EWOM.sendKey({ 'command' }, 'v')
+  EWOM.usePasteboard(
+    function ()
+      EWOM.sendKey({}, 'up')
+      EWOM.sendKey({ 'command' }, 'right')
+      EWOM.sendKey({ 'command' }, 'v')
+    end
+  )
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
