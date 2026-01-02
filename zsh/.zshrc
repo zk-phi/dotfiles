@@ -217,8 +217,6 @@ expand-abbrev-or-self-insert-otherwise () {
 }
 zle -N expand-abbrev-or-self-insert-otherwise
 
-bindkey " " expand-abbrev-or-self-insert-otherwise
-
 # use abbrevs if abbev-alias is available
 if whence abbrev-alias > /dev/null; then
     # git
@@ -278,6 +276,8 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias -g n='--no-verify '
     abbrev-alias -g fp='--first-parent '
     abbrev-alias -ge b='$(git symbolic-ref --short HEAD) '
+
+    bindkey " " expand-abbrev-or-self-insert-otherwise
 else
     echo "[.zshrc] abbrev-alias is not installed."
 fi
