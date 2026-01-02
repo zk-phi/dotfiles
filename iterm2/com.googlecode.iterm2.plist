@@ -222,6 +222,8 @@ Minimize</string>
 	</dict>
 	<key>HapticFeedbackForEsc</key>
 	<false/>
+	<key>HideTabNumber</key>
+	<true/>
 	<key>HotkeyMigratedFromSingleToMulti</key>
 	<true/>
 	<key>MinimalEdgeDragSize</key>
