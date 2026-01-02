@@ -201,12 +201,23 @@ function forward-char-or-accept-suggested-word () {
 }
 zle -N forward-char-or-accept-suggested-word
 
+bindkey '^f' forward-char-or-accept-suggested-word
+
 # ------------------------------
 # plugin: abbrev-alias
 # ------------------------------
 
-# use "magic_abbrev_expand_or_insert" instead of "magic_abbrev_expand_and_insert"
-bindkey " " __abbrev_alias::magic_abbrev_expand_or_insert
+# Try to expand abbrev. Then self-insert IFF no abbrevs are expanded.
+expand-abbrev-or-self-insert-otherwise () {
+    local oldbuffer=$LBUFFER
+    zle __abbrev_alias::magic_abbrev_expand
+    if [[ $LBUFFER == $oldbuffer ]]; then
+        zle self-insert
+    fi
+}
+zle -N expand-abbrev-or-self-insert-otherwise
+
+bindkey " " expand-abbrev-or-self-insert-otherwise
 
 # use abbrevs if abbev-alias is available
 if whence abbrev-alias > /dev/null; then
@@ -286,4 +297,3 @@ bindkey -e
 bindkey '^s' history-incremental-search-backward
 bindkey '^p' history-beginning-search-backward
 bindkey '^n' end-of-history
-bindkey '^f' forward-char-or-accept-suggested-word
