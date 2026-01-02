@@ -1,9 +1,6 @@
 [submodule "zsh/.zsh.d/plugins/zsh-autosuggestions"]
 	path = zsh/.zsh.d/plugins/zsh-autosuggestions
 	url = https://github.com/zsh-users/zsh-autosuggestions.git
-[submodule "zsh/.zsh.d/plugins/zsh-abbrev-alias"]
-	path = zsh/.zsh.d/plugins/zsh-abbrev-alias
-	url = https://github.com/zk-phi/zsh-abbrev-alias.git
 [submodule "emacs/site-lisp/my-plugins/scratch-pop"]
 	path = emacs/site-lisp/my-plugins/scratch-pop
 	url = https://github.com/zk-phi/scratch-pop.git
@@ -253,3 +250,6 @@
 [submodule "hammerspoon/.hammerspoon/Spoons/EWOM.spoon"]
 	path = hammerspoon/.hammerspoon/Spoons/EWOM.spoon
 	url = https://github.com/zk-phi/EWOM.spoon.git
+[submodule "zsh/.zsh.d/plugins/zsh-abbrev-alias"]
+	path = zsh/.zsh.d/plugins/zsh-abbrev-alias
+	url = https://github.com/momo-lab/zsh-abbrev-alias.git
