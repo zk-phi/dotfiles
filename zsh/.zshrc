@@ -252,7 +252,7 @@ bindkey '^e' end-of-line
 bindkey '^r' ignore             # query-replace
 bindkey '^t' transpose-words -n -1
 bindkey '^y' yank
-bindkey '^u' ignore             # scroll-down
+bindkey '^u' ignore             # scroll-down (configured in iTerm2)
 bindkey '^i' expand-or-complete # is TAB
 bindkey '^o' my-open-line
 bindkey '^p' history-beginning-search-backward # previous-line
@@ -270,10 +270,10 @@ bindkey '^l' ignore             # recenter
 bindkey '^;' ignore             # comment-dwim
 # bindkey "^'" ignore -- i dont know why but this line breaks other keybinds
 bindkey "^\\" ignore
-bindkey '^z' ignore             # suspend-frame
+bindkey '^z' ignore             # suspend-frame (configured in iTerm2)
 bindkey '^x' ignore
 bindkey '^c' ignore
-bindkey '^v' ignore             # scroll-up
+bindkey '^v' ignore             # scroll-up (configured in iTerm2)
 bindkey '^b' backward-char
 bindkey '^n' end-of-history     # next-line
 bindkey '^m' accept-line
@@ -282,7 +282,7 @@ bindkey '^,' select-a-word      # expand-region
 # bindkey '^/' ignore
 bindkey '^ ' my-set-mark-or-exchange
 
-# # -- C-M-* keybinds
+# -- C-M-* keybinds
 bindkey '^[^`' ignore
 bindkey '^[^1' digit-argument
 bindkey '^[^2' digit-argument
@@ -302,11 +302,12 @@ bindkey '^[^e' end-of-line       # end-of-defun
 bindkey '^[^r' ignore            # replace
 bindkey '^[^t' ignore            # transpose-lines
 bindkey '^[^y' yank              # expand-oneshot-snippet
-bindkey '^[^u' ignore            # beginning-of-buffer
+bindkey '^[^u' ignore            # beginning-of-buffer (configured in iTerm2)
 bindkey '^[^i' ignore            # fill-paragraph
 bindkey '^[^o' my-newline-between
-bindkey '^[^p' history-beginning-search-backward   # previous-blank-lin# '^[^[' is ... ?
-bindkey '^[^]' ignore                              # ignore
+bindkey '^[^p' history-beginning-search-backward   # previous-blank-line
+# '^[^[' is ... ?
+bindkey '^[^]' ignore
 bindkey '^[^a' ignore                              # mc/mark-all
 bindkey '^[^s' history-incremental-search-backward # isearch-backward
 bindkey '^[^d' kill-word
@@ -322,7 +323,7 @@ bindkey "^[^\\" ignore           # indent-region
 bindkey '^[^z' ignore
 bindkey '^[^x' ignore            # eval-defun
 bindkey '^[^c' ignore            # calc
-bindkey '^[^v' ignore            # end-of-buffer
+bindkey '^[^v' ignore            # end-of-buffer (configured in iTerm2)
 bindkey '^[^b' backward-word
 bindkey '^[^n' end-of-history    # next-blank-line
 bindkey '^[^m' vi-open-line-below
