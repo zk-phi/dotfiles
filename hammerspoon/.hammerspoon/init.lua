@@ -51,7 +51,7 @@ EWOM.setApplicationFilter(
 
 EWOM.setInputMethodFilter(
   function (method)
-    return not (method == nil)
+    return method and method:find('SKK')
   end
 )
 
