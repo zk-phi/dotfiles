@@ -44,6 +44,182 @@
 	<false/>
 	<key>ExtraSpaceBeforeCompactTopTabBar</key>
 	<real>0.0</real>
+	<key>GlobalKeyMap</key>
+	<dict>
+		<key>0x30-0x80000-0x1d</key>
+		<dict>
+			<key>Action</key>
+			<integer>39</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string></string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x32-0x80000-0x13</key>
+		<dict>
+			<key>Action</key>
+			<integer>27</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string>44414645-4FA5-4A98-B385-253964AF0A01</string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x39-0x80000-0x19</key>
+		<dict>
+			<key>Action</key>
+			<integer>32</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string></string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x63-0x80000-0x8</key>
+		<dict>
+			<key>Action</key>
+			<integer>69</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string></string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x66-0x80000-0x3</key>
+		<dict>
+			<key>Action</key>
+			<integer>25</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string>Find…
+Find.Find...</string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x6b-0x80000-0x28</key>
+		<dict>
+			<key>Action</key>
+			<integer>25</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string>Close
+Close</string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x73-0x80000-0x1</key>
+		<dict>
+			<key>Action</key>
+			<integer>25</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string>Find…
+Find.Find...</string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x75-0x40000-0x20</key>
+		<dict>
+			<key>Action</key>
+			<integer>9</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string></string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x75-0xc0000-0x20</key>
+		<dict>
+			<key>Action</key>
+			<integer>5</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string></string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x76-0x40000-0x9</key>
+		<dict>
+			<key>Action</key>
+			<integer>8</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string></string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x76-0x80000-0x9</key>
+		<dict>
+			<key>Action</key>
+			<integer>70</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string></string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x76-0xc0000-0x9</key>
+		<dict>
+			<key>Action</key>
+			<integer>4</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string></string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+		<key>0x7a-0x40000-0x6</key>
+		<dict>
+			<key>Action</key>
+			<integer>25</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string>Minimize
+Minimize</string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
+	</dict>
 	<key>HapticFeedbackForEsc</key>
 	<false/>
 	<key>HotkeyMigratedFromSingleToMulti</key>
