@@ -226,6 +226,10 @@ Minimize</string>
 	<true/>
 	<key>HotkeyMigratedFromSingleToMulti</key>
 	<true/>
+	<key>LeftCommand</key>
+	<integer>2</integer>
+	<key>LeftOption</key>
+	<integer>7</integer>
 	<key>MinimalEdgeDragSize</key>
 	<real>16</real>
 	<key>MinimalTabStyleBackgroundColorDifference</key>
@@ -851,7 +855,7 @@ Minimize</string>
 			<key>Normal Font</key>
 			<string>nasucode 12</string>
 			<key>Option Key Sends</key>
-			<integer>0</integer>
+			<integer>2</integer>
 			<key>Place Prompt at First Column</key>
 			<false/>
 			<key>Prompt Before Closing 2</key>
@@ -1111,6 +1115,8 @@ Minimize</string>
 	</dict>
 	<key>QuitWhenAllWindowsClosed</key>
 	<true/>
+	<key>RemapModifiersGlobally</key>
+	<false/>
 	<key>SmartPlacement</key>
 	<false/>
 	<key>SoundForEsc</key>
