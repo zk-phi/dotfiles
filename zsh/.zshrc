@@ -179,6 +179,159 @@ alias jobs='jobs -l'
 alias git='noglob git'
 
 # ------------------------------
+# keybinds
+# ------------------------------
+
+function my-set-mark-or-exchange () {
+    if (( REGION_ACTIVE == 1 )); then
+        zle exchange-point-and-mark
+    else
+        zle set-mark-command
+    fi
+}
+zle -N my-set-mark-or-exchange
+
+function my-unset-mark-or-break () {
+    if (( REGION_ACTIVE == 1 )); then
+        zle set-mark-command -n -1
+    else
+        zle send-break
+    fi
+}
+zle -N my-unset-mark-or-break
+
+function my-kill-whole-line-or-region () {
+    if (( REGION_ACTIVE == 1 )); then
+        zle kill-region
+    else
+        zle kill-whole-line
+    fi
+}
+zle -N my-kill-whole-line-or-region
+
+function my-open-line () {
+    # FIXME: how can i put newline without 'echo'ing ?
+    RBUFFER=$(echo "\n$RBUFFER")
+}
+zle -N my-open-line
+
+function my-newline-between () {
+    LBUFFER=$(echo "$LBUFFER\n")
+    RBUFFER=$(echo "\n$RBUFFER")
+}
+zle -N my-newline-between
+
+function my-mark-whole-line () {
+    zle beginning-of-line
+    zle set-mark-command
+    zle end-of-line
+}
+zle -N my-mark-whole-line
+
+function ignore () {
+}
+zle -N ignore
+
+# -- C-* keybinds
+bindkey '^`' ignore
+bindkey '^1' digit-argument
+bindkey '^2' digit-argument
+bindkey '^3' digit-argument
+bindkey '^4' digit-argument
+bindkey '^5' digit-argument
+bindkey '^6' digit-argument
+bindkey '^7' digit-argument
+bindkey '^8' digit-argument
+bindkey '^9' digit-argument
+bindkey '^0' digit-argument
+bindkey '^_' undo               # i dont know why but this works as '^-'
+bindkey '^=' ignore             # text-scale-increase
+bindkey '^q' quoted-insert
+bindkey '^w' my-kill-whole-line-or-region
+bindkey '^e' end-of-line
+bindkey '^r' ignore             # query-replace
+bindkey '^t' transpose-words -n -1
+bindkey '^y' yank
+bindkey '^u' ignore             # scroll-down
+bindkey '^i' expand-or-complete # is TAB
+bindkey '^o' my-open-line
+bindkey '^p' history-beginning-search-backward # previous-line
+# '^[' is ESC
+bindkey '^]' my-unset-mark-or-break
+bindkey '^a' ignore                              # mc/mark-next-dwim
+bindkey '^s' history-incremental-search-backward # isearch
+bindkey '^d' delete-char-or-list
+bindkey '^f' forward-char
+bindkey '^g' my-unset-mark-or-break # keyboard-quit
+bindkey '^h' backward-delete-char
+bindkey '^j' beginning-of-line
+bindkey '^k' kill-line
+bindkey '^l' ignore             # recenter
+bindkey '^;' ignore             # comment-dwim
+# bindkey "^'" ignore -- i dont know why but this line breaks other keybinds
+bindkey "^\\" ignore
+bindkey '^z' ignore             # suspend-frame
+bindkey '^x' ignore
+bindkey '^c' ignore
+bindkey '^v' ignore             # scroll-up
+bindkey '^b' backward-char
+bindkey '^n' end-of-history     # next-line
+bindkey '^m' accept-line
+bindkey '^,' select-a-word      # expand-region
+# bindkey '^.' ignore             # include-anywhere
+# bindkey '^/' ignore
+bindkey '^ ' my-set-mark-or-exchange
+
+# # -- C-M-* keybinds
+bindkey '^[^`' ignore
+bindkey '^[^1' digit-argument
+bindkey '^[^2' digit-argument
+bindkey '^[^3' digit-argument
+bindkey '^[^4' digit-argument
+bindkey '^[^5' digit-argument
+bindkey '^[^6' digit-argument
+bindkey '^[^7' digit-argument
+bindkey '^[^8' digit-argument
+bindkey '^[^9' digit-argument
+bindkey '^[^0' digit-argument
+bindkey '^[^_' redo              # i dont know why but this works as '^-'
+bindkey '^[^=' ignore            # text-scale-decrease
+bindkey '^[^q' ignore
+bindkey '^[^w' copy-region-as-kill
+bindkey '^[^e' end-of-line       # end-of-defun
+bindkey '^[^r' ignore            # replace
+bindkey '^[^t' ignore            # transpose-lines
+bindkey '^[^y' yank              # expand-oneshot-snippet
+bindkey '^[^u' ignore            # beginning-of-buffer
+bindkey '^[^i' ignore            # fill-paragraph
+bindkey '^[^o' my-newline-between
+bindkey '^[^p' history-beginning-search-backward   # previous-blank-lin# '^[^[' is ... ?
+bindkey '^[^]' ignore                              # ignore
+bindkey '^[^a' ignore                              # mc/mark-all
+bindkey '^[^s' history-incremental-search-backward # isearch-backward
+bindkey '^[^d' kill-word
+bindkey '^[^f' emacs-forward-word
+bindkey '^[^g' my-unset-mark-or-break # keyboard-quit
+bindkey '^[^h' backward-kill-word
+bindkey '^[^j' beginning-of-line # beginning-of-defun
+bindkey '^[^k' backward-kill-line
+bindkey '^[^l' ignore            # retop
+bindkey '^[^;' ignore
+# bindkey "^[^'" ignore
+bindkey "^[^\\" ignore           # indent-region
+bindkey '^[^z' ignore
+bindkey '^[^x' ignore            # eval-defun
+bindkey '^[^c' ignore            # calc
+bindkey '^[^v' ignore            # end-of-buffer
+bindkey '^[^b' backward-word
+bindkey '^[^n' end-of-history    # next-blank-line
+bindkey '^[^m' vi-open-line-below
+bindkey '^[^,' my-mark-whole-line
+bindkey '^[^.' ignore            # xref
+bindkey '^[^/' ignore            # dabbrev
+bindkey '^[^ ' ignore
+
+# ------------------------------
 # plugin: autosuggestions
 # ------------------------------
 
@@ -285,15 +438,3 @@ fi
 if ! which sfw > /dev/null; then
     echo "[.zshrc] sfw is not installed."
 fi
-
-# ------------------------------
-# keybinds
-# ------------------------------
-
-# enable emacs keybinds
-bindkey -e
-
-# extra keybinds
-bindkey '^s' history-incremental-search-backward
-bindkey '^p' history-beginning-search-backward
-bindkey '^n' end-of-history
