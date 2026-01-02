@@ -42,6 +42,8 @@ hs.hotkey.bind(C_M_, 'down',  WindowTiler.tileDown, WindowTiler.releaseDown)
 --
 
 local EWOM = hs.loadSpoon('EWOM')
+local Keychord = hs.loadSpoon('EWOMKeychord')
+Keychord.attach(EWOM)
 
 EWOM.setApplicationFilter(
   function (app)
@@ -140,6 +142,41 @@ function EWOM.cmd.myBackwardTransposeLines ()
       EWOM.sendKey({}, 'up')
       EWOM.sendKey({ 'command' }, 'right')
       EWOM.sendKey({ 'command' }, 'v')
+    end
+  )
+  EWOM.runHooks(EWOM.afterChangeHook)
+end
+
+function EWOM.cmd.myBackwardTransposeChars ()
+  EWOM.sendKey({}, 'left')
+  EWOM.sendKey({ 'shift' }, 'left')
+  obj.sendKey({ 'command' }, 'x')
+  EWOM.usePasteboard(
+    function ()
+      EWOM.sendKey({}, 'right')
+      EWOM.sendKey({ 'command' }, 'v')
+    end
+  )
+  EWOM.runHooks(EWOM.afterChangeHook)
+end
+
+function EWOM.cmd.myBackwardUpcaseWord ()
+  EWOM.sendKey({ 'option', 'shift' }, 'left')
+  EWOM.sendKey({ 'command' }, 'x')
+  EWOM.usePasteboard(
+    function (content)
+      hs.eventtap.keyStrokes(content:upper())
+    end
+  )
+  EWOM.runHooks(EWOM.afterChangeHook)
+end
+
+function EWOM.cmd.myBackwardDowncaseWord ()
+  EWOM.sendKey({ 'option', 'shift' }, 'left')
+  EWOM.sendKey({ 'command' }, 'x')
+  EWOM.usePasteboard(
+    function (content)
+      hs.eventtap.keyStrokes(content:lower())
     end
   )
   EWOM.runHooks(EWOM.afterChangeHook)
@@ -307,3 +344,14 @@ EWOM.defineKey(EWOM.cxMap, C_, 's', EWOM.cmd.saveBuffer)
 EWOM.defineKey(EWOM.cxMap, C_, 'k', EWOM.cmd.tabClose)
 EWOM.defineKey(EWOM.cxMap, C_, 'c', EWOM.cmd.killApp)
 EWOM.defineKey(EWOM.cxMap, C_, 'm', EWOM.cmd.kmacroEndAndCallMacro)
+
+-- Keychords
+EWOM.globalSetKey({}, 'h', Keychord.cmd({{ 'h', EWOM.cmd.capitalizeWord }}))
+EWOM.globalSetKey({}, 'k', Keychord.cmd({{ 'k', EWOM.cmd.myBackwardDowncaseWord }}))
+EWOM.globalSetKey({}, 'f', Keychord.cmd({{ 'j', EWOM.cmd.myBackwardTransposeChars }}))
+EWOM.globalSetKey({}, 'j', Keychord.cmd(
+    {
+      { 'f', EWOM.cmd.myBackwardTransposeChars },
+      { 'j', EWOM.cmd.myBackwardUpcaseWord }
+    }
+))
