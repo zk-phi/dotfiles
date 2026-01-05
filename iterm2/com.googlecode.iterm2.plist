@@ -49,7 +49,7 @@
 		<key>0x30-0x80000-0x1d</key>
 		<dict>
 			<key>Action</key>
-			<integer>39</integer>
+			<integer>0</integer>
 			<key>Apply Mode</key>
 			<integer>0</integer>
 			<key>Escaping</key>
@@ -75,7 +75,7 @@
 		<key>0x39-0x80000-0x19</key>
 		<dict>
 			<key>Action</key>
-			<integer>32</integer>
+			<integer>2</integer>
 			<key>Apply Mode</key>
 			<integer>0</integer>
 			<key>Escaping</key>
