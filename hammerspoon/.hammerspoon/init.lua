@@ -82,6 +82,7 @@ function EWOM.cmd.myExpandRegion ()
   else
     EWOM.sendKey({ 'option', 'shift' }, 'right')
     EWOM.sendKey({ 'option', 'shift' }, 'left')
+    EWOM.cmd.setMarkCommand()
   end
 end
 
@@ -188,7 +189,7 @@ function EWOM.cmd.mySmartComma ()
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
-function EWOM.cmd.mySmartParen ()
+local function insertParen ()
   -- For JIS model
   EWOM.sendKey({ 'shift' }, '8')
   EWOM.sendKey({ 'shift' }, '9')
@@ -196,10 +197,24 @@ function EWOM.cmd.mySmartParen ()
   -- EWOM.sendKey({ 'shift' }, '9')
   -- EWOM.sendKey({ 'shift' }, '0')
   EWOM.sendKey({}, 'left')
+end
+
+function EWOM.cmd.mySmartParen ()
+  if EWOM.markActive then
+    EWOM.sendKey({ 'command' }, 'x')
+    EWOM.usePasteboard(
+      function ()
+        insertParen()
+        EWOM.sendKey({ 'command' }, 'v')
+      end
+    )
+  else
+    insertParen()
+  end
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
-function EWOM.cmd.mySmartBrace ()
+local function insertBrace ()
   -- For JIS model
   EWOM.sendKey({ 'shift' }, ']')
   EWOM.sendKey({ 'shift' }, '\\')
@@ -207,17 +222,46 @@ function EWOM.cmd.mySmartBrace ()
   -- EWOM.sendKey({ 'shift' }, '[')
   -- EWOM.sendKey({ 'shift' }, ']')
   EWOM.sendKey({}, 'left')
+  end
+
+function EWOM.cmd.mySmartBrace ()
+  if EWOM.markActive then
+    EWOM.sendKey({ 'command' }, 'x')
+    EWOM.usePasteboard(
+      function ()
+        insertBrace()
+        EWOM.sendKey({ 'command' }, 'v')
+      end
+    )
+  else
+    insertBrace()
+  end
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
-function EWOM.cmd.mySmartBracket ()
+local function insertBracket ()
   local title = hs.window.focusedWindow():title()
+  -- For JIS model
   if title:find("Cosense") or title:find("scrapbox") then
     EWOM.sendKey({}, ']')
   else
     EWOM.sendKey({}, ']')
     EWOM.sendKey({}, '\\')
     EWOM.sendKey({}, 'left')
+  end
+end
+
+function EWOM.cmd.mySmartBracket ()
+  if EWOM.markActive then
+    EWOM.sendKey({ 'command' }, 'x')
+    EWOM.usePasteboard(
+      function ()
+        insertBracket()
+        EWOM.sendKey({ 'command' }, 'v')
+      end
+    )
+  else
+    insertBracket()
   end
   EWOM.runHooks(EWOM.afterChangeHook)
 end
