@@ -7,8 +7,19 @@ local C_M_ = { 'ctrl', 'command' }
 local C_M_S_ = { 'ctrl', 'command', 'shift' }
 
 hs.window.animationDuration = 0
-hs.alert.defaultStyle.textSize = 16
-hs.alert.defaultStyle.radius = 8
+hs.alert.defaultStyle = {
+  strokeWidth  = 1,
+  strokeColor  = { white = 0.5, alpha = 1.0 },
+  fillColor    = { white = 0.0, alpha = 0.8 },
+  textColor    = { white = 1.0, alpha = 1.0 },
+  textFont     = ".AppleSystemUIFont",
+  textSize     = 16,
+  radius       = 8,
+  padding      = 8,
+  atScreenEdge = 0,
+  fadeInDuration  = 0.1,
+  fadeOutDuration = 0.1,
+}
 
 --
 -- Window Tiler
