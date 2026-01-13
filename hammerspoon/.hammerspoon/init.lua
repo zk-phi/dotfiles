@@ -68,6 +68,16 @@ EWOM.setInputMethodFilter(
   end
 )
 
+EWOM.addHook(
+  EWOM.afterFocusChangeHook,
+  function ()
+    if hs.keycodes.currentMethod() then
+      EWOM.sendKey({}, 0x66)    -- eisuu
+      hs.alert('IME disabled')
+    end
+  end
+)
+
 function EWOM.cmd.myFourLinesUp (arg)
   for i = 1, math.max(1, arg) do
     EWOM.sendKey({}, 'up')
