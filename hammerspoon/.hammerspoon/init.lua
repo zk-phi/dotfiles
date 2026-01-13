@@ -8,12 +8,13 @@ local C_M_S_ = { 'ctrl', 'command', 'shift' }
 
 hs.window.animationDuration = 0
 hs.alert.defaultStyle = {
-  strokeWidth  = 1,
+  strokeWidth  = 2,
   strokeColor  = { white = 0.9, alpha = 1.0 },
-  fillColor    = { white = 0.9, alpha = 0.8 },
-  textColor    = { white = 0.1, alpha = 1.0 },
+  fillColor    = { white = 0.9, alpha = 0.7 },
+  textColor    = { white = 0.2, alpha = 1.0 },
   textFont     = ".AppleSystemUIFont",
   textSize     = 16,
+  textStyle    = nil,
   radius       = 24,
   padding      = 12,
   atScreenEdge = 0,
