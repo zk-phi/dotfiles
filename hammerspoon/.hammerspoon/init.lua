@@ -244,7 +244,7 @@ local function insertBrace ()
   -- EWOM.sendKey({ 'shift' }, '[')
   -- EWOM.sendKey({ 'shift' }, ']')
   EWOM.sendKey({}, 'left')
-  end
+end
 
 function EWOM.cmd.mySmartBrace ()
   if EWOM.markActive then
@@ -262,19 +262,17 @@ function EWOM.cmd.mySmartBrace ()
 end
 
 local function insertBracket ()
-  local title = hs.window.focusedWindow():title()
   -- For JIS model
-  if title:find("Cosense") or title:find("scrapbox") then
-    EWOM.sendKey({}, ']')
-  else
-    EWOM.sendKey({}, ']')
-    EWOM.sendKey({}, '\\')
-    EWOM.sendKey({}, 'left')
-  end
+  EWOM.sendKey({}, ']')
+  EWOM.sendKey({}, '\\')
+  EWOM.sendKey({}, 'left')
 end
 
 function EWOM.cmd.mySmartBracket ()
-  if EWOM.markActive then
+  local title = hs.window.focusedWindow():title()
+  if title:find("Cosense") or title:find("scrapbox") then
+    EWOM.sendKey({}, ']')
+  elseif EWOM.markActive then
     EWOM.sendKey({ 'command' }, 'x')
     EWOM.usePasteboard(
       function ()
