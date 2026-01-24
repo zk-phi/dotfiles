@@ -205,70 +205,57 @@ function EWOM.cmd.myBackwardDowncaseWord ()
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
-function EWOM.cmd.mySmartComma ()
-  EWOM.sendKey({}, ',')
-  EWOM.sendKey({}, 'space')
+function EWOM.cmd.mySmartComma (arg, evt)
+  EWOM.sendString(', ', evt:getKeyCode())
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
-local function insertParen ()
-  -- For JIS model
-  EWOM.sendKey({ 'shift' }, '8')
-  EWOM.sendKey({ 'shift' }, '9')
-  -- -- For US model
-  -- EWOM.sendKey({ 'shift' }, '9')
-  -- EWOM.sendKey({ 'shift' }, '0')
+local function insertParen (evt)
+  EWOM.sendString('()', evt:getKeyCode())
   EWOM.sendKey({}, 'left')
 end
 
-function EWOM.cmd.mySmartParen ()
+function EWOM.cmd.mySmartParen (arg, evt)
   if EWOM.markActive then
     EWOM.sendKey({ 'command' }, 'x')
     EWOM.usePasteboard(
       function ()
-        insertParen()
+        insertParen(evt)
         EWOM.sendKey({ 'command' }, 'v')
       end
     )
   else
-    insertParen()
+    insertParen(evt)
   end
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
-local function insertBrace ()
-  -- For JIS model
-  EWOM.sendKey({ 'shift' }, ']')
-  EWOM.sendKey({ 'shift' }, '\\')
-  -- -- For US model
-  -- EWOM.sendKey({ 'shift' }, '[')
-  -- EWOM.sendKey({ 'shift' }, ']')
+local function insertBrace (evt)
+  EWOM.sendString('{}', evt:getKeyCode())
   EWOM.sendKey({}, 'left')
 end
 
-function EWOM.cmd.mySmartBrace ()
+function EWOM.cmd.mySmartBrace (arg, evt)
   if EWOM.markActive then
     EWOM.sendKey({ 'command' }, 'x')
     EWOM.usePasteboard(
       function ()
-        insertBrace()
+        insertBrace(evt)
         EWOM.sendKey({ 'command' }, 'v')
       end
     )
   else
-    insertBrace()
+    insertBrace(evt)
   end
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
-local function insertBracket ()
-  -- For JIS model
-  EWOM.sendKey({}, ']')
-  EWOM.sendKey({}, '\\')
+local function insertBracket (evt)
+  EWOM.sendString('[]', evt:getKeyCode())
   EWOM.sendKey({}, 'left')
 end
 
-function EWOM.cmd.mySmartBracket ()
+function EWOM.cmd.mySmartBracket (arg, evt)
   local title = hs.window.focusedWindow():title()
   if title:find("Cosense") or title:find("scrapbox") then
     EWOM.sendKey({}, ']')
@@ -276,12 +263,12 @@ function EWOM.cmd.mySmartBracket ()
     EWOM.sendKey({ 'command' }, 'x')
     EWOM.usePasteboard(
       function ()
-        insertBracket()
+        insertBracket(evt)
         EWOM.sendKey({ 'command' }, 'v')
       end
     )
   else
-    insertBracket()
+    insertBracket(evt)
   end
   EWOM.runHooks(EWOM.afterChangeHook)
 end
