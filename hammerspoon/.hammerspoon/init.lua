@@ -275,10 +275,10 @@ end
 
 EWOM.registerBaseKeymap()
 
-EWOM.globalSetKey({}, '[', EWOM.cmd.mySmartBracket)
+EWOM.globalSetKey({}, '[', EWOM.cmd.mySmartBracket, true)
 EWOM.globalSetKey({}, ',', EWOM.cmd.mySmartComma)
-EWOM.globalSetKey(S_, '9', EWOM.cmd.mySmartParen)
-EWOM.globalSetKey(S_, '[', EWOM.cmd.mySmartBrace)
+EWOM.globalSetKey(S_, '9', EWOM.cmd.mySmartParen, true)
+EWOM.globalSetKey(S_, '[', EWOM.cmd.mySmartBrace, true)
 
 EWOM.globalSetKey(C_, '`', EWOM.cmd.ignore)
 EWOM.globalSetKey(C_, '1', EWOM.cmd.digitArgument)
