@@ -173,7 +173,7 @@ end
 function EWOM.cmd.myBackwardTransposeChars ()
   EWOM.sendKey({}, 'left')
   EWOM.sendKey({ 'shift' }, 'left')
-  obj.sendKey({ 'command' }, 'x')
+  EWOM.sendKey({ 'command' }, 'x')
   EWOM.usePasteboard(
     function ()
       EWOM.sendKey({}, 'right')
