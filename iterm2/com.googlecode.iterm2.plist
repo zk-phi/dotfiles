@@ -126,6 +126,20 @@ Close</string>
 			<key>Version</key>
 			<integer>2</integer>
 		</dict>
+		<key>0x6f-0x80000-0x1f</key>
+		<dict>
+			<key>Action</key>
+			<integer>25</integer>
+			<key>Apply Mode</key>
+			<integer>0</integer>
+			<key>Escaping</key>
+			<integer>2</integer>
+			<key>Text</key>
+			<string>Use Transparency
+Use Transparency</string>
+			<key>Version</key>
+			<integer>2</integer>
+		</dict>
 		<key>0x73-0x80000-0x1</key>
 		<dict>
 			<key>Action</key>
@@ -1171,7 +1185,7 @@ Minimize</string>
 			<key>Thin Strokes</key>
 			<integer>0</integer>
 			<key>Transparency</key>
-			<real>0.0</real>
+			<real>0.22165890957446807</real>
 			<key>Unlimited Scrollback</key>
 			<false/>
 			<key>Use Bold Font</key>
