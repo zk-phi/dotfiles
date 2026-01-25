@@ -206,12 +206,12 @@ function EWOM.cmd.myBackwardDowncaseWord ()
 end
 
 function EWOM.cmd.mySmartComma (arg, evt)
-  EWOM.sendString(', ', evt:getKeyCode())
+  EWOM.sendString(', ', evt)
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
 local function insertParen (evt)
-  EWOM.sendString('()', evt:getKeyCode())
+  EWOM.sendString('()', evt)
   EWOM.sendKey({}, 'left')
 end
 
@@ -231,7 +231,7 @@ function EWOM.cmd.mySmartParen (arg, evt)
 end
 
 local function insertBrace (evt)
-  EWOM.sendString('{}', evt:getKeyCode())
+  EWOM.sendString('{}', evt)
   EWOM.sendKey({}, 'left')
 end
 
@@ -251,7 +251,7 @@ function EWOM.cmd.mySmartBrace (arg, evt)
 end
 
 local function insertBracket (evt)
-  EWOM.sendString('[]', evt:getKeyCode())
+  EWOM.sendString('[]', evt)
   EWOM.sendKey({}, 'left')
 end
 
