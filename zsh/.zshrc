@@ -435,7 +435,7 @@ if whence abbrev-alias > /dev/null; then
 
     # yt-dlp options
     abbrev-alias -g cfb='--cookies-from-browser chrome '
-    abbrev-alias -g 1080pbb='-S "+height:1080" -f "b*" '
+    abbrev-alias -g fhd='-S "+height:1080" -f "b*" '
 
     bindkey " " expand-abbrev-or-self-insert-otherwise
 else
