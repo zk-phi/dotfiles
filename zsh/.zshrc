@@ -421,15 +421,21 @@ if whence abbrev-alias > /dev/null; then
     # others
     abbrev-alias sq='xattr -d com.apple.quarantine ' # skip quarantine
 
-    # global aliases
+    # filters
     abbrev-alias -g g='| grep '
     abbrev-alias -g gi='| grep -v ' # grep inverse
     abbrev-alias -g l='| less -R '
     abbrev-alias -g c='| cut -d " " -f '
     abbrev-alias -g s='| tr -s " " ' # shrink spaces
+
+    # git options
     abbrev-alias -g n='--no-verify '
     abbrev-alias -g fp='--first-parent '
     abbrev-alias -ge b='$(git symbolic-ref --short HEAD) '
+
+    # yt-dlp options
+    abbrev-alias -g cfb='--cookies-from-browser chrome '
+    abbrev-alias -g 1080pbb='-S "+height:1080" -f "b*" '
 
     bindkey " " expand-abbrev-or-self-insert-otherwise
 else
