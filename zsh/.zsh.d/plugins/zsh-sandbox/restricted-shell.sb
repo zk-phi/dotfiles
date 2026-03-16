@@ -8,10 +8,12 @@
 ;; Inhibit overwriting system files
 (deny file-write*)
 (allow file-write*
-  (subpath (param "HOME"))              ; allow updating ~/.cache, ~/.npm etc
   (subpath "/tmp")
   (subpath "/private/tmp")
-  (subpath "/dev/null"))
+  (subpath "/dev/null")
+  ;; Allow updating ~/.cache, ~/.npm etc
+  ;; Note that configurations are stored in a protected dir (~/Documents/dotfiles)
+  (subpath (param "HOME")))
 
 ;; Protect user dirs and core credentials
 (deny file-read* file-write*
