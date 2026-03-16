@@ -370,7 +370,7 @@ bindkey '^f' forward-char-or-accept-suggested-word
 # ------------------------------
 
 # Try to expand abbrev. Then self-insert IFF no abbrevs are expanded.
-expand-abbrev-or-self-insert-otherwise () {
+function expand-abbrev-or-self-insert-otherwise () {
     local oldbuffer=$LBUFFER
     zle __abbrev_alias::magic_abbrev_expand
     if [[ $LBUFFER == $oldbuffer ]]; then
