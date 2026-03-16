@@ -5,7 +5,8 @@
 
 (allow default)
 
-;; Inhibit overwriting system files
+;; ;; Protect system files from being overwritten
+
 (deny file-write*)
 (allow file-write*
   (subpath "/tmp")
@@ -15,7 +16,8 @@
   ;; Note that configurations are stored in a protected dir (~/Documents/dotfiles, site-files)
   (subpath (param "HOME")))
 
-;; Protect user dirs and core credentials
+;; ;; Protect some user dirs and secrets
+
 (deny file-read* file-write*
   (subpath (string-append (param "HOME") "/Desktop"))
   (subpath (string-append (param "HOME") "/Downloads"))
@@ -27,13 +29,14 @@
   (subpath (string-append (param "HOME") "/.ssh"))
   (subpath (string-append (param "HOME") "/.aws"))
   (subpath (string-append (param "HOME") "/.gnupg")))
-;; Read access to ~/Documents may be required to git submodules to work
+;; Read access to ~/Documents may be required for some git submodules to work
 (deny file-write*
   (subpath (string-append (param "HOME") "/Documents")))
 (deny file-read*
   (subpath (string-append (param "HOME") "/Documents/site-files")))
 
-;; Allow full-access to the current dir (except for dotenvs)
+;; ;; Grant full-access to the current dir (except for dotenvs)
+
 (allow file-read* file-write*
   (subpath (param "RSH_ROOT")))
 (deny file-read* file-write*
