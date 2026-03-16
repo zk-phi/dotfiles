@@ -18,5 +18,9 @@ function _exit_sb () {
     fi
 }
 
+function sb-log () {
+    sudo log stream --predicate 'sender == "Sandbox"' | grep deny
+}
+
 autoload -Uz add-zsh-hook
 add-zsh-hook zshexit _exit_sb
