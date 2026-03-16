@@ -3,7 +3,6 @@
 
 (version 1)
 
-(import "system.sb")
 (allow default)
 
 ;; Inhibit overwriting system files
