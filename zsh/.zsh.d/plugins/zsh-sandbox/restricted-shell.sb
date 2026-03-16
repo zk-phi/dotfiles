@@ -27,9 +27,11 @@
   (subpath (string-append (param "HOME") "/.ssh"))
   (subpath (string-append (param "HOME") "/.aws"))
   (subpath (string-append (param "HOME") "/.gnupg")))
+;; Read access to ~/Documents may be required to git submodules to work
 (deny file-write*
-  ;; Read access to ~/Documents may be required to git submodules to work
   (subpath (string-append (param "HOME") "/Documents")))
+(deny file-read*
+  (subpath (string-append (param "HOME") "/Documents/site-files")))
 
 ;; Allow full-access to the current dir (except for dotenvs)
 (allow file-read* file-write*
