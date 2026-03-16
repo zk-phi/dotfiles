@@ -68,6 +68,14 @@ function _git_prompt {
     fi
 }
 
+function _sb_indicator {
+    if [[ "$RESTRICTED_SHELL" == 1 ]]; then
+        echo " 🔒"
+    else
+        echo ""
+    fi
+}
+
 function _local_git_user {
     if _under_gitrepo_p; then
         _name=$(git config --local user.name)
@@ -81,7 +89,7 @@ function _local_git_user {
     fi
 }
 
-PROMPT='%F{cyan}%c$(_git_prompt)$(_errno_face)%f'
+PROMPT='%F{cyan}%c$(_git_prompt)$(_sb_indicator)$(_errno_face)%f'
 RPROMPT='$(_local_git_user)'
 
 # ------------------------------

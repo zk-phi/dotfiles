@@ -1,0 +1,37 @@
+;; See also https://zenn.dev/alesion/articles/37abbfb9f2fa4b
+;; See also https://blog.syum.ai/entry/2025/04/27/232946
+
+(version 1)
+
+(import "system.sb")
+(allow default)
+
+;; Inhibit overwriting system files
+(deny file-write*)
+(allow file-write*
+  (subpath (param "HOME"))              ; allow updating ~/.cache, ~/.npm etc
+  (subpath "/tmp")
+  (subpath "/private/tmp")
+  (subpath "/dev/null"))
+
+;; Protect user dirs and core credentials
+(deny file-read* file-write*
+  (subpath (string-append (param "HOME") "/Desktop"))
+  (subpath (string-append (param "HOME") "/Downloads"))
+  (subpath (string-append (param "HOME") "/Google Drive"))
+  (subpath (string-append (param "HOME") "/Movies"))
+  (subpath (string-append (param "HOME") "/Music"))
+  (subpath (string-append (param "HOME") "/Pictures"))
+  (subpath (string-append (param "HOME") "/Public"))
+  (subpath (string-append (param "HOME") "/.ssh"))
+  (subpath (string-append (param "HOME") "/.aws"))
+  (subpath (string-append (param "HOME") "/.gnupg")))
+(deny file-write*
+  ;; Read access to ~/Documents may be required to git submodules to work
+  (subpath (string-append (param "HOME") "/Documents")))
+
+;; Allow full-access to the current dir (except for dotenvs)
+(allow file-read* file-write*
+  (subpath (param "RSH_ROOT")))
+(deny file-read* file-write*
+  (regex #"/.*\.env$"))
