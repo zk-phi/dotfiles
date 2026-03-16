@@ -47,7 +47,7 @@ function _git_prompt {
     if _under_gitrepo_p; then
         _branch_name=$(git symbolic-ref --short HEAD 2>/dev/null || git show-ref --head -s --abbrev | head -n1)
 
-        if test -n "$(git status --porcelain)"; then
+        if test -n "$(git status --porcelain 2>/dev/null)"; then
             # _git_status="☁️ "
             _git_status="%f＊"
         else
