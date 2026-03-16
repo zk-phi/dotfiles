@@ -12,7 +12,7 @@
   (subpath "/private/tmp")
   (subpath "/dev/null")
   ;; Allow updating ~/.cache, ~/.npm etc
-  ;; Note that configurations are stored in a protected dir (~/Documents/dotfiles)
+  ;; Note that configurations are stored in a protected dir (~/Documents/dotfiles, site-files)
   (subpath (param "HOME")))
 
 ;; Protect user dirs and core credentials
