@@ -1,0 +1,44 @@
+;; See also https://zenn.dev/alesion/articles/37abbfb9f2fa4b
+;; See also https://blog.syum.ai/entry/2025/04/27/232946
+
+(version 1)
+
+(allow default)
+
+;; ;; Protect system files from being overwritten
+
+(deny file-write*)
+(allow file-write*
+  (subpath "/tmp")
+  (subpath "/private/tmp")
+  (subpath "/dev/null")
+  ;; Allow updating ~/.cache, ~/.npm etc
+  ;; Note that configurations are stored in a protected dir (~/Documents/dotfiles, site-files)
+  (subpath (param "HOME")))
+
+;; ;; Protect some user dirs and secrets
+
+(deny file-read* file-write*
+  (subpath (string-append (param "HOME") "/Desktop"))
+  (subpath (string-append (param "HOME") "/Documents"))
+  (subpath (string-append (param "HOME") "/Downloads"))
+  (subpath (string-append (param "HOME") "/Google Drive"))
+  (subpath (string-append (param "HOME") "/Movies"))
+  (subpath (string-append (param "HOME") "/Music"))
+  (subpath (string-append (param "HOME") "/Pictures"))
+  (subpath (string-append (param "HOME") "/Public"))
+  (subpath (string-append (param "HOME") "/.ssh"))
+  (subpath (string-append (param "HOME") "/.aws"))
+  (subpath (string-append (param "HOME") "/.gnupg")))
+(allow file-read*
+  ;; Read access to ~/Documents may be required for some git submodules to work
+  (literal (string-append (param "HOME") "/Documents"))
+  ;; Allow read-access to dotfiles
+  (subpath (string-append (param "HOME") "/Documents/dotfiles")))
+
+;; ;; Grant read-access to the current dir (except for dotenvs)
+
+(allow file-read*
+  (subpath (param "RSH_ROOT")))
+(deny file-read* file-write*
+  (regex #"/.*\.env$"))
