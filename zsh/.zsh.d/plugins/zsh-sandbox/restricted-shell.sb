@@ -20,6 +20,7 @@
 
 (deny file-read* file-write*
   (subpath (string-append (param "HOME") "/Desktop"))
+  (subpath (string-append (param "HOME") "/Documents"))
   (subpath (string-append (param "HOME") "/Downloads"))
   (subpath (string-append (param "HOME") "/Google Drive"))
   (subpath (string-append (param "HOME") "/Movies"))
@@ -29,11 +30,11 @@
   (subpath (string-append (param "HOME") "/.ssh"))
   (subpath (string-append (param "HOME") "/.aws"))
   (subpath (string-append (param "HOME") "/.gnupg")))
-;; Read access to ~/Documents may be required for some git submodules to work
-(deny file-write*
-  (subpath (string-append (param "HOME") "/Documents")))
-(deny file-read*
-  (subpath (string-append (param "HOME") "/Documents/site-files")))
+(allow file-read*
+  ;; Read access to ~/Documents may be required for some git submodules to work
+  (literal (string-append (param "HOME") "/Documents"))
+  ;; Allow read-access to dotfiles
+  (subpath (string-append (param "HOME") "/Documents/dotfiles")))
 
 ;; ;; Grant full-access to the current dir (except for dotenvs)
 
