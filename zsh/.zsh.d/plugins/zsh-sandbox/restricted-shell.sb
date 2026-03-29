@@ -5,6 +5,23 @@
 
 (allow default)
 
+;; +----------------+------------------------------+------------+
+;; | Category       | Examples                     | Permission |
+;; +----------------+------------------------------+------------+
+;; | [Root dir]     |                              |            |
+;; | System dirs    | /, /usr, /bin, /etc, /dev    | RO         |
+;; | Temporary dirs | /tmp, /dev/null              | RW         |
+;; +----------------+------------------------------+------------+
+;; | [Home dir]     |                              |            |
+;; | dotfiles       | ~/.emacs, ~/.gitconfig       | RO         |
+;; | secrets        | ~/.ssh, ~/.gnupg             | N/A        |
+;; | User dirs      | ~/Documents, ~/Downloads     | N/A        |
+;; | others         | ~/.cache, ~/.npm             | RW         |
+;; +----------------+------------------------------+------------+
+;; | Current dir    | ~/Documents/<proj-name>      | RW         |
+;; | .env           | ~/Documents/<proj-name>/.env | N/A        |
+;; +----------------+------------------------------+------------+
+
 ;; ;; Protect system files from being overwritten
 
 (deny file-write*)
