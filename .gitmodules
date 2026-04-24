@@ -256,3 +256,6 @@
 [submodule "hammerspoon/.hammerspoon/Spoons/EWOMKeychord.spoon"]
 	path = hammerspoon/.hammerspoon/Spoons/EWOMKeychord.spoon
 	url = https://github.com/zk-phi/EWOMKeychord.spoon.git
+[submodule "ghostty/ghostty-cursor-shaders"]
+	path = ghostty/ghostty-cursor-shaders
+	url = https://github.com/zk-phi/ghostty-cursor-shaders.git
