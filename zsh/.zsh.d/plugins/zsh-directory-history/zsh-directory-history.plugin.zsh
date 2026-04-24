@@ -1,10 +1,11 @@
 # Very minimal per-directory-history implementation
+
 # Based on https://github.com/ericfreese/zsh-cwd-history ((C) Eric Freese / MIT)
-#
+
 # This implementation just switches and loads HIST_FILE on `cd`,
 # and does nothing further. This avoids reimplementation of
 # history-management mechanism and leaves most of the work to the zsh.
-#
+
 # Limitation: no global/local toggle feature.
 
 HISTORY_BASEDIR="$HOME/.zsh_directory_history"

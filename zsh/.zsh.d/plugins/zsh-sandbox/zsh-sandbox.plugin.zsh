@@ -1,3 +1,5 @@
+# Start sandboxed shell powerd by Apple Seatbelt.
+
 # see also https://www.mizdra.net/entry/2025/12/01/121805
 
 function sb () {

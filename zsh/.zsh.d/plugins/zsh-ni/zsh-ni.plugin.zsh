@@ -1,3 +1,5 @@
+# Like ni, but work with abbrev-alias.
+
 # see also https://github.com/antfu-collective/ni ((C) Anthony Fu / MIT)
 # see also https://github.com/azu/ni.zsh ((C) azu / MIT)
 
