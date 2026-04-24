@@ -253,7 +253,9 @@ bindkey '^8' digit-argument
 bindkey '^9' digit-argument
 bindkey '^0' digit-argument
 bindkey '^_' undo               # i dont know why but this works as '^-'
+bindkey '^[[45;5u' undo         # '^-' for Ghostty
 bindkey '^=' ignore             # text-scale-increase
+bindkey '^[[61;5u' ignore       # '^=' for Ghostty
 bindkey '^q' quoted-insert
 bindkey '^w' my-kill-whole-line-or-region
 bindkey '^e' end-of-line
@@ -276,6 +278,7 @@ bindkey '^j' beginning-of-line
 bindkey '^k' kill-line
 bindkey '^l' ignore             # recenter
 bindkey '^;' ignore             # comment-dwim
+bindkey '^[[59;5u' ignore       # '^;' for Ghostty
 # bindkey "^'" ignore -- i dont know why but this line breaks other keybinds
 bindkey "^\\" ignore
 bindkey '^z' ignore             # suspend-frame (configured in iTerm2)
@@ -286,6 +289,7 @@ bindkey '^b' backward-char
 bindkey '^n' end-of-history     # next-line
 bindkey '^m' accept-line
 bindkey '^,' select-a-word      # expand-region
+bindkey '^[[44;5u' select-a-word # '^,' for Ghostty
 # bindkey '^.' ignore             # include-anywhere
 # bindkey '^/' ignore
 bindkey '^ ' my-set-mark-or-exchange
@@ -303,7 +307,9 @@ bindkey '^[^8' digit-argument
 bindkey '^[^9' digit-argument
 bindkey '^[^0' digit-argument
 bindkey '^[^_' redo              # i dont know why but this works as '^-'
+bindkey '^[[45;7u' redo          # '^[^-' for Ghostty
 bindkey '^[^=' ignore            # text-scale-decrease
+bindkey '^[[61;7u' ignore        # '^[^=' for Ghostty
 bindkey '^[^q' ignore
 bindkey '^[^w' copy-region-as-kill
 bindkey '^[^e' end-of-line       # end-of-defun
@@ -326,6 +332,7 @@ bindkey '^[^j' beginning-of-line # beginning-of-defun
 bindkey '^[^k' backward-kill-line
 bindkey '^[^l' ignore            # retop
 bindkey '^[^;' ignore
+bindkey '^[[59;7u' ignore       # '^[^;' for Ghostty
 # bindkey "^[^'" ignore
 bindkey "^[^\\" ignore           # indent-region
 bindkey '^[^z' ignore
@@ -336,6 +343,7 @@ bindkey '^[^b' backward-word
 bindkey '^[^n' end-of-history    # next-blank-line
 bindkey '^[^m' vi-open-line-below
 bindkey '^[^,' my-mark-whole-line
+bindkey '^[[44;7u' my-mark-whole-line # '^[^,' for Ghostty
 bindkey '^[^.' ignore            # xref
 bindkey '^[^/' ignore            # dabbrev
 bindkey '^[^ ' ignore

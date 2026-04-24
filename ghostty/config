@@ -1,0 +1,90 @@
+# -----------------------------------
+# Appearance
+# -----------------------------------
+
+# Font
+
+font-family = nasucode
+window-title-font-family = nasucode
+
+font-size = 13
+font-thicken = true
+adjust-cursor-thickness = 2
+
+# Colors
+
+background = 202020
+search-foreground = 202020
+search-selected-foreground = 202020
+foreground = 808080
+search-background = 808080
+search-selected-background = d0d0d0
+# black
+palette = 0=202020
+# red
+palette = 1=ff8683
+# green
+palette = 2=649d8a
+# yellow
+palette = 3=e0b776
+# blue
+palette = 4=729fcf
+# magenta
+palette = 5=b993a9
+# cyan
+palette = 6=c4dde8
+# white
+palette = 7=808080
+
+# Window
+
+window-width = 170
+window-height = 36
+window-step-resize = true
+
+macos-titlebar-style = tabs
+
+# -----------------------------------
+# UI
+# -----------------------------------
+
+selection-clear-on-copy = true
+selection-word-chars = " \t'\"│`|:;,()[]{}<>$-="
+
+mouse-hide-while-typing = true
+
+notify-on-command-finish = unfocused
+
+# -----------------------------------
+# Keyboard
+# -----------------------------------
+
+key-remap = left_command=left_alt
+
+keybind = clear
+keybind = alt+c=copy_to_clipboard
+keybind = alt+v=paste_from_clipboard
+keybind = alt+f=start_search
+keybind = escape=end_search
+keybind = ctrl+alt+u=scroll_to_top
+keybind = ctrl+alt+v=scroll_to_bottom
+keybind = ctrl+u=scroll_page_up
+keybind = ctrl+v=scroll_page_down
+keybind = alt+2=new_tab
+keybind = alt+t=new_tab
+keybind = alt+9=previous_tab
+keybind = alt+0=next_tab
+keybind = alt+i=new_split
+keybind = alt+h=goto_split:left
+keybind = alt+j=goto_split:down
+keybind = alt+k=goto_split:up
+keybind = alt+l=goto_split:right
+# override OS default keybinds
+keybind = ctrl+alt+f=esc:f
+
+# -----------------------------------
+# System
+# -----------------------------------
+
+auto-update = check
+auto-update-channel = stable

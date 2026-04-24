@@ -59,7 +59,7 @@ Keychord.attach(EWOM)
 
 EWOM.setApplicationFilter(
   function (app)
-    return app == 'Emacs' or app == 'iTerm2' or app == 'Shotcut'
+    return app == 'Emacs' or app == 'Ghostty' or app == 'Shotcut'
   end
 )
 

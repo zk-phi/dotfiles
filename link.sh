@@ -15,3 +15,6 @@ ln -s -i $(PWD)/asdf/.asdfrc ~/.asdfrc
 ln -s -i $(PWD)/asdf/.tool-versions ~/.tool-versions
 
 ln -s -i $(PWD)/hammerspoon/.hammerspoon ~/.hammerspoon
+
+mkdir ~/.config
+ln -s -i $(PWD)/ghostty ~/.config/ghostty
