@@ -74,7 +74,7 @@ keybind = alt+2=new_tab
 keybind = alt+t=new_tab
 keybind = alt+9=previous_tab
 keybind = alt+0=next_tab
-keybind = alt+i=new_split
+keybind = alt+i=new_split:auto
 keybind = alt+h=goto_split:left
 keybind = alt+j=goto_split:down
 keybind = alt+k=goto_split:up
