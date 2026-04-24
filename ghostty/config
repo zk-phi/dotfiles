@@ -44,6 +44,14 @@ window-step-resize = true
 
 macos-titlebar-style = tabs
 
+# Cursor
+
+cursor-style-blink = false
+
+# Shaders
+
+custom-shader = ghostty-cursor-shaders/cursor_tail.glsl
+
 # -----------------------------------
 # UI
 # -----------------------------------
