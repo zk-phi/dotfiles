@@ -96,5 +96,7 @@ keybind = ctrl+alt+f=esc:f
 # System
 # -----------------------------------
 
+window-save-state = always
+
 auto-update = check
 auto-update-channel = stable
