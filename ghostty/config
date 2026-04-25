@@ -54,7 +54,7 @@ cursor-style-blink = false
 
 # Shaders
 
-custom-shader = ghostty-cursor-shaders/cursor_tail.glsl
+custom-shader = cursor_trail.glsl
 
 # -----------------------------------
 # UI
