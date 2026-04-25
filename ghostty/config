@@ -46,6 +46,8 @@ window-step-resize = true
 
 macos-titlebar-style = tabs
 
+# background-opacity = 0.78
+
 # Cursor
 
 cursor-style-blink = false
@@ -89,6 +91,7 @@ keybind = alt+h=goto_split:left
 keybind = alt+j=goto_split:down
 keybind = alt+k=goto_split:up
 keybind = alt+l=goto_split:right
+# keybind = alt+o=toggle_background_opacity
 # override OS default keybinds
 keybind = ctrl+alt+f=esc:f
 
