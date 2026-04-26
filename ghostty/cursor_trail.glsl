@@ -52,11 +52,25 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord) {
     float progress = clamp((iTime - iTimeCursorChange) / DURATION, 0.0, 1.0);
     progress = ease(progress);
 
-    vec4 cursor_trail = mix(iPreviousCursor, iCurrentCursor, progress);
-    vec2 d = fragCoord.xy - cursor_trail.xy;
+    vec4 curr = iCurrentCursor;
+    vec4 trail = mix(iPreviousCursor, iCurrentCursor, progress);
 
-    float x = step(.0, d.x) * step(d.x, cursor_trail.z);
-    float y = step(- cursor_trail.w, d.y) * step(d.y, .0);
+    // +---+ y-w
+    // |   |
+    // |   |
+    // |   |
+    // +---+ y
+    // x   x+z
 
-    fragColor = mix(fragColor, TRAIL_COLOR, x * y);
+    // x <= fragCoord.x < x + z
+    float x_trail_p = step(trail.x, fragCoord.x) * step(fragCoord.x, trail.x + trail.z);
+    // y - w <= fragCoord.y < y
+    float y_trail_p = step(trail.y - trail.w, fragCoord.y) * step(fragCoord.y, trail.y);
+    float trail_p = x_trail_p * y_trail_p;
+
+    float x_curr_p = step(curr.x, fragCoord.x) * step(fragCoord.x, curr.x + curr.z);
+    float y_curr_p = step(curr.y - curr.w, fragCoord.y) * step(fragCoord.y, curr.y);
+    float not_curr_p = abs(1.0 - x_curr_p * y_curr_p);
+
+    fragColor = mix(fragColor, TRAIL_COLOR, trail_p * not_curr_p);
 }
