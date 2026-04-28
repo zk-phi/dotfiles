@@ -1,5 +1,5 @@
 vec4 TRAIL_COLOR = iCurrentCursorColor;
-const float DURATION = 0.04; // in seconds
+const float DURATION = 0.06; // in seconds
 
 // --- EASING FUNCTIONS ---
 // Taken from https://github.com/sahaj-b/ghostty-cursor-shaders (MIT License)
