@@ -54,8 +54,7 @@ cursor-style-blink = false
 
 # Shaders
 
-custom-shader = cursor_trail.glsl
-# custom-shader = cursor_delay.glsl
+custom-shader = cursor_smear_fade.glsl
 
 # -----------------------------------
 # UI
