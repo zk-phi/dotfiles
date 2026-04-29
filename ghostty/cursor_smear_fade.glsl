@@ -5,8 +5,51 @@
 // - Faded tails: https://gist.github.com/reshen/991d19f9f8c8fedf64ff726f05f05f44
 // - Fix for straight moves: https://github.com/sahaj-b/ghostty-cursor-shaders/blob/main/cursor_tail.glsl
 
-const float DURATION = 0.3; // IN SECONDS
+const float DURATION = 0.06; // IN SECONDS
 const float TRAIL_MAX_OPACITY = 0.5;
+
+// ---- Easing functions
+
+// Linear
+float ease(float x) {
+    return x;
+}
+
+// // EaseOutQuad
+// float ease(float x) {
+//     return 1.0 - (1.0 - x) * (1.0 - x);
+// }
+
+// // EaseOutCubic
+// float ease(float x) {
+//     return 1.0 - pow(1.0 - x, 3.0);
+// }
+
+
+// // EaseOutQuart
+// float ease(float x) {
+//     return 1.0 - pow(1.0 - x, 4.0);
+// }
+
+// // EaseOutQuint
+// float ease(float x) {
+//     return 1.0 - pow(1.0 - x, 5.0);
+// }
+
+// // EaseOutSine
+// float ease(float x) {
+//     return sin((x * PI) / 2.0);
+// }
+
+// // EaseOutExpo
+// float ease(float x) {
+//     return x == 1.0 ? 1.0 : 1.0 - pow(2.0, -10.0 * x);
+// }
+
+// // EaseOutCirc
+// float ease(float x) {
+//     return sqrt(1.0 - pow(x - 1.0, 2.0));
+// }
 
 // ---- SDFs ----
 
@@ -55,10 +98,6 @@ vec2 normalize(vec2 value, float isPosition) {
 
 float antialising(float distance) {
     return 1. - smoothstep(0., normalize(vec2(2., 2.), 0.).x, distance);
-}
-
-float ease(float x) {
-    return pow(1.0 - x, 3.0);
 }
 
 float determineIfTopRightIsLeading(vec2 a, vec2 b) {
@@ -134,7 +173,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     float lineLength = distance(centerCC, centerCP);
 
     // Compute fade factor based on distance from the current cursor, along the trail
-    float progress = clamp((iTime - iTimeCursorChange) / DURATION, 0.0, 1.0);
+    float progress = 1.0 - clamp((iTime - iTimeCursorChange) / DURATION, 0.0, 1.0);
     float easedProgress = ease(progress);
     float fadeFactor = clamp(1.0 - smoothstep(lineLength, sdfCurrentCursor, easedProgress * lineLength), 0., TRAIL_MAX_OPACITY);
 
