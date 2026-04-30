@@ -280,6 +280,7 @@ bindkey '^l' ignore             # recenter
 bindkey '^;' ignore             # comment-dwim
 bindkey '^[[59;5u' ignore       # '^;' for Ghostty
 # bindkey "^'" ignore -- i dont know why but this line breaks other keybinds
+bindkey '^[[39;5u' ignore       # '^\'' for Ghostty
 bindkey "^\\" ignore
 bindkey '^z' ignore             # suspend-frame (configured in iTerm2)
 bindkey '^x' ignore
@@ -334,6 +335,7 @@ bindkey '^[^l' ignore            # retop
 bindkey '^[^;' ignore
 bindkey '^[[59;7u' ignore       # '^[^;' for Ghostty
 # bindkey "^[^'" ignore
+bindkey '^[[39;7u' ignore       # '^[^\'' for Ghostty
 bindkey "^[^\\" ignore           # indent-region
 bindkey '^[^z' ignore
 bindkey '^[^x' ignore            # eval-defun
