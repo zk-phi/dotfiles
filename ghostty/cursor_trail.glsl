@@ -1,5 +1,6 @@
 vec4 TRAIL_COLOR = iCurrentCursorColor;
 const float DURATION = 0.06; // in seconds
+const float MAX_DISTANCE = 1.0;
 
 // --- EASING FUNCTIONS ---
 // Taken from https://github.com/sahaj-b/ghostty-cursor-shaders (MIT License)
@@ -48,6 +49,9 @@ float ease (float x) {
 
 void mainImage (out vec4 fragColor, in vec2 fragCoord) {
     fragColor = texture(iChannel0, fragCoord.xy / iResolution.xy);
+
+    float travel_distance = distance(iCurrentCursor.xy, iPreviousCursor.xy);
+    if (travel_distance > MAX_DISTANCE * iCurrentCursor.w) return;
 
     float progress = clamp((iTime - iTimeCursorChange) / DURATION, 0.0, 1.0);
     progress = ease(progress);
