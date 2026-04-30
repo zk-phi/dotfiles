@@ -118,7 +118,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     fragColor = texture(iChannel0, fragCoord.xy / iResolution.xy);
 
     float travelDistance = distance(iCurrentCursor.xy, iPreviousCursor.xy);
-    if (travelDistance < MIN_DISTANCE * iCurrentCursor.w) return;
+    if (travelDistance <= MIN_DISTANCE * iCurrentCursor.w) return;
 
     // Normalization for fragCoord to a space of -1 to 1;
     vec2 vu = normalize(fragCoord, 1.);
