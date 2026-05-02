@@ -142,7 +142,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 v2 = vec2(previousCursor.x + currentCursor.z * isBottomLeftLeading, previousCursor.y);
     vec2 v3 = vec2(previousCursor.x + currentCursor.z * isTopRightLeading, previousCursor.y - previousCursor.w);
 
-    float sdfParaTrail = getSdfParallelogram(vu, v0, v1, v2, v3);
+    float sdfParaTail = getSdfParallelogram(vu, v0, v1, v2, v3);
 
     // ---- SDF for rectangular tail (for straight move) ----
 
@@ -155,7 +155,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 boxSize = (maxCenter - minCenter) + currentCursor.zw;
     vec2 boxCenter = (minCenter + maxCenter) * 0.5;
 
-    float sdfRectTrail = getSdfRectangle(vu, boxCenter, boxSize * 0.5);
+    float sdfRectTail = getSdfRectangle(vu, boxCenter, boxSize * 0.5);
 
     // ---- Dispatch parallelogram/rectangular tail ----
 
@@ -165,7 +165,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     float isVertical = step(deltaAbs.x, threshold);
     float isStraightMove = max(isHorizontal, isVertical);
 
-    float sdfTrail = mix(sdfParaTrail, sdfRectTrail, isStraightMove);
+    float sdfTrail = mix(sdfParaTail, sdfRectTail, isStraightMove);
 
     // ---- SDF for the current cursor ----
 
