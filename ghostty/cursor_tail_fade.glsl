@@ -6,8 +6,9 @@
 // - Fix for straight moves: https://github.com/sahaj-b/ghostty-cursor-shaders/blob/main/cursor_tail.glsl
 
 const float DURATION = 0.06; // IN SECONDS
-const float TRAIL_MAX_OPACITY = 0.5;
-const float MIN_DISTANCE = 1.0;
+const float TRAIL_MAX_OPACITY = 0.25;
+const float MIN_TAIL_DISTANCE = 1.0; // IN V-UNITS
+const float MAX_TRAIL_WIDTH = 0.1; // IN V-UNITS
 
 // ---- Easing functions
 
@@ -25,7 +26,6 @@ float ease(float x) {
 // float ease(float x) {
 //     return 1.0 - pow(1.0 - x, 3.0);
 // }
-
 
 // // EaseOutQuart
 // float ease(float x) {
@@ -113,9 +113,6 @@ vec2 getRectangleCenter(vec4 rectangle) {
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     fragColor = texture(iChannel0, fragCoord.xy / iResolution.xy);
 
-    float travelDistance = distance(iCurrentCursor.xy, iPreviousCursor.xy);
-    if (travelDistance <= MIN_DISTANCE * iCurrentCursor.w) return;
-
     // Normalization for fragCoord to a space of -1 to 1;
     vec2 vu = normalize(fragCoord, 1.);
     vec2 offsetFactor = vec2(-.5, 0.5);
@@ -180,8 +177,19 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     // Apply fading effect to trail color
     vec4 fadedTailColor = mix(fragColor, iCurrentCursorColor, fadeFactor);
 
-    // --- Render the tail and the current cursor
+    // ---- SDF for the cursor trail ----
 
-    vec4 newColor = mix(fragColor, fadedTailColor, step(sdfTail, 0.));
+    vec4 trail = mix(currentCursor, previousCursor, easedProgress);
+    float sdfTrail = getSdfRectangle(vu, trail.xy - (trail.zw * offsetFactor), trail.zw * 0.5);
+
+    // --- Render the tail or the trail, and the current cursor
+
+    float travelDistance = distance(iCurrentCursor.xy, iPreviousCursor.xy);
+    float isShortMove = step(travelDistance, MIN_TAIL_DISTANCE * iCurrentCursor.w) * step(iCurrentCursor.z, MAX_TRAIL_WIDTH * iCurrentCursor.w);
+
+    vec4 fragTail = mix(fragColor, fadedTailColor, step(sdfTail, 0.));
+    vec4 fragTrail = mix(fragColor, iCurrentCursorColor, step(sdfTrail, 0.));
+    vec4 newColor = mix(fragTail, fragTrail, isShortMove);
+
     fragColor = mix(newColor, fragColor, step(sdfCurrentCursor, 0.));
 }
