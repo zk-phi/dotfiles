@@ -97,10 +97,6 @@ vec2 normalize(vec2 value, float isPosition) {
     return (value * 2.0 - (iResolution.xy * isPosition)) / iResolution.y;
 }
 
-float antialising(float distance) {
-    return 1. - smoothstep(0., normalize(vec2(2., 2.), 0.).x, distance);
-}
-
 float determineIfTopRightIsLeading(vec2 a, vec2 b) {
     // Conditions using step
     float condition1 = step(b.x, a.x) * step(a.y, b.y); // a.x < b.x && a.y > b.y
@@ -130,7 +126,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec4 currentCursor = vec4(normalize(iCurrentCursor.xy, 1.), normalize(iCurrentCursor.zw, 0.));
     vec4 previousCursor = vec4(normalize(iPreviousCursor.xy, 1.), normalize(iPreviousCursor.zw, 0.));
 
-    // ---- SDF for parallelogram tail (for diagonal move) ----
+    // ---- SDF for the parallelogram tail (for diagonal move) ----
 
     // When drawing a parellelogram between cursors for the trail i need to determine where to start at the top-left or top-right vertex of the cursor
     float isTopRightLeading = determineIfTopRightIsLeading(currentCursor.xy, previousCursor.xy);
@@ -144,7 +140,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
     float sdfParaTail = getSdfParallelogram(vu, v0, v1, v2, v3);
 
-    // ---- SDF for rectangular tail (for straight move) ----
+    // ---- SDF for the rectangular tail (for straight move) ----
 
     vec2 centerCC = getRectangleCenter(currentCursor);
     vec2 centerCP = getRectangleCenter(previousCursor);
@@ -157,7 +153,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
     float sdfRectTail = getSdfRectangle(vu, boxCenter, boxSize * 0.5);
 
-    // ---- Dispatch parallelogram/rectangular tail ----
+    // ---- Dispatch parallelogram/rectangular tails ----
 
     float threshold = 0.001;
     vec2 deltaAbs = abs(centerCC - centerCP);
@@ -165,13 +161,13 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     float isVertical = step(deltaAbs.x, threshold);
     float isStraightMove = max(isHorizontal, isVertical);
 
-    float sdfTrail = mix(sdfParaTail, sdfRectTail, isStraightMove);
+    float sdfTail = mix(sdfParaTail, sdfRectTail, isStraightMove);
 
     // ---- SDF for the current cursor ----
 
     float sdfCurrentCursor = getSdfRectangle(vu, currentCursor.xy - (currentCursor.zw * offsetFactor), currentCursor.zw * 0.5);
 
-    // ---- Render tails and the current cursor ----
+    // ---- Determine the faded tail color ----
 
     // Distance between cursors determine the total length of the parallelogram;
     float lineLength = distance(centerCC, centerCP);
@@ -182,13 +178,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     float fadeFactor = clamp(1.0 - smoothstep(lineLength, sdfCurrentCursor, easedProgress * lineLength), 0., TRAIL_MAX_OPACITY);
 
     // Apply fading effect to trail color
-    vec4 fadedTrailColor = mix(fragColor, iCurrentCursorColor, fadeFactor);
+    vec4 fadedTailColor = mix(fragColor, iCurrentCursorColor, fadeFactor);
 
-    // Blend trail with fade effect
-    vec4 newColor =  mix(fragColor, fadedTrailColor, antialising(sdfTrail));
+    // --- Render the tail and the current cursor
 
-    // Draw current cursor
-    newColor = mix(newColor, iCurrentCursorColor , antialising(sdfCurrentCursor));
-    newColor = mix(newColor, fragColor, step(sdfCurrentCursor, 0.));
-    fragColor = mix(fragColor, newColor, step(sdfCurrentCursor, easedProgress * lineLength));
+    vec4 newColor = mix(fragColor, fadedTailColor, step(sdfTail, 0.));
+    fragColor = mix(newColor, fragColor, step(sdfCurrentCursor, 0.));
 }
