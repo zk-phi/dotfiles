@@ -273,6 +273,18 @@ function EWOM.cmd.mySmartBracket (arg, evt)
   EWOM.runHooks(EWOM.afterChangeHook)
 end
 
+function EWOM.cmd.historyBackward (arg)
+  for i = 1, math.max(1, arg) do
+    EWOM.sendKey({ 'command' }, 'left')
+  end
+end
+
+function EWOM.cmd.historyForward (arg)
+  for i = 1, math.max(1, arg) do
+    EWOM.sendKey({ 'command' }, 'right')
+  end
+end
+
 EWOM.registerBaseKeymap()
 
 EWOM.globalSetKey({}, '[', EWOM.cmd.mySmartBracket, true)
@@ -382,7 +394,9 @@ EWOM.globalSetKey(M_, '2', EWOM.cmd.tabNew)
 EWOM.globalSetKey(M_, '9', EWOM.cmd.tabPrevious)
 EWOM.globalSetKey(M_, '0', EWOM.cmd.tabNext)
 EWOM.globalSetKey(M_, 'd', EWOM.cmd.finder)
+EWOM.globalSetKey(M_, 'h', EWOM.cmd.historyBackward) -- for browsers
 EWOM.globalSetKey(M_, 'f', EWOM.cmd.spotlight)
+EWOM.globalSetKey(M_, 'l', EWOM.cmd.historyForward) -- for browsers
 EWOM.globalSetKey(M_, 'k', EWOM.cmd.tabClose)
 EWOM.globalSetKey(M_, 'x', EWOM.cmd.spotlight) -- execute-extended-command
 -- EWOM.globalSetKey(M_, 'm', EWOM.cmd.repeatLastCommand, true)
