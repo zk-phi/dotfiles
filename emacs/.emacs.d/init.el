@@ -3570,7 +3570,8 @@ unary operators which can also be binary."
     ;; re-apply colors when the palette is changed
     (setup-hook 'my-elemental-theme-change-palette-hook
       (setq highlight-parentheses-background-colors
-            (list (face-background 'elemental-brighter-bg-face))))
+            (list (face-background 'elemental-brighter-bg-face)))
+      (highlight-parentheses--color-update))
     (highlight-parentheses--color-update))
 
   (setup-after "cperl-mode"
