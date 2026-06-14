@@ -3449,7 +3449,7 @@ unary operators which can also be binary."
   ;; ;; reference | https://github.com/ivanmarcin/emacs-tron-theme/
   ;; (my-elemental-theme-apply-colors
   ;;   "#000000" "#75797b" "#ec9346" "#a4cee5" "#74abbe" "#e8b778"
-  ;;   "red" "orange" "#74abbe" "#a4cee5")
+  ;;   "#ff2600" "#ff9300" "#74abbe" "#a4cee5")
 
   ;; ;; "majapahit" palette
   ;; ;; reference | https://gitlab.com/franksn/majapahit-theme/
