@@ -46,7 +46,7 @@ function _ni_ni () {
             echo "$(_ni_get_firewall_cmd)npm install "
             ;;
         yarn)
-            echo "$(_ni_get_firewall_cmd)yarn add "
+            echo "$(_ni_get_firewall_cmd)yarn install "
             ;;
         pnpm)
             echo "$(_ni_get_firewall_cmd)pnpm install "
