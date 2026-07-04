@@ -180,9 +180,6 @@ function diff () { $diffcmd -u $* | $postdiff | less -R }
 # less: make less recognize ANSI escape sequences
 alias less='less -R'
 
-# jobs
-alias jobs='jobs -l'
-
 # git: disable glob expansion (otherwise "reset HEAD^" fails as "no matches found")
 alias git='noglob git'
 
@@ -436,13 +433,13 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias ll='ls -lh '
     abbrev-alias lla='ls -lah '
 
-    # others
-    abbrev-alias sq='xattr -d com.apple.quarantine ' # skip quarantine
+    # jobs
+    abbrev-alias jobs='jobs -l '
 
     # filters
     abbrev-alias -g g='| grep '
     abbrev-alias -g gi='| grep -v ' # grep inverse
-    abbrev-alias -g l='| less -R '
+    abbrev-alias -g l='| less '
     abbrev-alias -g c='| cut -d " " -f '
     abbrev-alias -g s='| tr -s " " ' # shrink spaces
 
@@ -454,6 +451,9 @@ if whence abbrev-alias > /dev/null; then
     # yt-dlp options
     abbrev-alias -g cfb='--cookies-from-browser chrome '
     abbrev-alias -g fhd='-S "+height:1080" -f "b*" '
+
+    # others
+    abbrev-alias sq='xattr -d com.apple.quarantine ' # skip quarantine
 
     bindkey " " expand-abbrev-or-self-insert-otherwise
 else
