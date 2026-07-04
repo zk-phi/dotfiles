@@ -452,6 +452,7 @@ if whence abbrev-alias > /dev/null; then
     # git options
     abbrev-alias -g n='--no-verify '
     abbrev-alias -g fp='--first-parent '
+    abbrev-alias -g o='origin '
     abbrev-alias -ge b='$(git symbolic-ref --short HEAD) '
 
     # yt-dlp options
