@@ -427,6 +427,12 @@ if whence abbrev-alias > /dev/null; then
     abbrev-alias sl='ls '
     abbrev-alias sls='ls '
 
+    # rm
+    abbrev-alias rm='rmtrash '
+
+    # rmdir
+    abbrev-alias rmdir='rmtrash -d '
+
     # ls
     abbrev-alias l='ls '
     abbrev-alias la='ls -a '
